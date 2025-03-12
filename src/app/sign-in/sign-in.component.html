@@ -1,0 +1,43 @@
+<div class="banner">
+  <img src="assets/logosnds.png" alt="Left Logo" class="banner-logo-left"> 
+  <div class="banner-text">
+    <h1>SCHOOL NEEDS DATA SYSTEM</h1>
+    <p>Strengthening Network of Partners Through Digitally-Driven System</p>
+  </div>
+  </div>
+
+<mat-card>
+  <mat-card-title>Sign In</mat-card-title>
+  <form [formGroup]="signInForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" required>
+      <mat-error *ngIf="signInForm.get('email')?.invalid && (signInForm.get('email')?.touched || signInForm.get('email')?.dirty)">
+        <span *ngIf="signInForm.get('email')?.errors?.['required']">Email is required.</span>
+        <span *ngIf="signInForm.get('email')?.errors?.['email']">Invalid email format.</span>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password" required>
+      <mat-error *ngIf="signInForm.get('password')?.invalid && (signInForm.get('password')?.touched || signInForm.get('password')?.dirty)">
+        <span *ngIf="signInForm.get('password')?.errors?.['required']">Password is required.</span>
+        <span *ngIf="signInForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters long.</span>
+      </mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button class="custom-signin" type="submit" [disabled]="signInForm.invalid"><span>Sign In</span></button>
+
+    <div class="forgot-password">
+      <a href="javascript:void(0);" (click)="onForgotPassword()">Forgot Password?</a>
+    </div>
+
+    <div class="signup-prompt">
+      <span>Don't have an account yet? </span>
+      <button mat-button href="javascript:void(0);" (click)="onSignUp()">Sign Up</button>
+    </div>
+
+    <div *ngIf="isError" class="error-message">Invalid Password or Email. Please try again.</div>
+  </form>
+</mat-card>

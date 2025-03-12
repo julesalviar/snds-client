@@ -1,0 +1,226 @@
+.banner {
+  background: linear-gradient(to bottom, #569b58, #439347); 
+  text-align: center; 
+  padding: 5px 20px;
+  border-radius: 7px; 
+}
+
+.banner {
+  position: sticky; 
+  top: 0; 
+  background-size: cover;
+  background-position: center;
+  height: 110px; 
+  display: flex; 
+  align-items: center; 
+  color: white; 
+  padding: 20px; 
+}
+  
+.banner-logo {
+  width: 100px; 
+  height: auto; 
+  margin-right: 20px; 
+}
+.banner-logo-left {
+  width: 100px; 
+  height: auto; 
+}
+.banner-text {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+}
+
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.banner h1,
+.banner p {
+  position: relative; 
+  z-index: 2; 
+}
+.banner h1 {
+  margin: 0px; 
+  font-size: 4em; 
+  letter-spacing: 2px;
+  color: white; 
+  text-shadow: 
+    -1px -1px 0px #000000, 
+    1px -1px 0px #000000, 
+    -1px 1px 0px #000000, 
+    1px 1px 0px #000000;  
+}
+
+.banner p{
+  font-size: 1.5em; 
+  margin-top: 0px; 
+}
+
+.banner {
+  position: sticky; 
+  top: 0; 
+  z-index: 1000; 
+  height: auto; 
+  display: flex;
+  align-items: center; 
+  color: white; 
+  padding: 10px; 
+  justify-content: flex-start; 
+  width: 100%; 
+  overflow: hidden;
+}
+
+.banner-logo-left {
+  width: 100px; 
+  height: auto; 
+}
+
+.banner-text {
+  display: flex; 
+  flex-direction: column; 
+  flex-grow: .5;
+  align-items: center; 
+  text-align: center;
+}
+
+.info-image {
+  width: 100%; 
+  height: auto; 
+  max-height: 200px; 
+  object-fit: cover; 
+  border-radius: 8px;
+  margin-bottom: 15px; 
+}
+
+@media (max-width: 450px) {
+  .banner {
+    flex-direction: column;  
+    text-align: center;  
+  }
+
+  .banner-logo-left {
+    width: 80px;  
+  }
+
+
+  .banner-text {
+    padding: 4px;  
+  }
+
+  .info-image {
+    max-width: 150px;  
+  }
+}
+@media (max-width: 1024px) {
+  .banner-text h1 {
+    font-size: 2rem;  
+  }
+
+  .banner-text p {
+    font-size: 1rem;  
+  }
+}
+
+@media (max-width: 450px) {
+  .banner-text h1 {
+    font-size: 1rem;  
+  }
+
+  .banner-text p {
+    font-size: 0.5rem;  
+  }
+  .form-container{
+    margin-left: 0px;
+  }
+}
+
+  mat-card {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    box-shadow: 0 4px 20px green;
+    border-radius: 8px;
+    border-color: green;
+    border: 1px solid;
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  input mat-input-element {
+    padding: 10px;
+  }
+  
+  error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 15px;
+    text-align: center;
+  }
+  
+  .custom-signin {
+    width: 100%;
+    background-color: #4CAF50; 
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .custom-signin span{
+    color: black;
+  }
+
+  .custom-signin:hover {
+    background-color: #45a049; 
+    transform: translateY(-2px);
+  }
+  .custom-signin span:hover{
+    color: white;
+  }
+
+  mat-card-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .forgot-password {
+    text-align: left;
+    margin-top: 10px;
+  }
+
+  .signup-prompt {
+    text-align: center;
+    margin-top: 20px;
+  }
+ 
+  
+  
+  a {
+    color: #3f51b5; /* Primary color */
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 500px) {
+    mat-card {
+      margin: 20px;
+      padding: 15px;
+    }
+    .custom-signin span{
+      color:  black;
+    }
+    .custom-signin{
+      color: #45a049;
+    }
+  }
