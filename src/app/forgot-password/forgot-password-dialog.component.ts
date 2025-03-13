@@ -45,9 +45,9 @@ export class ForgotPasswordDialogComponent {
     console.log('onClose called');
     this.dialogRef.close(); 
   }
-
+// add correct email for default snds email
   private isEmailValid(email: string): boolean {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; //validate email format
     return pattern.test(email);
   }
 }

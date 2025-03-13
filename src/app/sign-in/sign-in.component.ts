@@ -69,7 +69,7 @@ export class SignInComponent {
   
       // Check if a registered user exists
       if (registeredUser) {
-        // Validate email and password
+        // Validate email and password adjust according to backend
         if (email === registeredUser.email && password === registeredUser.password) {
           this.router.navigate(['/']); // Navigate to home/dashboard
         } else {
