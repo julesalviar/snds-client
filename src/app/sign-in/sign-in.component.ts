@@ -69,7 +69,7 @@ export class SignInComponent {
   
       // Check if a registered user exists
       if (registeredUser) {
-        // Validate email and password adjust according to backend
+        // Email Validation
         if (email === registeredUser.email && password === registeredUser.password) {
           this.router.navigate(['/']); // Navigate to home/dashboard
         } else {
@@ -82,7 +82,7 @@ export class SignInComponent {
         console.log('No registered user found.'); //for console display 
       }
     } else {
-      this.signInForm.markAllAsTouched(); // Highlight messaage for validation errors
+      this.signInForm.markAllAsTouched(); 
     }
   }
 }

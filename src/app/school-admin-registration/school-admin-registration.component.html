@@ -1,0 +1,135 @@
+
+  <div class="form-card">
+    <mat-card>
+        <mat-card-title class="title">School Admin Registration</mat-card-title>
+        <mat-card-content>
+            <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+
+                <div class="form-row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Region</mat-label>
+                        <mat-select formControlName="region" required>
+                            <mat-option value="Region XII">Region XII</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="registrationForm.get('region')?.hasError('required') && registrationForm.get('region')?.touched">
+                            Region is required.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Division</mat-label>
+                        <mat-select formControlName="division" required>
+                            <mat-option value="General Santos City">General Santos City</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="registrationForm.get('division')?.hasError('required') && registrationForm.get('division')?.touched">
+                            Division is required.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>District / Cluster</mat-label>
+                        <input matInput formControlName="district" required>
+                        <mat-error *ngIf="registrationForm.get('district')?.hasError('required') && registrationForm.get('district')?.touched">
+                            District is required.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>School / Learning Center Name</mat-label>
+                        <input matInput formControlName="schoolName" required>
+                        <mat-error *ngIf="registrationForm.get('schoolName')?.hasError('required') && registrationForm.get('schoolName')?.touched">
+                            School Name is required.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>School ID</mat-label>
+                        <input matInput formControlName="schoolId" required>
+                        <mat-error *ngIf="registrationForm.get('schoolId')?.hasError('required') && registrationForm.get('schoolId')?.touched">
+                            School ID is required.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>School Offering</mat-label>
+                        <input matInput formControlName="schoolOffering" required>
+                        <mat-error *ngIf="registrationForm.get('schoolOffering')?.hasError('required') && registrationForm.get('schoolOffering')?.touched">
+                            School Offering is required.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Name of Accountable Person</mat-label>
+                        <input matInput formControlName="accountableName" required>
+                        <mat-error *ngIf="registrationForm.get('accountableName')?.hasError('required') && registrationForm.get('accountableName')?.touched">
+                            Accountable Person's Name is required.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Designation</mat-label>
+                        <input matInput formControlName="designation" required>
+                        <mat-error *ngIf="registrationForm.get('designation')?.hasError('required') && registrationForm.get('designation')?.touched">
+                            Designation is required.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Contact Number</mat-label>
+                        <input matInput formControlName="contactNumber" required>
+                        <mat-error *ngIf="registrationForm.get('contactNumber')?.hasError('required') && registrationForm.get('contactNumber')?.touched">
+                            Contact Number is required.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                        <mat-label>Official Email Address</mat-label>
+                        <input matInput type="email" formControlName="officialEmail" required>
+                        <mat-error *ngIf="registrationForm.get('officialEmail')?.hasError('required') && registrationForm.get('officialEmail')?.touched">
+                            Official Email is required.
+                        </mat-error>
+                        <mat-error *ngIf="registrationForm.get('officialEmail')?.hasError('email') && registrationForm.get('officialEmail')?.touched">
+                            Please enter a valid email address.
+                        </mat-error>
+                        <mat-hint>(Must Use a Valid School Email Address.)</mat-hint>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Enter Password</mat-label>
+                        <input matInput type="password" formControlName="password" required>
+                        <mat-error *ngIf="registrationForm.get('password')?.hasError('required') && registrationForm.get('password')?.touched">
+                            Password is required.
+                        </mat-error>
+                        <mat-error *ngIf="registrationForm.get('password')?.hasError('minlength') && registrationForm.get('password')?.touched">
+                            Password must be at least 6 characters long.
+                        </mat-error>
+                    </mat-form-field>
+                
+                    <mat-form-field appearance="fill">
+                        <mat-label>Confirm Password</mat-label>
+                        <input matInput type="password" formControlName="confirmPassword" required>
+                        <mat-error *ngIf="registrationForm.get('confirmPassword')?.hasError('required') && registrationForm.get('confirmPassword')?.touched">
+                            Confirm Password is required.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                
+                <div *ngIf="passwordMismatch" class="error-message">
+                    Passwords do not match.
+                </div>
+
+                <button mat-raised-button class="custom-register" type="submit">Submit</button>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

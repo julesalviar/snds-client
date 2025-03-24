@@ -1,6 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 @import '@angular/material/prebuilt-themes/rose-red.css';
-
+*{
+  box-sizing: border-box;
+}
 html, body { height: 100%; }
 body { 
     margin: 0; 
@@ -9,9 +11,34 @@ body {
     background-repeat: no-repeat;
     background-size: contain; 
     background-position: center; 
+    overflow: auto;
 }
+.custom-register {
+    background-color: #4CAF50 !important; 
+    color: white !important; 
+    border: none !important; 
+  }
+  
+  .custom-register:hover {
+    background-color: #45a049 !important; 
+  }
+  .success-message {
+    background-color: #dff0d8; 
+    color: #3c763d; 
+    padding: 15px; 
+    border: 1px solid #d6e9c6;
+    border-radius: 5px; 
+    margin-top: 15px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+  }
 
-
-*{
-    box-sizing: border-box;
+.banner {
+  position: sticky; 
+  top: 0; 
+  z-index: 1000; 
+  height: auto; 
+  width: 100%; 
+  overflow: hidden;
 }

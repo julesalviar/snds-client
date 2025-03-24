@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root' // Ensures that the service is provided at the root level
+  providedIn: 'root' 
 })
 export class UserService {
   private registeredUser: { email: string; password: string } | null = null;
