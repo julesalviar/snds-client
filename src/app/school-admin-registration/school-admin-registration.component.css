@@ -13,9 +13,8 @@
     font-size: 24px;
     color: yellow;
     background-color: #569b58;
-  /*padding-bottom: 20px;*/
     margin-bottom: 15px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 mat-card-content {
     padding: 16px; 
