@@ -9,7 +9,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatIconModule } from '@angular/material/icon';
 
+// Password match validator function
 export function passwordMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
@@ -34,13 +36,14 @@ export function passwordMatchValidator(): ValidatorFn {
     MatButtonModule,
     MatCardModule,
     MatRadioModule,
+    MatIconModule,
   ]
 })
 export class RegistrationComponent {
   registrationForm: FormGroup;
   isSuccess: boolean = false;
   availableOptions: string[] = []; 
-  sectors = [ 
+  sectors = [
     { 
       category: 'Private Sector', 
       options: [
@@ -84,11 +87,16 @@ export class RegistrationComponent {
         'International Non-Government Organization',
       ]
     }
-
-
-   ];
+  ];
+  
+  // Default password
+  isPasswordDisabled: boolean = false;
+  defaultPassword: string = '123456';
+  showPassword: boolean = false;
+  showConfirmPassword: boolean = false;
 
   constructor(private formBuilder: FormBuilder, private router: Router) {
+    // Initialize the registration form with validations
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
       sector: ['', Validators.required],
@@ -96,25 +104,27 @@ export class RegistrationComponent {
       contactNumber: ['', Validators.required],
       address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
+      password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
+      confirmPassword: [this.defaultPassword, Validators.required],
     }, { validators: passwordMatchValidator() });
   }
-  //for selection from category
+
+  // For selection from category
   onCategoryChange(category: string) {
     const selectedSector = this.sectors.find(sector => sector.category === category);
     this.availableOptions = selectedSector ? selectedSector.options : [];
-    this.registrationForm.get('selectedOption')?.setValue('');
+    this.registrationForm.get('selectedOption')?.setValue(''); // Reset the selected option
   }
 
   onSubmit() {
+    // Validate the form
     if (this.registrationForm.valid) {
-      console.log('Form Submitted!', this.registrationForm.value); //for  testing lang if working
-      this.isSuccess = true; // Indicate success
+      console.log('Form Submitted!', this.registrationForm.value); 
+      this.isSuccess = true; 
       this.registrationForm.reset(); 
       this.router.navigate(['/sign-in']); // Navigate to sign-in after successful registration
     } else {
-      this.registrationForm.markAllAsTouched(); // Highlight validation errors
+      this.registrationForm.markAllAsTouched(); 
       this.isSuccess = false; 
       if (this.registrationForm.errors?.['mismatch']) {
         this.showDialog('Passwords do not match.');

@@ -1,0 +1,146 @@
+nav {
+  background-color: rgba(245, 245, 245, 0.633); 
+  padding: 0.4rem; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+  margin: 0;
+  position: relative;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; /* Vertically center the items */
+}
+
+nav ul {
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+  display: flex; 
+  flex-wrap: wrap;
+}
+
+nav li {
+  margin: 0 .5rem; 
+}
+
+nav a {
+  text-decoration: none; 
+  color: #2e7d32;
+  font-size: 1rem;
+  padding: 0.5rem 0.5rem; 
+  transition: background-color 0.3s ease, transform 0.3s ease; 
+  border-radius: 4px; 
+}
+
+nav a:hover {
+  background-color: rgba(46, 125, 50, 0.3);
+  transform: translateY(-2px); 
+}
+
+/* Dropdown menu styles */
+nav ul ul {
+  display: none;
+  position: absolute; 
+  background-color: #ffffff; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+  margin-top: 0.5rem; 
+  z-index: 10; 
+}
+
+nav li:hover > ul {
+  display: block; 
+}
+
+/* Style for dropdown links */
+nav ul ul li {
+  margin: 0; 
+}
+
+/* Style for dropdown links */
+nav ul ul a {
+  color: #333; 
+  padding: 0.5rem 1rem; 
+}
+
+/* Hover effect for dropdown links */
+nav ul ul a:hover {
+  background-color: rgba(171, 243, 171, 0.46); 
+}
+
+/* Profile section styles */
+.profile-container {
+  margin-left: auto; 
+  display: flex;
+  align-items: center;
+}
+
+.profile {
+  display: flex;                       
+  align-items: center;
+  text-decoration: none; 
+}
+
+.profile mat-icon {
+  margin-right: 0px; 
+  font-size: 24px;
+  text-decoration: none;                    
+}
+
+.profile a li {
+  text-decoration: none;             
+  color: inherit;                     
+  font-size: 16px;                
+  margin-left: 5px; 
+}
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  
+  nav ul {
+    flex-direction: column; 
+    padding: 0.5rem; 
+  }
+
+  nav li {
+    margin: 0.3rem 0; 
+    width: 100%; 
+  }
+
+  nav a {
+    width: 100%; 
+    text-align: center; 
+    padding: 1rem; 
+    font-size: 0.6rem; 
+  }
+
+  .profile-container {
+    margin-left: 0; 
+    margin-top: 1rem; 
+  }
+
+  .profile mat-icon {
+    margin-top: 10px;
+    margin-left: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  nav a {
+    font-size: 0.9rem; 
+  }
+
+  .profile-container {
+    margin-left: 0; 
+  }
+
+  .profile mat-icon {
+    margin-right: 0px; 
+    margin-left: 5px;
+    font-size: 24px;                   
+  }
+}

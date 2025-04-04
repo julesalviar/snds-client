@@ -60,25 +60,19 @@
 
           <mat-form-field appearance="fill">
             <mat-label>Password</mat-label>
-            <input matInput type="password" formControlName="password" required>
+            <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" required>
+            <button mat-icon-button matSuffix (click)="showPassword = !showPassword">
+              <mat-icon>{{ showPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
             <mat-error *ngIf="registrationForm.get('password')?.hasError('required') && registrationForm.get('password')?.touched">
               Password is required.
             </mat-error>
             <mat-error *ngIf="registrationForm.get('password')?.hasError('minlength') && registrationForm.get('password')?.touched">
               Password must be at least 6 characters long.
             </mat-error>
+            <mat-hint>Use this default Password to log in (123456), you can change it anytime.</mat-hint>
           </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Confirm Password</mat-label>
-            <input matInput type="password" formControlName="confirmPassword" required>
-            <mat-error *ngIf="registrationForm.get('confirmPassword')?.hasError('required') && registrationForm.get('confirmPassword')?.touched">
-              Confirm Password is required.
-            </mat-error>
-            <mat-error *ngIf="registrationForm.errors?.['mismatch'] && registrationForm.get('confirmPassword')?.touched">
-              Passwords do not match.
-            </mat-error>
-          </mat-form-field>
           
           <button mat-raised-button class="custom-register" type="submit">Submit</button>
         </form>

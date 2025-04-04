@@ -1,0 +1,86 @@
+<div class="left-nav">
+<nav>
+  <ul class="nav-list" id="nav-list">
+    <li><a routerLink="/home">Home</a></li>
+
+    <!-- Stakeholder Menus -->
+    <ng-container *ngIf="userRole === 'stakeholder'">
+      <li>
+        <span>Find School</span>
+        <ul>
+          <li><a routerLink="/stakeholder/all-schools">All</a></li>
+          <li><a routerLink="/stakeholder/schools-by-district">By District</a></li>
+        </ul>
+      </li>
+      <li><a routerLink="/stakeholder/about-us">About Us</a></li>
+      <li><a routerLink="/stakeholder/my-contribution">My Contribution</a></li>
+      <li><a routerLink="/stakeholder/generated-resources">Generated Resources</a></li>
+      <li>
+        <span>Support</span>
+        <ul>
+          <li><a routerLink="/stakeholder/partners-support">Partners Support</a></li>
+        </ul>
+      </li>
+    </ng-container>
+
+    <!-- School Admin Menus -->
+    <ng-container *ngIf="userRole === 'schoolAdmin'">
+      <li>
+        <span>School Needs</span>
+        <ul>
+          <li><a routerLink="/school-admin/list-of-needs">List of School Needs</a></li>
+          <li><a routerLink="/school-admin/senior-high-school">Senior High School</a></li>
+        </ul>
+      </li>
+      <li><a routerLink="/school-admin/aip">AIP</a></li>
+      <li><a routerLink="/school-admin/dpds">DPDS</a></li>
+      <li><a routerLink="/school-admin/quick-count">Quick Count</a></li>
+      <li>
+        <span>Support</span>
+        <ul>
+          <li><a routerLink="/school-admin/spfp">SPFP</a></li>
+          <li><a routerLink="/school-admin/partnership">Partnership</a></li>
+        </ul>
+      </li>
+      <li><a routerLink="/school-admin/reports">Reports</a></li>
+      <li><a routerLink="/school-admin/about-us">About Us</a></li>
+    </ng-container>
+
+    <!-- Division Admin Menus -->
+    <ng-container *ngIf="userRole === 'divisionAdmin'">
+      <li>
+        <span>Find a School</span>
+        <ul>
+          <li><a routerLink="/division-admin/all-schools">All</a></li>
+          <li><a routerLink="/division-admin/schools-by-district">By District</a></li>
+        </ul>
+      </li>
+      <li><a routerLink="/division-admin/about-us">About Us</a></li>
+      <li>
+        <span>Support</span>
+        <ul>
+          <li><a routerLink="/division-admin/partners-support">Partner Support</a></li>
+        </ul>
+      </li>
+      <li><a routerLink="/division-admin/reports">Reports</a></li>
+      <li>
+        <span>Administration</span>
+        <ul>
+          <li><a routerLink="/division-admin/add-district">Add District</a></li>
+          <li><a routerLink="/division-admin/manage-users">Manage Users</a></li>
+          <li><a routerLink="/division-admin/permission-levels">Permission Levels</a></li>
+          <li><a routerLink="/division-admin/open-registration">Open Registration</a></li>
+          <li><a routerLink="/division-admin/close-registration">Close Registration</a></li>
+          <li><a routerLink="/division-admin/partnership-link">Create Partnership Link</a></li>
+        </ul>
+      </li>
+    </ng-container>
+  </ul>
+
+    <!-- Profile section -->
+    <div class="profile">
+      <mat-icon>account_circle</mat-icon>
+      <a routerLink="/profile">Profile</a>
+      <a routerLink="/sign-in">Logout</a>
+    </div>
+</nav>

@@ -6,9 +6,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
-import { UserService } from '../UserService';
+import { UserService } from '../services/UserService';
 import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog.component'; 
 import { MatDialog } from '@angular/material/dialog';
+
 
 @Component({
   selector: 'app-sign-in',

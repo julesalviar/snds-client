@@ -26,6 +26,7 @@ import { MatCardModule } from '@angular/material/card';
 export class SchoolAdminRegistrationComponent {
   registrationForm: FormGroup;
   passwordMismatch: boolean = false; 
+  defaultPassword: string = '123456'; // Default password
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.registrationForm = this.fb.group({
@@ -39,18 +40,18 @@ export class SchoolAdminRegistrationComponent {
       designation: this.fb.control('', Validators.required),
       contactNumber: this.fb.control('', Validators.required),
       officialEmail: this.fb.control('', [Validators.required, Validators.email]),
-      password: this.fb.control('', [Validators.required, Validators.minLength(6)]),
-      confirmPassword: this.fb.control('', Validators.required),
+      password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
+      confirmPassword: [this.defaultPassword, Validators.required],
     }, { validators: this.passwordMatchValidator }); 
   }
 
   // Custom validator for password matching
-    passwordMatchValidator(form: FormGroup): ValidationErrors | null {
+  passwordMatchValidator(form: FormGroup): ValidationErrors | null {
     return form.get('password')?.value === form.get('confirmPassword')?.value 
       ? null : { mismatch: true };
   }
 
-    onSubmit() {
+  onSubmit() {
     this.passwordMismatch = false; 
     if (this.registrationForm.valid) {
       const registrationData = this.registrationForm.value;
