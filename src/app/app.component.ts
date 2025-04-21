@@ -3,11 +3,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NavigationComponent } from './navigation/navigation.component';
 import { CommonModule } from '@angular/common'; 
+import { MatTreeModule } from '@angular/material/tree';
+import { MatBadgeModule } from '@angular/material/badge'; 
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent], 
+  imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent, MatTreeModule, MatBadgeModule  ], 
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })

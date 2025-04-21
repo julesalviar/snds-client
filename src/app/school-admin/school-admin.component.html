@@ -1,1 +1,129 @@
-<p>school-admin works!</p>
+<div class="container">
+  <div class="form-container">
+    <mat-card-title>Enter School Needs</mat-card-title>
+    <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
+      <p>Contribution Type: {{ selectedContribution?.name }}</p>
+      <p>Specific Contribution: {{ schoolNeedsForm.get('specificContribution')?.value }}</p>
+
+      <mat-form-field appearance="fill">
+        <mat-label>School Year for the Project</mat-label>
+        <input matInput formControlName="schoolYear">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Select Project Name</mat-label>
+        <mat-select formControlName="projectName">
+          <mat-option *ngFor="let project of aipProjects" [value]="project">{{ project }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Intermediate Outcome (Pillars)</mat-label>
+        <mat-select formControlName="intermediateOutcome">
+          <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Quantity Needed</mat-label>
+        <input matInput formControlName="quantityNeeded" type="number">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Unit(Box,pieces,sack,roll etc.)</mat-label>
+        <input matInput formControlName="unit">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Estimated Cost</mat-label>
+        <input matInput formControlName="estimatedCost" type="number">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>No. of Beneficiary Students</mat-label>
+        <input matInput formControlName="beneficiaryStudents" type="number">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>No. of Beneficiary Personnel</mat-label>
+        <input matInput formControlName="beneficiaryPersonnel" type="number">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Target Date of Implementation</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="targetDate">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Description / Other Info</mat-label>
+        <textarea matInput formControlName="description"></textarea>
+      </mat-form-field>
+
+      <button mat-raised-button type="button" (click)="uploadPictures()">
+        <mat-icon>upload</mat-icon> UPLOAD PICTURES
+      </button>
+      <button mat-raised-button type="button" (click)="save()">
+        <mat-icon>save</mat-icon> SAVE
+      </button>
+    </form>
+  </div>
+
+  <div class="table-container">
+    <mat-card-title>List of School Needs</mat-card-title>
+    <div class="query-section">
+      <mat-form-field appearance="fill">
+        <mat-label>Select School Year</mat-label>
+        <mat-select [(value)]="selectedSchoolYear">
+          <mat-option *ngFor="let year of schoolYears" [value]="year">{{ year }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button class="query-button" (click)="queryData()">Query</button>
+    </div>
+    <table mat-table [dataSource]="schoolNeeds" class="mat-elevation-z8">
+      <ng-container matColumnDef="contributionType">
+        <th mat-header-cell *matHeaderCellDef> Contribution Type </th>
+        <td mat-cell *matCellDef="let need"> {{ need.contributionType }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="specificContribution">
+        <th mat-header-cell *matHeaderCellDef> Specific Contribution </th>
+        <td mat-cell *matCellDef="let need"> {{ need.specificContribution }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="projectName">
+        <th mat-header-cell *matHeaderCellDef> Project Name </th>
+        <td mat-cell *matCellDef="let need"> {{ need.projectName }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="quantityNeeded">
+        <th mat-header-cell *matHeaderCellDef> Quantity Needed </th>
+        <td mat-cell *matCellDef="let need"> {{ need.quantityNeeded }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="estimatedCost">
+        <th mat-header-cell *matHeaderCellDef> Estimated Cost </th>
+        <td mat-cell *matCellDef="let need"> {{ need.estimatedCost | currency }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="targetDate">
+        <th mat-header-cell *matHeaderCellDef> Target Date </th>
+        <td mat-cell *matCellDef="let need"> {{ need.targetDate | date:'shortDate' }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let need">
+          <div class="button-group">
+            <button mat-button (click)="viewResponses(need)">Responses</button>
+            <button mat-button (click)="editNeed(need)">Edit</button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,160 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%; 
+  height:auto; 
+  background-color: #ffffff8c;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  box-sizing: border-box; 
+}
+.form-container {
+  flex: 1; 
+  margin-right: 20px;
+  border: 1px solid green; 
+  max-width: 400px; 
+  background-color: #f9f9f9; 
+  padding: 15px; 
+  border-radius: 4px; 
+}
+
+.table-container {
+  flex: 1; 
+  border: 1px solid green; 
+  overflow-x: auto; 
+  background-color: #f9f9f9; 
+  padding: 15px; 
+  border-radius: 4px; 
+}
+
+/* Header */
+mat-card-title {
+  margin-bottom: 20px;
+  font-size: 22px;
+  color: #45a049;
+}
+p{
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+/* Form Fields */
+mat-form-field {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+mat-form-field .mat-label {
+  color: #007bff;
+}
+
+mat-form-field .mat-select, 
+mat-form-field .mat-input {
+  border-radius: 4px;
+}
+.query-section {
+  display: flex;
+  flex-direction: column; 
+  margin-bottom: 0; 
+  margin-top: 10px;
+}
+.query-section mat-form-field {
+  width: 50%;
+  display: flex;
+  margin-right: 10px;   
+}
+
+.query-button {
+  width: 100px; 
+  margin-bottom: 30px;  
+}
+
+/* Buttons */
+button {
+  color: green !important;
+  font-weight: bold;
+  width: 80%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: rgba(0, 128, 0, 0.542);
+  color: #ffffff !important;
+
+}
+.button-group {
+  display: flex;
+  gap: 5px; 
+}
+
+/* Table Styles */
+table {
+  width: 100%; 
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th.mat-header-cell {
+  background-color: #007bff;
+  color: #ffffff;
+  padding: 12px;
+}
+
+td.mat-cell {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+  background-color: #e4a0a089;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+  }
+
+  button {
+    padding: 10px;
+  }
+
+  mat-form-field {
+    margin-bottom: 15px;
+  }
+}
+@media (min-width: 600px) {
+  .query-section {
+    flex-direction: row; 
+  }
+
+  .query-section mat-form-field {
+    margin-right: 10px; 
+    flex: 1; 
+    min-width: 200px; 
+  }
+
+  .query-button {
+    width: auto; 
+    min-width: 100px; 
+  }
+}
+
+@media (max-width: 599px) {
+  .container {
+    flex-direction: column; 
+  }
+  .query-section mat-form-field,
+  .query-button {
+    width: 100%; 
+  }
+
+  .query-section mat-form-field {
+    min-width: 0;
+  }
+}

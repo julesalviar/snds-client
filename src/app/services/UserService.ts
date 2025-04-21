@@ -4,16 +4,20 @@ import { Injectable } from '@angular/core';
   providedIn: 'root' 
 })
 export class UserService {
-  private registeredUser: { email: string; password: string } | null = null;
-  
- 
+  private registeredUser: { name: string; email: string; password: string } | null = null;
 
-  register(email: string, password: string) {
-    this.registeredUser = { email, password };
+  constructor() {}
+
+  register(name: string, email: string, password: string) {
+    this.registeredUser = { name, email, password };
     console.log('User registered:', this.registeredUser);
   }
- 
+
   getRegisteredUser() {
     return this.registeredUser;
+  }
+
+  getUserName(): string {
+    return this.registeredUser ? this.registeredUser.name : '';
   }
 }

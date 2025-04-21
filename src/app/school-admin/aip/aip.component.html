@@ -1,0 +1,141 @@
+<div class="container">
+  <div class="form-container">
+<mat-card class="form-card">
+  <mat-card-title>Enter AIP Project Information</mat-card-title>
+  <mat-card-content>
+    <form [formGroup]="aipForm" (ngSubmit)="onSubmit()">
+      
+      <mat-form-field appearance="fill">
+        <mat-label>School Year for the Project</mat-label>
+        <input matInput formControlName="schoolYear" [attr.disabled]="true"> 
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Enter Project Title</mat-label>
+        <input matInput formControlName="projectTitle">
+        <mat-error *ngIf="aipForm.get('projectTitle')?.invalid && (aipForm.get('projectTitle')?.touched || aipForm.get('projectTitle')?.dirty)">
+          Project Title is required.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Objectives of the Project<br> (max 500 words)</mat-label>
+        <textarea matInput formControlName="objectives" rows="5"></textarea>
+        <mat-error *ngIf="aipForm.get('objectives')?.invalid && (aipForm.get('objectives')?.touched || aipForm.get('objectives')?.dirty)">
+          Objectives are required and must be less than 500 words.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Intermediate Outcome (Pillars)</mat-label>
+        <mat-select formControlName="intermediateOutcome">
+          <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="aipForm.get('intermediateOutcome')?.invalid && (aipForm.get('intermediateOutcome')?.touched || aipForm.get('intermediateOutcome')?.dirty)">
+          Please select an intermediate outcome pillar.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Persons Responsible</mat-label>
+        <input matInput formControlName="personsResponsible">
+        <mat-error *ngIf="aipForm.get('personsResponsible')?.invalid && (aipForm.get('personsResponsible')?.touched || aipForm.get('personsResponsible')?.dirty)">
+          This field is required.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Materials Needed</mat-label>
+        <input matInput formControlName="materialsNeeded">
+        <mat-error *ngIf="aipForm.get('materialsNeeded')?.invalid && (aipForm.get('materialsNeeded')?.touched || aipForm.get('materialsNeeded')?.dirty)">
+          This field is required.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Total Budget</mat-label>
+        <input matInput formControlName="totalBudget" type="number">
+        <mat-error *ngIf="aipForm.get('totalBudget')?.invalid && (aipForm.get('totalBudget')?.touched || aipForm.get('totalBudget')?.dirty)">
+          Please enter a valid budget amount.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Budget Source</mat-label>
+        <input matInput formControlName="budgetSource">
+        <mat-error *ngIf="aipForm.get('budgetSource')?.invalid && (aipForm.get('budgetSource')?.touched || aipForm.get('budgetSource')?.dirty)">
+          This field is required.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option *ngFor="let status of statuses" [value]="status">{{ status }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="aipForm.get('status')?.invalid && (aipForm.get('status')?.touched || aipForm.get('status')?.dirty)">
+          Please select a status.
+        </mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button  color="primary" type="submit " class="submit-button">Save</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+</div>
+
+<div class="table-container">
+  <mat-card class="table-card">
+    <mat-card-title>AIP Projects List</mat-card-title>
+    <mat-card-content>
+      <div class="table-scroll"> 
+        <mat-table [dataSource]="projects" class="mat-elevation-z8">
+          <!-- APN Column -->
+          <ng-container matColumnDef="apn">
+            <mat-header-cell *matHeaderCellDef> APN </mat-header-cell>
+            <mat-cell *matCellDef="let project"> {{ project.apn }} </mat-cell>
+          </ng-container>
+          <!-- Project Title Column -->
+          <ng-container matColumnDef="projectTitle">
+            <mat-header-cell *matHeaderCellDef> Project Title </mat-header-cell>
+            <mat-cell *matCellDef="let project"> {{ project.projectTitle }} </mat-cell>
+          </ng-container>
+          <!-- Budget Column -->
+          <ng-container matColumnDef="totalBudget">
+            <mat-header-cell *matHeaderCellDef> Budget </mat-header-cell>
+            <mat-cell *matCellDef="let project"> {{ project.totalBudget | currency: 'PHP' }} </mat-cell>
+          </ng-container>
+          <!-- School Year Column -->
+          <ng-container matColumnDef="schoolYear">
+            <mat-header-cell *matHeaderCellDef> Year </mat-header-cell>
+            <mat-cell *matCellDef="let project"> {{ project.schoolYear }} </mat-cell>
+          </ng-container>
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
+            <mat-cell *matCellDef="let project"> {{ project.status }} </mat-cell>
+          </ng-container>
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+            <mat-cell *matCellDef="let project">
+              <button mat-icon-button (click)="viewProject(project)" matTooltip="View the project details">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button (click)="editProject(project)" matTooltip="Edit this project">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button class="delete-button" (click)="deleteProject(project)" matTooltip="Delete this project">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></mat-row>
+
+        </mat-table>
+      </div> 
+    </mat-card-content>
+  </mat-card>
+</div>

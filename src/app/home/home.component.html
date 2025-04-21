@@ -1,1 +1,43 @@
-<p>home works!</p>
+
+<div class="container">
+  <div class="tree-section">
+    <h2>Welcome, {{ userName }}</h2>
+    <div class="second-message">
+      <p>All the needs of our schools are given in the menu categories below.</p>
+    </div>
+    <h2>Menu of Education Investment</h2>
+    <ul>
+      <li *ngFor="let node of treeData">
+        <div (click)="toggleChildren(node)" style="cursor: pointer;">
+          {{ node.name }}
+          <span *ngIf="node.children && node.children.length > 0"> 
+            {{ node.expanded ? '[-]' : '[+]' }} 
+          </span>
+        </div>
+        <ul *ngIf="node.expanded">
+          <li *ngFor="let child of node.children" style="list-style-type: none;">
+            <span (click)="onChildClick(child)" style="cursor: pointer;">
+              {{ child.name }}
+              <span *ngIf="child.count">
+                <span matBadge="{{ child.count }}" matBadgeColor="primary" matBadgeOverlap="false"></span> 
+              </span>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="text-section">
+    <h2>SENIOR HIGH SCHOOL LOOKING FOR WORK IMMERSION VENUE & WORK</h2>
+    <p>We are looking for industry partners who can provide our graduating students and Senior High School graduates with:</p>
+    <ul>
+      <li>-Work immersion venue</li>
+      <li>-Work</li>
+    </ul>
+    <p>We have numerous skilled Senior High School graduates and graduating students waiting for your call.</p>
+    <div class="image-section" style="text-align: center; margin-top: 20px;">
+      <img src="/assets/senior-hi.jpg" alt="Clickable Image" (click)="onImageClick()" style="cursor: pointer; width: 350px; height: auto;" />
+    </div>
+  </div>
+</div>

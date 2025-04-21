@@ -7,6 +7,8 @@ import { StakeholdersComponent } from './stakeholders/stakeholders.component';
 import { SchoolAdminComponent } from './school-admin/school-admin.component'; 
 import { DivisionAdminComponent } from './division-admin/division-admin.component'; 
 import { ReportsComponent } from './reports/reports.component'; 
+import { AipComponent } from './school-admin/aip/aip.component';
+
 
 export const routes: Routes = [
   { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
@@ -16,6 +18,7 @@ export const routes: Routes = [
  { path: 'home', component: HomeComponent },
   
   // Stakeholder routes
+  { path: 'stakeholders',component: StakeholdersComponent},
   { path: 'stakeholder/all-schools', component: StakeholdersComponent },
   { path: 'stakeholder/schools-by-district', component: StakeholdersComponent }, 
   { path: 'stakeholder/my-contribution', component: StakeholdersComponent }, 
@@ -24,9 +27,10 @@ export const routes: Routes = [
   { path: 'stakeholder/partners-support', component: StakeholdersComponent }, 
 
   // School Admin routes
+  { path: 'school-admin', component: SchoolAdminComponent },
   { path: 'school-admin/list-of-needs', component: SchoolAdminComponent }, 
   { path: 'school-admin/senior-high-school', component: SchoolAdminComponent }, 
-  { path: 'school-admin/aip', component: SchoolAdminComponent }, 
+  { path: 'school-admin/aip', component: AipComponent }, 
   { path: 'school-admin/dpds', component: SchoolAdminComponent }, 
   { path: 'school-admin/quick-count', component: SchoolAdminComponent }, 
   { path: 'school-admin/spfp', component: SchoolAdminComponent }, 
@@ -35,6 +39,7 @@ export const routes: Routes = [
   { path: 'school-admin/about-us', component: SchoolAdminComponent },
 
   // Division Admin routes
+  { path: 'division-admin', component: DivisionAdminComponent},
   { path: 'division-admin/all-schools', component: DivisionAdminComponent }, 
   { path: 'division-admin/schools-by-district', component: DivisionAdminComponent }, 
   { path: 'division-admin/about-us', component: DivisionAdminComponent }, 

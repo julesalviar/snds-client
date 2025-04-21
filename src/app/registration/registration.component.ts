@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
+import { UserService } from '../services/user.service';
 
 // Password match validator function
 export function passwordMatchValidator(): ValidatorFn {
@@ -41,6 +42,7 @@ export function passwordMatchValidator(): ValidatorFn {
 })
 export class RegistrationComponent {
   registrationForm: FormGroup;
+  passwordMismatch: boolean = false;
   isSuccess: boolean = false;
   availableOptions: string[] = []; 
   sectors = [
@@ -95,7 +97,7 @@ export class RegistrationComponent {
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
 
-  constructor(private formBuilder: FormBuilder, private router: Router) {
+  constructor(private formBuilder: FormBuilder, private router: Router, private userService: UserService) {
     // Initialize the registration form with validations
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
@@ -109,6 +111,8 @@ export class RegistrationComponent {
     }, { validators: passwordMatchValidator() });
   }
 
+  
+
   // For selection from category
   onCategoryChange(category: string) {
     const selectedSector = this.sectors.find(sector => sector.category === category);
@@ -117,22 +121,26 @@ export class RegistrationComponent {
   }
 
   onSubmit() {
-    // Validate the form
-    if (this.registrationForm.valid) {
-      console.log('Form Submitted!', this.registrationForm.value); 
-      this.isSuccess = true; 
-      this.registrationForm.reset(); 
-      this.router.navigate(['/sign-in']); // Navigate to sign-in after successful registration
-    } else {
-      this.registrationForm.markAllAsTouched(); 
-      this.isSuccess = false; 
-      if (this.registrationForm.errors?.['mismatch']) {
-        this.showDialog('Passwords do not match.');
-      }
-    }
-  }
+    this.passwordMismatch = false; // Reset password mismatch flag
 
-  showDialog(message: string) {
-    alert(message); 
+    // Check if passwords match
+    if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
+      this.passwordMismatch = true;
+      console.log('Passwords do not match.');
+    } else if (this.registrationForm.valid) {
+      const registrationData = this.registrationForm.value;
+
+      
+      this.userService.register(
+        registrationData.name,
+        registrationData.email,
+        registrationData.password
+      );
+
+      console.log('Form submitted', registrationData);
+      this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
+    } else {
+      console.log('Form is invalid', this.registrationForm.errors);
+    }
   }
 }

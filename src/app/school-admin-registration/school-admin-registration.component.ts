@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -28,7 +29,7 @@ export class SchoolAdminRegistrationComponent {
   passwordMismatch: boolean = false; 
   defaultPassword: string = '123456'; // Default password
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private userService: UserService) {
     this.registrationForm = this.fb.group({
       region: this.fb.control('', Validators.required),
       division: this.fb.control('', Validators.required),
@@ -52,16 +53,25 @@ export class SchoolAdminRegistrationComponent {
   }
 
   onSubmit() {
-    this.passwordMismatch = false; 
-    if (this.registrationForm.valid) {
+    this.passwordMismatch = false; // Reset password mismatch flag
+
+    // Check if passwords match
+    if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
+      this.passwordMismatch = true;
+      console.log('Passwords do not match.');
+    } else if (this.registrationForm.valid) {
       const registrationData = this.registrationForm.value;
+
+      
+      this.userService.register(
+        registrationData.name,
+        registrationData.email,
+        registrationData.password,
+      );
+
       console.log('Form submitted', registrationData);
-      // Navigate to sign-in page or perform other actions
-      this.router.navigate(['/sign-in']); 
+      this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
     } else {
-      if (this.registrationForm.hasError('mismatch')) {
-        this.passwordMismatch = true; 
-      }
       console.log('Form is invalid', this.registrationForm.errors);
     }
   }

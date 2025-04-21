@@ -1,0 +1,34 @@
+.container {
+    padding: 20px;
+    border: 2px solid green;
+    border-radius: 5px;
+  }
+
+  mat-card-title{
+    font-size: 18px;
+    color: green;
+  }
+  .project-details {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+  }
+  
+  .project-details li {
+    margin: 10px 0; /* Add spacing between items */
+    font-size: 16px; 
+  }
+  
+  .close-button {
+    width: 50%;
+    border: none;
+    margin-top: 20px;
+    background-color: #4caf50; 
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .close-button:hover {
+    background-color: #14ea1f; 
+    font-weight: bold;
+  }

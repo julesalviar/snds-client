@@ -1,0 +1,21 @@
+
+<div class="container">
+  <mat-card class="form-card">
+    <mat-card-title>AIP Project Information</mat-card-title>
+    <mat-card-content>
+      <ul class="project-details">
+        <li><strong>APN:</strong> {{ data.apn }}</li>
+        <li><strong>School Year for the Project:</strong> {{ data.schoolYear }}</li>
+        <li><strong>Project Title:</strong> {{ data.projectTitle }}</li>
+        <li><strong>Objectives of the Project:</strong> {{ data.objectives }}</li>
+        <li><strong>Intermediate Outcome (Pillars):</strong> {{ data.intermediateOutcome }}</li>
+        <li><strong>Persons Responsible:</strong> {{ data.personsResponsible }}</li>
+        <li><strong>Materials Needed:</strong> {{ data.materialsNeeded }}</li>
+        <li><strong>Total Budget:</strong> {{ data.totalBudget | currency: 'PHP' }}</li>
+        <li><strong>Budget Source:</strong> {{ data.budgetSource }}</li>
+        <li><strong>Status:</strong> {{ data.status }}</li>
+      </ul>
+      <button mat-button (click)="onClose()" class="close-button">Close</button>
+    </mat-card-content>
+  </mat-card>
+</div>
