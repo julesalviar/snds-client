@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class UserService {
+
   private userRole: string = 'schoolAdmin'; // Example role
   private registeredUser: { name: string; email: string; password: string } | null = null;
 
@@ -21,6 +22,9 @@ export class UserService {
   getRegisteredUser() {
     return this.registeredUser;
   }
+
+
+  private userRole: string = 'schoolAdmin'; // Example: Change this to test different roles (stakeholder, divisionAdmin or schoolAdmin)
 
   getRole() {
     return this.userRole;
