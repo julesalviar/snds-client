@@ -4,8 +4,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class UserService {
-  private userRole: string = 'schoolAdmin'; // Example role
-  private registeredUser: { name: string; email: string; password: string } | null = null;
+  private userRole: string = 'schoolAdmin'; // Example role schoolAdmin, divisionAdmin,stakeholder
+  private registeredUser: { name: string; email: string; password: string} | null = null;
 
   constructor() {}
 

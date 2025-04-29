@@ -1,0 +1,59 @@
+<div class="container">
+  <mat-card class="engage-card">
+    <mat-card-title>Engagement Details</mat-card-title>
+    <mat-card-content>
+      <p *ngIf="needCode">Engaging with need code: <strong>{{ needCode }}</strong></p> 
+      <form>
+        <mat-form-field appearance="fill">
+          <mat-label>Type the name of the stakeholder to engage</mat-label>
+          <input matInput [(ngModel)]="stakeholderName" name="stakeholderName" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Date of MOA signing</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="moaDate" name="moaDate" required>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Quantity Donated Amount</mat-label>
+          <input matInput type="number" [(ngModel)]="quantityDonated" name="quantityDonated" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Unit (pieces, sacks, roll, etc..)</mat-label>
+          <input matInput [(ngModel)]="unit" name="unit" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Amount contribution or appraised value of item (do not put commas)</mat-label>
+          <input matInput type="number" [(ngModel)]="amount" name="amount" required>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="implementation-card">
+    <mat-card-title>Period of Implementation</mat-card-title>
+    <mat-card-content>
+      <form>
+        <mat-form-field appearance="fill">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" name="startDate" required>
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" name="endDate" required>
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="saveEngagement()">Engage</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -9,17 +9,18 @@
     color: green;
   }
   .project-details {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0; /* Remove padding */
+    list-style-type: none; 
+    padding: 0;
   }
   
   .project-details li {
-    margin: 10px 0; /* Add spacing between items */
+    margin: 10px 0; 
     font-size: 16px; 
   }
   
   .close-button {
     width: 50%;
+    height: 30px;
     border: none;
     margin-top: 20px;
     background-color: #4caf50; 

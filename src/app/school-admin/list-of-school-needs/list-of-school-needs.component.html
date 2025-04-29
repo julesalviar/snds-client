@@ -1,0 +1,85 @@
+<div class="header">
+  <mat-icon class="school-icon">school</mat-icon>
+  <span class="school-name">{{ schoolName }}</span>
+  <button mat-raised-button color="primary" class="download-button">Download School Profile</button>
+</div>
+
+<mat-card>
+  <mat-card-title class="title">Schools' Needs</mat-card-title>
+  <div class="table-container">
+    <table mat-table [dataSource]="schoolNeeds" class="mat-elevation-z8">
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef> Code </th>
+        <td mat-cell *matCellDef="let need"> {{ need.code }} 
+          <mat-icon *ngIf="need.engaged">handshake</mat-icon>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="year">
+        <th mat-header-cell *matHeaderCellDef> Year </th>
+        <td mat-cell *matCellDef="let need"> {{ need.year }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="specificContribution">
+        <th mat-header-cell *matHeaderCellDef> Specific Contribution </th>
+        <td mat-cell *matCellDef="let need"> {{ need.specificContribution }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef> Quantity </th>
+        <td mat-cell *matCellDef="let need"> {{ need.quantity }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef> Amount </th>
+        <td mat-cell *matCellDef="let need"> {{ need.amount | currency }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="beneficiaryStudents">
+        <th mat-header-cell *matHeaderCellDef> No. of Beneficiary Students </th>
+        <td mat-cell *matCellDef="let need"> {{ need.beneficiaryStudents }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="beneficiaryPersonnel">
+        <th mat-header-cell *matHeaderCellDef> No. of Beneficiary Personnel </th>
+        <td mat-cell *matCellDef="let need"> {{ need.beneficiaryPersonnel }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="implementationStatus">
+        <th mat-header-cell *matHeaderCellDef> Status of Implementation </th>
+        <td mat-cell *matCellDef="let need"> {{ need.implementationStatus }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let need">
+          <button mat-icon-button (click)="navigateToEngage(need.code)" matTooltip="Engage">
+            <mat-icon>person</mat-icon>
+          </button>
+          <button mat-icon-button (click)="progress(need)" matTooltip="Status">
+            <mat-icon>bar_chart</mat-icon>
+          </button>
+          <span *ngIf="need.implementationStatus" style="margin-left: 4px; font-size: 10px;">
+            {{ need.implementationStatus }}
+          </span>
+          <button class="ellipsis-button" mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="More Actions">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #actionMenu="matMenu">
+            <button mat-menu-item (click)="view(need)">
+              <mat-icon>visibility</mat-icon> View
+            </button>
+            <button mat-menu-item (click)="edit(need)">
+              <mat-icon>edit</mat-icon> Edit
+            </button>
+            <button mat-menu-item (click)="delete(need)">
+              <mat-icon>delete</mat-icon> Delete
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</mat-card>

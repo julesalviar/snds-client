@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { UserService } from '../services/user.service';
+import { SharedDataService } from '../services/shared-data.service';
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -29,7 +30,7 @@ export class SchoolAdminRegistrationComponent {
   passwordMismatch: boolean = false; 
   defaultPassword: string = '123456'; // Default password
 
-  constructor(private fb: FormBuilder, private router: Router, private userService: UserService) {
+  constructor(private fb: FormBuilder, private router: Router, private userService: UserService, private sharedDataService: SharedDataService) {
     this.registrationForm = this.fb.group({
       region: this.fb.control('', Validators.required),
       division: this.fb.control('', Validators.required),
@@ -43,7 +44,7 @@ export class SchoolAdminRegistrationComponent {
       officialEmail: this.fb.control('', [Validators.required, Validators.email]),
       password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
       confirmPassword: [this.defaultPassword, Validators.required],
-    }, { validators: this.passwordMatchValidator }); 
+    }, { validators: this.passwordMatchValidator });
   }
 
   // Custom validator for password matching
@@ -54,6 +55,9 @@ export class SchoolAdminRegistrationComponent {
 
   onSubmit() {
     this.passwordMismatch = false; // Reset password mismatch flag
+    if (this.registrationForm.valid) {
+      this.sharedDataService.setSchoolName(this.registrationForm.value.schoolName);
+    }
 
     // Check if passwords match
     if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
@@ -62,7 +66,6 @@ export class SchoolAdminRegistrationComponent {
     } else if (this.registrationForm.valid) {
       const registrationData = this.registrationForm.value;
 
-      
       this.userService.register(
         registrationData.name,
         registrationData.email,

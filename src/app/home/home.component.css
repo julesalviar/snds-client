@@ -9,6 +9,9 @@
   .text-section {
     flex: 1; 
     margin-right: 20px; 
+    margin-top: 15px;
+    margin-bottom: 15px;
+    text-align: left;
   }
   .text-section{
     border-color: green;
@@ -25,7 +28,7 @@
   h2 {
     color: green; 
     font-size: 20px;
-    margin: 0;
+    margin-left: 15px;
   }
   
   ul {
@@ -46,7 +49,10 @@
   span {
     cursor: pointer; 
   }
-  @media (max-width: 768px) { /* Tablet */
+  .responsive-title{
+    font-size: 2rem;
+  }
+  @media (max-width: 1024px) { /* Tablet */
     .container {
         flex-direction: column; 
         padding: 10px; 
@@ -62,11 +68,22 @@
         width: 100%; 
         height: auto; 
     }
+    .text-section h2{
+      margin-top: 15px; 
+      margin-bottom: 0; 
+    }
+    .text-section ul li{
+      margin-right: 30px;
+      justify-content: left;
+    }
 }
 
-@media (max-width: 480px) { /* Mobile */
+@media (max-width: 430px) { /* Mobile */
     h2 {
-        font-size: 1em; 
+        font-size: 1em;
+        margin: 0;        
+        padding: 0;  
+        justify-content: left;
     }
 
     .text-section {
@@ -77,4 +94,27 @@
     li {
         margin: 5px 0; 
     }
+    p ul{
+      align-items: center;
+    }
+  }
+@media (max-width: 768px) {
+  .responsive-title {
+    font-size: 18px; 
+    font-weight: bold;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-title {
+    font-size: 11px; 
+    font-weight: bold;
+  }
+ 
+}
+@media (min-width: 769px) {
+  .responsive-title {
+    font-size: 15px; 
+    font-weight: bold;
+  }
 }

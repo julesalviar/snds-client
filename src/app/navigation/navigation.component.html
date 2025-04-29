@@ -1,6 +1,10 @@
 <nav>
-  <ul class="nav-list" id="nav-list">
-    <li><a routerLink="/home">Home</a></li>
+  <div class="hamburger" (click)="toggleMenu()">
+    <mat-icon *ngIf="!isMenuOpen">menu</mat-icon>
+    <mat-icon *ngIf="isMenuOpen">close</mat-icon> <!-- Close icon when open -->
+  </div>
+  <ul class="nav-list" [class.open]="isMenuOpen">
+    <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
 
     <!-- Stakeholder Menus -->
     <ng-container *ngIf="userRole === 'stakeholder'">
@@ -17,7 +21,7 @@
       <li>
         <span>Support</span>
         <ul>
-          <li><a routerLink="/stakeholder/partners-support">Partners Support</a></li>
+          <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home/our-strategic-direction" target="_blank" rel="noopener noreferrer">Partners Support</a></li>
         </ul>
       </li>
     </ng-container>
@@ -27,17 +31,17 @@
       <li>
         <span>School Needs</span>
         <ul>
-          <li><a routerLink="/school-admin/list-of-needs">List of School Needs</a></li>
+          <li><a routerLink="/school-admin/list-of-school-needs">List of School Needs</a></li>
           <li><a routerLink="/school-admin/senior-high-school">Senior High School</a></li>
         </ul>
       </li>
       <li><a routerLink="/school-admin/aip">AIP</a></li>
-      <li><a routerLink="/school-admin/dpds">DPDS</a></li>
+      <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer">DPDS</a></li>
       <li><a routerLink="/school-admin/quick-count">Quick Count</a></li>
       <li>
         <span>Support</span>
         <ul>
-          <li><a routerLink="/school-admin/spfp">SPFP</a></li>
+          <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank" rel="noopener noreferrer">SPFP</a></li>
           <li><a routerLink="/school-admin/partnership">Partnership</a></li>
         </ul>
       </li>
@@ -76,13 +80,14 @@
     </ng-container>
   </ul>
 
-<!-- Profile section -->
-<div class="profile">
-  <mat-icon>account_circle</mat-icon>
-  <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
-  <mat-menu #profileMenu="matMenu">
-    <button mat-menu-item (click)="changePassword()">Change Password</button>
-    <button mat-menu-item (click)="editProfile()">Edit Profile</button>
-  </mat-menu>
-  <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in">Logout</button>
-</div>
+  <!-- Profile section -->
+  <div class="profile">
+    <mat-icon>account_circle</mat-icon>
+    <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
+    <mat-menu #profileMenu="matMenu">
+      <button mat-menu-item (click)="changePassword()">Change Password</button>
+      <button mat-menu-item (click)="editProfile()">Edit Profile</button>
+    </mat-menu>
+    <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">Logout</button>
+  </div>
+</nav>

@@ -8,8 +8,9 @@ import { SchoolAdminComponent } from './school-admin/school-admin.component';
 import { DivisionAdminComponent } from './division-admin/division-admin.component'; 
 import { ReportsComponent } from './reports/reports.component'; 
 import { AipComponent } from './school-admin/aip/aip.component';
-
-
+import { ListOfSchoolNeedsComponent } from './school-admin/list-of-school-needs/list-of-school-needs.component';
+import { SchoolNeedsEngageComponent } from './school-admin/school-needs-engage/school-needs-engage.component';
+import { ImplementationStatusDialogComponent } from './school-admin/implementation-status-dialog/implementation-status-dialog.component';
 export const routes: Routes = [
   { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
@@ -28,7 +29,7 @@ export const routes: Routes = [
 
   // School Admin routes
   { path: 'school-admin', component: SchoolAdminComponent },
-  { path: 'school-admin/list-of-needs', component: SchoolAdminComponent }, 
+  { path: 'school-admin/list-of-school-needs', component: ListOfSchoolNeedsComponent }, 
   { path: 'school-admin/senior-high-school', component: SchoolAdminComponent }, 
   { path: 'school-admin/aip', component: AipComponent }, 
   { path: 'school-admin/dpds', component: SchoolAdminComponent }, 
@@ -37,7 +38,8 @@ export const routes: Routes = [
   { path: 'school-admin/partnership', component: SchoolAdminComponent },
   { path: 'school-admin/reports', component: ReportsComponent }, 
   { path: 'school-admin/about-us', component: SchoolAdminComponent },
-
+  { path: 'school-admin/school-needs-engage/:code', component: SchoolNeedsEngageComponent }, 
+  { path: 'school-admin/implementation-status-dialog', component: ImplementationStatusDialogComponent},
   // Division Admin routes
   { path: 'division-admin', component: DivisionAdminComponent},
   { path: 'division-admin/all-schools', component: DivisionAdminComponent }, 

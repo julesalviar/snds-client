@@ -77,18 +77,17 @@ editProject(project: AIPProject) {
     console.log("Editing project", project);
 }
 
-deleteProject(project: any): void {
+deleteProject(project: AIPProject): void {
   const dialogRef = this.dialog.open(ConfirmDeleteDialogComponent);
 
   dialogRef.afterClosed().subscribe(result => {
     if (result) {
-      // Proceed with deletion logic here
       console.log('Deleted project:', project);
-      // Your delete logic (e.g., API call)
+      this.projects = this.projects.filter(p => p.apn !== project.apn);
     } else {
       console.log('Deletion canceled');
     }
   });
-}
+} 
 
 }
