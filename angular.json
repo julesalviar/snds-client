@@ -44,13 +44,43 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1.2mb",
+                  "maximumError": "1.3mb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "server",
+                  "maximumWarning": "1.1mb",
+                  "maximumError": "1.2mb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "polyfills.server",
+                  "maximumWarning": "270kb",
+                  "maximumError": "300kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "chunk-FZRWUXMS",
+                  "maximumWarning": "650kb",
+                  "maximumError": "700kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "chunk-JJS2H4R6",
+                  "maximumWarning": "350kb",
+                  "maximumError": "400kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "chunk-AEP3OOVH",
+                  "maximumWarning": "290kb",
+                  "maximumError": "330kb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "2.2kb",
+                  "maximumError": "2.5kb"
                 }
               ],
               "outputHashing": "all"
@@ -101,5 +131,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
