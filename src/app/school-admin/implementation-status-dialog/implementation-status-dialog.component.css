@@ -1,0 +1,51 @@
+
+mat-dialog-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #3f51b5; /* Primary color */
+}
+
+mat-dialog-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spacing between elements */
+}
+
+mat-form-field {
+    width: 100%; 
+}
+
+mat-dialog-actions {
+    justify-content: flex-end; 
+}
+button {
+    background-color: #4CAF50; 
+    color: rgb(198, 212, 72);
+    font-weight: bold; 
+    text-transform: uppercase; 
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 10px 20px; 
+    margin-left: 20px; 
+    transition: background-color 0.3s, transform 0.3s; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  }
+  
+  button:hover {
+    background-color: #235526; 
+    color: white;
+    transform: translateY(-2px); 
+  }
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    mat-dialog-title {
+        font-size: 1.2em;
+    }
+
+    mat-dialog-content {
+        padding: 15px;
+    }
+}

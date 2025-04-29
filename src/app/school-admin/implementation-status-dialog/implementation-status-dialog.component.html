@@ -1,0 +1,33 @@
+
+<mat-dialog-content>
+  <p><strong>School: </strong> {{ data.schoolName }}</p> 
+  <p><strong>Project code:</strong> {{ data.code }}</p>
+  <p><strong>Specific Contribution: </strong> {{ data.specificContribution }}</p>
+  <p><strong>Implementation Status:</strong> {{ data.implementationStatus }}</p>
+  <p><strong>Engaged:</strong> {{ data.engaged ? 'Yes' : 'No' }}</p>
+
+  <!-- Status Selection -->
+  <mat-form-field appearance="fill">
+    <mat-label>Select Implementation Status</mat-label>
+    <mat-select [(value)]="selectedStatus">
+      <mat-option *ngFor="let status of statusOptions" [value]="status">
+        {{ status }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Date Picker -->
+  <mat-form-field appearance="fill">
+    <mat-label>Date Modified</mat-label>
+    <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" disabled />
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button [disabled]="!data.engaged" (click)="save()">
+    {{ data.engaged ? 'Update' : 'You cannot update this without stakeholder' }}
+  </button>
+<mat-dialog-actions>
+  <button mat-button (click)="close()">Close</button>
+</mat-dialog-actions>

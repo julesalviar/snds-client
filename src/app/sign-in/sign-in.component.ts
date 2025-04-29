@@ -6,10 +6,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
-import { UserService } from '../services/UserService';
+import { UserService } from '../services/user.service'; 
 import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog.component'; 
 import { MatDialog } from '@angular/material/dialog';
-
 
 @Component({
   selector: 'app-sign-in',
@@ -72,15 +71,18 @@ export class SignInComponent {
       if (registeredUser) {
         // Email Validation
         if (email === registeredUser.email && password === registeredUser.password) {
-          this.router.navigate(['/']); // Navigate to home/dashboard
+          this.isError = false; // Clear any previous error
+          this.router.navigate(['/home']); // Navigate to home/dashboard
         } else {
           this.isError = true; 
           console.log('Email or password is incorrect.');
+          alert('Email or password is incorrect.'); // Optional: Provide user feedback
         }
       } else {
         // Handle case where no registered user is found
         this.isError = true; 
-        console.log('No registered user found.'); //for console display 
+        console.log('No registered user found.'); // for console display 
+        alert('No registered user found. Please register first.'); // User feedback
       }
     } else {
       this.signInForm.markAllAsTouched(); 
