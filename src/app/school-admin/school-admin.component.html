@@ -2,7 +2,7 @@
   <div class="form-container">
     <mat-card-title>Enter School Needs</mat-card-title>
     <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
-      <p>Contribution Type: {{ selectedContribution?.name }}</p>
+      <p>Contribution Type: {{ selectedContribution.name }}</p>
       <p>Specific Contribution: {{ schoolNeedsForm.get('specificContribution')?.value }}</p>
 
       <mat-form-field appearance="fill">
@@ -81,6 +81,7 @@
       </mat-form-field>
       <button mat-raised-button class="query-button" (click)="queryData()">Query</button>
     </div>
+    <div class="table-scroll"> 
     <table mat-table [dataSource]="schoolNeeds" class="mat-elevation-z8">
       <ng-container matColumnDef="contributionType">
         <th mat-header-cell *matHeaderCellDef> Contribution Type </th>
@@ -125,5 +126,6 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
+    </div>
   </div>
 </div>
