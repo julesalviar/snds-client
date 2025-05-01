@@ -69,7 +69,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     const dialogRef = this.dialog.open(ImplementationStatusDialogComponent, {
       data: {
         implementationStatus: need.implementationStatus,
-        schoolName: this.schoolName, // Pass the school name
+        schoolName: this.schoolName // Pass the school name 
       },
     });
 
@@ -93,7 +93,9 @@ export class ListOfSchoolNeedsComponent implements OnInit {
         implementationStatus: need.implementationStatus,
         schoolName: this.schoolName,
         code: need.code,
-        engaged: need.engaged
+        engaged: need.engaged,
+        specificContribution:need.specificContribution,
+        
       }
     });
   

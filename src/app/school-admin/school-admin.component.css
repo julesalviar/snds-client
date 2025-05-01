@@ -31,6 +31,13 @@
   overflow-x: auto; 
   padding: 15px; 
 }
+.table-scroll {
+  overflow-x: auto; 
+  margin-top: 15px;
+  background-color: green;
+  border-radius: 6px; 
+  padding: 2px; 
+}
 
 /* Header */
 mat-card-title {

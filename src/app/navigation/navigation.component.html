@@ -1,8 +1,5 @@
 <nav>
-  <div class="hamburger" (click)="toggleMenu()">
-    <mat-icon *ngIf="!isMenuOpen">menu</mat-icon>
-    <mat-icon *ngIf="isMenuOpen">close</mat-icon> <!-- Close icon when open -->
-  </div>
+  
   <ul class="nav-list" [class.open]="isMenuOpen">
     <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
 
@@ -11,13 +8,13 @@
       <li>
         <span>Find School</span>
         <ul>
-          <li><a routerLink="/stakeholder/all-schools">All</a></li>
-          <li><a routerLink="/stakeholder/schools-by-district">By District</a></li>
+          <li><a routerLink="/stakeholder/all-schools" (click)="closeMenu()">All</a></li>
+          <li><a routerLink="/stakeholder/schools-by-district" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
-      <li><a routerLink="/stakeholder/about-us">About Us</a></li>
-      <li><a routerLink="/stakeholder/my-contribution">My Contribution</a></li>
-      <li><a routerLink="/stakeholder/generated-resources">Generated Resources</a></li>
+      <li><a routerLink="/stakeholder/about-us" (click)="closeMenu()">About Us</a></li>
+      <li><a routerLink="/stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
+      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()">Generated Resources</a></li>
       <li>
         <span>Support</span>
         <ul>
@@ -31,22 +28,22 @@
       <li>
         <span>School Needs</span>
         <ul>
-          <li><a routerLink="/school-admin/list-of-school-needs">List of School Needs</a></li>
-          <li><a routerLink="/school-admin/senior-high-school">Senior High School</a></li>
+          <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
+          <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()">Senior High School</a></li>
         </ul>
       </li>
-      <li><a routerLink="/school-admin/aip">AIP</a></li>
-      <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer">DPDS</a></li>
-      <li><a routerLink="/school-admin/quick-count">Quick Count</a></li>
+      <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
+      <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer" (click)="closeMenu()">DPDS</a></li>
+      <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()">Quick Count</a></li>
       <li>
         <span>Support</span>
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank" rel="noopener noreferrer">SPFP</a></li>
-          <li><a routerLink="/school-admin/partnership">Partnership</a></li>
+          <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li>
         </ul>
       </li>
-      <li><a routerLink="/school-admin/reports">Reports</a></li>
-      <li><a routerLink="/school-admin/about-us">About Us</a></li>
+      <li><a routerLink="/school-admin/reports" (click)="closeMenu()">Reports</a></li>
+      <li><a routerLink="/school-admin/about-us" (click)="closeMenu()">About Us</a></li>
     </ng-container>
 
     <!-- Division Admin Menus -->
@@ -54,34 +51,35 @@
       <li>
         <span>Find a School</span>
         <ul>
-          <li><a routerLink="/division-admin/all-schools">All</a></li>
-          <li><a routerLink="/division-admin/schools-by-district">By District</a></li>
+          <li><a routerLink="/division-admin/all-schools" (click)="closeMenu()">All</a></li>
+          <li><a routerLink="/division-admin/schools-by-district" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
-      <li><a routerLink="/division-admin/about-us">About Us</a></li>
+      <li><a routerLink="/division-admin/about-us" (click)="closeMenu()">About Us</a></li>
       <li>
         <span>Support</span>
         <ul>
-          <li><a routerLink="/division-admin/partners-support">Partner Support</a></li>
+          <li><a routerLink="/division-admin/partners-support" (click)="closeMenu()">Partner Support</a></li>
         </ul>
       </li>
-      <li><a routerLink="/division-admin/reports">Reports</a></li>
+      <li><a routerLink="/division-admin/reports" (click)="closeMenu()">Reports</a></li>
       <li>
         <span>Administration</span>
         <ul>
-          <li><a routerLink="/division-admin/add-district">Add District</a></li>
-          <li><a routerLink="/division-admin/manage-users">Manage Users</a></li>
-          <li><a routerLink="/division-admin/permission-levels">Permission Levels</a></li>
-          <li><a routerLink="/division-admin/open-registration">Open Registration</a></li>
-          <li><a routerLink="/division-admin/close-registration">Close Registration</a></li>
-          <li><a routerLink="/division-admin/partnership-link">Create Partnership Link</a></li>
+          <li><a routerLink="/division-admin/add-district" (click)="closeMenu()">Add District</a></li>
+          <li><a routerLink="/division-admin/manage-users" (click)="closeMenu()">Manage Users</a></li>
+          <li><a routerLink="/division-admin/permission-levels" (click)="closeMenu()">Permission Levels</a></li>
+          <li><a routerLink="/division-admin/open-registration" (click)="closeMenu()">Open Registration</a></li>
+          <li><a routerLink="/division-admin/close-registration" (click)="closeMenu()">Close Registration</a></li>
+          <li><a routerLink="/division-admin/partnership-link" (click)="closeMenu()">Create Partnership Link</a></li>
         </ul>
       </li>
     </ng-container>
   </ul>
-
+  
   <!-- Profile section -->
   <div class="profile">
+    <button (click)="toggleMenu()" class="menu-toggle">Menu</button>
     <mat-icon>account_circle</mat-icon>
     <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
     <mat-menu #profileMenu="matMenu">

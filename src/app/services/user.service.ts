@@ -4,14 +4,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class UserService {
-<<<<<<< HEAD
-  private userRole: string = 'schoolAdmin'; // Example role schoolAdmin, divisionAdmin,stakeholder
-  private registeredUser: { name: string; email: string; password: string} | null = null;
-=======
-
-  private userRole: string = 'schoolAdmin'; // Example role
+  private userRole: string = 'stakeholder'; // Example role: schoolAdmin, divisionAdmin, stakeholder
   private registeredUser: { name: string; email: string; password: string } | null = null;
->>>>>>> origin/snds-client
 
   constructor() {}
 
@@ -27,9 +21,6 @@ export class UserService {
   getRegisteredUser() {
     return this.registeredUser;
   }
-
-
-  private userRole: string = 'schoolAdmin'; // Example: Change this to test different roles (stakeholder, divisionAdmin or schoolAdmin)
 
   getRole() {
     return this.userRole;

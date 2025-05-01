@@ -1,5 +1,3 @@
-
-
 .info-image {
   width: 100%; 
   height: auto; 
@@ -9,7 +7,6 @@
   margin-bottom: 15px; 
 }
 
-
 .form-container {
   display: flex; 
   margin: 20px auto;
@@ -17,32 +14,26 @@
   margin-left: 200px;
 }
 
-
 .form-card {
-  /*background-color: rgba(255, 255, 255, 0.8); */
   border-radius: 8px; 
-  border: 1px solid;
-  border-color: #439347;
+  border: 1px solid #439347;
   padding: 15px; 
   margin: 0px 30px; 
   width: 100%;
   max-width: 450px; 
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
-  
 }
+
 .info-card {
- /* background-color: rgba(255, 255, 255, 0.8); */ 
   border-radius: 8px;  
-  border: 1px solid;
-  border-color: #439347;
+  border: 1px solid #439347;
   padding: 15px;  
   margin: 0 5px;  
   width: 45%;  
   max-width: 500px;  
- /*  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
 }
 
-.info-image{
+.info-image {
   width: 20%; 
   height: auto;  
   margin-left: 50px;
@@ -51,29 +42,20 @@
 .info-card h3 {
   margin-top: 15px;  
 }
+
 .info-content {
   display: flex;  
   flex-wrap: wrap;
 }
-/* Media queries */
-@media (max-width: 450px) {
-  .form-container {
-    flex-direction: column;  
-    align-items: center;
-  }
 
-  .form-card,
-  .info-card {
-    width: 80%;  
-    margin: 10px 0;  
-  }
-}
+/* Media queries */
 @media (max-width: 1024px) {
   .form-container {
-    flex-direction: row;  
-    align-items: left; 
+    flex-direction: column;  
+    align-items: center; 
     margin-left: 0; 
   }
+
   .form-card,
   .info-card {
     width: 90%;  
@@ -88,78 +70,170 @@
 
   .info-image {
     width: 40%;  
-    max-width: 50px;  
-    margin: 0 10px 10px 0;  
+    max-width: 150px;  
+    margin: 10px 0;  
+  }
+}
+
+@media (max-width: 450px) {
+  .info-image {
+    max-width: 120px;  
+  }
+
+  .form-container {
+    margin-left: 0px;
+  }
+
+  .form-card,
+  .info-card {
+    width: 100%;  
+    margin: 10px 0;  
+  }
+
+  button {
+    width: 80%; 
+    font-size: 18px; 
+    margin: 10px auto; 
+  }
+}
+
+mat-card-content {
+  border: 1px solid;
+  border-radius: 1rem;
+  border-color: green;
+}
+
+mat-card-title {
+  text-align: center;
+  margin: 15px 10px;  
+  font-size: 24px;
+  color: yellow;
+  background-color: #569b58;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+mat-card {
+  max-width: 600px; 
+  margin: 10px auto; 
+  padding: 20px; 
+  margin-top: 0px;
+  background-color: rgba(255, 255, 255, 0.5); 
+}
+
+.title {
+  text-align: center; 
+  margin-bottom: 20px; 
+}
+
+mat-form-field {
+  width: 100%; 
+  margin-bottom: 16px; 
+}
+
+button {
+  display: block; 
+  width: 40%; 
+  margin-top: 10px; 
+  font-size: 20px;
+}
+
+mat-radio-group {
+  display: flex;
+  flex-direction: column; 
+  margin-bottom: 16px; 
+}
+
+mat-radio-button {
+  margin-bottom: 6px; 
+}
+@media (max-width: 768px) {
+  .form-container {
+    padding: 10px;  
+  }
+
+  mat-card {
+    padding: 15px;  
+  }
+
+  mat-card-title {
+    font-size: 20px;  
+  }
+
+  .title {
+    margin-bottom: 15px;  
+  }
+
+  button {
+    width: 70%;  
+    font-size: 18px;  
+    margin: 10px auto;  
+  }
+}
+
+@media (max-width: 429px) {
+  .form-card,
+  .info-card {
+    width: 100%;  
+    margin: 5px 0;  
+  }
+
+  .info-image {
+    width: 80%;  
+    max-width: 100%;  
+    margin-left: 0;  
+  }
+
+  .info-content {
+    flex-direction: column;  
+    align-items: center;  
   }
 
   .text-content {
     width: 100%;  
+    text-align: center;  
   }
 }
 
-@media (max-width: 450px) {
-  .banner {
-    flex-direction: column; 
-    width: 100%; 
-  }
-
-  .info-image {
-    max-width: 150px;  
-  }
+mat-form-field {
+  width: 100%;  
+  margin-bottom: 12px;  
 }
 
-@media (max-width: 450px) {
-  .form-container{
-    margin-left: 0px;
-  }
+mat-radio-button {
+  margin-bottom: 12px;  
 }
 
-mat-card-content{
-    border: 1px solid;
-    border-radius: 1rem;
-    border-color: green;
+button {
+  background-color: #439347;  
+  color: white;  
+  border: none;  
+  border-radius: 5px;  
+  padding: 10px;  
+  cursor: pointer;  
+  transition: background-color 0.3s;  
 }
-mat-card-title{
-    text-align: center;
-    margin: 15px 10px;  
-    font-size: 24px;
-    color: yellow;
-    background-color: #569b58;
-  /*padding-bottom: 20px;*/
-    margin-bottom: 15px;
-    border-radius: 5px;
+
+button:hover {
+  background-color: #367e36;  
 }
-mat-card-title title{
-  margin-bottom:  10px;
-}
+
 mat-card {
-    max-width: 600px; 
-    margin: 10px auto; 
-    padding: 20px; 
-    margin-top: 0px;
-    background-color: rgba(255, 255, 255, 0.5); 
-  }
-  .title {
-    text-align: center; 
-    margin-bottom: 20px; 
-  }
-  mat-form-field {
-    width: 100%; 
-    margin-bottom: 16px; 
-  }
-  button {
-    display: block; 
-    width: 40%; 
-    margin-top: 10px; 
-    font-size: 20px;
-  }
-  mat-radio-group {
-    display: flex;
-    flex-direction: column; 
-    margin-bottom: 16px; 
-  }
-  mat-radio-button {
-    margin-bottom: 6px; 
-  }
- 
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
+}
 
+.info-card,
+.form-card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
+}
+
+.text-content {
+  font-size: 16px;  
+  line-height: 1.5;  
+}
+
+@media (max-width: 1024px) {
+  .info-card {
+    width: 100%;  
+  }
+}

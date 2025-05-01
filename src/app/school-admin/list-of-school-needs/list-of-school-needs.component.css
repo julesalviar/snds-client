@@ -66,6 +66,10 @@ span {
   margin: 10px 0; 
 }
 
+.table-container {
+  min-width: 950px; 
+}
+
 table {
   width: 100%;
   border-collapse: collapse; 
@@ -81,7 +85,17 @@ tr:hover {
   background-color: #e4a0a089;
   color: white;
 }
-
+.table-scroll {
+  overflow-x: auto; 
+  margin-top: 15px;
+  background-color: green;
+  border-radius: 6px; 
+  padding: 2px; 
+}
+.table-scroll {
+  overflow-x: auto;
+  margin: 5px 0; 
+}
 mat-icon {
   color: #45a049;
   cursor: pointer;
@@ -166,16 +180,158 @@ td.mat-cell button {
 
   span {
     font-size: 18px; 
-    margin-left: 70px;
+    margin-left: 0; 
     margin-top: 0;
   }
   
-  span.school-name {
-    font-size: 18px; 
-  }
-
   .header {
     flex-direction: column; 
     align-items: flex-start; 
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .table-container {
+    margin: 5px 0; 
+  }
+
+  .mat-header-cell, .mat-cell {
+    padding: 12px; 
+    font-size: 14px; 
+  }
+
+  .download-button {
+    padding: 8px; 
+  }
+}
+@media (max-width: 767px) {
+  .table-scroll {
+    margin: 5px 0; 
+  }
+
+  .table-container {
+    min-width: 800px; 
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px; 
+    padding: 8px; 
+  }
+}
+
+@media (max-width: 435px) {
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 950px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 767px) {
+  .header {
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+
+  .school-icon {
+    padding: 15px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  span {
+    font-size: 16px;
+    margin-left: 0;
+  }
+
+  mat-card-title {
+    font-size: 14px;
+  }
+
+  .download-button {
+    margin: 10px 0;
+  }
+
+  td.mat-cell button {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+.mat-header-cell {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+tr:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+mat-icon {
+  font-size: 24px;
+}
+
+.mat-menu-item {
+  padding: 10px;
+}
+
+.mat-menu-item mat-icon {
+  margin-right: 10px;
+}
+
+.mat-action-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.mat-action-buttons button {
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+@media (max-width: 767px) {
+  .mat-action-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .mat-action-buttons button {
+    margin-bottom: 0;
+    margin-right: 10px;
+    min-width: 100px;
+  }
+
+  .download-button {
+    width: auto;
+    margin: 10px 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .mat-action-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: auto;
   }
 }
