@@ -6,7 +6,11 @@
       <form>
         <mat-form-field appearance="fill">
           <mat-label>Type the name of the stakeholder to engage</mat-label>
-          <input matInput [(ngModel)]="stakeholderName" name="stakeholderName" required>
+          <mat-select [(ngModel)]="stakeholderName" name="stakeholderName" required>
+            <mat-option *ngFor="let stakeholder of stakeholders" [value]="stakeholders">
+              {{ stakeholder }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="fill">

@@ -331,35 +331,40 @@ export class HomeComponent {
   
     toggleChildren(node: TreeNode): void {
       if (node.children && Array.isArray(node.children)) {
-        // Toggle the expanded state if there are children
         node.expanded = !node.expanded; 
       }
     }
   
     onChildClick(child: TreeNode): void {
-      let path: string; // Declare a path variable
+      // Find the selected contribution type based on the clicked child
+      const selectedContribution = {
+          name: this.treeData.find(node => node.children?.includes(child))?.name,
+          specificContribution: child.name
+      };
   
-      // Determine the path based on the user role
+      // Set the contribution data in the service
+      this.userService.setContribution(selectedContribution);
+  
+      // Navigate to the School Admin based on the user role
+      let path: string;
       switch (this.userRole) {
-        case 'schoolAdmin':
-          path = '/school-admin'; // Navigate to School Admin Component
-          break;
-        case 'stakeholder':
-          path = '/stakeholders'; // Navigate to Stakeholder Component
-          break;
-        case 'divisionAdmin':
-          path = '/division-admin'; // Navigate to Division Admin Component
-          break;
-        default:
-          path = '/home'; // Fallback path if the user role is unmatched
-          break;
+          case 'schoolAdmin':
+              path = '/school-admin';
+              break;
+          case 'stakeholder':
+              path = '/stakeholders';
+              break;
+          case 'divisionAdmin':
+              path = '/division-admin';
+              break;
+          default:
+              path = '/home';
+              break;
       }
   
-      console.log(`Clicked child: ${child.name}`); // Log which child was clicked
-      console.log(`Navigating to: ${path}`); // Log the path before navigation
-  
       this.router.navigate([path]);
-    }
+  }
+  
   
     getContributions(): string[] {
       return this.treeData.map(node => {

@@ -30,7 +30,12 @@ export class SchoolAdminRegistrationComponent {
   passwordMismatch: boolean = false; 
   defaultPassword: string = '123456'; // Default password
 
-  constructor(private fb: FormBuilder, private router: Router, private userService: UserService, private sharedDataService: SharedDataService) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private userService: UserService,
+    private sharedDataService: SharedDataService
+  ) {
     this.registrationForm = this.fb.group({
       region: this.fb.control('', Validators.required),
       division: this.fb.control('', Validators.required),
@@ -56,24 +61,33 @@ export class SchoolAdminRegistrationComponent {
   onSubmit() {
     this.passwordMismatch = false; // Reset password mismatch flag
     if (this.registrationForm.valid) {
-      this.sharedDataService.setSchoolName(this.registrationForm.value.schoolName);
-    }
+      const schoolData = {
+        schoolName: this.registrationForm.get('schoolName')?.value,
+        schoolId: this.registrationForm.get('schoolId')?.value,
+        accountableName: this.registrationForm.get('accountableName')?.value,
+        designation: this.registrationForm.get('designation')?.value,
+        contactNumber: this.registrationForm.get('contactNumber')?.value,
+      };
 
-    // Check if passwords match
-    if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
-      this.passwordMismatch = true;
-      console.log('Passwords do not match.');
-    } else if (this.registrationForm.valid) {
-      const registrationData = this.registrationForm.value;
+      // Add school data to UserService
+      this.userService.addSchool(schoolData);
 
-      this.userService.register(
-        registrationData.name,
-        registrationData.email,
-        registrationData.password,
-      );
+      // Check if passwords match
+      if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
+        this.passwordMismatch = true;
+        console.log('Passwords do not match.');
+      } else {
+        const registrationData = this.registrationForm.value;
 
-      console.log('Form submitted', registrationData);
-      this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
+        this.userService.register(
+          registrationData.officialEmail,
+          registrationData.password,
+          registrationData.name,
+        );
+
+        console.log('Form submitted', registrationData);
+        this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
+      }
     } else {
       console.log('Form is invalid', this.registrationForm.errors);
     }

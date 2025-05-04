@@ -2,14 +2,14 @@
 mat-dialog-title {
     font-size: 1.5em;
     font-weight: bold;
-    color: #3f51b5; /* Primary color */
+    color: #3f51b5; 
 }
 
 mat-dialog-content {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spacing between elements */
+    gap: 15px;
 }
 
 mat-form-field {

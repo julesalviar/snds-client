@@ -1,0 +1,69 @@
+.all-schools-container {
+  padding: 20px;
+  width: 100%;
+  overflow-x: auto; 
+}
+
+mat-card-title {
+  font-size: 24px;
+  color: green;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  border: 1px solid green;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: #f2f2f2;
+  color: green;
+  font-weight: bold;
+}
+
+tr:hover {
+  background-color: #e9f5e9;
+}
+
+.needs-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.needs-button:hover {
+  background-color: #45a049;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  table {
+    display: block; /* Allow block display for scrolling */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping of table cells */
+  }
+
+  thead {
+    display: table-header-group; /* Keep the header visible */
+  }
+
+  tr {
+    display: table-row; /* Keep rows in table layout */
+  }
+
+  th, td {
+    display: table-cell; /* Keep cells in table layout */
+  }
+}
