@@ -1,0 +1,94 @@
+<div class="container">
+    <div class="form-container">
+    <mat-card>
+        <mat-card-title>Add Information</mat-card-title>
+    <form [formGroup]="quickCountForm" (ngSubmit)="save()">
+      <mat-form-field appearance="fill">
+        <mat-label>Date</mat-label>
+        <input matInput [value]="quickCountForm.get('date')?.value | date" readonly>
+      </mat-form-field>
+      
+      <mat-form-field appearance="fill">
+        <mat-label>Stakeholder</mat-label>
+        <mat-select formControlName="stakeholder">
+          <mat-option *ngFor="let stakeholder of stakeholders" [value]="stakeholder.name">
+            {{ stakeholder.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Number of Representatives</mat-label>
+        <input matInput type="number" formControlName="numberOfRepresentatives">
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Donated Items</mat-label>
+        <input matInput formControlName="donatedItems">
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Quantity(whole number)</mat-label>
+        <input matInput type="number" formControlName="quantity">
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Unit(box,sack,roll,etc..)</mat-label>
+        <input matInput formControlName="unit">
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Enter Amount(No comma)</mat-label>
+        <input matInput type="number" formControlName="amount">
+      </mat-form-field>
+  
+      <button mat-raised-button color="primary" type="submit" class="save-button">Save</button>
+    </form>
+    </mat-card>
+  </div>
+
+ <div class="table-container">
+    <mat-card>
+       
+        <mat-card-title>Partnership Agreement Quick Count</mat-card-title>
+        <div class="table-scroll"> 
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+  <ng-container matColumnDef="date">
+    <th mat-header-cell *matHeaderCellDef>Date</th>
+    <td mat-cell *matCellDef="let element">{{ element.date | date:'shortDate' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="stakeholder">
+    <th mat-header-cell *matHeaderCellDef>Name of Stakeholder</th>
+    <td mat-cell *matCellDef="let element">{{ element.stakeholder }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="numberOfRepresentatives">
+    <th mat-header-cell *matHeaderCellDef>No. of Representatives</th>
+    <td mat-cell *matCellDef="let element">{{ element.numberOfRepresentatives }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="donatedItems">
+    <th mat-header-cell *matHeaderCellDef>Donated Item</th>
+    <td mat-cell *matCellDef="let element">{{ element.donatedItems }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="quantity">
+    <th mat-header-cell *matHeaderCellDef>Quantity</th>
+    <td mat-cell *matCellDef="let element">{{ element.quantity }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="amount">
+    <th mat-header-cell *matHeaderCellDef>Amount/Est.amnt</th>
+    <td mat-cell *matCellDef="let element">{{ element.amount }}</td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="['date', 'stakeholder', 'numberOfRepresentatives', 'donatedItems', 'quantity', 'amount']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['date', 'stakeholder', 'numberOfRepresentatives', 'donatedItems', 'quantity', 'amount'];"></tr>
+</table>
+</div>
+<div class="total">
+<p>Total Amount: {{ totalAmount }}</p></div>
+
+</mat-card>
+</div>

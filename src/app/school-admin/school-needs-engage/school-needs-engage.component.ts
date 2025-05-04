@@ -7,20 +7,37 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardContent } from '@angular/material/card';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatDatepickerModule, MatDatepickerToggle } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { SharedDataService } from '../../services/shared-data.service';
 import { FormsModule } from '@angular/forms';
+import { MatSelect } from '@angular/material/select';
 
 @Component({
   selector: 'app-school-needs-engage',
   standalone: true,
-  imports: [CommonModule, MatInputModule, MatDatepickerModule, FormsModule,MatNativeDateModule, MatTableModule, MatCard, MatCardTitle, MatTooltipModule, MatCardContent, MatFormField, MatLabel, MatDatepickerToggle], 
+  imports: [
+    CommonModule,
+    MatOption,
+    MatInputModule,
+    MatDatepickerModule,
+    FormsModule,
+    MatNativeDateModule,
+    MatTableModule,
+    MatCard,
+    MatCardTitle,
+    MatTooltipModule,
+    MatCardContent,
+    MatFormField,
+    MatLabel,
+    MatDatepickerToggle,
+    MatSelect
+  ],
   templateUrl: './school-needs-engage.component.html',
-  styleUrls: ['./school-needs-engage.component.css'] 
+  styleUrls: ['./school-needs-engage.component.css']
 })
 export class SchoolNeedsEngageComponent implements OnInit {
-  needCode: string | null = null; 
+  needCode: string | null = null;
   stakeholderName: string = '';
   moaDate: Date | null = null;
   quantityDonated: number | null = null;
@@ -29,13 +46,70 @@ export class SchoolNeedsEngageComponent implements OnInit {
   startDate: Date | null = null;
   endDate: Date | null = null;
 
+  // Define the stakeholders array
+  stakeholders: string[] = [
+    'ASP Fund',
+    'BEFF',
+    'BFP',
+    'Brigada Eskwela Program Fund',
+    'Congressional Office',
+    'City Agriculture Office',
+    'CDRRMC',
+    'City Engineering Office',
+    'CENRO',
+    'City Health Office',
+    'DepEd-CO',
+    'DepEd- RO',
+    'DepEd - DO',
+    'Federated PTA',
+    'DA',
+    'DENR',
+    'DOH',
+    'DPWH',
+    'DTI',
+    'DOST',
+    'DSWD',
+    'DRRM Fund',
+    'IPeD Fund',
+    'LGU - Province',
+    'LGU- Municipality',
+    'LGU-City',
+    'LGU - Barangay',
+    'LR Fund',
+    'OP of the Philippines',
+    'OVP of the Philippines',
+    'OCD',
+    'Philippine Army',
+    'PESPA',
+    'PNP',
+    'MEP Fund',
+    'NAPSSHI',
+    'Robotics Equipment Fund',
+    'School Alumni',
+    'School Canteen',
+    'School IGP',
+    'School MOOE',
+    'Homeroom PTA',
+    'Grade Level PTA',
+    'School PTA',
+    'School Teachers Association',
+    'SBFP',
+    'Science & Math Equipment Fund',
+    'Senate Office',
+    'SHS TVL Equipment Fund',
+    'Special Education Fund',
+    'SELG',
+    'SSLG',
+    'TESDA'
+  ];
+
   constructor(
     private route: ActivatedRoute,
-    private sharedDataService: SharedDataService // Inject the shared data service
+    private sharedDataService: SharedDataService
   ) {}
 
   ngOnInit(): void {
-    this.needCode = this.route.snapshot.paramMap.get('code'); 
+    this.needCode = this.route.snapshot.paramMap.get('code');
     if (this.needCode) {
       console.log('Engaging with need code:', this.needCode);
     }
@@ -50,13 +124,11 @@ export class SchoolNeedsEngageComponent implements OnInit {
     console.log('Start Date:', this.startDate);
     console.log('End Date:', this.endDate);
 
-   
     if (this.needCode) {
-      this.sharedDataService.updateEngagementStatus(this.needCode, true); // Mark as engaged
+      this.sharedDataService.updateEngagementStatus(this.needCode, true);
       console.log('Engaged with need code:', this.needCode);
     }
 
-    // Clear all data after engagement
     this.clearForm();
   }
 
@@ -69,4 +141,4 @@ export class SchoolNeedsEngageComponent implements OnInit {
     this.startDate = null;
     this.endDate = null;
   }
-  }
+}

@@ -11,6 +11,9 @@ import { AipComponent } from './school-admin/aip/aip.component';
 import { ListOfSchoolNeedsComponent } from './school-admin/list-of-school-needs/list-of-school-needs.component';
 import { SchoolNeedsEngageComponent } from './school-admin/school-needs-engage/school-needs-engage.component';
 import { ImplementationStatusDialogComponent } from './school-admin/implementation-status-dialog/implementation-status-dialog.component';
+import { QuickCountComponent } from './school-admin/quick-count/quick-count.component';
+import { AllSchoolComponent } from './stakeholders/all-school/all-school.component';
+
 export const routes: Routes = [
   { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
@@ -19,12 +22,12 @@ export const routes: Routes = [
  { path: 'home', component: HomeComponent },
   
   // Stakeholder routes
-  { path: 'stakeholders',component: StakeholdersComponent},
-  { path: 'stakeholder/all-schools', component: StakeholdersComponent },
-  { path: 'stakeholder/schools-by-district', component: StakeholdersComponent }, 
-  { path: 'stakeholder/my-contribution', component: StakeholdersComponent }, 
-  { path: 'stakeholder/generated-resources', component: StakeholdersComponent }, 
-  { path: 'stakeholder/about-us', component: StakeholdersComponent }, 
+  //{ path: 'stakeholders',component: StakeholdersComponent},
+  { path: 'stakeholder/all-school', component: AllSchoolComponent },
+  //{ path: 'stakeholder/schools-by-district', component: StakeholdersComponent }, 
+  //{ path: 'stakeholder/my-contribution', component: StakeholdersComponent }, 
+  //{ path: 'stakeholder/generated-resources', component: StakeholdersComponent }, 
+  //{ path: 'stakeholder/about-us', component: StakeholdersComponent }, 
   { path: 'stakeholder/partners-support', component: StakeholdersComponent }, 
 
   // School Admin routes
@@ -33,11 +36,11 @@ export const routes: Routes = [
   { path: 'school-admin/senior-high-school', component: SchoolAdminComponent }, 
   { path: 'school-admin/aip', component: AipComponent }, 
   { path: 'school-admin/dpds', component: SchoolAdminComponent }, 
-  { path: 'school-admin/quick-count', component: SchoolAdminComponent }, 
+  { path: 'school-admin/quick-count', component: QuickCountComponent }, 
   { path: 'school-admin/spfp', component: SchoolAdminComponent }, 
-  { path: 'school-admin/partnership', component: SchoolAdminComponent },
-  { path: 'school-admin/reports', component: ReportsComponent }, 
-  { path: 'school-admin/about-us', component: SchoolAdminComponent },
+ // { path: 'school-admin/partnership', component: SchoolAdminComponent },
+  //{ path: 'school-admin/reports', component: ReportsComponent }, 
+  //{ path: 'school-admin/about-us', component: SchoolAdminComponent },
   { path: 'school-admin/school-needs-engage/:code', component: SchoolNeedsEngageComponent }, 
   { path: 'school-admin/implementation-status-dialog', component: ImplementationStatusDialogComponent},
   // Division Admin routes
@@ -46,7 +49,7 @@ export const routes: Routes = [
   { path: 'division-admin/schools-by-district', component: DivisionAdminComponent }, 
   { path: 'division-admin/about-us', component: DivisionAdminComponent }, 
   { path: 'division-admin/partners-support', component: DivisionAdminComponent },
-  { path: 'division-admin/reports', component: ReportsComponent }, // Use the Reports component
+  { path: 'division-admin/reports', component: ReportsComponent }, //  Reports component
   { path: 'division-admin/add-district', component: DivisionAdminComponent }, 
   { path: 'division-admin/manage-users', component: DivisionAdminComponent }, 
   { path: 'division-admin/permission-levels', component: DivisionAdminComponent }, 

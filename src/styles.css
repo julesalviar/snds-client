@@ -11,6 +11,7 @@ body {
     background-repeat: no-repeat;
     background-size: contain; 
     background-position: center; 
+    background-attachment: fixed;
     overflow: auto;
 }
 .custom-register {
@@ -42,4 +43,29 @@ body {
   width: 100%; 
   overflow: hidden;
 }
+
+/* table and card global design */
+
+.form-container {
+  flex: 1; 
+  margin-right: 20px; 
+  margin: 16px; 
+  box-shadow: 0 4px 20px green;
+  border-radius: 8px;
+  border-color: green;
+  border: 1px solid;
+  background-color: rgba(255, 255, 255, 0.5); 
+}
+.table-container {
+  flex: 2; 
+  width: 100%;
+  overflow: hidden;
+  margin: 16px 0; 
+  box-shadow: 0 4px 20px green;
+  border-radius: 8px;
+  border-color: green;
+  border: 1px solid;
+  background-color: rgba(255, 255, 255, 0.5); 
+}
+
 

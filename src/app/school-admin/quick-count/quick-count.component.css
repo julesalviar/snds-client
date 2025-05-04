@@ -1,0 +1,92 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 20px;
+    flex-wrap: wrap; 
+  }
+  
+  .form-container {
+    flex: 1; 
+    margin-right: 20px; 
+    min-width: 300px; /* Minimum width for form */
+  }
+  
+  .table-container {
+    flex: 2; 
+    min-width: 300px; 
+    overflow-x: auto;
+  }
+  
+  mat-card {
+    padding: 16px;
+  }
+  
+  mat-card-title {
+    margin-bottom: 20px;
+    margin-left: 5px;
+    font-size: 20px;
+    color: #45a049;
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  .save-button {
+    background-color: #4CAF50; 
+    color: white; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    border-radius: 5px;
+    padding: 10px 20px; 
+    transition: background-color 0.3s, transform 0.3s; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  }
+  
+  .save-button:hover {
+    background-color: #45a049; 
+    transform: translateY(-2px); 
+  }
+  
+  table {
+    width: 100%; 
+  }
+  .table-scroll {
+    overflow-x: auto; 
+    margin-top: 16px;
+    background-color: green;
+    border-radius: 6px; 
+    padding: 2px; 
+  }
+  .total{
+    text-align: right;
+    margin-right: 2rem;
+  }
+  @media (max-width: 429px) {
+    .table-scroll {
+        overflow-x: auto; 
+        margin-top: 16px; 
+        color: #45a049;
+      }
+
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column; 
+      align-items: stretch; 
+    }
+    .table-scroll {
+        overflow-x: auto; 
+      }
+  
+    .form-container {
+      margin-right: 0; 
+      margin-bottom: 20px; 
+    }
+  
+    .table-container {
+      width: 100%; 
+    }
+  }

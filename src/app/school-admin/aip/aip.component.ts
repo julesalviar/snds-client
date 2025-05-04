@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDeleteDialogComponent } from '../../table-button-dialog/confirm-delete-dialog/confirm-delete-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-aip',
@@ -33,7 +34,7 @@ export class AipComponent implements OnInit {
   pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
 
-  constructor(private fb: FormBuilder, public dialog: MatDialog) {
+  constructor(private fb: FormBuilder, public dialog: MatDialog,  private userService: UserService) {
     this.aipForm = this.fb.group({
       schoolYear: [{ value: this.currentYear, disabled: true }, Validators.required],
       projectTitle: ['', Validators.required],
@@ -54,6 +55,8 @@ export class AipComponent implements OnInit {
       { apn: this.apnCounter++, projectTitle: "Project B", totalBudget: 2000, schoolYear: this.currentYear, status: "Completed" },
       { apn: this.apnCounter++, projectTitle: "Project C", totalBudget: 1500, schoolYear: this.currentYear, status: "For Implementation" },
     ];
+    const projectTitles = this.projects.map(project => project.projectTitle);
+    this.userService.setProjectTitles(projectTitles);
   }
 
   onSubmit() {
