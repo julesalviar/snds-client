@@ -1,107 +1,100 @@
-
 <div class="form-container">
   <div class="form-card">
     <mat-card>
       <mat-card-title class="title">Online Registration for Stakeholders</mat-card-title>
       <mat-card-content>
         <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
-
           <mat-form-field appearance="fill">
             <mat-label>Your Name or Name of Your Organization</mat-label>
             <input matInput formControlName="name" required>
-            <mat-error *ngIf="registrationForm.get('name')?.hasError('required') && registrationForm.get('name')?.touched">
+            <mat-error
+              *ngIf="controlHasErrorAndTouched('name','required')">
               Name is required.
             </mat-error>
           </mat-form-field>
-
-          <mat-label>Choose a Sector Classification:</mat-label><br>
-  <mat-radio-group formControlName="sector" (change)="onCategoryChange($event.value)">
-    <mat-radio-button *ngFor="let sector of sectors" [value]="sector.category">
-      {{ sector.category }}
-    </mat-radio-button>
-  </mat-radio-group>
-
-  <mat-form-field appearance="fill" *ngIf="availableOptions.length > 0">
-    <mat-label>Select an Option</mat-label>
-    <mat-select formControlName="selectedOption">
-      <mat-option *ngFor="let option of availableOptions" [value]="option">{{ option }}</mat-option>
-    </mat-select>
-    <mat-error *ngIf="registrationForm.get('selectedOption')?.hasError('required') && registrationForm.get('selectedOption')?.touched">
-      An option is required.
-    </mat-error>
-  </mat-form-field>
-          
+          <mat-label>Choose a Sector Classification:</mat-label>
+          <br>
+          <mat-radio-group formControlName="sector" (change)="onCategoryChange($event.value)">
+            <mat-radio-button *ngFor="let sector of sectors" [value]="sector.category">
+              {{ sector.category }}
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-form-field appearance="fill" *ngIf="availableOptions.length > 0">
+            <mat-label>Select an Option</mat-label>
+            <mat-select formControlName="selectedOption">
+              <mat-option *ngFor="let option of availableOptions" [value]="option">{{ option }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="controlHasErrorAndTouched('selectedOption', ErrorName.REQUIRED)">
+              An option is required.
+            </mat-error>
+          </mat-form-field>
           <mat-form-field appearance="fill">
             <mat-label>Contact Number</mat-label>
             <input matInput formControlName="contactNumber" required>
-            <mat-error *ngIf="registrationForm.get('contactNumber')?.hasError('required') && registrationForm.get('contactNumber')?.touched">
+            <mat-error *ngIf="controlHasErrorAndTouched('contactNumber', ErrorName.REQUIRED)">
               Contact number is required.
             </mat-error>
           </mat-form-field>
-
           <mat-form-field appearance="fill">
             <mat-label>Present Address</mat-label>
             <textarea matInput formControlName="address" required></textarea>
-            <mat-error *ngIf="registrationForm.get('address')?.hasError('required') && registrationForm.get('address')?.touched">
+            <mat-error *ngIf="controlHasErrorAndTouched('address', ErrorName.REQUIRED)">
               Present address is required.
             </mat-error>
           </mat-form-field>
-
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
             <input matInput formControlName="email" required>
-            <mat-error *ngIf="registrationForm.get('email')?.hasError('required') && registrationForm.get('email')?.touched">
+            <mat-error *ngIf="controlHasErrorAndTouched('email', ErrorName.REQUIRED)">
               Email is required.
             </mat-error>
-            <mat-error *ngIf="registrationForm.get('email')?.hasError('email') && registrationForm.get('email')?.touched">
+            <mat-error *ngIf="controlHasErrorAndTouched('email', ErrorName.EMAIL)">
               Please enter a valid email.
             </mat-error>
           </mat-form-field>
-
           <mat-form-field appearance="fill">
             <mat-label>Password</mat-label>
             <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" required>
             <button mat-icon-button matSuffix (click)="showPassword = !showPassword">
               <mat-icon>{{ showPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
             </button>
-            <mat-error *ngIf="registrationForm.get('password')?.hasError('required') && registrationForm.get('password')?.touched">
+            <mat-error *ngIf="controlHasErrorAndTouched('password', ErrorName.REQUIRED)">
               Password is required.
             </mat-error>
-            <mat-error *ngIf="registrationForm.get('password')?.hasError('minlength') && registrationForm.get('password')?.touched">
+            <mat-error *ngIf="controlHasErrorAndTouched('password', ErrorName.MIN_LENGTH)">
               Password must be at least 6 characters long.
             </mat-error>
             <mat-hint>Use this default Password to log in (123456), you can change it anytime.</mat-hint>
           </mat-form-field>
-
-          
           <button mat-raised-button class="custom-register" type="submit">Submit</button>
         </form>
-
         <div *ngIf="isSuccess" id="success-message" class="success-message">
           <p>Sign-up successful!</p>
         </div>
-        
       </mat-card-content>
     </mat-card>
   </div>
-
 
   <!-- Right Info Card -->
   <div class="info-card">
     <mat-card>
       <mat-card-title class="title">TAX INCENTIVES FOR DEPED PARTNERS</mat-card-title>
-      
-    
       <mat-card-content>
 
-        <img src="assets/deped.png" alt="DepEd Image" class="info-image"> 
-        <img src="assets/logosnds.png" alt="DepEd Image" class="info-image"> 
+        <img src="assets/deped.png" alt="DepEd" class="info-image"/>
+        <img src="assets/logosnds.png" alt="DepEd logo" class="info-image"/>
         <p>
-          The Department of Education (DepEd) recognizes the important role of the Private Sector in the promotion of quality and accessible education. As a way of recognizing the active involvement of the Private Sector in the implementation of the K to 12 Program, the DepEd supports the tax incentivization campaign of the Bureau of Internal Revenue.
+          The Department of Education (DepEd) recognizes the important role of the Private Sector in the promotion of
+          quality and accessible education. As a way of recognizing the active involvement of the Private Sector in the
+          implementation of the K to 12 Program, the DepEd supports the tax incentivization campaign of the Bureau of
+          Internal Revenue.
           <br><br>
-          Through the implementation of the tax incentive provision of Philippine Republic Act No. 8525, “Adopt-a-School Act of 1998”, private entities are given the opportunity to help public schools, and these adopting entities become eligible for tax incentive claims.
+          Through the implementation of the tax incentive provision of Philippine Republic Act No. 8525, “Adopt-a-School
+          Act of 1998”, private entities are given the opportunity to help public schools, and these adopting entities
+          become eligible for tax incentive claims.
           <br><br>
-          The Department of Education invites all members of the private sector to accept the offer of partnerships to help boost education opportunities for the young.
+          The Department of Education invites all members of the private sector to accept the offer of partnerships to
+          help boost education opportunities for the young.
         </p>
         <h3>Who are qualified</h3>
         <ul>
