@@ -20,14 +20,14 @@ import { SharedDataService } from '../services/shared-data.service';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule, 
+    MatSelectModule,
     MatButtonModule,
     MatCardModule,
   ]
 })
 export class SchoolAdminRegistrationComponent {
   registrationForm: FormGroup;
-  passwordMismatch: boolean = false; 
+  passwordMismatch: boolean = false;
   defaultPassword: string = '123456'; // Default password
 
   constructor(
@@ -54,7 +54,7 @@ export class SchoolAdminRegistrationComponent {
 
   // Custom validator for password matching
   passwordMatchValidator(form: FormGroup): ValidationErrors | null {
-    return form.get('password')?.value === form.get('confirmPassword')?.value 
+    return form.get('password')?.value === form.get('confirmPassword')?.value
       ? null : { mismatch: true };
   }
 
@@ -77,13 +77,9 @@ export class SchoolAdminRegistrationComponent {
         this.passwordMismatch = true;
         console.log('Passwords do not match.');
       } else {
-        const registrationData = this.registrationForm.value;
+        const registrationData = { ...this.registrationForm.value };
 
-        this.userService.register(
-          registrationData.officialEmail,
-          registrationData.password,
-          registrationData.name,
-        );
+        this.userService.register(registrationData);
 
         console.log('Form submitted', registrationData);
         this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
