@@ -9,7 +9,7 @@ import {
   FormGroup,
   Validators
 } from '@angular/forms';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
@@ -19,8 +19,10 @@ import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {UserService} from '../services/user.service';
 import {ErrorName} from '../common/enums/error-name';
+import {switchMap} from "rxjs";
+import {DEFAULT_PASSWORD} from "../config";
+import {User} from "./user.model";
 
-// Password match validator function
 export function passwordMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
@@ -46,20 +48,16 @@ export function passwordMatchValidator(): ValidatorFn {
     MatCardModule,
     MatRadioModule,
     MatIconModule,
-    NgOptimizedImage,
   ]
 })
 export class RegistrationComponent {
 
   protected readonly ErrorName = ErrorName;
 
-  name: string = '';
   registrationForm: FormGroup;
   passwordMismatch: boolean = false;
   isSuccess: boolean = false;
   availableOptions: string[] = [];
-  // Default password
-  defaultPassword: string = '123456';
   showPassword: boolean = false;
   sectors = [
     {
@@ -107,17 +105,18 @@ export class RegistrationComponent {
     }
   ];
 
-  constructor(private readonly formBuilder: FormBuilder, private readonly router: Router, private readonly userService: UserService) {
-    // Initialize the registration form with validations
+  constructor(
+    private readonly formBuilder: FormBuilder,
+    private readonly router: Router,
+    private readonly userService: UserService) {
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
       sector: ['', Validators.required],
-      selectedOption: ['', Validators.required],
       contactNumber: ['', Validators.required],
       address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
-      confirmPassword: [this.defaultPassword, Validators.required],
+      password: [DEFAULT_PASSWORD, [Validators.required, Validators.minLength(6)]],
+      confirmPassword: [DEFAULT_PASSWORD, Validators.required],
     }, {validators: passwordMatchValidator()});
   }
 
@@ -130,28 +129,25 @@ export class RegistrationComponent {
   onCategoryChange(category: string) {
     const selectedSector = this.sectors.find(sector => sector.category === category);
     this.availableOptions = selectedSector ? selectedSector.options : [];
-    this.registrationForm.get('selectedOption')?.setValue(''); // Reset the selected option
+    this.registrationForm.get('sector')?.setValue(''); // Reset the selected option
   }
 
   onSubmit() {
     this.passwordMismatch = false; // Reset password mismatch flag
 
-    // Check if passwords match
-    if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
-      this.passwordMismatch = true;
-      console.log('Passwords do not match.');
-    } else if (this.registrationForm.valid) {
-      const registrationData = this.registrationForm.value;
-
-      this.userService.register(
-        registrationData.name,
-        registrationData.email,
-        registrationData.password
-      );
-
-      this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
-    } else {
+    if (this.registrationForm.invalid) {
       console.log('Form is invalid', this.registrationForm.errors);
+      return;
     }
+
+    const registrationData: User = { ...this.registrationForm.value, type: 'Stakeholder' };
+    console.log(registrationData);
+
+    this.userService.register(registrationData).pipe(
+      switchMap(() => this.router.navigate(['/sign-in']))
+    ).subscribe({
+      next: () => this.isSuccess = true,
+      error: err => console.error('Registration error', err)
+    });
   }
 }

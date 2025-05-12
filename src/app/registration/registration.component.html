@@ -14,17 +14,17 @@
           </mat-form-field>
           <mat-label>Choose a Sector Classification:</mat-label>
           <br>
-          <mat-radio-group formControlName="sector" (change)="onCategoryChange($event.value)">
+          <mat-radio-group (change)="onCategoryChange($event.value)">
             <mat-radio-button *ngFor="let sector of sectors" [value]="sector.category">
               {{ sector.category }}
             </mat-radio-button>
           </mat-radio-group>
           <mat-form-field appearance="fill" *ngIf="availableOptions.length > 0">
             <mat-label>Select an Option</mat-label>
-            <mat-select formControlName="selectedOption">
+            <mat-select formControlName="sector">
               <mat-option *ngFor="let option of availableOptions" [value]="option">{{ option }}</mat-option>
             </mat-select>
-            <mat-error *ngIf="controlHasErrorAndTouched('selectedOption', ErrorName.REQUIRED)">
+            <mat-error *ngIf="controlHasErrorAndTouched('sector', ErrorName.REQUIRED)">
               An option is required.
             </mat-error>
           </mat-form-field>
@@ -55,7 +55,7 @@
           <mat-form-field appearance="fill">
             <mat-label>Password</mat-label>
             <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password" required>
-            <button mat-icon-button matSuffix (click)="showPassword = !showPassword">
+            <button type="button" mat-icon-button matSuffix (click)="showPassword = !showPassword">
               <mat-icon>{{ showPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
             </button>
             <mat-error *ngIf="controlHasErrorAndTouched('password', ErrorName.REQUIRED)">
