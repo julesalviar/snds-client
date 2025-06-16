@@ -22,6 +22,7 @@ import {ErrorName} from '../common/enums/error-name';
 import {switchMap} from "rxjs";
 import {DEFAULT_PASSWORD} from "../config";
 import {User} from "./user.model";
+import {controlHasErrorAndTouched} from "../common/form-utils";
 
 export function passwordMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -56,7 +57,7 @@ export class RegistrationComponent {
 
   registrationForm: FormGroup;
   passwordMismatch: boolean = false;
-  isSuccess: boolean = false;
+  success: boolean = false;
   availableOptions: string[] = [];
   showPassword: boolean = false;
   sectors = [
@@ -121,8 +122,7 @@ export class RegistrationComponent {
   }
 
   controlHasErrorAndTouched(controlName: string, errorName: string): boolean {
-    const control = this.registrationForm.get(controlName);
-    return !!control?.hasError(errorName) && (control?.touched || control?.dirty);
+    return controlHasErrorAndTouched(this.registrationForm, controlName, errorName);
   }
 
   // For selection from category
@@ -146,8 +146,8 @@ export class RegistrationComponent {
     this.userService.register(registrationData).pipe(
       switchMap(() => this.router.navigate(['/sign-in']))
     ).subscribe({
-      next: () => this.isSuccess = true,
-      error: err => console.error('Registration error', err)
+      next: () => this.success = true,
+      error: err => { this.success = false; console.error('Registration error', err); }
     });
   }
 }

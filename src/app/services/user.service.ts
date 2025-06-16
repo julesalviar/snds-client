@@ -3,6 +3,7 @@ import {BehaviorSubject} from 'rxjs';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../environments/environment';
 import {User} from "../registration/user.model";
+import {TenantService} from "../config/tenant.service";
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,9 @@ export class UserService {
   private readonly schoolsSubject = new BehaviorSubject<any[]>([]);
   schools$ = this.schoolsSubject.asObservable();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private tenantService: TenantService) {}
 
   addSchool(school: any) {
     const currentSchools = this.schoolsSubject.value;
@@ -47,8 +50,10 @@ export class UserService {
       role: type
     };
 
+    const tenant = this.tenantService.getCurrentTenant() ?? 'gensan';
+
     const headers = new HttpHeaders()
-      .set('tenant', 'gensan') // TODO: change this to the actual tenant
+      .set('tenant', tenant)
       .set('Content-Type', 'application/json');
 
     return this.http.post(this.baseUrl, userData, {headers});

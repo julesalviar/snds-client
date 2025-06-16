@@ -9,6 +9,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { UserService } from '../services/user.service';
 import { SharedDataService } from '../services/shared-data.service';
+import {controlHasErrorAndTouched} from "../common/form-utils";
+import {switchMap} from "rxjs";
+import {UserType} from "../registration/user-type.enum";
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -29,6 +32,7 @@ export class SchoolAdminRegistrationComponent {
   registrationForm: FormGroup;
   passwordMismatch: boolean = false;
   defaultPassword: string = '123456'; // Default password
+  success: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -77,15 +81,26 @@ export class SchoolAdminRegistrationComponent {
         this.passwordMismatch = true;
         console.log('Passwords do not match.');
       } else {
-        const registrationData = { ...this.registrationForm.value };
+        const registrationData = {
+          type: UserType.SchoolAdmin,
+          name: this.registrationForm.get('schoolName')?.value,
+          email: this.registrationForm.get('officialEmail')?.value,
+          password: this.registrationForm.get('password')?.value,
+        };
 
-        this.userService.register(registrationData);
-
-        console.log('Form submitted', registrationData);
-        this.router.navigate(['/sign-in']); // Redirect to sign-in page after registration
+        this.userService.register(registrationData).pipe(
+          switchMap(() => this.router.navigate(['/sign-in']))
+        ).subscribe({
+          next: () => this.success = true,
+          error: err => { this.success = false; console.error('Registration error', err); }
+        });
       }
     } else {
       console.log('Form is invalid', this.registrationForm.errors);
     }
+  }
+
+  controlHasErrorAndTouched(controlName: string, errorName: string): boolean {
+    return controlHasErrorAndTouched(this.registrationForm, controlName, errorName);
   }
 }

@@ -11,9 +11,9 @@
                         <mat-select formControlName="region" required>
                             <mat-option value="Region XII">Region XII</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="registrationForm.get('region')?.hasError('required') && registrationForm.get('region')?.touched">
-                            Region is required.
-                        </mat-error>
+                      <mat-error *ngIf="controlHasErrorAndTouched('region', 'required')">
+                        Region is required.
+                      </mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="fill">
@@ -22,7 +22,7 @@
                             <mat-option value="Tacurong City">Tacurong City</mat-option>
                             <mat-option value="General Santos City">General Santos City</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="registrationForm.get('division')?.hasError('required') && registrationForm.get('division')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('division', 'required')">
                             Division is required.
                         </mat-error>
                     </mat-form-field>
@@ -32,7 +32,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>District / Cluster</mat-label>
                         <input matInput formControlName="district" required>
-                        <mat-error *ngIf="registrationForm.get('district')?.hasError('required') && registrationForm.get('district')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('district', 'required')">
                             District is required.
                         </mat-error>
                     </mat-form-field>
@@ -40,7 +40,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>School / Learning Center Name</mat-label>
                         <input matInput formControlName="schoolName" required>
-                        <mat-error *ngIf="registrationForm.get('schoolName')?.hasError('required') && registrationForm.get('schoolName')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('schoolName', 'required')">
                             School Name is required.
                         </mat-error>
                     </mat-form-field>
@@ -50,7 +50,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>School ID</mat-label>
                         <input matInput formControlName="schoolId" required>
-                        <mat-error *ngIf="registrationForm.get('schoolId')?.hasError('required') && registrationForm.get('schoolId')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('schoolId', 'required')">
                             School ID is required.
                         </mat-error>
                     </mat-form-field>
@@ -58,7 +58,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>School Offering</mat-label>
                         <input matInput formControlName="schoolOffering" required>
-                        <mat-error *ngIf="registrationForm.get('schoolOffering')?.hasError('required') && registrationForm.get('schoolOffering')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('schoolOffering', 'required')">
                             School Offering is required.
                         </mat-error>
                     </mat-form-field>
@@ -68,7 +68,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Name of Accountable Person</mat-label>
                         <input matInput formControlName="accountableName" required>
-                        <mat-error *ngIf="registrationForm.get('accountableName')?.hasError('required') && registrationForm.get('accountableName')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('accountableName', 'required')">
                             Accountable Person's Name is required.
                         </mat-error>
                     </mat-form-field>
@@ -76,7 +76,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Designation</mat-label>
                         <input matInput formControlName="designation" required>
-                        <mat-error *ngIf="registrationForm.get('designation')?.hasError('required') && registrationForm.get('designation')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('designation', 'required')">
                             Designation is required.
                         </mat-error>
                     </mat-form-field>
@@ -86,7 +86,7 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Contact Number</mat-label>
                         <input matInput formControlName="contactNumber" required>
-                        <mat-error *ngIf="registrationForm.get('contactNumber')?.hasError('required') && registrationForm.get('contactNumber')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('contactNumber', 'required')">
                             Contact Number is required.
                         </mat-error>
                     </mat-form-field>
@@ -94,10 +94,10 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Official Email Address</mat-label>
                         <input matInput type="email" formControlName="officialEmail" required>
-                        <mat-error *ngIf="registrationForm.get('officialEmail')?.hasError('required') && registrationForm.get('officialEmail')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('officialEmail', 'required')">
                             Official Email is required.
                         </mat-error>
-                        <mat-error *ngIf="registrationForm.get('officialEmail')?.hasError('email') && registrationForm.get('officialEmail')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('officialEmail', 'email')">
                             Please enter a valid email address.
                         </mat-error>
                         <mat-hint>(Must Use a Valid School Email Address.)</mat-hint>
@@ -108,28 +108,27 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Enter Password</mat-label>
                         <input matInput type="text" [value]="defaultPassword" [formControlName]="'password'" readonly />
-                        <mat-error *ngIf="registrationForm.get('password')?.hasError('required') && registrationForm.get('password')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('password', 'required')">
                             Password is required.
                         </mat-error>
-                        <mat-error *ngIf="registrationForm.get('password')?.hasError('minlength') && registrationForm.get('password')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('password', 'minLength')">
                             Password must be at least 6 characters long.
                         </mat-error>
                         <mat-hint>(Your Default password, you can Change it anytime.)</mat-hint>
                     </mat-form-field>
-                
+
                     <mat-form-field appearance="fill">
                         <mat-label>Confirm Password</mat-label>
                         <input matInput type="text" [value]="defaultPassword" [formControlName]="'confirmPassword'" readonly />
-                        <mat-error *ngIf="registrationForm.get('confirmPassword')?.hasError('required') && registrationForm.get('confirmPassword')?.touched">
+                        <mat-error *ngIf="controlHasErrorAndTouched('confirmPassword', 'required')">
                             Confirm Password is required.
                         </mat-error>
                     </mat-form-field>
                 </div>
-                
+
                 <div *ngIf="passwordMismatch" class="error-message">
                     Passwords do not match.
                 </div>
-                
 
                 <button mat-raised-button class="custom-register" type="submit">Submit</button>
             </form>
