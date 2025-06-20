@@ -8,6 +8,7 @@ import {TenantService} from "../config/tenant.service";
 @Injectable({
   providedIn: 'root',
 })
+
 export class UserService {
   private readonly baseUrl = `${environment.API_URL}/auth/signup`;
   private userRole: string = 'schoolAdmin'; // Example role: schoolAdmin, divisionAdmin, stakeholder
@@ -19,7 +20,18 @@ export class UserService {
 
   constructor(
     private readonly http: HttpClient,
-    private tenantService: TenantService) {}
+    private tenantService: TenantService) { }
+
+  login(userName: string, password: string) {
+    const tenant = this.tenantService.getCurrentTenant();
+    const headers = new HttpHeaders()
+      .set('tenant', tenant)
+      .set('Content-Type', 'application/json');
+
+    const loginData = { userName, password };
+    return this.http.post(`${environment.API_URL}/auth/login`, loginData, { headers });
+}
+
 
   addSchool(school: any) {
     const currentSchools = this.schoolsSubject.value;

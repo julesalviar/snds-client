@@ -6,8 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
-import { UserService } from '../services/user.service'; 
-import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog.component'; 
+import { UserService } from '../services/user.service';
+import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
@@ -24,9 +24,12 @@ import { MatDialog } from '@angular/material/dialog';
     MatCardModule,
   ]
 })
+
 export class SignInComponent {
   signInForm: FormGroup;
   isError: boolean = false;
+  isSubmitting: boolean = false;
+  errorMessage: string = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -42,9 +45,9 @@ export class SignInComponent {
 
   onForgotPassword() {
     const dialogRef = this.dialog.open(ForgotPasswordDialogComponent, {
-      disableClose: true, 
-      autoFocus: false,    
-      restoreFocus: false,  
+      disableClose: true,
+      autoFocus: false,
+      restoreFocus: false,
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -57,35 +60,31 @@ export class SignInComponent {
   }
 
   onSignUp() {
-    this.router.navigate(['/register']); 
+    this.router.navigate(['/register']);
   }
-  
+
   onSubmit() {
-    const registeredUser = this.userService.getRegisteredUser();
-  
-    // Check if the form is valid
     if (this.signInForm.valid) {
       const { email, password } = this.signInForm.value;
-  
-      // Check if a registered user exists
-      if (registeredUser) {
-        // Email Validation
-        if (email === registeredUser.email && password === registeredUser.password) {
-          this.isError = false; // Clear any previous error
-          this.router.navigate(['/home']); // Navigate to home/dashboard
-        } else {
-          this.isError = true; 
-          console.log('Email or password is incorrect.');
-          alert('Email or password is incorrect.'); // Optional: Provide user feedback
+      this.isSubmitting = true;
+      this.userService.login(email, password).subscribe({
+        next: (response) => {
+          this.isError = false;
+          this.isSubmitting = false;
+          this.router.navigate(['/home']);
+        },
+
+        error: (error) => {
+          this.isError = true;
+          this.isSubmitting = false;
+
+          const backendMessage = error.error?.message || 'Login failed. Please try again.';
+          this.errorMessage = backendMessage;
+          console.error('Login failed:', error);
         }
-      } else {
-        // Handle case where no registered user is found
-        this.isError = true; 
-        console.log('No registered user found.'); // for console display 
-        alert('No registered user found. Please register first.'); // User feedback
-      }
+      });
     } else {
-      this.signInForm.markAllAsTouched(); 
+      this.signInForm.markAllAsTouched();
     }
   }
 }
