@@ -1,4 +1,4 @@
- 
+
 
 <mat-card>
   <mat-card-title>Sign In</mat-card-title>
@@ -32,6 +32,6 @@
       <button mat-button href="javascript:void(0);" (click)="onSignUp()">Sign Up</button>
     </div>
 
-    <div *ngIf="isError" class="error-message">Invalid Password or Email. Please try again.</div>
+    <div *ngIf="isError" class="error-message">I{{ errorMessage }}</div>
   </form>
 </mat-card>
