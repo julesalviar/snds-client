@@ -17,7 +17,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
-import {UserService} from '../services/user.service';
+import {UserService} from '../common/services/user.service';
 import {ErrorName} from '../common/enums/error-name';
 import {switchMap} from "rxjs";
 import {DEFAULT_PASSWORD} from "../config";

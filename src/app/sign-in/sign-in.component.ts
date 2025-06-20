@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { Router } from '@angular/router';
-import { UserService } from '../services/user.service';
-import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCardModule} from '@angular/material/card';
+import {Router} from '@angular/router';
+import {ForgotPasswordDialogComponent} from '../forgot-password/forgot-password-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
+import {AuthService} from "../auth/auth.service";
 
 @Component({
   selector: 'app-sign-in',
@@ -24,7 +24,6 @@ import { MatDialog } from '@angular/material/dialog';
     MatCardModule,
   ]
 })
-
 export class SignInComponent {
   signInForm: FormGroup;
   isError: boolean = false;
@@ -32,9 +31,9 @@ export class SignInComponent {
   errorMessage: string = '';
 
   constructor(
+    private readonly authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private userService: UserService,
     private dialog: MatDialog
   ) {
     this.signInForm = this.formBuilder.group({
@@ -67,19 +66,18 @@ export class SignInComponent {
     if (this.signInForm.valid) {
       const { email, password } = this.signInForm.value;
       this.isSubmitting = true;
-      this.userService.login(email, password).subscribe({
-        next: (response) => {
+      this.authService.login({ userName: email, password }).subscribe({
+        next: (response: any) => {
           this.isError = false;
           this.isSubmitting = false;
           this.router.navigate(['/home']);
         },
 
-        error: (error) => {
+        error: (error: any) => {
           this.isError = true;
           this.isSubmitting = false;
 
-          const backendMessage = error.error?.message || 'Login failed. Please try again.';
-          this.errorMessage = backendMessage;
+          this.errorMessage = error.error?.message || 'Login failed. Please try again.';
           console.error('Login failed:', error);
         }
       });

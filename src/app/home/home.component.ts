@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { UserService } from '../services/user.service';
+import { UserService } from '../common/services/user.service';
 import { CommonModule } from '@angular/common';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Router } from '@angular/router';
@@ -7,9 +7,9 @@ import { Router } from '@angular/router';
 // TreeNode interface to define the structure of each node
 interface TreeNode {
     name: string;
-    children?: TreeNode[]; 
-    expanded?: boolean; 
-    count?: number; 
+    children?: TreeNode[];
+    expanded?: boolean;
+    count?: number;
 }
 
 @Component({
@@ -18,10 +18,10 @@ interface TreeNode {
   imports: [ CommonModule, MatBadgeModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
-  
+
 })
 export class HomeComponent {
-  
+
   userName: string;
  userRole: string;
 
@@ -80,7 +80,7 @@ export class HomeComponent {
         { name: 'Traffic Vest ', count: 10 },
         { name: 'Weighing Scale ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'CONSTRUCTION MATERIALS',
@@ -96,7 +96,7 @@ export class HomeComponent {
         { name: 'Paint Roller  ', count: 5 },
         { name: 'Paint Roller  ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'DIRECT ASSISTANCE',
@@ -104,7 +104,7 @@ export class HomeComponent {
         { name: 'Allowance ', count: 5 },
         { name: 'Stipends ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'FURNITURE',
@@ -121,7 +121,7 @@ export class HomeComponent {
         { name: 'Teachers Table', count: 10 },
         { name: 'Window/panels ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'HEALTH AND NUTRITION',
@@ -145,7 +145,7 @@ export class HomeComponent {
         { name: 'Vitamins ', count: 10 },
         { name: 'Wheelchair ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'INFRASTRUCTURE',
@@ -178,7 +178,7 @@ export class HomeComponent {
         { name: 'Laboratory Repair ', count: 5 },
         { name: 'Land/real Property Donation', count: 10 },
         { name: 'Landscaping', count: 10 },
-        { name: 'Library Repair ', count: 5 }, 
+        { name: 'Library Repair ', count: 5 },
         { name: 'New Classroom Construction ', count: 10 },
         { name: 'New Covered Court Construction ', count: 10 },
         { name: 'New Dormitory Construction', count: 5 },
@@ -191,7 +191,7 @@ export class HomeComponent {
         { name: 'Reading Center Repair', count: 5 },
         { name: 'Repair Of Sports Facilities ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'LEARNERS TRAINING NEEDS',
@@ -203,7 +203,7 @@ export class HomeComponent {
         { name: 'Leadership Training ', count: 10 },
         { name: 'Mental Health', count: 5 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'MISCELLANEOUS',
@@ -215,7 +215,7 @@ export class HomeComponent {
         { name: 'Salary For Job Orders ', count: 10 },
         { name: 'Salary For Labor', count: 5 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'OFFICE SUPPLIES',
@@ -225,7 +225,7 @@ export class HomeComponent {
         { name: 'Ink ', count: 10 },
         { name: 'Textiles', count: 5 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'PERSONAL PROTECTIVE EQUIPMENT',
@@ -238,7 +238,7 @@ export class HomeComponent {
         { name: 'Surgical Gloves ', count: 5 },
         { name: 'Thermal Scanner ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'PERSONNEL SUPPORT',
@@ -246,7 +246,7 @@ export class HomeComponent {
         { name: 'Teaching And Learning Aids And Devices ', count: 5 },
         { name: 'Training Skills Development And Scholarship ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'SCHOOL SUPPLIES AND UNIFORMS',
@@ -263,7 +263,7 @@ export class HomeComponent {
         { name: 'School Supplies', count: 10 },
         { name: 'Uniform ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'SPECIAL NEEDS',
@@ -273,7 +273,7 @@ export class HomeComponent {
         { name: 'Hearing Aid ', count: 10 },
         { name: 'Wheelchair ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'TECHNOLOGY',
@@ -305,7 +305,7 @@ export class HomeComponent {
         { name: 'Touch Board ', count: 5 },
         { name: 'White Screen', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
     {
       name: 'VOLUNTEER HOURS',
@@ -319,7 +319,7 @@ export class HomeComponent {
         { name: 'Plumbing ', count: 10 },
         { name: 'Reading Volunteer ', count: 10 }
       ],
-      expanded: false 
+      expanded: false
     },
   ];
 
@@ -328,23 +328,23 @@ export class HomeComponent {
       console.log('User name retrieved in HomeComponent:', this.userName);
       this.userRole = this.userService.getRole(); // Fetch user role from UserService
     }
-  
+
     toggleChildren(node: TreeNode): void {
       if (node.children && Array.isArray(node.children)) {
-        node.expanded = !node.expanded; 
+        node.expanded = !node.expanded;
       }
     }
-  
+
     onChildClick(child: TreeNode): void {
       // Find the selected contribution type based on the clicked child
       const selectedContribution = {
           name: this.treeData.find(node => node.children?.includes(child))?.name,
           specificContribution: child.name
       };
-  
+
       // Set the contribution data in the service
       this.userService.setContribution(selectedContribution);
-  
+
       // Navigate to the School Admin based on the user role
       let path: string;
       switch (this.userRole) {
@@ -361,11 +361,11 @@ export class HomeComponent {
               path = '/home';
               break;
       }
-  
+
       this.router.navigate([path]);
   }
-  
-  
+
+
     getContributions(): string[] {
       return this.treeData.map(node => {
         const contributionType = node.name;
@@ -373,7 +373,7 @@ export class HomeComponent {
         return `Contribution type: ${contributionType}, Specific Contribution: ${specificContributions}`;
       });
     }
-  
+
     onImageClick(): void {
       console.log('Image clicked');
     }

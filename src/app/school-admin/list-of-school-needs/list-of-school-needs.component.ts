@@ -6,7 +6,7 @@ import { MatMenu } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
-import { SharedDataService } from '../../services/shared-data.service';
+import { SharedDataService } from '../../common/services/shared-data.service';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
@@ -43,18 +43,18 @@ interface SchoolNeed {
 })
 export class ListOfSchoolNeedsComponent implements OnInit {
   displayedColumns: string[] = [
-    'code', 
-    'year', 
-    'specificContribution', 
-    'quantity', 
-    'amount', 
-    'beneficiaryStudents', 
-    'beneficiaryPersonnel', 
-    'implementationStatus', 
+    'code',
+    'year',
+    'specificContribution',
+    'quantity',
+    'amount',
+    'beneficiaryStudents',
+    'beneficiaryPersonnel',
+    'implementationStatus',
     'actions'
   ];
   schoolNeeds: SchoolNeed[] = [];
-  schoolName: string = ''; 
+  schoolName: string = '';
 
   constructor(private sharedDataService: SharedDataService, private router: Router, private dialog: MatDialog) {}
 
@@ -64,12 +64,12 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     // Fetch school needs from the shared data service
     this.schoolNeeds = this.sharedDataService.getSchoolNeeds();
   }
-  
-  openStatusDialog(need: SchoolNeed): void { 
+
+  openStatusDialog(need: SchoolNeed): void {
     const dialogRef = this.dialog.open(ImplementationStatusDialogComponent, {
       data: {
         implementationStatus: need.implementationStatus,
-        schoolName: this.schoolName // Pass the school name 
+        schoolName: this.schoolName // Pass the school name
       },
     });
 
@@ -95,10 +95,10 @@ export class ListOfSchoolNeedsComponent implements OnInit {
         code: need.code,
         engaged: need.engaged,
         specificContribution:need.specificContribution,
-        
+
       }
     });
-  
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Update the implementation status in the list

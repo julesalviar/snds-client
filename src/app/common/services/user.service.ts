@@ -1,16 +1,16 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {environment} from '../../environments/environment';
-import {User} from "../registration/user.model";
-import {TenantService} from "../config/tenant.service";
+import {environment} from '../../../environments/environment';
+import {User} from "../../registration/user.model";
+import {TenantService} from "../../config/tenant.service";
+import {API_ENDPOINT} from "../api-endpoints";
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class UserService {
-  private readonly baseUrl = `${environment.API_URL}/auth/signup`;
   private userRole: string = 'schoolAdmin'; // Example role: schoolAdmin, divisionAdmin, stakeholder
   private registeredUser: { name: string; email: string; password: string } | null = null;
   private readonly projectTitlesSubject = new BehaviorSubject<string[]>([]);
@@ -23,7 +23,7 @@ export class UserService {
     private tenantService: TenantService) { }
 
   login(userName: string, password: string) {
-    const tenant = this.tenantService.getCurrentTenant();
+    const tenant = this.tenantService.getCurrentDomainTenant();
     const headers = new HttpHeaders()
       .set('tenant', tenant)
       .set('Content-Type', 'application/json');
@@ -62,13 +62,18 @@ export class UserService {
       role: type
     };
 
-    const tenant = this.tenantService.getCurrentTenant() ?? 'gensan';
+    const tenant = this.tenantService.getCurrentDomainTenant() ?? 'gensan';
 
     const headers = new HttpHeaders()
       .set('tenant', tenant)
-      .set('Content-Type', 'application/json');
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
 
-    return this.http.post(this.baseUrl, userData, {headers});
+    return this.http.post(API_ENDPOINT.auth.register, userData, {headers});
+  }
+
+  signIn(user: User) {
+
   }
 
   getUserName(): string {
