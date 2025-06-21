@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { UserService } from '../services/user.service';
+import { UserService } from '../common/services/user.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import {AuthService} from "../auth/auth.service";
 
 @Component({
   standalone: true,
@@ -24,7 +25,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 export class NavigationComponent {
   isMenuOpen = false;
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -48,6 +52,6 @@ export class NavigationComponent {
   }
 
   logout(): void {
-    console.log('Logging out...');
+    this.authService.logout();
   }
 }

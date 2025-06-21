@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../../services/user.service';
+import { UserService } from '../../common/services/user.service';
 import { MatTable, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';

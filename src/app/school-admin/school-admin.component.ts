@@ -11,7 +11,7 @@ import { MatOption } from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
-import { UserService } from '../services/user.service';
+import { UserService } from '../common/services/user.service';
 
 
 @Component({
@@ -32,7 +32,7 @@ import { UserService } from '../services/user.service';
     MatIcon
   ],
   templateUrl: './school-admin.component.html',
-  styleUrls: ['./school-admin.component.css'] 
+  styleUrls: ['./school-admin.component.css']
 })
 export class SchoolAdminComponent implements OnInit {
   schoolNeedsForm: FormGroup;
@@ -51,12 +51,12 @@ export class SchoolAdminComponent implements OnInit {
     targetDate: new Date('2025-10-15')
     }
     ];
-   
+
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   schoolYears: string[] = ['2020-2021', '2022-2023', '2024-2025', '2026-2027'];
-  selectedSchoolYear: string = this.schoolYears[0]; 
+  selectedSchoolYear: string = this.schoolYears[0];
   selectedContribution: any;
 
   constructor(private fb: FormBuilder,  private userService: UserService) {
@@ -116,7 +116,7 @@ export class SchoolAdminComponent implements OnInit {
   }
   viewResponses(need: any): void {
     console.log('Viewing responses for:', need);
-   
+
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
@@ -125,5 +125,5 @@ export class SchoolAdminComponent implements OnInit {
   }
   save(): void{
   }
-  
+
 }

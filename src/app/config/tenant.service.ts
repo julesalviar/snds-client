@@ -5,7 +5,7 @@ import {Injectable} from "@angular/core";
   providedIn: 'root'
 })
 export class TenantService {
-  getCurrentTenant(): Tenant {
+  getCurrentDomainTenant(): Tenant {
     const domain = window.location.hostname;
     console.log(domain);
     switch (domain) {

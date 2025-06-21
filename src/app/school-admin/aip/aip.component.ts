@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { ReactiveFormsModule } from '@angular/forms'; 
+import { ReactiveFormsModule } from '@angular/forms';
 import { AIPProject } from '../../interfaces/aip.model';
 import { MatTableModule } from '@angular/material/table';
 import { MatIcon } from '@angular/material/icon';
@@ -15,7 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDeleteDialogComponent } from '../../table-button-dialog/confirm-delete-dialog/confirm-delete-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
-import { UserService } from '../../services/user.service';
+import { UserService } from '../../common/services/user.service';
 
 @Component({
   selector: 'app-aip',
@@ -62,11 +62,11 @@ export class AipComponent implements OnInit {
   onSubmit() {
     if (this.aipForm.valid) {
       const newProject: AIPProject = {
-        apn: this.apnCounter++, 
-        ...this.aipForm.value, 
+        apn: this.apnCounter++,
+        ...this.aipForm.value,
       };
-      this.projects.push(newProject); 
-      this.aipForm.reset(); 
+      this.projects.push(newProject);
+      this.aipForm.reset();
     }
   }
 
@@ -91,6 +91,6 @@ deleteProject(project: AIPProject): void {
       console.log('Deletion canceled');
     }
   });
-} 
+}
 
 }
