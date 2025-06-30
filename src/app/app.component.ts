@@ -2,27 +2,36 @@ import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NavigationComponent } from './navigation/navigation.component';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 import { MatTreeModule } from '@angular/material/tree';
-import { MatBadgeModule } from '@angular/material/badge'; 
+import { MatBadgeModule } from '@angular/material/badge';
+import {filter} from "rxjs";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent, MatTreeModule, MatBadgeModule  ], 
+  imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent, MatTreeModule, MatBadgeModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   title = 'sndsapp';
- 
-  isOnRestrictedPage: boolean = false; 
+
+  showNavBar: boolean = false;
+
   constructor(private router: Router) {
-    // Subscribe to router events to check current navigation status
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.isOnRestrictedPage = event.url.includes('/sign-in') || event.url.includes('/school-admin-registration') || event.url.includes('/register');
-      }
-    });
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+      )
+      .subscribe((event: NavigationEnd) => {
+        const url = event.urlAfterRedirects.split(/[?#!;]/)[0];
+        const hiddenRoutes = [
+          '/sign-in',
+          '/school-admin-registration',
+          '/register'
+        ];
+        this.showNavBar = !hiddenRoutes.includes(url);
+      });
   }
 }
