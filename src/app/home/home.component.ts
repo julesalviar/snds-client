@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Router } from '@angular/router';
 
-// TreeNode interface to define the structure of each node
 interface TreeNode {
     name: string;
     children?: TreeNode[];
@@ -21,11 +20,9 @@ interface TreeNode {
 
 })
 export class HomeComponent {
-
   userName: string;
- userRole: string;
+  userRole: string;
 
-  // Tree data structure
   treeData: TreeNode[] = [
     {
       name: 'APPLIANCES AND EQUIPMENT',
@@ -69,7 +66,7 @@ export class HomeComponent {
         { name: 'Spiral Machine ', count: 10 },
         { name: 'Sports Equipment ', count: 10 }
       ],
-      expanded: false // Initialize expansion state
+      expanded: false
     },
     {
       name: 'APPLIANCES AND EQUIPMENT(2)',
