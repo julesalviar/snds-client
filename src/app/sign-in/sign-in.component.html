@@ -30,6 +30,6 @@
       <button mat-button href="javascript:void(0);" (click)="onSignUp()">Sign Up</button>
     </div>
 
-    <div *ngIf="isError" class="error-message">I{{ errorMessage }}</div>
+    <div *ngIf="isError" class="error-message">{{ errorMessage }}</div>
   </form>
 </mat-card>
