@@ -33,10 +33,10 @@ export class UserService {
 }
 
 
-  addSchool(school: any) {
-    const currentSchools = this.schoolsSubject.value;
-    this.schoolsSubject.next([...currentSchools, school]);
-  }
+  // addSchool(school: any) {
+  //   const currentSchools = this.schoolsSubject.value;
+  //   this.schoolsSubject.next([...currentSchools, school]);
+  // }
 
   setProjectTitles(titles: string[]) {
     this.projectTitlesSubject.next(titles);
@@ -48,19 +48,8 @@ export class UserService {
     this.contributionData.next(data);
   }
 
-  register(user: User) {
-    const { name, email, password, address, sector, type } = user;
-    console.log('User registered:', user);
-
-    const userData = {
-      name,
-      address,
-      sector,
-      email,
-      password,
-      userName: email, // TODO: will use the email as username for now
-      role: type
-    };
+  register(userData: any) {
+    console.log('User registered:', userData);
 
     const tenant = this.tenantService.getCurrentDomainTenant() ?? 'gensan';
 

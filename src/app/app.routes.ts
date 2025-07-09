@@ -19,6 +19,7 @@ export const routes: Routes = [
   { path: 'sign-in', component: SignInComponent },
   { path: 'register', component: RegistrationComponent },
   { path: 'school-admin-registration', component: SchoolAdminRegistrationComponent },
+  { path: 'school-admin/about-us', component: StakeholdersComponent },
   {
     path: 'home',
     component: HomeComponent,
@@ -32,7 +33,10 @@ export const routes: Routes = [
       { path: 'partners-support', component: StakeholdersComponent },
     ]
   },
-  { // School Admin routes
+  // School Admin routes
+  { path: 'school-admin/reports', component: ReportsComponent },
+  { path: 'school-admin/about-us', component: StakeholdersComponent },
+  {
     path: 'school-admin',
     canActivateChild: [AuthGuard],
     children: [

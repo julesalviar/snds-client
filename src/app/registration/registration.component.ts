@@ -140,7 +140,12 @@ export class RegistrationComponent {
       return;
     }
 
-    const registrationData: User = { ...this.registrationForm.value, type: 'Stakeholder' };
+    const userData = { ...this.registrationForm.value };
+    const registrationData: User = {
+      ...userData,
+      role: 'Stakeholder',
+      userName: userData.email // TODO: we use email as username
+    };
     console.log(registrationData);
 
     this.userService.register(registrationData).pipe(

@@ -66,29 +66,30 @@ export class SchoolAdminRegistrationComponent {
     this.passwordMismatch = false; // Reset password mismatch flag
     if (this.registrationForm.valid) {
       const schoolData = {
+        role: UserType.SchoolAdmin,
+        userName: this.registrationForm.get('officialEmail')?.value, // TODO: we use officialEmail as username
         schoolName: this.registrationForm.get('schoolName')?.value,
         schoolId: this.registrationForm.get('schoolId')?.value,
         accountableName: this.registrationForm.get('accountableName')?.value,
         designation: this.registrationForm.get('designation')?.value,
         contactNumber: this.registrationForm.get('contactNumber')?.value,
+        region: this.registrationForm.get('region')?.value,
+        division: this.registrationForm.get('division')?.value,
+        district: this.registrationForm.get('district')?.value,
+        schoolOffering: this.registrationForm.get('schoolOffering')?.value,
+        nameOfAccountablePerson: this.registrationForm.get('accountableName')?.value,
+        password: this.registrationForm.get('password')?.value,
+        email: this.registrationForm.get('officialEmail')?.value,
       };
 
-      // Add school data to UserService
-      this.userService.addSchool(schoolData);
+      // this.userService.addSchool(schoolData);
 
-      // Check if passwords match
       if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
         this.passwordMismatch = true;
         console.log('Passwords do not match.');
       } else {
-        const registrationData = {
-          type: UserType.SchoolAdmin,
-          name: this.registrationForm.get('schoolName')?.value,
-          email: this.registrationForm.get('officialEmail')?.value,
-          password: this.registrationForm.get('password')?.value,
-        };
-
-        this.userService.register(registrationData).pipe(
+        console.log(schoolData);
+        this.userService.register(schoolData).pipe(
           switchMap(() => this.router.navigate(['/sign-in']))
         ).subscribe({
           next: () => this.success = true,

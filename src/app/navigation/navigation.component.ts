@@ -43,6 +43,10 @@ export class NavigationComponent {
     return this.userService.getRole();
   }
 
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
   changePassword() {
     console.log('Change Password clicked');
   }
