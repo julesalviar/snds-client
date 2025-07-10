@@ -1,11 +1,11 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ForgotPasswordDialogComponent} from '../forgot-password/forgot-password-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from "../auth/auth.service";
@@ -24,13 +24,15 @@ import {AuthService} from "../auth/auth.service";
     MatCardModule,
   ]
 })
-export class SignInComponent {
+export class SignInComponent implements OnInit {
+  returnUrl: string = '/home';
   signInForm: FormGroup;
   isError: boolean = false;
   isSubmitting: boolean = false;
   errorMessage: string = '';
 
   constructor(
+    private route: ActivatedRoute,
     private readonly authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
@@ -40,6 +42,10 @@ export class SignInComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
     });
+  }
+
+  ngOnInit() {
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
   }
 
   onForgotPassword() {
@@ -70,7 +76,7 @@ export class SignInComponent {
         next: (response: any) => {
           this.isError = false;
           this.isSubmitting = false;
-          this.router.navigate(['/home']);
+          this.router.navigateByUrl(this.returnUrl);
         },
 
         error: (error: any) => {
