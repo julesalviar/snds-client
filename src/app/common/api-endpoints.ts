@@ -5,4 +5,5 @@ export const API_ENDPOINT = {
     login: `${environment.API_URL}/auth/login`,
     register: `${environment.API_URL}/auth/signup`,
   },
+  referenceData: `${environment.API_URL}/reference-data`,
 }
