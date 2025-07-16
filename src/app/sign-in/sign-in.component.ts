@@ -45,7 +45,10 @@ export class SignInComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+    if (this.authService.isLoggedIn()) {
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+      this.router.navigateByUrl(returnUrl);
+    }
   }
 
   onForgotPassword() {

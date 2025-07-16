@@ -15,7 +15,7 @@ import { AllSchoolComponent } from './stakeholders/all-school/all-school.compone
 import {AuthGuard} from "./auth/auth.guard";
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/sign-in', pathMatch: 'full' },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
   { path: 'register', component: RegistrationComponent },
   { path: 'school-admin-registration', component: SchoolAdminRegistrationComponent },
@@ -69,5 +69,5 @@ export const routes: Routes = [
     ]
   },
   // Wildcard redirect
-  { path: '**', redirectTo: '/sign-in' }
+  { path: '**', redirectTo: '/home' }
 ];
