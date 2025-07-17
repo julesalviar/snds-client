@@ -2,9 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
-import { MatCard, MatCardTitle } from '@angular/material/card';
+import { MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatCardContent } from '@angular/material/card';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatDatepickerModule, MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatNativeDateModule, MatOption } from '@angular/material/core';
@@ -104,8 +103,8 @@ export class SchoolNeedsEngageComponent implements OnInit {
   ];
 
   constructor(
-    private route: ActivatedRoute,
-    private sharedDataService: SharedDataService
+    private readonly route: ActivatedRoute,
+    private readonly sharedDataService: SharedDataService
   ) {}
 
   ngOnInit(): void {

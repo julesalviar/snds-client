@@ -27,8 +27,8 @@ export class HomeComponent {
   treeData: TreeNode[] = [];
 
     constructor(
-      private userService: UserService,
-      private router: Router,
+      private readonly userService: UserService,
+      private readonly router: Router,
       private readonly referenceDataService: ReferenceDataService
     ) {
       this.userName = this.userService.getUserName(); // Retrieves the user's name
@@ -77,7 +77,7 @@ export class HomeComponent {
     getContributions(): string[] {
       return this.treeData.map(node => {
         const contributionType = node.name;
-        const specificContributions = node.children?.map(child => child.name).join(', ') || 'No specific contributions';
+        const specificContributions = node.children?.map(child => child.name).join(', ') ?? 'No specific contributions';
         return `Contribution type: ${contributionType}, Specific Contribution: ${specificContributions}`;
       });
     }

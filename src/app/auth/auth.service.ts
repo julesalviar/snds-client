@@ -1,21 +1,15 @@
 import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {TenantService} from "../config/tenant.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {HttpService} from "../common/services/http.service";
-import {catchError, map, Observable, Subscription, tap, throwError} from "rxjs";
+import {catchError, map, Observable, tap, throwError} from "rxjs";
 import {AuthResponse} from "./auth-response.model";
-import {response} from "express";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(
-    private readonly httpService: HttpService
-  ) {
-  }
+  constructor(private readonly httpService: HttpService) {}
 
   login(credentials: { userName: string; password: string }): Observable<void> {
     return this.httpService.post<AuthResponse>(

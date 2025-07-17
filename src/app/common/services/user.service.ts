@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
-import {User} from "../../registration/user.model";
 import {TenantService} from "../../config/tenant.service";
 import {API_ENDPOINT} from "../api-endpoints";
 
@@ -12,7 +11,7 @@ import {API_ENDPOINT} from "../api-endpoints";
 
 export class UserService {
   private userRole: string = 'schoolAdmin'; // Example role: schoolAdmin, divisionAdmin, stakeholder
-  private registeredUser: { name: string; email: string; password: string } | null = null;
+  private readonly registeredUser: { name: string; email: string; password: string } | null = null;
   private readonly projectTitlesSubject = new BehaviorSubject<string[]>([]);
   projectTitles$ = this.projectTitlesSubject.asObservable();
   private readonly schoolsSubject = new BehaviorSubject<any[]>([]);
@@ -20,7 +19,7 @@ export class UserService {
 
   constructor(
     private readonly http: HttpClient,
-    private tenantService: TenantService) { }
+    private readonly tenantService: TenantService) { }
 
   login(userName: string, password: string) {
     const tenant = this.tenantService.getCurrentDomainTenant();
@@ -31,12 +30,6 @@ export class UserService {
     const loginData = { userName, password };
     return this.http.post(`${environment.API_URL}/auth/login`, loginData, { headers });
 }
-
-
-  // addSchool(school: any) {
-  //   const currentSchools = this.schoolsSubject.value;
-  //   this.schoolsSubject.next([...currentSchools, school]);
-  // }
 
   setProjectTitles(titles: string[]) {
     this.projectTitlesSubject.next(titles);
@@ -59,10 +52,6 @@ export class UserService {
       .set('Accept', 'application/json');
 
     return this.http.post(API_ENDPOINT.auth.register, userData, {headers});
-  }
-
-  signIn(user: User) {
-
   }
 
   getUserName(): string {

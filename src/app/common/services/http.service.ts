@@ -9,7 +9,7 @@ import { Observable } from "rxjs";
 export class HttpService {
   constructor(
     private readonly tenantService: TenantService,
-    private http: HttpClient
+    private readonly http: HttpClient
   ) {}
 
   post<T>(url: string, data: any): Observable<T> {

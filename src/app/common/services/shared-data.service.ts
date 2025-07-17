@@ -17,7 +17,7 @@ interface SchoolNeed {
 })
 export class SharedDataService {
   private schoolName: string = '';
-  private schoolNeeds: SchoolNeed[] = [
+  private readonly schoolNeeds: SchoolNeed[] = [
     {
       code: '35541',
       year: 2023,
@@ -53,11 +53,11 @@ export class SharedDataService {
   updateEngagementStatus(code: string, engaged: boolean): void {
     const need = this.schoolNeeds.find(n => n.code === code);
     if (need) {
-      need.engaged = engaged; 
+      need.engaged = engaged;
     }
   }
 
   getSchoolNeeds(): SchoolNeed[] {
-    return this.schoolNeeds; 
+    return this.schoolNeeds;
   }
 }

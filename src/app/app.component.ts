@@ -19,7 +19,7 @@ export class AppComponent {
 
   showNavBar: boolean = false;
 
-  constructor(private router: Router) {
+  constructor(private readonly router: Router) {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)

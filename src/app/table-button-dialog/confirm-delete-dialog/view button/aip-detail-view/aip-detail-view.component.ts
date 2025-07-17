@@ -1,8 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatCardTitle, MatCard } from '@angular/material/card';
-import { MatCardContent } from '@angular/material/card';
+import { MatCardTitle, MatCard, MatCardContent } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 
 

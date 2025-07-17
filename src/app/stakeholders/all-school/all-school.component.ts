@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../../common/services/user.service';
 import { MatTable, MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
@@ -15,7 +14,7 @@ export class AllSchoolComponent implements OnInit {
   displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
   schoolList: any[] = [];
 
-  constructor(private userService: UserService) {}
+  constructor() {}
 
   ngOnInit(): void {
     // Temporary data for testing

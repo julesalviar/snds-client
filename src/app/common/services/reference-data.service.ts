@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import {API_ENDPOINT} from "../api-endpoints";
-import {catchError, firstValueFrom, map, Observable, of} from "rxjs";
+import {catchError, firstValueFrom, of} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 
 @Injectable({ providedIn: 'root' })
@@ -9,7 +9,7 @@ export class ReferenceDataService {
   private initialized = false;
 
   constructor(
-    private http: HttpClient) {}
+    private readonly http: HttpClient) {}
 
   async initialize(): Promise<void> {
     if (this.initialized) return;

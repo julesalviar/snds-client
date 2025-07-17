@@ -32,11 +32,11 @@ export class SignInComponent implements OnInit {
   errorMessage: string = '';
 
   constructor(
-    private route: ActivatedRoute,
+    private readonly route: ActivatedRoute,
     private readonly authService: AuthService,
-    private formBuilder: FormBuilder,
-    private router: Router,
-    private dialog: MatDialog
+    private readonly formBuilder: FormBuilder,
+    private readonly router: Router,
+    private readonly dialog: MatDialog
   ) {
     this.signInForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -46,7 +46,7 @@ export class SignInComponent implements OnInit {
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/';
       this.router.navigateByUrl(returnUrl);
     }
   }
