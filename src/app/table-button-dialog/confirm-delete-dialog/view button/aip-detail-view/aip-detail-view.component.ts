@@ -3,6 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardTitle, MatCard, MatCardContent } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
+import {Aip} from "../../../../common/model/aip.model";
 
 
 @Component({
@@ -15,7 +16,7 @@ import { CommonModule } from '@angular/common';
 export class AipDetailViewComponent {
   constructor(
     private dialogRef: MatDialogRef<AipDetailViewComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: Aip
   ) {}
 
   onClose(): void {
