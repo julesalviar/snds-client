@@ -8,23 +8,34 @@ import { Observable } from "rxjs";
 })
 export class HttpService {
   private readonly tenant = this.tenantService.getCurrentDomainTenant();
-  private readonly headers = new HttpHeaders({
-    tenant: this.tenant,
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  });
 
   constructor(
     private readonly tenantService: TenantService,
     private readonly http: HttpClient
   ) {}
 
+  private getHeaders(): HttpHeaders {
+    const tenant = this.tenantService.getCurrentDomainTenant();
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({
+      tenant: tenant,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
+  }
+
   post<T>(url: string, data: any): Observable<T> {
     console.log(`posting url: ${url} data: ${JSON.stringify(data)}`);
-    return this.http.post<T>(url, data, { headers: this.headers });
+    return this.http.post<T>(url, data, { headers: this.getHeaders() });
   }
 
   get<T>(url: string): Observable<T> {
-    return this.http.get<T>(url, { headers: this.headers });
+    return this.http.get<T>(url, { headers: this.getHeaders() });
   }
 }
