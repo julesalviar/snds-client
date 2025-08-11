@@ -2,27 +2,18 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu } from '@angular/material/menu';
-import { MatTableModule } from '@angular/material/table';
+import {MatMenu, MatMenuModule} from '@angular/material/menu';
+import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
 import { SharedDataService } from '../../common/services/shared-data.service';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
 import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import {Router, RouterModule} from "@angular/router";
+import {MatButton, MatIconButton} from "@angular/material/button";
+import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {SchoolNeed} from "../../common/model/school-need.model"
+import {SchoolNeedService} from "../../common/services/school-need.service";
 
-interface SchoolNeed {
-  code: string;
-  year: number;
-  specificContribution: string;
-  quantity: number;
-  amount: number;
-  beneficiaryStudents: number;
-  beneficiaryPersonnel: number;
-  implementationStatus: string;
-  engaged?: boolean;
-}
 
 @Component({
   selector: 'app-list-of-school-needs',
@@ -36,7 +27,10 @@ interface SchoolNeed {
     MatTooltipModule,
     MatMenu,
     MatMenuModule,
-    RouterModule
+    RouterModule,
+    MatButton,
+    MatIconButton,
+    MatPaginator
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css']
@@ -55,14 +49,20 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   ];
   schoolNeeds: SchoolNeed[] = [];
   schoolName: string = '';
+  pageIndex: number = 0;
+  pageSize: number = 10;
+  dataSource = new MatTableDataSource<SchoolNeed>();
+  totalItems: number = 0;
 
-  constructor(private sharedDataService: SharedDataService, private router: Router, private dialog: MatDialog) {}
+  constructor(
+    private readonly sharedDataService: SharedDataService,
+    private readonly router: Router,
+    private readonly dialog: MatDialog,
+    private readonly schoolNeedService: SchoolNeedService,
+  ) {}
 
   ngOnInit(): void {
-    this.schoolName = this.sharedDataService.getSchoolName(); // Fetch the school name
-
-    // Fetch school needs from the shared data service
-    this.schoolNeeds = this.sharedDataService.getSchoolNeeds();
+    this.loadSchoolNeeds();
   }
 
   openStatusDialog(need: SchoolNeed): void {
@@ -121,5 +121,20 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   delete(need: SchoolNeed): void {
     console.log('Deleting:', need);
     this.schoolNeeds = this.schoolNeeds.filter(n => n.code !== need.code);
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageSize = event.pageSize;
+    this.pageIndex = event.pageIndex;
+  }
+
+  loadSchoolNeeds(): void {
+    const page = this.pageIndex + 1;
+
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize).subscribe(response => {
+      this.schoolName = response.school?.schoolName;
+      this.dataSource.data = response.data;
+      this.totalItems = response.meta.totalItems;
+    });
   }
 }

@@ -29,20 +29,19 @@ export class AipComponent implements OnInit {
   aipForm: FormGroup;
   displayedColumns: string[] = [ 'apn', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
   projects: AIPProject[] = [];
-  currentYear: number = new Date().getFullYear();
   pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
   pageIndex: number = 0;
   pageSize: number = 10;
   dataSource = new MatTableDataSource<Aip>();
-  totalAips: number = 0;
+  totalItems: number = 0;
 
   constructor(
     private readonly fb: FormBuilder,
     protected dialog: MatDialog,
     private readonly aipService: AipService) {
     this.aipForm = this.fb.group({
-      schoolYear: [this.currentYear, Validators.required],
+      schoolYear: [this.getCurrentSchoolYear(), Validators.required],
       title: ['', Validators.required],
       objectives: ['', [Validators.required, Validators.maxLength(500)]],
       intermediateOutcome: ['', Validators.required],
@@ -69,7 +68,7 @@ export class AipComponent implements OnInit {
       this.aipService.createAip(newProject).subscribe({
         next: (res) => {
           this.aipForm.reset({
-            schoolYear: this.currentYear,
+            schoolYear: this.getCurrentSchoolYear(),
           }, { emitEvent: false });
 
           this.aipForm.markAsPristine();
@@ -108,7 +107,7 @@ export class AipComponent implements OnInit {
     const page = this.pageIndex + 1;
     this.aipService.getAips(page, this.pageSize).subscribe(response => {
       this.dataSource.data = response.data;
-      this.totalAips = response.data.total;
+      this.totalItems = response.meta.totalItems;
     })
   }
 
@@ -116,5 +115,18 @@ export class AipComponent implements OnInit {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
     this.loadAips();
+  }
+
+  getCurrentSchoolYear(): string {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0 = January
+
+    // Assuming the school year starts in June
+    if (currentMonth >= 5) { // June to December
+      return `${currentYear}-${currentYear + 1}`;
+    } else { // January to May
+      return `${currentYear - 1}-${currentYear}`;
+    }
   }
 }

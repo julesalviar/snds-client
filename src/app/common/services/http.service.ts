@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {TenantService} from "../../config/tenant.service";
-import { Observable } from "rxjs";
+import {Observable, throwError} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -37,5 +37,16 @@ export class HttpService {
 
   get<T>(url: string): Observable<T> {
     return this.http.get<T>(url, { headers: this.getHeaders() });
+  }
+
+  public handleError(error: any): Observable<never> {
+    let message = 'An unexpected error occurred';
+    if (error.error instanceof ErrorEvent) {
+      message = `Client Error: ${error.error.message}`;
+    } else {
+      message = `Server Error: ${error.status} ${error.message}`;
+    }
+    console.error(message);
+    return throwError(() => new Error(message));
   }
 }

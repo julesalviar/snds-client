@@ -3,6 +3,7 @@ import {API_ENDPOINT} from "../common/api-endpoints";
 import {HttpService} from "../common/services/http.service";
 import {catchError, map, Observable, tap, throwError} from "rxjs";
 import {AuthResponse} from "./auth-response.model";
+import {JwtPayload} from "../common/model/jwt-payload.model";
 
 @Injectable({
   providedIn: 'root'
@@ -31,12 +32,29 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
+    const payload = this.getTokenPayload();
+    if (!payload) return false;
 
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const expiry = payload.exp;
     const now = Math.floor(Date.now() / 1000);
-    return expiry > now;
+    return payload.exp > now;
+  }
+
+  getUsername(): string {
+    return this.getTokenPayload()?.username ?? '';
+  }
+
+  getRole(): string {
+    return this.getTokenPayload()?.role ?? '';
+  }
+
+  private getTokenPayload(): JwtPayload | null {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
   }
 }
