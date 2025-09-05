@@ -6,20 +6,20 @@
 
 <mat-card>
   <mat-card-title class="title">Schools' Needs</mat-card-title>
-  <div class="table-scroll"> 
+  <div class="table-scroll">
     <div class="table-container">
-      <table mat-table [dataSource]="schoolNeeds" class="mat-elevation-z8">
-        
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
         <ng-container matColumnDef="code">
           <th mat-header-cell *matHeaderCellDef> Code </th>
-          <td mat-cell *matCellDef="let need"> {{ need.code }} 
+          <td mat-cell *matCellDef="let need"> {{ need.code }}
             <mat-icon *ngIf="need.engaged">handshake</mat-icon>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="year">
-          <th mat-header-cell *matHeaderCellDef> Year </th>
-          <td mat-cell *matCellDef="let need"> {{ need.year }} </td>
+          <th mat-header-cell *matHeaderCellDef> School Year </th>
+          <td mat-cell *matCellDef="let need"> {{ need.projectId?.schoolYear }} </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">
@@ -29,22 +29,22 @@
 
         <ng-container matColumnDef="quantity">
           <th mat-header-cell *matHeaderCellDef> Quantity </th>
-          <td mat-cell *matCellDef="let need"> {{ need.quantity }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.quantity | number: '1.0-2' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="amount">
           <th mat-header-cell *matHeaderCellDef> Amount </th>
-          <td mat-cell *matCellDef="let need"> {{ need.amount | currency }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.estimatedCost | currency: 'PHP' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="beneficiaryStudents">
           <th mat-header-cell *matHeaderCellDef> No. of Beneficiary Students </th>
-          <td mat-cell *matCellDef="let need"> {{ need.beneficiaryStudents }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.studentBeneficiaries | number: '1.0-2' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="beneficiaryPersonnel">
           <th mat-header-cell *matHeaderCellDef> No. of Beneficiary Personnel </th>
-          <td mat-cell *matCellDef="let need"> {{ need.beneficiaryPersonnel }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.personnelBeneficiaries | number: '1.0-2' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="implementationStatus">
@@ -54,16 +54,13 @@
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef> Actions </th>
-          <td mat-cell *matCellDef="let need">
+          <td mat-cell *matCellDef="let need" style="white-space: nowrap;">
             <button mat-icon-button (click)="navigateToEngage(need.code)" matTooltip="Engage">
               <mat-icon>person</mat-icon>
             </button>
             <button mat-icon-button (click)="progress(need)" matTooltip="Status">
               <mat-icon>bar_chart</mat-icon>
             </button>
-            <span *ngIf="need.implementationStatus" style="margin-left: 4px; font-size: 10px;">
-              {{ need.implementationStatus }}
-            </span>
             <button class="ellipsis-button" mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="More Actions">
               <mat-icon>more_vert</mat-icon>
             </button>
@@ -84,6 +81,9 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
+      <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
+                     (page)="onPageChange($event)">
+      </mat-paginator>
     </div>
   </div>
 </mat-card>

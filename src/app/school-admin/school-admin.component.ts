@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -6,8 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatOption } from '@angular/material/core';
+import {MatNativeDateModule, MatOption} from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
@@ -59,7 +58,7 @@ export class SchoolAdminComponent implements OnInit {
   selectedSchoolYear: string = this.schoolYears[0];
   selectedContribution: any;
 
-  constructor(private fb: FormBuilder,  private userService: UserService) {
+  constructor(private readonly fb: FormBuilder,  private readonly userService: UserService) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: [''],
       specificContribution: [''],
@@ -121,9 +120,8 @@ export class SchoolAdminComponent implements OnInit {
   editNeed(need: any): void {
     console.log('Editing need:', need);
   }
-  uploadPictures(): void {
-  }
-  save(): void{
-  }
 
+  uploadPictures() {
+
+  }
 }

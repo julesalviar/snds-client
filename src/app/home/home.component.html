@@ -1,7 +1,7 @@
 
 <div class="container">
   <div class="tree-section">
-    <h2>Welcome, {{ userName | uppercase }}</h2>
+    <h2>Welcome, {{ userName ?? 'Guest' }}</h2>
     <div class="second-message">
       <p>All the needs of our schools are given in the menu categories below.</p>
     </div>
@@ -9,9 +9,17 @@
     <ul>
       <li *ngFor="let node of treeData">
         <div (click)="toggleChildren(node)" style="cursor: pointer;">
-          {{ node.name }}
+          <span
+            class="node-name"
+            [matBadge]="(node?.count ?? 0) > 0 ? node.count : null"
+            matBadgeColor="primary"
+            matBadgeOverlap="false"
+          >
+            {{ node.name }}
+          </span>
+          <span *ngIf="(node?.count ?? 0) > 0">&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <span *ngIf="node.children && node.children.length > 0">
-            {{ node.expanded ? '[-]' : '[+]' }}
+            [{{ node.expanded ? '−' : '+' }}]
           </span>
         </div>
         <ul *ngIf="node.expanded">
