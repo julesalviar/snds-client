@@ -7,7 +7,7 @@ import {Injectable} from "@angular/core";
 export class TenantService {
   getCurrentDomainTenant(): Tenant {
     const domain = window.location.hostname;
-    console.log(domain);
+    // console.log(domain);
     switch (domain) {
       case 'tacurong.local' :
       case 'tacurong.mysnds.com':

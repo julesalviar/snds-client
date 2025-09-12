@@ -1,11 +1,18 @@
 export interface SchoolNeed {
-  code: string;
-  year: number;
+  code?: string;
+  description: string;
   specificContribution: string;
+  contributionType: string,
   quantity: number;
-  amount: number;
-  beneficiaryStudents: number;
-  beneficiaryPersonnel: number;
-  implementationStatus: string;
+  amount?: number;
+  estimatedCost: number;
+  studentBeneficiaries: number;
+  personnelBeneficiaries: number;
+  implementationStatus?: string;
   engaged?: boolean;
+  unit: string;
+
+  projectId: string;
+  schoolId: string;
+
 }

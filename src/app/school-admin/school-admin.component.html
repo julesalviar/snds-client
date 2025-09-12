@@ -7,13 +7,13 @@
 
       <mat-form-field appearance="fill">
         <mat-label>School Year for the Project</mat-label>
-        <input matInput formControlName="schoolYear">
+        <input matInput formControlName="schoolYear" readonly>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Select Project Name</mat-label>
         <mat-select formControlName="projectName">
-          <mat-option *ngFor="let project of aipProjects" [value]="project">{{ project }}</mat-option>
+          <mat-option *ngFor="let project of projectsData" [value]="project._id">{{ project.title }}</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -30,9 +30,18 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Unit(Box,pieces,sack,roll etc.)</mat-label>
-        <input matInput formControlName="unit">
+        <mat-label>Unit (Box, pieces, sack, roll etc.)</mat-label>
+        <mat-select formControlName="unit" (selectionChange)="onUnitChange($event.value)">
+          <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
+        </mat-select>
       </mat-form-field>
+
+      <div *ngIf="isOtherSelected">
+        <mat-form-field appearance="fill">
+          <mat-label>Please specify unit</mat-label>
+          <input matInput formControlName="otherUnit" />
+        </mat-form-field>
+      </div>
 
       <mat-form-field appearance="fill">
         <mat-label>Estimated Cost(<span style="color: red;"> don't put comma,peso sign or letters</span>)</mat-label>
@@ -41,7 +50,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>No. of Beneficiary Students</mat-label>
-        <input matInput formControlName="beneficiaryStudents" type="number">
+        <input matInput formControlName="beneficiaryStudents" type="number" min="0">
       </mat-form-field>
 
       <mat-form-field appearance="fill">
@@ -79,10 +88,10 @@
           <mat-option *ngFor="let year of schoolYears" [value]="year">{{ year }}</mat-option>
         </mat-select>
       </mat-form-field>
-      <button mat-raised-button class="query-button" (click)="queryData()">Query</button>
+      <button mat-raised-button class="query-button" (click)="queryData()">View Records</button>
     </div>
     <div class="table-scroll">
-      <table mat-table [dataSource]="schoolNeeds" class="mat-elevation-z8">
+      <table mat-table [dataSource]="schoolNeedsData" class="mat-elevation-z8">
         <ng-container matColumnDef="contributionType">
           <th mat-header-cell *matHeaderCellDef> Contribution Type </th>
           <td mat-cell *matCellDef="let need"> {{ need.contributionType }} </td>

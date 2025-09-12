@@ -43,6 +43,10 @@ export class AuthService {
     return this.getTokenPayload()?.username ?? '';
   }
 
+  getSchoolId(): string {
+    return this.getTokenPayload()?.['sid'] ?? '';
+  }
+
   getRole(): string {
     return this.getTokenPayload()?.role ?? '';
   }

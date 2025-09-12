@@ -8,8 +8,7 @@
     "start:gensan": "ng serve --port 4200 --host gensan.local",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:sndsapp": "node dist/sndsapp/server/server.mjs"
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {

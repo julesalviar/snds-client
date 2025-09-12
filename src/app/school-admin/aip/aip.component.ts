@@ -16,6 +16,7 @@ import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete
 import {AipService} from "../../common/services/aip.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {Aip} from "../../common/model/aip.model";
+import {getSchoolYear} from "../../common/date-utils";
 
 @Component({
   selector: 'app-aip',
@@ -41,7 +42,7 @@ export class AipComponent implements OnInit {
     protected dialog: MatDialog,
     private readonly aipService: AipService) {
     this.aipForm = this.fb.group({
-      schoolYear: [this.getCurrentSchoolYear(), Validators.required],
+      schoolYear: [getSchoolYear(), Validators.required],
       title: ['', Validators.required],
       objectives: ['', [Validators.required, Validators.maxLength(500)]],
       intermediateOutcome: ['', Validators.required],
@@ -68,7 +69,7 @@ export class AipComponent implements OnInit {
       this.aipService.createAip(newProject).subscribe({
         next: (res) => {
           this.aipForm.reset({
-            schoolYear: this.getCurrentSchoolYear(),
+            schoolYear: getSchoolYear()
           }, { emitEvent: false });
 
           this.aipForm.markAsPristine();
@@ -117,16 +118,5 @@ export class AipComponent implements OnInit {
     this.loadAips();
   }
 
-  getCurrentSchoolYear(): string {
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth(); // 0 = January
 
-    // Assuming the school year starts in June
-    if (currentMonth >= 5) { // June to December
-      return `${currentYear}-${currentYear + 1}`;
-    } else { // January to May
-      return `${currentYear - 1}-${currentYear}`;
-    }
-  }
 }

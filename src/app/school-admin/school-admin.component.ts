@@ -11,6 +11,13 @@ import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { UserService } from '../common/services/user.service';
+import {map, Observable, of, switchMap} from "rxjs";
+import {SchoolNeedService} from "../common/services/school-need.service";
+import {getSchoolYear} from "../common/date-utils";
+import {AipService} from "../common/services/aip.service";
+import {Aip} from "../common/model/aip.model";
+import {SchoolNeed} from "../common/model/school-need.model";
+import {AuthService} from "../auth/auth.service";
 
 
 @Component({
@@ -35,38 +42,35 @@ import { UserService } from '../common/services/user.service';
 })
 export class SchoolAdminComponent implements OnInit {
   schoolNeedsForm: FormGroup;
-  schoolNeeds: any[] = [{
-    contributionType: 'APPLIANCES AND EQUIPMENT ',
-    specificContribution: 'Air-conditioning Units',
-    quantityNeeded: 2,
-    estimatedCost: 20000,
-    targetDate: new Date('2025-09-01')
-    },
-    {
-    contributionType: 'FURNITURE',
-    specificContribution: 'Armchairs',
-    quantityNeeded: 50,
-    estimatedCost: 50000,
-    targetDate: new Date('2025-10-15')
-    }
-    ];
+  schoolNeedsData: any[] = [];
+  projectsData: Aip[] = [];
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
-  schoolYears: string[] = ['2020-2021', '2022-2023', '2024-2025', '2026-2027'];
-  selectedSchoolYear: string = this.schoolYears[0];
+  schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2021', '2021-2020', '2020-2019', '2019-2018', '2018-2017'];
+  units: string[] = ['Bottles', 'Boxes', 'Classrooms', 'Feet', 'Gallons', 'Hectares', 'Hours', 'Learners', 'Lots', 'Months', 'Non-Teaching Personnel', 'Pieces', 'Reams', 'Rolls', 'Sacks', 'Sheets', 'Spans', 'Teaching Personnel', 'Units', 'Others (pls. specify)']
+  selectedSchoolYear: string = this.schoolYears[1];
   selectedContribution: any;
+  selectedProject: any;
+  isOtherSelected = false;
 
-  constructor(private readonly fb: FormBuilder,  private readonly userService: UserService) {
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly userService: UserService,
+    private readonly schoolNeedService: SchoolNeedService,
+    private readonly aipService: AipService,
+    private readonly  authService: AuthService,
+  ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: [''],
       specificContribution: [''],
-      schoolYear: [''],
+      schoolYear: [getSchoolYear()],
       projectName: [''],
       intermediateOutcome: [''],
       quantityNeeded: [0],
       unit: [''],
+      otherUnit: [''],
       estimatedCost: [0],
       beneficiaryStudents: [0],
       beneficiaryPersonnel: [0],
@@ -75,11 +79,13 @@ export class SchoolAdminComponent implements OnInit {
     });
   }
   queryData(): void {
-    console.log('Querying data for school year:', this.selectedSchoolYear);
-
+    this.loadAllSchoolNeeds();
+    console.log('Load All School Needs');
   }
 
   ngOnInit(): void {
+    this.loadAllSchoolNeeds();
+    this.loadCurrentProjects();
     this.userService.projectTitles$.subscribe(titles => {
       this.aipProjects = titles;
     });
@@ -88,29 +94,30 @@ export class SchoolAdminComponent implements OnInit {
         this.selectedContribution = data;
         this.schoolNeedsForm.patchValue({
           specificContribution: data.specificContribution,
-          contributionType: data.name // Set contribution type
+          contributionType: data.name
         });
       }
     });
   }
 
   onSubmit(): void {
-    const newNeed = {
-      contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+    const newNeed: SchoolNeed = {
       specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
-      schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
-      projectName: this.schoolNeedsForm.get('projectName')?.value,
-      intermediateOutcome: this.schoolNeedsForm.get('intermediateOutcome')?.value,
-      quantityNeeded: this.schoolNeedsForm.get('quantityNeeded')?.value,
+      contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+      projectId: this.schoolNeedsForm.get('projectName')?.value,
+      quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
       unit: this.schoolNeedsForm.get('unit')?.value,
       estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
-      beneficiaryStudents: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
-      beneficiaryPersonnel: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-      targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+      studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+      personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
       description: this.schoolNeedsForm.get('description')?.value,
+      schoolId: this.authService.getSchoolId(),
     };
-
-    this.schoolNeeds.push(newNeed); // Add new entry to the array
+    console.log(newNeed);
+    this.schoolNeedService.createSchoolNeed(newNeed).subscribe({
+      next: (res) => console.log('Success:', res),
+      error: (err) => console.error('Error:', err)
+    });;
     this.schoolNeedsForm.reset(); // Reset the form
   }
   viewResponses(need: any): void {
@@ -123,5 +130,63 @@ export class SchoolAdminComponent implements OnInit {
 
   uploadPictures() {
 
+  }
+
+  private loadAllSchoolNeeds(): void {
+    this.fetchAllSchoolNeeds().subscribe({
+      next: (needs) => {
+        this.schoolNeedsData = needs;
+      },
+      error: (err) => {
+        console.error('Error fetching school needs:', err);
+      }
+    })
+  }
+
+  private loadCurrentProjects(): void {
+    this.fetchProjects().subscribe({
+      next: (projects) => {
+        this.projectsData = projects;
+      },
+      error: (err) => {
+        console.error('Error fetching projects:', err);
+      }
+    });
+  }
+
+  private fetchAllSchoolNeeds(
+    page= 1,
+    size = 1000,
+    acc: any[] = []
+  ): Observable<any[]> {
+    const sy = this.selectedSchoolYear;
+    return this.schoolNeedService.getSchoolNeeds(page, size, sy).pipe(
+      switchMap(res => {
+        const currentData = res?.data ?? [];
+        const allData = [...acc, ...currentData];
+
+        if(currentData.length < size) {
+          return of(allData);
+        }
+
+        return this.fetchAllSchoolNeeds(page + 1, size, allData);
+      })
+    )
+  }
+
+  private fetchProjects(
+    page = 1,
+    size = 1000,
+  ): Observable<any[]> {
+    return this.aipService.getAips(page, size).pipe(
+      map(response => response.data)
+    );
+  }
+
+  protected onUnitChange(selectedUnit: string): void {
+    this.isOtherSelected = selectedUnit === 'Others (pls. specify)';
+    if (!this.isOtherSelected) {
+      this.schoolNeedsForm.get('otherUnit')?.reset();
+    }
   }
 }

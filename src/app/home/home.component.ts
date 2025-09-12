@@ -121,7 +121,6 @@ export class HomeComponent implements OnInit {
     }
 
     private loadSchoolNeeds(): void {
-
       forkJoin({
         tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
         needs: this.fetchAllSchoolNeeds()
