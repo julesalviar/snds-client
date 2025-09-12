@@ -11,7 +11,8 @@
         <div (click)="toggleChildren(node)" style="cursor: pointer;">
           <span
             class="node-name"
-            [matBadge]="(node?.count ?? 0) > 0 ? node.count : null"
+            [ngClass]="{ 'expanded-node': node.expanded }"
+            [matBadge]="(node?.count ?? 0) > 0 && !node?.expanded ? node.count : null"
             matBadgeColor="primary"
             matBadgeOverlap="false"
           >

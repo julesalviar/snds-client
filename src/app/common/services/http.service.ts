@@ -40,6 +40,7 @@ export class HttpService {
   }
 
   public handleError(error: any): Observable<never> {
+    console.error(error);
     let message = 'An unexpected error occurred';
     if (error.error instanceof ErrorEvent) {
       message = `Client Error: ${error.error.message}`;

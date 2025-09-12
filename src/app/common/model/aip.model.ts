@@ -9,4 +9,6 @@ export interface Aip {
   totalBudget: string;
   budgetSource: string;
   status: 'Ongoing' | 'For Implementation' | 'Completed';
+
+  _id: string;
 }
