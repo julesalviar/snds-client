@@ -30,6 +30,21 @@ export class HttpService {
     return headers;
   }
 
+  private getUploadHeaders(): HttpHeaders {
+    const tenant = this.tenantService.getCurrentDomainTenant();
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({
+      tenant: tenant,
+      'Accept': 'application/json'
+    });
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
+  }
+
   post<T>(url: string, data: any): Observable<T> {
     console.log(`posting url: ${url} data: ${JSON.stringify(data)}`);
     return this.http.post<T>(url, data, { headers: this.getHeaders() });
@@ -37,6 +52,11 @@ export class HttpService {
 
   get<T>(url: string): Observable<T> {
     return this.http.get<T>(url, { headers: this.getHeaders() });
+  }
+
+  uploadFile<T>(url: string, formData: FormData): Observable<T> {
+    console.log(`uploading file to url: ${url}`);
+    return this.http.post<T>(url, formData, { headers: this.getUploadHeaders() });
   }
 
   public handleError(error: any): Observable<never> {

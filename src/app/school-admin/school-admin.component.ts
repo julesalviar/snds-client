@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -18,6 +18,10 @@ import {AipService} from "../common/services/aip.service";
 import {Aip} from "../common/model/aip.model";
 import {SchoolNeed} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
+import {MatProgressBar} from "@angular/material/progress-bar";
+import {HttpService} from "../common/services/http.service";
+import {HttpEventType, HttpResponse} from "@angular/common/http";
+import {API_ENDPOINT} from "../common/api-endpoints";
 
 
 @Component({
@@ -35,7 +39,8 @@ import {AuthService} from "../auth/auth.service";
     MatOption,
     CommonModule,
     MatCardTitle,
-    MatIcon
+    MatIcon,
+    MatProgressBar
   ],
   templateUrl: './school-admin.component.html',
   styleUrls: ['./school-admin.component.css']
@@ -54,6 +59,8 @@ export class SchoolAdminComponent implements OnInit {
   selectedContribution: any;
   selectedProject: any;
   isOtherSelected = false;
+  previewImages: any[] = [];
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -61,6 +68,7 @@ export class SchoolAdminComponent implements OnInit {
     private readonly schoolNeedService: SchoolNeedService,
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
+    private readonly httpService: HttpService,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: [''],
@@ -76,6 +84,7 @@ export class SchoolAdminComponent implements OnInit {
       beneficiaryPersonnel: [0],
       targetDate: [''],
       description: [''],
+      images: [[]],
     });
   }
   queryData(): void {
@@ -100,7 +109,11 @@ export class SchoolAdminComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
+    if (this.previewImages.length) {
+      await this.uploadImages('school-needs');
+    }
+
     const newNeed: SchoolNeed = {
       specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
       contributionType: this.schoolNeedsForm.get('contributionType')?.value,
@@ -112,12 +125,13 @@ export class SchoolAdminComponent implements OnInit {
       personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
       description: this.schoolNeedsForm.get('description')?.value,
       schoolId: this.authService.getSchoolId(),
+      images: this.schoolNeedsForm.get('images')?.value,
     };
     console.log(newNeed);
     this.schoolNeedService.createSchoolNeed(newNeed).subscribe({
       next: (res) => console.log('Success:', res),
       error: (err) => console.error('Error:', err)
-    });;
+    });
     this.schoolNeedsForm.reset(); // Reset the form
   }
   viewResponses(need: any): void {
@@ -126,10 +140,6 @@ export class SchoolAdminComponent implements OnInit {
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
-  }
-
-  uploadPictures() {
-
   }
 
   private loadAllSchoolNeeds(): void {
@@ -188,5 +198,77 @@ export class SchoolAdminComponent implements OnInit {
     if (!this.isOtherSelected) {
       this.schoolNeedsForm.get('otherUnit')?.reset();
     }
+  }
+
+  protected onFileSelected(event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+    if (!files) return;
+
+    const selectionSeen = new Set<string>();
+
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/') || file.size === 0) {
+        console.warn('Invalid image skipped:', file.name);
+        return;
+      }
+
+      const key = `${file.name}__${file.size}__${file.lastModified}`;
+
+      const alreadyAdded = this.previewImages.some(img =>
+        img?.file?.name === file.name &&
+        img?.file?.size === file.size &&
+        img?.file?.lastModified === file.lastModified
+      ) || selectionSeen.has(key);
+
+      if (alreadyAdded) {
+        console.warn('Duplicate image ignored:', file.name);
+        return;
+      }
+
+      selectionSeen.add(key);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewImages.push({
+          file,
+          dataUrl: reader.result,
+          uploading: false,
+          progress: 0,
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  removeImage(index: number) {
+    this.previewImages.splice(index, 1);
+  }
+
+  async uploadImages(category: string) {
+    const uploaded: unknown[] = [];
+    for (const img of this.previewImages) {
+      img.uploading = true;
+      const formData = new FormData();
+      formData.append('file', img.file);
+      formData.append('category', category);
+
+      console.log(`File size: ${img.file.size} bytes`);
+
+      this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).subscribe({
+        next: (response) => {
+          uploaded.push(response);
+          img.uploading = false;
+          img.progress = 100;
+        },
+        error: (error) => {
+          console.error('Upload error:', error);
+          img.uploading = false;
+          img.progress = 0;
+        }
+      });
+    }
+
+    this.schoolNeedsForm.get('images')?.setValue(uploaded);
   }
 }
