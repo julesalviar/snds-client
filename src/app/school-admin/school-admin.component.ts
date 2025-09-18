@@ -67,7 +67,6 @@ export class SchoolAdminComponent implements OnInit {
     private readonly schoolNeedService: SchoolNeedService,
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
-    private readonly httpService: HttpService,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: [''],
@@ -148,6 +147,135 @@ export class SchoolAdminComponent implements OnInit {
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
+  }
+
+  private loadAllSchoolNeeds(): void {
+    this.fetchAllSchoolNeeds().subscribe({
+      next: (needs) => {
+        this.schoolNeedsData = needs;
+      },
+      error: (err) => {
+        console.error('Error fetching school needs:', err);
+      }
+    })
+  }
+
+  private loadCurrentProjects(): void {
+    this.fetchProjects().subscribe({
+      next: (projects) => {
+        this.projectsData = projects;
+      },
+      error: (err) => {
+        console.error('Error fetching projects:', err);
+      }
+    });
+  }
+
+  private fetchAllSchoolNeeds(
+    page= 1,
+    size = 1000,
+    acc: any[] = []
+  ): Observable<any[]> {
+    const sy = this.selectedSchoolYear;
+    return this.schoolNeedService.getSchoolNeeds(page, size, sy).pipe(
+      switchMap(res => {
+        const currentData = res?.data ?? [];
+        const allData = [...acc, ...currentData];
+
+        if(currentData.length < size) {
+          return of(allData);
+        }
+
+        return this.fetchAllSchoolNeeds(page + 1, size, allData);
+      })
+    )
+  }
+
+  private fetchProjects(
+    page = 1,
+    size = 1000,
+  ): Observable<any[]> {
+    return this.aipService.getAips(page, size).pipe(
+      map(response => response.data)
+    );
+  }
+
+  protected onUnitChange(selectedUnit: string): void {
+    this.isOtherSelected = selectedUnit === 'Others (pls. specify)';
+    if (!this.isOtherSelected) {
+      this.schoolNeedsForm.get('otherUnit')?.reset();
+    }
+  }
+
+  protected onFileSelected(event: Event): void {
+    const files = (event.target as HTMLInputElement).files;
+    if (!files) return;
+
+    const selectionSeen = new Set<string>();
+
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/') || file.size === 0) {
+        console.warn('Invalid image skipped:', file.name);
+        return;
+      }
+
+      const key = `${file.name}__${file.size}__${file.lastModified}`;
+
+      const alreadyAdded = this.previewImages.some(img =>
+        img?.file?.name === file.name &&
+        img?.file?.size === file.size &&
+        img?.file?.lastModified === file.lastModified
+      ) || selectionSeen.has(key);
+
+      if (alreadyAdded) {
+        console.warn('Duplicate image ignored:', file.name);
+        return;
+      }
+
+      selectionSeen.add(key);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewImages.push({
+          file,
+          dataUrl: reader.result,
+          uploading: false,
+          progress: 0,
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  removeImage(index: number) {
+    this.previewImages.splice(index, 1);
+  }
+
+  async uploadImages(category: string): Promise<any[]> {
+    const uploadRequests = this.previewImages.map(img => {
+      img.uploading = true;
+      img.progress = 0;
+      const formData = new FormData();
+      formData.append('file', img.file);
+      formData.append('category', category);
+
+      return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
+        map(response => {
+          img.uploading = false;
+          img.progress = 100;
+          return response;
+        })
+      );
+    });
+
+    if (uploadRequests.length === 0) {
+      return [];
+    }
+
+    const results = await lastValueFrom(forkJoin(uploadRequests));
+    this.schoolNeedsForm.get('images')?.setValue(results);
+    return results;
   }
 
   private loadAllSchoolNeeds(): void {
