@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { UserService } from '../common/services/user.service';
-import {map, Observable, of, switchMap} from "rxjs";
+import {forkJoin, lastValueFrom, map, Observable, of, Subject, switchMap, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {getSchoolYear} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
@@ -20,7 +20,6 @@ import {SchoolNeed} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {HttpService} from "../common/services/http.service";
-import {HttpEventType, HttpResponse} from "@angular/common/http";
 import {API_ENDPOINT} from "../common/api-endpoints";
 
 
@@ -49,17 +48,17 @@ export class SchoolAdminComponent implements OnInit {
   schoolNeedsForm: FormGroup;
   schoolNeedsData: any[] = [];
   projectsData: Aip[] = [];
+  private readonly destroy$ = new Subject<void>();
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
-  schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2021', '2021-2020', '2020-2019', '2019-2018', '2018-2017'];
+  schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
   units: string[] = ['Bottles', 'Boxes', 'Classrooms', 'Feet', 'Gallons', 'Hectares', 'Hours', 'Learners', 'Lots', 'Months', 'Non-Teaching Personnel', 'Pieces', 'Reams', 'Rolls', 'Sacks', 'Sheets', 'Spans', 'Teaching Personnel', 'Units', 'Others (pls. specify)']
-  selectedSchoolYear: string = this.schoolYears[1];
+  selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;
-  selectedProject: any;
   isOtherSelected = false;
-  previewImages: any[] = [];
+  previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(
@@ -95,10 +94,10 @@ export class SchoolAdminComponent implements OnInit {
   ngOnInit(): void {
     this.loadAllSchoolNeeds();
     this.loadCurrentProjects();
-    this.userService.projectTitles$.subscribe(titles => {
+    this.userService.projectTitles$.pipe(takeUntil(this.destroy$)).subscribe(titles => {
       this.aipProjects = titles;
     });
-    this.userService.currentContribution.subscribe(data => {
+    this.userService.currentContribution.pipe(takeUntil(this.destroy$)).subscribe(data => {
       if (data) {
         this.selectedContribution = data;
         this.schoolNeedsForm.patchValue({
@@ -109,10 +108,17 @@ export class SchoolAdminComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   async onSubmit(): Promise<void> {
-    if (this.previewImages.length) {
-      await this.uploadImages('school-needs');
-    }
+    const uploadedImages = this.previewImages.length
+      ? await this.uploadImages('school-needs')
+      : [];
+
+    console.log(uploadedImages);
 
     const newNeed: SchoolNeed = {
       specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
@@ -125,14 +131,16 @@ export class SchoolAdminComponent implements OnInit {
       personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
       description: this.schoolNeedsForm.get('description')?.value,
       schoolId: this.authService.getSchoolId(),
-      images: this.schoolNeedsForm.get('images')?.value,
+      images: uploadedImages,
     };
-    console.log(newNeed);
-    this.schoolNeedService.createSchoolNeed(newNeed).subscribe({
-      next: (res) => console.log('Success:', res),
-      error: (err) => console.error('Error:', err)
+    this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.schoolNeedsForm.reset();
+        this.previewImages = [];
+        this.queryData();
+      },
+      error: (err) => console.error('Error creating school need:', err)
     });
-    this.schoolNeedsForm.reset(); // Reset the form
   }
   viewResponses(need: any): void {
     console.log('Viewing responses for:', need);
@@ -200,7 +208,7 @@ export class SchoolAdminComponent implements OnInit {
     }
   }
 
-  protected onFileSelected(event: Event) {
+  protected onFileSelected(event: Event): void {
     const files = (event.target as HTMLInputElement).files;
     if (!files) return;
 
@@ -245,30 +253,29 @@ export class SchoolAdminComponent implements OnInit {
     this.previewImages.splice(index, 1);
   }
 
-  async uploadImages(category: string) {
-    const uploaded: unknown[] = [];
-    for (const img of this.previewImages) {
+  async uploadImages(category: string): Promise<any[]> {
+    const uploadRequests = this.previewImages.map(img => {
       img.uploading = true;
+      img.progress = 0;
       const formData = new FormData();
       formData.append('file', img.file);
       formData.append('category', category);
 
-      console.log(`File size: ${img.file.size} bytes`);
-
-      this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).subscribe({
-        next: (response) => {
-          uploaded.push(response);
+      return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
+        map(response => {
           img.uploading = false;
           img.progress = 100;
-        },
-        error: (error) => {
-          console.error('Upload error:', error);
-          img.uploading = false;
-          img.progress = 0;
-        }
-      });
+          return response;
+        })
+      );
+    });
+
+    if (uploadRequests.length === 0) {
+      return [];
     }
 
-    this.schoolNeedsForm.get('images')?.setValue(uploaded);
+    const results = await lastValueFrom(forkJoin(uploadRequests));
+    this.schoolNeedsForm.get('images')?.setValue(results);
+    return results;
   }
 }
