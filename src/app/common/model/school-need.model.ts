@@ -14,5 +14,5 @@ export interface SchoolNeed {
 
   projectId: string;
   schoolId: string;
-
+  images: string[];
 }
