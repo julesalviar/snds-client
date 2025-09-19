@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { UserService } from '../common/services/user.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {AuthService} from "../auth/auth.service";
+import {UserType} from "../registration/user-type.enum";
 
 @Component({
   standalone: true,
@@ -24,11 +24,9 @@ import {AuthService} from "../auth/auth.service";
 })
 export class NavigationComponent {
   isMenuOpen = false;
+  userType = UserType;
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -40,7 +38,7 @@ export class NavigationComponent {
   }
 
   get userRole(): string {
-    return this.userService.getRole();
+    return this.authService.getRole();
   }
 
   isLoggedIn(): boolean {

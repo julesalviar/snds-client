@@ -1,4 +1,5 @@
 export enum UserType {
-  StakeHolder = 'Stakeholder',
-  SchoolAdmin = 'School Admin',
+  StakeHolder = 'stakeholder',
+  SchoolAdmin = 'schoolAdmin',
+  DivisionAdmin = 'divisionAdmin'
 }

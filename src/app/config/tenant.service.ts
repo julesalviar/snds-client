@@ -11,6 +11,7 @@ export class TenantService {
     switch (domain) {
       case 'tacurong.local' :
       case 'tacurong.mysnds.com':
+      case 'sdotacurong.mysnds.com':
         return Tenant.TACURONG;
       default:
         return Tenant.GENSAN;

@@ -23,6 +23,7 @@ import {switchMap} from "rxjs";
 import {DEFAULT_PASSWORD} from "../config";
 import {User} from "./user.model";
 import {controlHasErrorAndTouched} from "../common/form-utils";
+import {UserType} from "./user-type.enum";
 
 export function passwordMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -143,7 +144,7 @@ export class RegistrationComponent {
     const userData = { ...this.registrationForm.value };
     const registrationData: User = {
       ...userData,
-      role: 'Stakeholder',
+      role: UserType.StakeHolder,
       userName: userData.email // TODO: we use email as username
     };
     console.log(registrationData);

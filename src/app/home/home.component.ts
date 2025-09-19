@@ -7,6 +7,7 @@ import {ReferenceDataService} from "../common/services/reference-data.service";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {AuthService} from "../auth/auth.service";
 import {forkJoin, Observable, of, switchMap} from "rxjs";
+import {MatIcon} from "@angular/material/icon";
 
 interface TreeNode {
     name: string;
@@ -18,14 +19,15 @@ interface TreeNode {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatBadgeModule],
+  imports: [CommonModule, MatBadgeModule, MatIcon],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 
 })
 export class HomeComponent implements OnInit {
-  userName: string | undefined;
+  name: string | undefined;
   userRole: string | undefined;
+  schoolName: string = '';
 
   treeData: TreeNode[] = [];
   schoolNeedData: any[] = [];
@@ -40,10 +42,10 @@ export class HomeComponent implements OnInit {
     }
 
   ngOnInit(): void {
-    this.userName = this.authService.getUsername();
+    this.name = this.authService.getName();
     this.userRole = this.authService.getRole();
 
-    if (!this.userName || !this.userRole) {
+    if (!this.name || !this.userRole) {
       console.warn('User information is incomplete.');
     }
 
@@ -105,14 +107,19 @@ export class HomeComponent implements OnInit {
       this.treeData = this.referenceDataService.get<TreeNode[]>('contributionTree');
     }
 
-    private fetchAllSchoolNeeds(page= 1, size = 1000, acc: any[] = []): Observable<any[]> {
+    private fetchAllSchoolNeeds(page= 1, size = 1000, acc: any[] = []): Observable<{data: any[], schoolName: string}> {
       return this.schoolNeedService.getSchoolNeeds(page, size).pipe(
         switchMap(res => {
           const currentData = res?.data ?? [];
           const allData = [...acc, ...currentData];
 
+          // Capture school name from the first response
+          if (page === 1 && res?.school?.schoolName) {
+            this.schoolName = res.school.schoolName;
+          }
+
           if(currentData.length < size) {
-            return of(allData);
+            return of({data: allData, schoolName: this.schoolName});
           }
 
           return this.fetchAllSchoolNeeds(page + 1, size, allData);
@@ -127,15 +134,16 @@ export class HomeComponent implements OnInit {
       }).subscribe({
         next: ({ tree, needs }) => {
           this.treeData = tree;
-          this.schoolNeedData = needs;
+          this.schoolNeedData = needs.data;
 
-          this.mapCountsToTree(needs);
+          this.mapCountsToTree(needs.data);
         },
         error: (err) => {
           console.error('Error fetching school needs:', err);
         }
       })
     }
+
 
     private mapCountsToTree(needs: any[]): void {
       for (const node of this.treeData) {
