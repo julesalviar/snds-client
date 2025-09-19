@@ -4,7 +4,7 @@
     <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
 
     <!-- Stakeholder Menus -->
-    <ng-container *ngIf="userRole === 'stakeholder'">
+    <ng-container *ngIf="userRole === userType.StakeHolder">
       <li>
         <span>Find School</span>
         <ul>
@@ -25,7 +25,7 @@
     </ng-container>
 
     <!-- School Admin Menus -->
-    <ng-container *ngIf="userRole === 'schoolAdmin'">
+    <ng-container *ngIf="userRole === userType.SchoolAdmin">
       <li>
         <span>School Needs</span>
         <ul>

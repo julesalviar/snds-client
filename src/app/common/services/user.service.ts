@@ -4,6 +4,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
 import {TenantService} from "../../config/tenant.service";
 import {API_ENDPOINT} from "../api-endpoints";
+import {HttpService} from "./http.service";
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +20,8 @@ export class UserService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly tenantService: TenantService) { }
+    private readonly tenantService: TenantService,
+    private readonly httpService: HttpService) { }
 
   login(userName: string, password: string) {
     const tenant = this.tenantService.getCurrentDomainTenant();
@@ -44,14 +46,7 @@ export class UserService {
   register(userData: any) {
     console.log('User registered:', userData);
 
-    const tenant = this.tenantService.getCurrentDomainTenant() ?? 'gensan';
-
-    const headers = new HttpHeaders()
-      .set('tenant', tenant)
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
-
-    return this.http.post(API_ENDPOINT.auth.register, userData, {headers});
+    return this.httpService.post(API_ENDPOINT.auth.register, userData);
   }
 
   getUserName(): string {
