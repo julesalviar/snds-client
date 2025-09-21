@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,10 +8,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { UserService } from '../common/services/user.service';
-import { SharedDataService } from '../common/services/shared-data.service';
-import {controlHasErrorAndTouched} from "../common/form-utils";
-import {switchMap} from "rxjs";
-import {UserType} from "../registration/user-type.enum";
+import { ReferenceDataService } from '../common/services/reference-data.service';
+import { controlHasErrorAndTouched } from "../common/form-utils";
+import { switchMap } from "rxjs";
+import { UserType } from "../registration/user-type.enum";
+import { RegionOption } from '../common/model/region.model';
+import { DivisionOption } from '../common/model/division.model';
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -28,17 +30,23 @@ import {UserType} from "../registration/user-type.enum";
     MatCardModule,
   ]
 })
-export class SchoolAdminRegistrationComponent {
+export class SchoolAdminRegistrationComponent implements OnInit {
   registrationForm: FormGroup;
   passwordMismatch: boolean = false;
   defaultPassword: string = '123456'; // Default password
   success: boolean = false;
 
+  regions: RegionOption[] = [];
+  divisions: DivisionOption[] = [];
+  disabledRegions: string[] = [];
+  disabledDivisions: string[] = [];
+  regionData: any[] = []; // Store full region data to access active field
+
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private userService: UserService,
-    private sharedDataService: SharedDataService
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly userService: UserService,
+    private readonly referenceDataService: ReferenceDataService
   ) {
     this.registrationForm = this.fb.group({
       region: this.fb.control('', Validators.required),
@@ -56,6 +64,138 @@ export class SchoolAdminRegistrationComponent {
     }, { validators: this.passwordMatchValidator });
   }
 
+  ngOnInit(): void {
+    this.loadRegions();
+    this.setupRegionChangeListener();
+  }
+
+
+  private async loadRegions(): Promise<void> {
+    await this.referenceDataService.initialize();
+
+    const regionData = this.referenceDataService.get('region');
+
+    if (regionData) {
+      let regionsArray: any[] = [];
+
+      if (Array.isArray(regionData)) {
+        regionsArray = regionData;
+      } else if (regionData.value && Array.isArray(regionData.value)) {
+        regionsArray = regionData.value;
+      } else if (regionData.data && Array.isArray(regionData.data)) {
+        regionsArray = regionData.data;
+      } else {
+        console.log('Unknown region data structure:', regionData);
+        return;
+      }
+
+      this.regionData = regionsArray;
+
+      this.regions = regionsArray.map((region: any) => ({
+        value: region.code ?? region.id ?? region.value,
+        label: region.name ?? region.label
+      }));
+    }
+
+    console.log('processed regions:', this.regions);
+    console.log('regions length:', this.regions.length);
+
+    // Set up disabled regions based on active field
+    this.setupDisabledRegions();
+
+    // Find the first active region for preselection
+    const activeRegion = this.regionData.find((region: any) => region.active);
+    if (activeRegion) {
+      this.registrationForm.get('region')?.setValue(activeRegion.code);
+
+      this.loadDivisions(activeRegion.code);
+
+      if (activeRegion.divisions && activeRegion.divisions.length > 0) {
+        const activeDivision = activeRegion.divisions.find((division: any) => division.active);
+        if (activeDivision) {
+          this.registrationForm.get('division')?.setValue(activeDivision.name);
+        }
+      }
+    }
+  }
+
+  private setupRegionChangeListener(): void {
+    this.registrationForm.get('region')?.valueChanges.subscribe(regionCode => {
+      if (regionCode) {
+        this.loadDivisions(regionCode);
+        this.registrationForm.get('division')?.setValue('');
+      } else {
+        this.divisions = [];
+        this.registrationForm.get('division')?.setValue('');
+      }
+    });
+  }
+
+  private async loadDivisions(regionCode: string): Promise<void> {
+    try {
+      await this.referenceDataService.initialize();
+
+      const regionData = this.referenceDataService.get('region');
+
+      if (regionData) {
+        let regionsArray: any[] = [];
+
+        if (Array.isArray(regionData)) {
+          regionsArray = regionData;
+        } else if (regionData.value && Array.isArray(regionData.value)) {
+          regionsArray = regionData.value;
+        } else if (regionData.data && Array.isArray(regionData.data)) {
+          regionsArray = regionData.data;
+        }
+
+        const selectedRegion = regionsArray.find((region: any) =>
+          region.code === regionCode
+        );
+
+        if (selectedRegion?.divisions) {
+          this.divisions = selectedRegion.divisions.map((division: any) => ({
+            value: division.name,
+            label: division.name,
+            active: division.active
+          }));
+
+          this.setupDisabledDivisions();
+        } else {
+          this.divisions = [];
+          this.disabledDivisions = [];
+        }
+      }
+    } catch (error) {
+      console.error('Error loading divisions:', error);
+      this.divisions = [];
+    }
+  }
+
+  private setupDisabledRegions(): void {
+    this.disabledRegions = this.regions
+      .filter(region => !this.isRegionActive(region.value))
+      .map(region => region.value);
+  }
+
+  isRegionActive(regionValue: string): boolean {
+    const region = this.regionData.find((r: any) => r.code === regionValue);
+    return region ? region.active : false;
+  }
+
+  isRegionDisabled(regionValue: string): boolean {
+    return this.disabledRegions.includes(regionValue);
+  }
+
+  private setupDisabledDivisions(): void {
+    this.disabledDivisions = this.divisions
+      .filter(division => !division.active)
+      .map(division => division.value);
+  }
+
+  isDivisionDisabled(divisionValue: string): boolean {
+    return this.disabledDivisions.includes(divisionValue);
+  }
+
   // Custom validator for password matching
   passwordMatchValidator(form: FormGroup): ValidationErrors | null {
     return form.get('password')?.value === form.get('confirmPassword')?.value
@@ -67,7 +207,7 @@ export class SchoolAdminRegistrationComponent {
     if (this.registrationForm.valid) {
       const schoolData = {
         role: UserType.SchoolAdmin,
-        userName: this.registrationForm.get('officialEmail')?.value, // TODO: we use officialEmail as username
+        userName: this.registrationForm.get('officialEmail')?.value,
         schoolName: this.registrationForm.get('schoolName')?.value,
         schoolId: this.registrationForm.get('schoolId')?.value,
         accountableName: this.registrationForm.get('accountableName')?.value,
@@ -81,8 +221,6 @@ export class SchoolAdminRegistrationComponent {
         password: this.registrationForm.get('password')?.value,
         email: this.registrationForm.get('officialEmail')?.value,
       };
-
-      // this.userService.addSchool(schoolData);
 
       if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
         this.passwordMismatch = true;
