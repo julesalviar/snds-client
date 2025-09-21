@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import {MatNativeDateModule, MatOption} from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
@@ -21,6 +22,7 @@ import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
+import {ReferenceDataService} from "../common/services/reference-data.service";
 
 
 @Component({
@@ -35,6 +37,7 @@ import {API_ENDPOINT} from "../common/api-endpoints";
     MatFormFieldModule,
     MatTableModule,
     MatDatepickerModule,
+    MatAutocompleteModule,
     MatOption,
     CommonModule,
     MatCardTitle,
@@ -48,6 +51,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
   schoolNeedsData: any[] = [];
   projectsData: Aip[] = [];
+  schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
@@ -61,6 +65,21 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
+  contributionTypes: string[] = [];
+  specificContributions: string[] = [];
+  filteredContributionTypes: string[] = [];
+  filteredSpecificContributions: string[] = [];
+  contributionTreeData: any[] = [];
+  previousContributionType: string = '';
+
+  private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
+    const unit = this.schoolNeedsForm?.get('unit')?.value;
+    if (unit === 'Others (pls. specify)' && (!control.value || control.value.trim() === '')) {
+      return { required: true };
+    }
+    return null;
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
@@ -68,21 +87,22 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
     private readonly httpService: HttpService,
+    private readonly referenceDataService: ReferenceDataService,
   ) {
     this.schoolNeedsForm = this.fb.group({
-      contributionType: [''],
-      specificContribution: [''],
-      schoolYear: [getSchoolYear()],
-      projectName: [''],
-      intermediateOutcome: [''],
-      quantityNeeded: [0],
-      unit: [''],
-      otherUnit: [''],
-      estimatedCost: [0],
-      beneficiaryStudents: [0],
-      beneficiaryPersonnel: [0],
-      targetDate: [''],
-      description: [''],
+      contributionType: ['', [Validators.required]],
+      specificContribution: ['', [Validators.required]],
+      schoolYear: [getSchoolYear(), [Validators.required]],
+      projectName: ['', [Validators.required]],
+      intermediateOutcome: ['', [Validators.required]],
+      quantityNeeded: [0, [Validators.required, Validators.min(1)]],
+      unit: ['', [Validators.required]],
+      otherUnit: ['', [this.otherUnitValidator.bind(this)]],
+      estimatedCost: [0, [Validators.required, Validators.min(0)]],
+      beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
+      beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
+      implementationDate: ['', [Validators.required]],
+      description: ['', [Validators.maxLength(500)]],
       images: [[]],
     });
   }
@@ -94,6 +114,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAllSchoolNeeds();
     this.loadCurrentProjects();
+    this.loadContributionData();
     this.userService.projectTitles$.pipe(takeUntil(this.destroy$)).subscribe(titles => {
       this.aipProjects = titles;
     });
@@ -104,6 +125,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           specificContribution: data.specificContribution,
           contributionType: data.name
         });
+        this.previousContributionType = data.name;
       }
     });
   }
@@ -114,6 +136,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.schoolNeedsForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
+
     const uploadedImages = this.previewImages.length
       ? await this.uploadImages('school-needs')
       : [];
@@ -132,6 +159,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       description: this.schoolNeedsForm.get('description')?.value,
       schoolId: this.authService.getSchoolId(),
       images: uploadedImages,
+      implementationDate: this.schoolNeedsForm.get('implementationDate')?.value,
     };
     this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
@@ -152,8 +180,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   private loadAllSchoolNeeds(): void {
     this.fetchAllSchoolNeeds().subscribe({
-      next: (needs) => {
-        this.schoolNeedsData = needs;
+      next: (response) => {
+        this.schoolNeedsData = response.data;
+        this.schoolName = response.schoolName || '';
       },
       error: (err) => {
         console.error('Error fetching school needs:', err);
@@ -172,19 +201,35 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadContributionData(): void {
+    const treeData = this.referenceDataService.get<any[]>('contributionTree');
+    if (treeData) {
+      this.contributionTreeData = treeData;
+      this.contributionTypes = treeData.map(node => node.name);
+      this.specificContributions = treeData.flatMap(node =>
+        node.children ? node.children.map((child: any) => child.name) : []
+      );
+      this.filteredContributionTypes = [...this.contributionTypes];
+      this.filteredSpecificContributions = [...this.specificContributions];
+    }
+  }
+
   private fetchAllSchoolNeeds(
     page= 1,
     size = 1000,
     acc: any[] = []
-  ): Observable<any[]> {
+  ): Observable<{data: any[], schoolName: string}> {
     const sy = this.selectedSchoolYear;
     return this.schoolNeedService.getSchoolNeeds(page, size, sy).pipe(
       switchMap(res => {
         const currentData = res?.data ?? [];
         const allData = [...acc, ...currentData];
 
+        // Capture school name from the first response
+        const schoolName = page === 1 && res?.school?.schoolName ? res.school.schoolName : '';
+
         if(currentData.length < size) {
-          return of(allData);
+          return of({data: allData, schoolName});
         }
 
         return this.fetchAllSchoolNeeds(page + 1, size, allData);
@@ -206,6 +251,69 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     if (!this.isOtherSelected) {
       this.schoolNeedsForm.get('otherUnit')?.reset();
     }
+
+    // Trigger validation for otherUnit field
+    this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
+  }
+
+  protected filterContributionTypes(value: string): void {
+    const filterValue = value.toLowerCase();
+    this.filteredContributionTypes = this.contributionTypes.filter(option =>
+      option.toLowerCase().includes(filterValue)
+    );
+  }
+
+  protected filterSpecificContributions(value: string): void {
+    const filterValue = value.toLowerCase();
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+
+    let availableSpecificContributions = this.specificContributions;
+    if (selectedContributionType) {
+      availableSpecificContributions = this.getSpecificContributionsForType(selectedContributionType);
+    }
+
+    this.filteredSpecificContributions = availableSpecificContributions.filter(option =>
+      option.toLowerCase().includes(filterValue)
+    );
+  }
+
+  protected onContributionTypeChange(selectedType: string): void {
+    if (this.previousContributionType !== selectedType) {
+      this.schoolNeedsForm.get('specificContribution')?.setValue('');
+    }
+
+    this.previousContributionType = selectedType;
+
+    if (selectedType) {
+      this.specificContributions = this.getSpecificContributionsForType(selectedType);
+    } else {
+      this.specificContributions = this.contributionTreeData.flatMap(node =>
+        node.children ? node.children.map((child: any) => child.name) : []
+      );
+    }
+
+    this.filteredSpecificContributions = [...this.specificContributions];
+  }
+
+  protected onContributionTypeInput(value: string): void {
+    if (!value || value.trim() === '') {
+      this.onContributionTypeChange('');
+    } else {
+      this.previousContributionType = value;
+    }
+  }
+
+  private getSpecificContributionsForType(contributionType: string): string[] {
+    return this.contributionTreeData
+      .find(node => node.name === contributionType)
+      ?.children?.map((child: any) => child.name) ?? [];
+  }
+
+  private markFormGroupTouched(): void {
+    Object.keys(this.schoolNeedsForm.controls).forEach(key => {
+      const control = this.schoolNeedsForm.get(key);
+      control?.markAsTouched();
+    });
   }
 
   protected onFileSelected(event: Event): void {

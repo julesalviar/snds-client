@@ -1,9 +1,46 @@
 <div class="container">
-  <div class="form-container">
+  <div class="header" *ngIf="schoolName">
+    <mat-icon class="school-icon">school</mat-icon>
+    <span class="school-name">{{ schoolName | uppercase }}</span>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="form-container">
     <mat-card-title>Enter School Needs</mat-card-title>
     <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
-      <p style="color: black;">Contribution Type: <span style="color: green;">{{ selectedContribution?.name }}</span></p>
-      <p style="color: black;">Specific Contribution: <span style="color: green;">{{ schoolNeedsForm.get('specificContribution')?.value|uppercase}}</span></p>
+      <mat-form-field appearance="fill">
+        <mat-label>Contribution Type</mat-label>
+        <input matInput 
+               #contributionTypeInput
+               formControlName="contributionType" 
+               [matAutocomplete]="contributionTypeAuto"
+               (input)="filterContributionTypes(contributionTypeInput.value); onContributionTypeInput(contributionTypeInput.value)">
+        <mat-autocomplete #contributionTypeAuto="matAutocomplete" (optionSelected)="onContributionTypeChange($event.option.value)">
+          <mat-option *ngFor="let option of filteredContributionTypes" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+        <mat-error *ngIf="schoolNeedsForm.get('contributionType')?.invalid && schoolNeedsForm.get('contributionType')?.touched">
+          Contribution Type is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Specific Contribution</mat-label>
+        <input matInput 
+               #specificContributionInput
+               formControlName="specificContribution" 
+               [matAutocomplete]="specificContributionAuto"
+               (input)="filterSpecificContributions(specificContributionInput.value)">
+        <mat-autocomplete #specificContributionAuto="matAutocomplete">
+          <mat-option *ngFor="let option of filteredSpecificContributions" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+        <mat-error *ngIf="schoolNeedsForm.get('specificContribution')?.invalid && schoolNeedsForm.get('specificContribution')?.touched">
+          Specific Contribution is required
+        </mat-error>
+      </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>School Year for the Project</mat-label>
@@ -15,6 +52,9 @@
         <mat-select formControlName="projectName">
           <mat-option *ngFor="let project of projectsData" [value]="project._id">{{ project.title }}</mat-option>
         </mat-select>
+        <mat-error *ngIf="schoolNeedsForm.get('projectName')?.invalid && schoolNeedsForm.get('projectName')?.touched">
+          Project Name is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
@@ -27,6 +67,10 @@
       <mat-form-field appearance="fill">
         <mat-label>Quantity Needed</mat-label>
         <input matInput formControlName="quantityNeeded" type="number">
+        <mat-error *ngIf="schoolNeedsForm.get('quantityNeeded')?.invalid && schoolNeedsForm.get('quantityNeeded')?.touched">
+          <span *ngIf="schoolNeedsForm.get('quantityNeeded')?.errors?.['required']">Quantity is required</span>
+          <span *ngIf="schoolNeedsForm.get('quantityNeeded')?.errors?.['min']">Quantity must be at least 1</span>
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
@@ -34,40 +78,64 @@
         <mat-select formControlName="unit" (selectionChange)="onUnitChange($event.value)">
           <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
         </mat-select>
+        <mat-error *ngIf="schoolNeedsForm.get('unit')?.invalid && schoolNeedsForm.get('unit')?.touched">
+          Unit is required
+        </mat-error>
       </mat-form-field>
 
       <div *ngIf="isOtherSelected">
         <mat-form-field appearance="fill">
           <mat-label>Please specify unit</mat-label>
           <input matInput formControlName="otherUnit" />
+          <mat-error *ngIf="schoolNeedsForm.get('otherUnit')?.invalid && schoolNeedsForm.get('otherUnit')?.touched">
+            Please specify the unit
+          </mat-error>
         </mat-form-field>
       </div>
 
       <mat-form-field appearance="fill">
         <mat-label>Estimated Cost(<span style="color: red;"> don't put comma,peso sign or letters</span>)</mat-label>
         <input matInput formControlName="estimatedCost" type="number">
+        <mat-error *ngIf="schoolNeedsForm.get('estimatedCost')?.invalid && schoolNeedsForm.get('estimatedCost')?.touched">
+          <span *ngIf="schoolNeedsForm.get('estimatedCost')?.errors?.['required']">Estimated Cost is required</span>
+          <span *ngIf="schoolNeedsForm.get('estimatedCost')?.errors?.['min']">Estimated Cost must be 0 or greater</span>
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>No. of Beneficiary Students</mat-label>
         <input matInput formControlName="beneficiaryStudents" type="number" min="0">
+        <mat-error *ngIf="schoolNeedsForm.get('beneficiaryStudents')?.invalid && schoolNeedsForm.get('beneficiaryStudents')?.touched">
+          <span *ngIf="schoolNeedsForm.get('beneficiaryStudents')?.errors?.['required']">Number of Beneficiary Students is required</span>
+          <span *ngIf="schoolNeedsForm.get('beneficiaryStudents')?.errors?.['min']">Number must be 0 or greater</span>
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>No. of Beneficiary Personnel</mat-label>
         <input matInput formControlName="beneficiaryPersonnel" type="number">
+        <mat-error *ngIf="schoolNeedsForm.get('beneficiaryPersonnel')?.invalid && schoolNeedsForm.get('beneficiaryPersonnel')?.touched">
+          <span *ngIf="schoolNeedsForm.get('beneficiaryPersonnel')?.errors?.['required']">Number of Beneficiary Personnel is required</span>
+          <span *ngIf="schoolNeedsForm.get('beneficiaryPersonnel')?.errors?.['min']">Number must be 0 or greater</span>
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Target Date of Implementation</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="targetDate">
+        <input matInput [matDatepicker]="picker" formControlName="implementationDate">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="schoolNeedsForm.get('implementationDate')?.invalid && schoolNeedsForm.get('implementationDate')?.touched">
+          Target Date is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Description / Other Info</mat-label>
         <textarea matInput formControlName="description"></textarea>
+        <mat-error *ngIf="schoolNeedsForm.get('description')?.invalid && schoolNeedsForm.get('description')?.touched">
+          Description must be 500 characters or less
+        </mat-error>
       </mat-form-field>
 
 
@@ -124,7 +192,7 @@
 
         <ng-container matColumnDef="quantityNeeded">
           <th mat-header-cell *matHeaderCellDef> Quantity Needed </th>
-          <td mat-cell *matCellDef="let need"> {{ need.quantityNeeded }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.quantity }} </td>
         </ng-container>
 
         <ng-container matColumnDef="estimatedCost">
@@ -134,7 +202,7 @@
 
         <ng-container matColumnDef="targetDate">
           <th mat-header-cell *matHeaderCellDef> Target Date </th>
-          <td mat-cell *matCellDef="let need"> {{ need.targetDate | date:'shortDate' }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.implementationDate | date:'shortDate' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
@@ -151,5 +219,6 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
     </div>
+  </div>
   </div>
 </div>
