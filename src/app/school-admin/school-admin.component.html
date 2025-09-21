@@ -1,5 +1,11 @@
 <div class="container">
-  <div class="form-container">
+  <div class="header" *ngIf="schoolName">
+    <mat-icon class="school-icon">school</mat-icon>
+    <span class="school-name">{{ schoolName | uppercase }}</span>
+  </div>
+  
+  <div class="content-wrapper">
+    <div class="form-container">
     <mat-card-title>Enter School Needs</mat-card-title>
     <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="fill">
@@ -176,5 +182,6 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
     </div>
+  </div>
   </div>
 </div>

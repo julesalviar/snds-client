@@ -51,6 +51,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
   schoolNeedsData: any[] = [];
   projectsData: Aip[] = [];
+  schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
@@ -165,8 +166,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   private loadAllSchoolNeeds(): void {
     this.fetchAllSchoolNeeds().subscribe({
-      next: (needs) => {
-        this.schoolNeedsData = needs;
+      next: (response) => {
+        this.schoolNeedsData = response.data;
+        this.schoolName = response.schoolName || '';
       },
       error: (err) => {
         console.error('Error fetching school needs:', err);
@@ -202,15 +204,18 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     page= 1,
     size = 1000,
     acc: any[] = []
-  ): Observable<any[]> {
+  ): Observable<{data: any[], schoolName: string}> {
     const sy = this.selectedSchoolYear;
     return this.schoolNeedService.getSchoolNeeds(page, size, sy).pipe(
       switchMap(res => {
         const currentData = res?.data ?? [];
         const allData = [...acc, ...currentData];
 
+        // Capture school name from the first response
+        const schoolName = page === 1 && res?.school?.schoolName ? res.school.schoolName : '';
+
         if(currentData.length < size) {
-          return of(allData);
+          return of({data: allData, schoolName});
         }
 
         return this.fetchAllSchoolNeeds(page + 1, size, allData);
