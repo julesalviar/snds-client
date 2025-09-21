@@ -3,16 +3,16 @@
     <mat-icon class="school-icon">school</mat-icon>
     <span class="school-name">{{ schoolName | uppercase }}</span>
   </div>
-  
+
   <div class="content-wrapper">
     <div class="form-container">
     <mat-card-title>Enter School Needs</mat-card-title>
     <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="fill">
         <mat-label>Contribution Type</mat-label>
-        <input matInput 
+        <input matInput
                #contributionTypeInput
-               formControlName="contributionType" 
+               formControlName="contributionType"
                [matAutocomplete]="contributionTypeAuto"
                (input)="filterContributionTypes(contributionTypeInput.value); onContributionTypeInput(contributionTypeInput.value)">
         <mat-autocomplete #contributionTypeAuto="matAutocomplete" (optionSelected)="onContributionTypeChange($event.option.value)">
@@ -24,9 +24,9 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Specific Contribution</mat-label>
-        <input matInput 
+        <input matInput
                #specificContributionInput
-               formControlName="specificContribution" 
+               formControlName="specificContribution"
                [matAutocomplete]="specificContributionAuto"
                (input)="filterSpecificContributions(specificContributionInput.value)">
         <mat-autocomplete #specificContributionAuto="matAutocomplete">
@@ -91,7 +91,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Target Date of Implementation</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="targetDate">
+        <input matInput [matDatepicker]="picker" formControlName="implementationDate">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
@@ -155,7 +155,7 @@
 
         <ng-container matColumnDef="quantityNeeded">
           <th mat-header-cell *matHeaderCellDef> Quantity Needed </th>
-          <td mat-cell *matCellDef="let need"> {{ need.quantityNeeded }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.quantity }} </td>
         </ng-container>
 
         <ng-container matColumnDef="estimatedCost">
@@ -165,7 +165,7 @@
 
         <ng-container matColumnDef="targetDate">
           <th mat-header-cell *matHeaderCellDef> Target Date </th>
-          <td mat-cell *matCellDef="let need"> {{ need.targetDate | date:'shortDate' }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.implementationDate | date:'shortDate' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">

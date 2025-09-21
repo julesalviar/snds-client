@@ -9,6 +9,7 @@ export interface SchoolNeed {
   studentBeneficiaries: number;
   personnelBeneficiaries: number;
   implementationStatus?: string;
+  implementationDate?: string;
   engaged?: boolean;
   unit: string;
 

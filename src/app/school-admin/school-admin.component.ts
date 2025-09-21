@@ -93,7 +93,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       estimatedCost: [0],
       beneficiaryStudents: [0],
       beneficiaryPersonnel: [0],
-      targetDate: [''],
+      implementationDate: [''],
       description: [''],
       images: [[]],
     });
@@ -146,6 +146,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       description: this.schoolNeedsForm.get('description')?.value,
       schoolId: this.authService.getSchoolId(),
       images: uploadedImages,
+      implementationDate: this.schoolNeedsForm.get('implementationDate')?.value,
     };
     this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
