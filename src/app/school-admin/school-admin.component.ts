@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -72,6 +72,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
 
+  private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
+    const unit = this.schoolNeedsForm?.get('unit')?.value;
+    if (unit === 'Others (pls. specify)' && (!control.value || control.value.trim() === '')) {
+      return { required: true };
+    }
+    return null;
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
@@ -82,19 +90,19 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly referenceDataService: ReferenceDataService,
   ) {
     this.schoolNeedsForm = this.fb.group({
-      contributionType: [''],
-      specificContribution: [''],
-      schoolYear: [getSchoolYear()],
-      projectName: [''],
-      intermediateOutcome: [''],
-      quantityNeeded: [0],
-      unit: [''],
-      otherUnit: [''],
-      estimatedCost: [0],
-      beneficiaryStudents: [0],
-      beneficiaryPersonnel: [0],
-      implementationDate: [''],
-      description: [''],
+      contributionType: ['', [Validators.required]],
+      specificContribution: ['', [Validators.required]],
+      schoolYear: [getSchoolYear(), [Validators.required]],
+      projectName: ['', [Validators.required]],
+      intermediateOutcome: ['', [Validators.required]],
+      quantityNeeded: [0, [Validators.required, Validators.min(1)]],
+      unit: ['', [Validators.required]],
+      otherUnit: ['', [this.otherUnitValidator.bind(this)]],
+      estimatedCost: [0, [Validators.required, Validators.min(0)]],
+      beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
+      beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
+      implementationDate: ['', [Validators.required]],
+      description: ['', [Validators.maxLength(500)]],
       images: [[]],
     });
   }
@@ -128,6 +136,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.schoolNeedsForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
+
     const uploadedImages = this.previewImages.length
       ? await this.uploadImages('school-needs')
       : [];
@@ -238,6 +251,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     if (!this.isOtherSelected) {
       this.schoolNeedsForm.get('otherUnit')?.reset();
     }
+
+    // Trigger validation for otherUnit field
+    this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
   }
 
   protected filterContributionTypes(value: string): void {
@@ -291,6 +307,13 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     return this.contributionTreeData
       .find(node => node.name === contributionType)
       ?.children?.map((child: any) => child.name) ?? [];
+  }
+
+  private markFormGroupTouched(): void {
+    Object.keys(this.schoolNeedsForm.controls).forEach(key => {
+      const control = this.schoolNeedsForm.get(key);
+      control?.markAsTouched();
+    });
   }
 
   protected onFileSelected(event: Event): void {
