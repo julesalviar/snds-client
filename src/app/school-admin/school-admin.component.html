@@ -2,8 +2,33 @@
   <div class="form-container">
     <mat-card-title>Enter School Needs</mat-card-title>
     <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
-      <p style="color: black;">Contribution Type: <span style="color: green;">{{ selectedContribution?.name }}</span></p>
-      <p style="color: black;">Specific Contribution: <span style="color: green;">{{ schoolNeedsForm.get('specificContribution')?.value|uppercase}}</span></p>
+      <mat-form-field appearance="fill">
+        <mat-label>Contribution Type</mat-label>
+        <input matInput 
+               #contributionTypeInput
+               formControlName="contributionType" 
+               [matAutocomplete]="contributionTypeAuto"
+               (input)="filterContributionTypes(contributionTypeInput.value); onContributionTypeInput(contributionTypeInput.value)">
+        <mat-autocomplete #contributionTypeAuto="matAutocomplete" (optionSelected)="onContributionTypeChange($event.option.value)">
+          <mat-option *ngFor="let option of filteredContributionTypes" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Specific Contribution</mat-label>
+        <input matInput 
+               #specificContributionInput
+               formControlName="specificContribution" 
+               [matAutocomplete]="specificContributionAuto"
+               (input)="filterSpecificContributions(specificContributionInput.value)">
+        <mat-autocomplete #specificContributionAuto="matAutocomplete">
+          <mat-option *ngFor="let option of filteredSpecificContributions" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>School Year for the Project</mat-label>

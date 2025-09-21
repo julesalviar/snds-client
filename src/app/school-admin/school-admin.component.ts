@@ -6,6 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import {MatNativeDateModule, MatOption} from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
@@ -21,6 +22,7 @@ import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
+import {ReferenceDataService} from "../common/services/reference-data.service";
 
 
 @Component({
@@ -35,6 +37,7 @@ import {API_ENDPOINT} from "../common/api-endpoints";
     MatFormFieldModule,
     MatTableModule,
     MatDatepickerModule,
+    MatAutocompleteModule,
     MatOption,
     CommonModule,
     MatCardTitle,
@@ -61,6 +64,13 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
+  contributionTypes: string[] = [];
+  specificContributions: string[] = [];
+  filteredContributionTypes: string[] = [];
+  filteredSpecificContributions: string[] = [];
+  contributionTreeData: any[] = [];
+  previousContributionType: string = '';
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
@@ -68,6 +78,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
     private readonly httpService: HttpService,
+    private readonly referenceDataService: ReferenceDataService,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: [''],
@@ -94,6 +105,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAllSchoolNeeds();
     this.loadCurrentProjects();
+    this.loadContributionData();
     this.userService.projectTitles$.pipe(takeUntil(this.destroy$)).subscribe(titles => {
       this.aipProjects = titles;
     });
@@ -104,6 +116,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           specificContribution: data.specificContribution,
           contributionType: data.name
         });
+        this.previousContributionType = data.name;
       }
     });
   }
@@ -172,6 +185,19 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadContributionData(): void {
+    const treeData = this.referenceDataService.get<any[]>('contributionTree');
+    if (treeData) {
+      this.contributionTreeData = treeData;
+      this.contributionTypes = treeData.map(node => node.name);
+      this.specificContributions = treeData.flatMap(node =>
+        node.children ? node.children.map((child: any) => child.name) : []
+      );
+      this.filteredContributionTypes = [...this.contributionTypes];
+      this.filteredSpecificContributions = [...this.specificContributions];
+    }
+  }
+
   private fetchAllSchoolNeeds(
     page= 1,
     size = 1000,
@@ -206,6 +232,61 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     if (!this.isOtherSelected) {
       this.schoolNeedsForm.get('otherUnit')?.reset();
     }
+  }
+
+  protected filterContributionTypes(value: string): void {
+    const filterValue = value.toLowerCase();
+    this.filteredContributionTypes = this.contributionTypes.filter(option =>
+      option.toLowerCase().includes(filterValue)
+    );
+  }
+
+  protected filterSpecificContributions(value: string): void {
+    const filterValue = value.toLowerCase();
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+
+    let availableSpecificContributions = this.specificContributions;
+    if (selectedContributionType) {
+      availableSpecificContributions = this.getSpecificContributionsForType(selectedContributionType);
+    }
+
+    this.filteredSpecificContributions = availableSpecificContributions.filter(option =>
+      option.toLowerCase().includes(filterValue)
+    );
+  }
+
+  protected onContributionTypeChange(selectedType: string): void {
+    if (this.previousContributionType !== selectedType) {
+      this.schoolNeedsForm.get('specificContribution')?.setValue('');
+    }
+
+    this.previousContributionType = selectedType;
+
+    if (selectedType) {
+      this.specificContributions = this.getSpecificContributionsForType(selectedType);
+    } else {
+      this.specificContributions = this.contributionTreeData.flatMap(node =>
+        node.children ? node.children.map((child: any) => child.name) : []
+      );
+    }
+
+    this.filteredSpecificContributions = [...this.specificContributions];
+  }
+
+  protected onContributionTypeInput(value: string): void {
+    if (!value || value.trim() === '') {
+      this.onContributionTypeChange('');
+    } else {
+      this.previousContributionType = value;
+    }
+  }
+
+  private getSpecificContributionsForType(contributionType: string): string[] {
+    const selectedNode = this.contributionTreeData.find(node => node.name === contributionType);
+    if (selectedNode && selectedNode.children) {
+      return selectedNode.children.map((child: any) => child.name);
+    }
+    return [];
   }
 
   protected onFileSelected(event: Event): void {
