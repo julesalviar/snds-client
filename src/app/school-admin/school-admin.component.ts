@@ -282,11 +282,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   private getSpecificContributionsForType(contributionType: string): string[] {
-    const selectedNode = this.contributionTreeData.find(node => node.name === contributionType);
-    if (selectedNode && selectedNode.children) {
-      return selectedNode.children.map((child: any) => child.name);
-    }
-    return [];
+    return this.contributionTreeData
+      .find(node => node.name === contributionType)
+      ?.children?.map((child: any) => child.name) ?? [];
   }
 
   protected onFileSelected(event: Event): void {
