@@ -95,10 +95,13 @@ export class SchoolAdminRegistrationComponent implements OnInit {
 
       this.regionData = regionsArray;
 
-      this.regions = regionsArray.map((region: any) => ({
-        value: region.code ?? region.id ?? region.value,
-        label: region.name ?? region.label
-      }));
+      this.regions = regionsArray
+        .filter((region: any) => region.display !== false) // Only include if display is not false
+        .map((region: any) => ({
+          value: region.code ?? region.id ?? region.value,
+          label: region.name ?? region.label,
+          display: region.display
+        }));
     }
 
     console.log('processed regions:', this.regions);
@@ -175,11 +178,14 @@ export class SchoolAdminRegistrationComponent implements OnInit {
         );
 
         if (selectedRegion?.divisions) {
-          this.divisions = selectedRegion.divisions.map((division: any) => ({
-            value: division.name,
-            label: division.name,
-            active: division.active
-          }));
+          this.divisions = selectedRegion.divisions
+            .filter((division: any) => division.display !== false) // Only include if display is not false
+            .map((division: any) => ({
+              value: division.name,
+              label: division.name,
+              active: division.active,
+              display: division.display
+            }));
 
           this.setupDisabledDivisions();
         } else {
