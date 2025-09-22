@@ -38,7 +38,11 @@
                 <div class="form-row">
                     <mat-form-field appearance="fill">
                         <mat-label>District / Cluster</mat-label>
-                        <input matInput formControlName="district" required>
+                        <mat-select formControlName="district" required>
+                            <mat-option *ngFor="let cluster of clusters" [value]="cluster">
+                                {{ cluster }}
+                            </mat-option>
+                        </mat-select>
                         <mat-error *ngIf="controlHasErrorAndTouched('district', 'required')">
                             District is required.
                         </mat-error>

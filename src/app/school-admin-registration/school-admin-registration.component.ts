@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { UserService } from '../common/services/user.service';
 import { ReferenceDataService } from '../common/services/reference-data.service';
 import { controlHasErrorAndTouched } from "../common/form-utils";
@@ -28,6 +29,7 @@ import { DivisionOption } from '../common/model/division.model';
     MatSelectModule,
     MatButtonModule,
     MatCardModule,
+    MatAutocompleteModule,
   ]
 })
 export class SchoolAdminRegistrationComponent implements OnInit {
@@ -38,6 +40,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
 
   regions: RegionOption[] = [];
   divisions: DivisionOption[] = [];
+  clusters: string[] = [];
   disabledRegions: string[] = [];
   disabledDivisions: string[] = [];
   regionData: any[] = []; // Store full region data to access active field
@@ -67,6 +70,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   ngOnInit(): void {
     this.loadRegions();
     this.setupRegionChangeListener();
+    this.setupDivisionChangeListener();
   }
 
 
@@ -124,12 +128,30 @@ export class SchoolAdminRegistrationComponent implements OnInit {
       if (regionCode) {
         this.loadDivisions(regionCode);
         this.registrationForm.get('division')?.setValue('');
+        this.registrationForm.get('district')?.setValue('');
+        this.clusters = [];
       } else {
         this.divisions = [];
+        this.clusters = [];
         this.registrationForm.get('division')?.setValue('');
+        this.registrationForm.get('district')?.setValue('');
       }
     });
   }
+
+  private setupDivisionChangeListener(): void {
+    this.registrationForm.get('division')?.valueChanges.subscribe(divisionName => {
+      if (divisionName) {
+        this.loadClusters(divisionName);
+        this.registrationForm.get('district')?.setValue('');
+      } else {
+        this.clusters = [];
+        this.registrationForm.get('district')?.setValue('');
+      }
+    });
+  }
+
+
 
   private async loadDivisions(regionCode: string): Promise<void> {
     try {
@@ -171,6 +193,45 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     }
   }
 
+  private async loadClusters(divisionName: string): Promise<void> {
+    try {
+      await this.referenceDataService.initialize();
+
+      const regionData = this.referenceDataService.get('region');
+
+      if (regionData) {
+        let regionsArray: any[] = [];
+
+        if (Array.isArray(regionData)) {
+          regionsArray = regionData;
+        } else if (regionData.value && Array.isArray(regionData.value)) {
+          regionsArray = regionData.value;
+        } else if (regionData.data && Array.isArray(regionData.data)) {
+          regionsArray = regionData.data;
+        }
+
+        const selectedRegion = regionsArray.find((region: any) =>
+          region.code === this.registrationForm.get('region')?.value
+        );
+
+        if (selectedRegion?.divisions) {
+          const selectedDivision = selectedRegion.divisions.find((division: any) =>
+            division.name === divisionName
+          );
+
+          if (selectedDivision?.clusters) {
+            this.clusters = selectedDivision.clusters;
+          } else {
+            this.clusters = [];
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading clusters:', error);
+      this.clusters = [];
+    }
+  }
+
   private setupDisabledRegions(): void {
     this.disabledRegions = this.regions
       .filter(region => !this.isRegionActive(region.value))
@@ -203,6 +264,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   }
 
   onSubmit() {
+    console.log('Form submitted', this.registrationForm.value);
     this.passwordMismatch = false; // Reset password mismatch flag
     if (this.registrationForm.valid) {
       const schoolData = {
