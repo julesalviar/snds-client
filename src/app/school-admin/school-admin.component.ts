@@ -17,7 +17,7 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 import {getSchoolYear} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
 import {Aip} from "../common/model/aip.model";
-import {SchoolNeed} from "../common/model/school-need.model";
+import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {HttpService} from "../common/services/http.service";
@@ -49,12 +49,12 @@ import {ReferenceDataService} from "../common/services/reference-data.service";
 })
 export class SchoolAdminComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
-  schoolNeedsData: any[] = [];
+  schoolNeedsData: SchoolNeed[] = [];
   projectsData: Aip[] = [];
   schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
 
-  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
+  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
@@ -64,6 +64,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   isOtherSelected = false;
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  isSaving: boolean = false;
 
   contributionTypes: string[] = [];
   specificContributions: string[] = [];
@@ -101,7 +102,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       estimatedCost: [0, [Validators.required, Validators.min(0)]],
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
-      implementationDate: ['', [Validators.required]],
+      targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(500)]],
       images: [[]],
     });
@@ -141,34 +142,46 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const uploadedImages = this.previewImages.length
-      ? await this.uploadImages('school-needs')
-      : [];
+    this.isSaving = true;
 
-    console.log(uploadedImages);
+    try {
+      const uploadedImages = this.previewImages.length
+        ? await this.uploadImages('school-needs')
+        : [];
 
-    const newNeed: SchoolNeed = {
-      specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
-      contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-      projectId: this.schoolNeedsForm.get('projectName')?.value,
-      quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
-      unit: this.schoolNeedsForm.get('unit')?.value,
-      estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
-      studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
-      personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-      description: this.schoolNeedsForm.get('description')?.value,
-      schoolId: this.authService.getSchoolId(),
-      images: uploadedImages,
-      implementationDate: this.schoolNeedsForm.get('implementationDate')?.value,
-    };
-    this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.schoolNeedsForm.reset();
-        this.previewImages = [];
-        this.queryData();
-      },
-      error: (err) => console.error('Error creating school need:', err)
-    });
+      console.log(uploadedImages);
+
+      const newNeed: SchoolNeed = {
+        specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
+        contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+        projectId: this.schoolNeedsForm.get('projectName')?.value,
+        quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
+        unit: this.schoolNeedsForm.get('unit')?.value,
+        estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
+        studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+        personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+        description: this.schoolNeedsForm.get('description')?.value,
+        schoolId: this.authService.getSchoolId(),
+        images: uploadedImages,
+        targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+      };
+      
+      this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.schoolNeedsForm.reset();
+          this.previewImages = [];
+          this.queryData();
+          this.isSaving = false;
+        },
+        error: (err) => {
+          console.error('Error creating school need:', err);
+          this.isSaving = false;
+        }
+      });
+    } catch (error) {
+      console.error('Error during form submission:', error);
+      this.isSaving = false;
+    }
   }
   viewResponses(need: any): void {
     console.log('Viewing responses for:', need);
@@ -176,6 +189,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
+  }
+
+  onImageError(event: any): void {
+    event.target.style.display = 'none';
+  }
+
+  getThumbnailImages(need: any): SchoolNeedImage[] {
+    return (need?.images || []).slice(0, 2);
   }
 
   private loadAllSchoolNeeds(): void {

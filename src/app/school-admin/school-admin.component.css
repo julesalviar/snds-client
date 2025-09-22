@@ -274,3 +274,36 @@ tr:hover {
   right: 0;
   bottom: 0;
 }
+
+/* Table thumbnail styles */
+.thumbnail-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  max-width: 120px;
+}
+
+.thumbnail-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+/* Save section styles */
+.save-section {
+  margin-top: 16px;
+  position: relative;
+}
+
+.save-progress-bar {
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.save-section button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
