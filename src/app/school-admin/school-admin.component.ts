@@ -203,7 +203,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   getThumbnailImages(need: any): SchoolNeedImage[] {
-    return (need?.images ?? []).slice(0, 2);
+    const images = need?.images ?? [];
+    if (images.length <= 2) {
+      return images;
+    }
+    
+    // Randomly select 2 images from the array
+    const shuffled = [...images].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 2);
   }
 
   private showSuccessNotification(message: string): void {
