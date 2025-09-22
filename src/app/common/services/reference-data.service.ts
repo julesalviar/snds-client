@@ -11,20 +11,21 @@ export class ReferenceDataService {
   constructor(
     private readonly http: HttpClient) {}
 
-  async initialize(): Promise<void> {
-    if (this.initialized) return;
-    console.log("Initialized ReferenceDataService reinitialized");
-    const data = await firstValueFrom(
-      this.http.get<Record<string, any>>(API_ENDPOINT.referenceData).pipe(
-        catchError(err => {
-          console.error('Reference data failed', err);
-          return of({});
-        })
-      )
-    );
-    this.cache = data ?? {};
-    this.initialized = true;
-  }
+    async initialize(): Promise<void> {
+      if (this.initialized) return;
+
+      const data = await firstValueFrom(
+        this.http.get<Record<string, any>>(API_ENDPOINT.referenceData).pipe(
+          catchError(err => {
+            console.error('Reference data failed', err);
+            return of({});
+          })
+        )
+      );
+
+      this.cache = data ?? {};
+      this.initialized = true;
+    }
 
   get<T = any>(key: string): T {
     return this.cache[key];
