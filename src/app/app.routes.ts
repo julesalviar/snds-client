@@ -13,7 +13,8 @@ import { SchoolNeedsEngageComponent } from './school-admin/school-needs-engage/s
 import { ImplementationStatusDialogComponent } from './school-admin/implementation-status-dialog/implementation-status-dialog.component';
 import { AllSchoolComponent } from './stakeholders/all-school/all-school.component';
 import {AuthGuard} from "./auth/auth.guard";
-
+import { MyContributionComponent } from './stakeholders/my-contribution/my-contribution.component';
+import { ChangePasswordComponent } from './navigation/change-password/change-password.component';
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
@@ -25,12 +26,14 @@ export const routes: Routes = [
     component: HomeComponent,
     canActivate: [AuthGuard]
   },
+  { path: 'change-password', component: ChangePasswordComponent },
   { // Stakeholder routes
     path: 'stakeholder',
     canActivateChild: [AuthGuard],
     children: [
       { path: 'all-school', component: AllSchoolComponent },
       { path: 'partners-support', component: StakeholdersComponent },
+       { path: 'my-contribution', component: MyContributionComponent },
     ]
   },
   // School Admin routes
