@@ -307,3 +307,52 @@ tr:hover {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Snackbar styles - Force override all Material styles */
+::ng-deep .mat-mdc-snack-bar-container.success-snackbar,
+::ng-deep .mat-mdc-snack-bar-container.success-snackbar * {
+  background-color: #2e7d32 !important;
+  background: #2e7d32 !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-surface {
+  background-color: #2e7d32 !important;
+  background: #2e7d32 !important;
+  background-image: none !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-label {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.error-snackbar,
+::ng-deep .mat-mdc-snack-bar-container.error-snackbar * {
+  background-color: #f44336 !important;
+  background: #f44336 !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-surface {
+  background-color: #f44336 !important;
+  background: #f44336 !important;
+  background-image: none !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-label {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  background-color: transparent !important;
+}

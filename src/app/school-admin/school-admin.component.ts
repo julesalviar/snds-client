@@ -20,6 +20,7 @@ import {Aip} from "../common/model/aip.model";
 import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
@@ -89,6 +90,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly  authService: AuthService,
     private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly snackBar: MatSnackBar,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -165,22 +167,27 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         images: uploadedImages,
         targetDate: this.schoolNeedsForm.get('targetDate')?.value,
       };
-      
+
       this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
+          const currentSchoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
           this.schoolNeedsForm.reset();
+          this.schoolNeedsForm.patchValue({ schoolYear: currentSchoolYear });
           this.previewImages = [];
           this.queryData();
           this.isSaving = false;
+          this.showSuccessNotification('School need saved successfully!');
         },
         error: (err) => {
           console.error('Error creating school need:', err);
           this.isSaving = false;
+          this.showErrorNotification('Failed to save school need. Please try again.');
         }
       });
     } catch (error) {
       console.error('Error during form submission:', error);
       this.isSaving = false;
+      this.showErrorNotification('An unexpected error occurred. Please try again.');
     }
   }
   viewResponses(need: any): void {
@@ -196,7 +203,25 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   getThumbnailImages(need: any): SchoolNeedImage[] {
-    return (need?.images || []).slice(0, 2);
+    return (need?.images ?? []).slice(0, 2);
+  }
+
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
   }
 
   private loadAllSchoolNeeds(): void {

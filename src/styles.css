@@ -68,4 +68,68 @@ body {
   background-color: rgba(255, 255, 255, 0.5); 
 }
 
+/* Snackbar styles - Force override all Material styles */
+.mat-mdc-snack-bar-container.success-snackbar,
+.mat-mdc-snack-bar-container.success-snackbar * {
+  background-color: #2e7d32 !important;
+  background: #2e7d32 !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+.mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-surface {
+  background-color: #2e7d32 !important;
+  background: #2e7d32 !important;
+  background-image: none !important;
+}
+
+.mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-label {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar,
+.mat-mdc-snack-bar-container.error-snackbar * {
+  background-color: #f44336 !important;
+  background: #f44336 !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-surface {
+  background-color: #f44336 !important;
+  background: #f44336 !important;
+  background-image: none !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-label {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+/* Nuclear option - override everything */
+.mat-mdc-snack-bar-container.success-snackbar {
+  background: #2e7d32 !important;
+  background-color: #2e7d32 !important;
+  background-image: none !important;
+  background-clip: padding-box !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar {
+  background: #f44336 !important;
+  background-color: #f44336 !important;
+  background-image: none !important;
+  background-clip: padding-box !important;
+}
+
 
