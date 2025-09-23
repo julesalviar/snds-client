@@ -3,69 +3,171 @@
 *{
   box-sizing: border-box;
 }
-html, body { height: 100%; }
-body { 
-    margin: 0; 
-    font-family: Roboto, "Helvetica Neue", sans-serif; 
-    background-image: url('/assets/sndslogo2.jpg');
+html, body { 
+  min-height: 100%; 
+  height: auto;
+}
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    /*background-image: url('/assets/sndslogo2.jpg');*/
     background-repeat: no-repeat;
-    background-size: contain; 
-    background-position: center; 
+    background-size: contain;
+    background-position: center;
     background-attachment: fixed;
     overflow: auto;
 }
 .custom-register {
-    background-color: #4CAF50 !important; 
-    color: white !important; 
-    border: none !important; 
+    background-color: #4CAF50 !important;
+    color: white !important;
+    border: none !important;
   }
-  
+
   .custom-register:hover {
-    background-color: #45a049 !important; 
+    background-color: #45a049 !important;
   }
   .success-message {
-    background-color: #dff0d8; 
-    color: #3c763d; 
-    padding: 15px; 
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 15px;
     border: 1px solid #d6e9c6;
-    border-radius: 5px; 
-    margin-top: 15px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
+    border-radius: 5px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
 .banner {
-  position: sticky; 
-  top: 0; 
-  z-index: 1000; 
-  height: auto; 
-  width: 100%; 
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: auto;
+  width: 100%;
   overflow: hidden;
 }
 
 /* table and card global design */
 
 .form-container {
-  flex: 1; 
-  margin-right: 20px; 
-  margin: 16px; 
+  flex: 1;
+  margin-right: 20px;
+  margin: 16px;
   box-shadow: 0 4px 20px green;
   border-radius: 8px;
   border-color: green;
   border: 1px solid;
-  background-color: rgba(255, 255, 255, 0.5); 
+  background-color: rgba(255, 255, 255, 0.5);
 }
 .table-container {
-  flex: 2; 
+  flex: 2;
   width: 100%;
   overflow: hidden;
-  margin: 16px 0; 
+  margin: 16px 0;
   box-shadow: 0 4px 20px green;
   border-radius: 8px;
   border-color: green;
   border: 1px solid;
-  background-color: rgba(255, 255, 255, 0.5); 
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Snackbar styles - Force override all Material styles */
+.mat-mdc-snack-bar-container.success-snackbar,
+.mat-mdc-snack-bar-container.success-snackbar * {
+  background-color: #2e7d32 !important;
+  background: #2e7d32 !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+.mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-surface {
+  background-color: #2e7d32 !important;
+  background: #2e7d32 !important;
+  background-image: none !important;
+}
+
+.mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-label {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar,
+.mat-mdc-snack-bar-container.error-snackbar * {
+  background-color: #f44336 !important;
+  background: #f44336 !important;
+  background-image: none !important;
+  color: white !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-surface {
+  background-color: #f44336 !important;
+  background: #f44336 !important;
+  background-image: none !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-label {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+/* Nuclear option - override everything */
+.mat-mdc-snack-bar-container.success-snackbar {
+  background: #2e7d32 !important;
+  background-color: #2e7d32 !important;
+  background-image: none !important;
+  background-clip: padding-box !important;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar {
+  background: #f44336 !important;
+  background-color: #f44336 !important;
+  background-image: none !important;
+  background-clip: padding-box !important;
+}
+
+/* Dialog overlay fixes to prevent layout issues - only for dialogs */
+.cdk-overlay-backdrop {
+  z-index: 1000 !important;
+}
+
+.mat-mdc-dialog-container {
+  z-index: 1001 !important;
+}
+
+/* Ensure select dropdowns work properly */
+.mat-mdc-select-panel {
+  z-index: 2000 !important;
+}
+
+.cdk-overlay-connected-position-bounding-box {
+  pointer-events: auto !important;
+}
+
+/* Fix select trigger click issues */
+.mat-mdc-select {
+  pointer-events: auto !important;
+}
+
+.mat-mdc-select-trigger {
+  pointer-events: auto !important;
+}
+
+.mat-mdc-select-value {
+  pointer-events: auto !important;
+}
+
+.mat-mdc-select-arrow-wrapper {
+  pointer-events: auto !important;
 }
 
 

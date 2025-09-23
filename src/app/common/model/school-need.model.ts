@@ -1,3 +1,10 @@
+export interface SchoolNeedImage {
+  id: string;
+  category: string;
+  originalUrl: string;
+  thumbnailUrl: string;
+}
+
 export interface SchoolNeed {
   code?: string;
   description: string;
@@ -9,11 +16,11 @@ export interface SchoolNeed {
   studentBeneficiaries: number;
   personnelBeneficiaries: number;
   implementationStatus?: string;
-  implementationDate?: string;
+  targetDate?: string;
   engaged?: boolean;
   unit: string;
 
   projectId: string;
   schoolId: string;
-  images: string[];
+  images: SchoolNeedImage[];
 }

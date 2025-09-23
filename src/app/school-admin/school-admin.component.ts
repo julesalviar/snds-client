@@ -17,12 +17,16 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 import {getSchoolYear} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
 import {Aip} from "../common/model/aip.model";
-import {SchoolNeed} from "../common/model/school-need.model";
+import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatDialog} from "@angular/material/dialog";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
+import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
+import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
 
 
 @Component({
@@ -49,12 +53,12 @@ import {ReferenceDataService} from "../common/services/reference-data.service";
 })
 export class SchoolAdminComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
-  schoolNeedsData: any[] = [];
+  schoolNeedsData: SchoolNeed[] = [];
   projectsData: Aip[] = [];
   schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
 
-  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'actions'];
+  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
@@ -64,6 +68,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   isOtherSelected = false;
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  isSaving: boolean = false;
 
   contributionTypes: string[] = [];
   specificContributions: string[] = [];
@@ -88,6 +93,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly  authService: AuthService,
     private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -101,7 +108,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       estimatedCost: [0, [Validators.required, Validators.min(0)]],
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
-      implementationDate: ['', [Validators.required]],
+      targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(500)]],
       images: [[]],
     });
@@ -141,34 +148,65 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const uploadedImages = this.previewImages.length
-      ? await this.uploadImages('school-needs')
-      : [];
+    // Validate contribution type
+    const contributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    if (contributionType && !this.validateContributionType(contributionType)) {
+      this.showInvalidContributionTypeDialog();
+      return;
+    }
 
-    console.log(uploadedImages);
+    // Validate specific contribution
+    const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
+    if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
+      this.showInvalidSpecificContributionDialog();
+      return;
+    }
 
-    const newNeed: SchoolNeed = {
-      specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
-      contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-      projectId: this.schoolNeedsForm.get('projectName')?.value,
-      quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
-      unit: this.schoolNeedsForm.get('unit')?.value,
-      estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
-      studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
-      personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-      description: this.schoolNeedsForm.get('description')?.value,
-      schoolId: this.authService.getSchoolId(),
-      images: uploadedImages,
-      implementationDate: this.schoolNeedsForm.get('implementationDate')?.value,
-    };
-    this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.schoolNeedsForm.reset();
-        this.previewImages = [];
-        this.queryData();
-      },
-      error: (err) => console.error('Error creating school need:', err)
-    });
+    this.isSaving = true;
+
+    try {
+      const uploadedImages = this.previewImages.length
+        ? await this.uploadImages('school-needs')
+        : [];
+
+      console.log(uploadedImages);
+
+      const newNeed: SchoolNeed = {
+        specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
+        contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+        projectId: this.schoolNeedsForm.get('projectName')?.value,
+        quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
+        unit: this.schoolNeedsForm.get('unit')?.value,
+        estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
+        studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+        personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+        description: this.schoolNeedsForm.get('description')?.value,
+        schoolId: this.authService.getSchoolId(),
+        images: uploadedImages,
+        targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+      };
+
+      this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          const currentSchoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
+          this.schoolNeedsForm.reset();
+          this.schoolNeedsForm.patchValue({ schoolYear: currentSchoolYear });
+          this.previewImages = [];
+          this.queryData();
+          this.isSaving = false;
+          this.showSuccessNotification('School need saved successfully!');
+        },
+        error: (err) => {
+          console.error('Error creating school need:', err);
+          this.isSaving = false;
+          this.showErrorNotification('Failed to save school need. Please try again.');
+        }
+      });
+    } catch (error) {
+      console.error('Error during form submission:', error);
+      this.isSaving = false;
+      this.showErrorNotification('An unexpected error occurred. Please try again.');
+    }
   }
   viewResponses(need: any): void {
     console.log('Viewing responses for:', need);
@@ -176,6 +214,72 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
+  }
+
+  onImageError(event: any): void {
+    event.target.style.display = 'none';
+  }
+
+  getThumbnailImages(need: any): SchoolNeedImage[] {
+    const images = need?.images ?? [];
+    if (images.length <= 2) {
+      return images;
+    }
+
+    // Randomly select 2 images from the array
+    const shuffled = [...images].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 2);
+  }
+
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  private validateContributionType(value: string): boolean {
+    return this.contributionTypes.includes(value);
+  }
+
+  private validateSpecificContribution(value: string): boolean {
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    if (!selectedContributionType) {
+      return false; // No contribution type selected
+    }
+    
+    const validSpecificContributions = this.getSpecificContributionsForType(selectedContributionType);
+    return validSpecificContributions.includes(value);
+  }
+
+  private showInvalidContributionTypeDialog(): void {
+    this.dialog.open(InvalidContributionTypeDialogComponent, {
+      width: '400px',
+      data: { message: 'The contribution type you entered is not available. Please select from the available options.' }
+    });
+  }
+
+  private showInvalidSpecificContributionDialog(): void {
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    const message = selectedContributionType 
+      ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
+      : 'Please select a contribution type first before entering a specific contribution.';
+    
+    this.dialog.open(InvalidSpecificContributionDialogComponent, {
+      width: '400px',
+      data: { message }
+    });
   }
 
   private loadAllSchoolNeeds(): void {
