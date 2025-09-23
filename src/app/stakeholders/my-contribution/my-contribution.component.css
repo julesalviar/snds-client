@@ -1,0 +1,44 @@
+.my-contribution-container {
+  padding: 20px;
+}
+h2 {
+    color:green;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+th {
+    color: green;
+    font-weight: bold;
+}
+.table-responsive {
+  overflow-x: auto; 
+  margin: 8px 0; 
+}
+
+table {
+  flex: 2;
+  width: 100%;
+  overflow: hidden;
+  margin: 8px 0; 
+  box-shadow: 0 4px 20px green;
+  border-radius: 8px;
+  border-color: green;
+  border: 1px solid;
+  background-color: rgba(255, 255, 255, 0.379);
+}
+
+th.mat-header-cell, td.mat-cell {
+  padding: 8px; 
+}
+
+tr:hover {
+  background-color: rgba(0, 128, 0, 0.2); 
+}
+
+.mat-header-cell:hover, .mat-cell:hover {
+  background-color: rgba(0, 128, 0, 0.3); 
+}
+
+.mat-elevation-z8 {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
