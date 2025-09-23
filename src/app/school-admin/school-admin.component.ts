@@ -21,9 +21,12 @@ import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatDialog} from "@angular/material/dialog";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
+import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
+import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
 
 
 @Component({
@@ -91,6 +94,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -141,6 +145,20 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     if (this.schoolNeedsForm.invalid) {
       this.markFormGroupTouched();
+      return;
+    }
+
+    // Validate contribution type
+    const contributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    if (contributionType && !this.validateContributionType(contributionType)) {
+      this.showInvalidContributionTypeDialog();
+      return;
+    }
+
+    // Validate specific contribution
+    const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
+    if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
+      this.showInvalidSpecificContributionDialog();
       return;
     }
 
@@ -207,7 +225,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     if (images.length <= 2) {
       return images;
     }
-    
+
     // Randomly select 2 images from the array
     const shuffled = [...images].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 2);
@@ -228,6 +246,39 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
+    });
+  }
+
+  private validateContributionType(value: string): boolean {
+    return this.contributionTypes.includes(value);
+  }
+
+  private validateSpecificContribution(value: string): boolean {
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    if (!selectedContributionType) {
+      return false; // No contribution type selected
+    }
+    
+    const validSpecificContributions = this.getSpecificContributionsForType(selectedContributionType);
+    return validSpecificContributions.includes(value);
+  }
+
+  private showInvalidContributionTypeDialog(): void {
+    this.dialog.open(InvalidContributionTypeDialogComponent, {
+      width: '400px',
+      data: { message: 'The contribution type you entered is not available. Please select from the available options.' }
+    });
+  }
+
+  private showInvalidSpecificContributionDialog(): void {
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    const message = selectedContributionType 
+      ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
+      : 'Please select a contribution type first before entering a specific contribution.';
+    
+    this.dialog.open(InvalidSpecificContributionDialogComponent, {
+      width: '400px',
+      data: { message }
     });
   }
 

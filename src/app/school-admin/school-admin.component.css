@@ -278,9 +278,10 @@ tr:hover {
 /* Table thumbnail styles */
 .thumbnail-container {
   display: flex;
-  gap: 4px;
   align-items: center;
   max-width: 120px;
+  position: relative;
+  height: 40px;
 }
 
 .thumbnail-image {
@@ -290,6 +291,37 @@ tr:hover {
   border-radius: 4px;
   border: 1px solid #ddd;
   flex-shrink: 0;
+  position: absolute;
+  transition: transform 0.2s ease;
+}
+
+/* Stacked card effect */
+.thumbnail-image:nth-child(1) {
+  z-index: 3;
+  transform: translateX(0px);
+}
+
+.thumbnail-image:nth-child(2) {
+  z-index: 2;
+  transform: translateX(8px);
+}
+
+.thumbnail-image:nth-child(3) {
+  z-index: 1;
+  transform: translateX(16px);
+}
+
+/* Hover effect to spread cards */
+.thumbnail-container:hover .thumbnail-image:nth-child(1) {
+  transform: translateX(0px) translateY(-2px);
+}
+
+.thumbnail-container:hover .thumbnail-image:nth-child(2) {
+  transform: translateX(12px) translateY(-1px);
+}
+
+.thumbnail-container:hover .thumbnail-image:nth-child(3) {
+  transform: translateX(24px) translateY(0px);
 }
 
 /* Save section styles */
@@ -308,51 +340,11 @@ tr:hover {
   cursor: not-allowed;
 }
 
-/* Snackbar styles - Force override all Material styles */
-::ng-deep .mat-mdc-snack-bar-container.success-snackbar,
-::ng-deep .mat-mdc-snack-bar-container.success-snackbar * {
-  background-color: #2e7d32 !important;
-  background: #2e7d32 !important;
-  background-image: none !important;
-  color: white !important;
-}
+/* Snackbar styles - simplified */
+::ng-deep .success-snackbar { background: #2e7d32 !important; color: white !important; }
+::ng-deep .error-snackbar { background: #f44336 !important; color: white !important; }
 
-::ng-deep .mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-surface {
-  background-color: #2e7d32 !important;
-  background: #2e7d32 !important;
-  background-image: none !important;
-}
-
-::ng-deep .mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-label {
-  color: white !important;
-  background-color: transparent !important;
-}
-
-::ng-deep .mat-mdc-snack-bar-container.success-snackbar .mat-mdc-snack-bar-action {
-  color: white !important;
-  background-color: transparent !important;
-}
-
-::ng-deep .mat-mdc-snack-bar-container.error-snackbar,
-::ng-deep .mat-mdc-snack-bar-container.error-snackbar * {
-  background-color: #f44336 !important;
-  background: #f44336 !important;
-  background-image: none !important;
-  color: white !important;
-}
-
-::ng-deep .mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-surface {
-  background-color: #f44336 !important;
-  background: #f44336 !important;
-  background-image: none !important;
-}
-
-::ng-deep .mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-label {
-  color: white !important;
-  background-color: transparent !important;
-}
-
-::ng-deep .mat-mdc-snack-bar-container.error-snackbar .mat-mdc-snack-bar-action {
-  color: white !important;
-  background-color: transparent !important;
-}
+/* Dialog and select fixes - simplified */
+::ng-deep .mat-mdc-dialog-container { z-index: 2000 !important; }
+::ng-deep .mat-mdc-select-panel { z-index: 2000 !important; }
+::ng-deep .mat-mdc-select { pointer-events: auto !important; }
