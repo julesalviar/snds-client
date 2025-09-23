@@ -347,4 +347,3 @@ tr:hover {
 /* Dialog and select fixes - simplified */
 ::ng-deep .mat-mdc-dialog-container { z-index: 2000 !important; }
 ::ng-deep .mat-mdc-select-panel { z-index: 2000 !important; }
-::ng-deep .mat-mdc-select { pointer-events: auto !important; }
