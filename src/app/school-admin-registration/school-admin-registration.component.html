@@ -9,7 +9,11 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Region</mat-label>
                         <mat-select formControlName="region" required>
-                            <mat-option value="Region XII">Region XII</mat-option>
+                            <mat-option *ngFor="let region of regions"
+                                       [value]="region.value"
+                                       [disabled]="isRegionDisabled(region.value)">
+                                {{ region.value }}
+                            </mat-option>
                         </mat-select>
                       <mat-error *ngIf="controlHasErrorAndTouched('region', 'required')">
                         Region is required.
@@ -19,8 +23,11 @@
                     <mat-form-field appearance="fill">
                         <mat-label>Division</mat-label>
                         <mat-select formControlName="division" required>
-                            <mat-option value="Tacurong">Tacurong City</mat-option>
-                            <mat-option value="Gensan">General Santos City</mat-option>
+                            <mat-option *ngFor="let division of divisions"
+                                       [value]="division.value"
+                                       [disabled]="isDivisionDisabled(division.value)">
+                                {{ division.label }}
+                            </mat-option>
                         </mat-select>
                         <mat-error *ngIf="controlHasErrorAndTouched('division', 'required')">
                             Division is required.
