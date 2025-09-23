@@ -7,6 +7,7 @@ export interface Region {
   code: string;
   name: string;
   active: boolean;
+  display?: boolean;
   divisions: Division[];
 }
 
@@ -17,4 +18,5 @@ export interface RegionData {
 export interface RegionOption {
   value: string;
   label: string;
+  display?: boolean;
 }
