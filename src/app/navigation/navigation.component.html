@@ -81,15 +81,23 @@
   </ul>
 
   <!-- Profile section -->
-  <div class="profile" *ngIf="isLoggedIn()">
-    <button (click)="toggleMenu()" class="menu-toggle">Menu</button>
-    <mat-icon>account_circle</mat-icon>
-    <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
-    <mat-menu #profileMenu="matMenu">
-     <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
-      <button mat-menu-item (click)="editProfile()">Edit Profile</button>
-    </mat-menu>
-    <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">Logout
-    </button>
+  <div class="profile">
+    <ng-container *ngIf="isLoggedIn(); else loginButton">
+      <button (click)="toggleMenu()" class="menu-toggle" aria-label="Open menu">Menu</button>
+      <mat-icon aria-label="User profile">account_circle</mat-icon>
+      <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
+      <mat-menu #profileMenu="matMenu">
+        <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
+        <button mat-menu-item (click)="editProfile()">Edit Profile</button>
+      </mat-menu>
+      <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">
+        Logout
+      </button>
+    </ng-container>
+    <ng-template #loginButton>
+      <button mat-raised-button color="primary" class="login-button" routerLink="/sign-in">
+        Login
+      </button>
+    </ng-template>
   </div>
 </nav>

@@ -4,7 +4,7 @@
   <div class="tree-section">
     <div class="welcome-header">
       <div class="welcome-content">
-        <h2 class="welcome-title">Welcome, {{ name ?? 'Guest' }}</h2>
+        <h2 class="welcome-title">Welcome {{ name && name?.trim() ? name : 'Guest' }}</h2>
         <div class="school-info" *ngIf="!!schoolName">
           <mat-icon class="school-icon">school</mat-icon>
           <span class="school-name">{{ schoolName || '' | uppercase }}</span>
