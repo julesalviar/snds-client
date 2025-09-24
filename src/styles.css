@@ -3,14 +3,14 @@
 *{
   box-sizing: border-box;
 }
-html, body { 
-  min-height: 100%; 
+html, body {
+  min-height: 100%;
   height: auto;
 }
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
-    /*background-image: url('/assets/sndslogo2.jpg');*/
+    background-image: url('/assets/sndslogo2.jpg');
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
