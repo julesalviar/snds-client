@@ -132,3 +132,14 @@ button {
         gap: 16px;
     }
 }
+
+/* Snackbar styles */
+::ng-deep .success-snackbar { 
+    background: #2e7d32 !important; 
+    color: white !important; 
+}
+
+::ng-deep .error-snackbar { 
+    background: #f44336 !important; 
+    color: white !important; 
+}

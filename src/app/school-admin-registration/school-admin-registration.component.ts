@@ -8,6 +8,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { UserService } from '../common/services/user.service';
 import { ReferenceDataService } from '../common/services/reference-data.service';
 import { controlHasErrorAndTouched } from "../common/form-utils";
@@ -15,6 +17,7 @@ import { switchMap } from "rxjs";
 import { UserType } from "../registration/user-type.enum";
 import { RegionOption } from '../common/model/region.model';
 import { DivisionOption } from '../common/model/division.model';
+import { RegistrationErrorDialogComponent } from './registration-error-dialog.component';
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -49,7 +52,9 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly router: Router,
     private readonly userService: UserService,
-    private readonly referenceDataService: ReferenceDataService
+    private readonly referenceDataService: ReferenceDataService,
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog
   ) {
     this.registrationForm = this.fb.group({
       region: this.fb.control('', Validators.required),
@@ -267,6 +272,25 @@ export class SchoolAdminRegistrationComponent implements OnInit {
       ? null : { mismatch: true };
   }
 
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorDialog(message: string): void {
+    this.dialog.open(RegistrationErrorDialogComponent, {
+      width: '400px',
+      position: {
+        top: '20vh'
+      },
+      data: { message }
+    });
+  }
+
   onSubmit() {
     console.log('Form submitted', this.registrationForm.value);
     this.passwordMismatch = false; // Reset password mismatch flag
@@ -296,8 +320,15 @@ export class SchoolAdminRegistrationComponent implements OnInit {
         this.userService.register(schoolData).pipe(
           switchMap(() => this.router.navigate(['/sign-in']))
         ).subscribe({
-          next: () => this.success = true,
-          error: err => { this.success = false; console.error('Registration error', err); }
+          next: () => {
+            this.success = true;
+            this.showSuccessNotification('School admin registration successful! You can now sign in with your credentials.');
+          },
+          error: err => { 
+            this.success = false; 
+            console.error('Registration error', err);
+            this.showErrorDialog('Registration failed. Please check your information and try again.');
+          }
         });
       }
     } else {
