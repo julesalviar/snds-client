@@ -222,13 +222,13 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   getThumbnailImages(need: any): SchoolNeedImage[] {
     const images = need?.images ?? [];
-    if (images.length <= 2) {
+    if (images.length <= 5) {
       return images;
     }
 
-    // Randomly select 2 images from the array
+    // Randomly select up to 5 images from the array for the fanned layout
     const shuffled = [...images].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 2);
+    return shuffled.slice(0, 5);
   }
 
   private showSuccessNotification(message: string): void {
@@ -430,9 +430,27 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     const files = (event.target as HTMLInputElement).files;
     if (!files) return;
 
+    // Check if adding new files would exceed the 5 image limit
+    const currentImageCount = this.previewImages.length;
+    const maxImages = 5;
+    
+    if (currentImageCount >= maxImages) {
+      this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+
     const selectionSeen = new Set<string>();
+    let addedCount = 0;
+    const remainingSlots = maxImages - currentImageCount;
 
     Array.from(files).forEach(file => {
+      // Stop if we've reached the limit
+      if (addedCount >= remainingSlots) {
+        console.warn('Image limit reached, skipping remaining files');
+        return;
+      }
+
       if (!file.type.startsWith('image/') || file.size === 0) {
         console.warn('Invalid image skipped:', file.name);
         return;
@@ -461,10 +479,17 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           uploading: false,
           progress: 0,
         });
+        addedCount++;
       };
       reader.readAsDataURL(file);
     });
+    
     (event.target as HTMLInputElement).value = '';
+    
+    // Show info message if some files were skipped due to limit
+    if (addedCount < Array.from(files).length) {
+      this.showErrorNotification(`Only ${addedCount} images were added. Maximum ${maxImages} images allowed.`);
+    }
   }
 
   removeImage(index: number) {
