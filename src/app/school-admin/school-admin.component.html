@@ -10,9 +10,9 @@
     <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="fill">
         <mat-label>Contribution Type</mat-label>
-        <input matInput 
+        <input matInput
                #contributionTypeInput
-               formControlName="contributionType" 
+               formControlName="contributionType"
                [matAutocomplete]="contributionTypeAuto"
                (input)="filterContributionTypes(contributionTypeInput.value); onContributionTypeInput(contributionTypeInput.value)">
         <mat-autocomplete #contributionTypeAuto="matAutocomplete" (optionSelected)="onContributionTypeChange($event.option.value)">
@@ -27,9 +27,9 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Specific Contribution</mat-label>
-        <input matInput 
+        <input matInput
                #specificContributionInput
-               formControlName="specificContribution" 
+               formControlName="specificContribution"
                [matAutocomplete]="specificContributionAuto"
                (input)="filterSpecificContributions(specificContributionInput.value)">
         <mat-autocomplete #specificContributionAuto="matAutocomplete">
@@ -212,8 +212,8 @@
           <th mat-header-cell *matHeaderCellDef class="thumbnails-column"></th>
           <td mat-cell *matCellDef="let need" class="thumbnails-column">
             <div class="thumbnail-container">
-              <img *ngFor="let image of getThumbnailImages(need)" 
-                   [src]="image.thumbnailUrl" 
+              <img *ngFor="let image of getThumbnailImages(need)"
+                   [src]="image.thumbnailUrl"
                    [alt]="need.description"
                    class="thumbnail-image"
                    (error)="onImageError($event)">

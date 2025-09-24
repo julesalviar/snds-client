@@ -154,8 +154,6 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     });
   }
 
-
-
   private async loadDivisions(regionCode: string): Promise<void> {
     try {
       await this.referenceDataService.initialize();
