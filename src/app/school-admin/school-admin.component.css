@@ -347,4 +347,34 @@ tr:hover {
 /* Dialog and select fixes - simplified */
 ::ng-deep .mat-mdc-dialog-container { z-index: 2000 !important; }
 ::ng-deep .mat-mdc-select-panel { z-index: 2000 !important; }
-::ng-deep .mat-mdc-select { pointer-events: auto !important; }
+
+/* Table column width constraints */
+.quantity-column {
+  max-width: 120px !important;
+  width: 120px !important;
+  text-align: center;
+}
+
+.cost-column {
+  max-width: 150px !important;
+  width: 150px !important;
+  text-align: right;
+}
+
+.date-column {
+  max-width: 130px !important;
+  width: 130px !important;
+  text-align: center;
+}
+
+.thumbnails-column {
+  max-width: 120px !important;
+  width: 120px !important;
+  text-align: center;
+}
+
+.actions-column {
+  max-width: 180px !important;
+  width: 180px !important;
+  text-align: center;
+}

@@ -266,6 +266,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   private showInvalidContributionTypeDialog(): void {
     this.dialog.open(InvalidContributionTypeDialogComponent, {
       width: '400px',
+      position: {
+        top: '20vh'
+      },
       data: { message: 'The contribution type you entered is not available. Please select from the available options.' }
     });
   }
@@ -278,6 +281,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     
     this.dialog.open(InvalidSpecificContributionDialogComponent, {
       width: '400px',
+      position: {
+        top: '20vh'
+      },
       data: { message }
     });
   }

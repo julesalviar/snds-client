@@ -149,25 +149,4 @@ body {
   z-index: 2000 !important;
 }
 
-.cdk-overlay-connected-position-bounding-box {
-  pointer-events: auto !important;
-}
-
-/* Fix select trigger click issues */
-.mat-mdc-select {
-  pointer-events: auto !important;
-}
-
-.mat-mdc-select-trigger {
-  pointer-events: auto !important;
-}
-
-.mat-mdc-select-value {
-  pointer-events: auto !important;
-}
-
-.mat-mdc-select-arrow-wrapper {
-  pointer-events: auto !important;
-}
-
 
