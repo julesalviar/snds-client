@@ -11,6 +11,7 @@ import { AipComponent } from './school-admin/aip/aip.component';
 import { ListOfSchoolNeedsComponent } from './school-admin/list-of-school-needs/list-of-school-needs.component';
 import { SchoolNeedsEngageComponent } from './school-admin/school-needs-engage/school-needs-engage.component';
 import { ImplementationStatusDialogComponent } from './school-admin/implementation-status-dialog/implementation-status-dialog.component';
+import { EditSchoolNeedComponent } from './school-admin/edit-school-need/edit-school-need.component';
 import { AllSchoolComponent } from './stakeholders/all-school/all-school.component';
 import {AuthGuard} from "./auth/auth.guard";
 import { MyContributionComponent } from './stakeholders/my-contribution/my-contribution.component';
@@ -51,6 +52,7 @@ export const routes: Routes = [
       { path: 'spfp', component: SchoolAdminComponent },
       { path: 'school-needs-engage/:code', component: SchoolNeedsEngageComponent },
       { path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent },
+      { path: 'edit-school-need/:id', component: EditSchoolNeedComponent },
     ]
   },
   { // Division Admin routes

@@ -6,6 +6,7 @@ export interface SchoolNeedImage {
 }
 
 export interface SchoolNeed {
+  _id?: string;
   code?: string;
   description: string;
   specificContribution: string;

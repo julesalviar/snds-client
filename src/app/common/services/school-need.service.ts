@@ -20,4 +20,16 @@ export class SchoolNeedService {
       catchError(this.httpService.handleError)
     );
   }
+
+  getSchoolNeedById(id: string): Observable<SchoolNeed> {
+    return this.httpService.get<SchoolNeed>(`${API_ENDPOINT.schoolNeed}/${id}`).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  updateSchoolNeed(id: string, payload: SchoolNeed): Observable<any> {
+    return this.httpService.put(`${API_ENDPOINT.schoolNeed}/${id}`, payload).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
 }

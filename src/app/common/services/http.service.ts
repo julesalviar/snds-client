@@ -54,6 +54,11 @@ export class HttpService {
     return this.http.get<T>(url, { headers: this.getHeaders() });
   }
 
+  put<T>(url: string, data: any): Observable<T> {
+    console.log(`putting url: ${url} data: ${JSON.stringify(data)}`);
+    return this.http.put<T>(url, data, { headers: this.getHeaders() });
+  }
+
   uploadFile<T>(url: string, formData: FormData): Observable<T> {
     console.log(`uploading file to url: ${url}`);
     return this.http.post<T>(url, formData, { headers: this.getUploadHeaders() });
