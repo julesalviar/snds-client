@@ -28,7 +28,7 @@ import { InvalidContributionTypeDialogComponent } from "../invalid-contribution-
 import { InvalidSpecificContributionDialogComponent } from "../invalid-specific-contribution-dialog.component";
 
 @Component({
-  selector: 'app-edit-school-need',
+  selector: 'app-school-need',
   standalone: true,
   imports: [
     MatNativeDateModule,
@@ -45,10 +45,10 @@ import { InvalidSpecificContributionDialogComponent } from "../invalid-specific-
     MatIcon,
     MatProgressBar
   ],
-  templateUrl: './edit-school-need.component.html',
-  styleUrl: './edit-school-need.component.css'
+  templateUrl: './school-need.component.html',
+  styleUrl: './school-need.component.css'
 })
-export class EditSchoolNeedComponent implements OnInit, OnDestroy {
+export class SchoolNeedComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
   schoolNeed: SchoolNeed | null = null;
   projectsData: Aip[] = [];

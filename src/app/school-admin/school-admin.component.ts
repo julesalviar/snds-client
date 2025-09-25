@@ -216,7 +216,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
-    this.router.navigate(['/school-admin/edit-school-need', need._id]);
+    this.router.navigate(['/school-admin/school-need', need._id]);
   }
 
   onImageError(event: any): void {
