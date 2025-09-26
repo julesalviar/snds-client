@@ -225,7 +225,7 @@
           <th mat-header-cell *matHeaderCellDef class="actions-column"> Actions </th>
           <td mat-cell *matCellDef="let need" class="actions-column">
             <div class="button-group">
-              <button mat-button (click)="viewResponses(need)">Responses</button>
+              <button mat-button (click)="viewResponses(need)" [disabled]="true">Responses</button>
               <button mat-button (click)="editNeed(need)">Edit</button>
             </div>
           </td>

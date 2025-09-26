@@ -24,8 +24,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { HttpService } from "../../common/services/http.service";
 import { API_ENDPOINT } from "../../common/api-endpoints";
 import { ReferenceDataService } from "../../common/services/reference-data.service";
-import { InvalidContributionTypeDialogComponent } from "../invalid-contribution-type-dialog.component";
-import { InvalidSpecificContributionDialogComponent } from "../invalid-specific-contribution-dialog.component";
+import {NavigationService} from "../../common/services/navigation.service";
 
 @Component({
   selector: 'app-school-need',
@@ -90,6 +89,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly dialog: MatDialog,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly navigationService: NavigationService,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -178,7 +178,17 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    this.router.navigate(['/school-admin']);
+    const prevUrl = this.navigationService.getPreviousUrl();
+    console.log('prevUrl:', prevUrl);
+    
+    // Remove query parameters and fragments to get the base path
+    const basePath = prevUrl.split('?')[0].split('#')[0];
+    
+    if (basePath === '/school-admin' || basePath.endsWith('/school-admin')) {
+      this.router.navigate(['/school-admin']);
+    } else {
+      this.router.navigate(['/school-admin/list-of-school-needs']);
+    }
   }
 
   private showSuccessNotification(message: string): void {
@@ -241,7 +251,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
     this.isOtherSelected = this.schoolNeed.unit === 'Others (pls. specify)';
     this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
-    
+
     console.log('Form populated successfully. Form value:', this.schoolNeedsForm.value);
   }
 
@@ -432,10 +442,10 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
   removeExistingImage(imageIndex: number): void {
     if (!this.schoolNeed?.images) return;
-    
+
     // Remove from the school need images array
     this.schoolNeed.images.splice(imageIndex, 1);
-    
+
     console.log('Removed existing image at index:', imageIndex);
     console.log('Remaining existing images:', this.schoolNeed.images);
   }
