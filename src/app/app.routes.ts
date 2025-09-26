@@ -52,7 +52,7 @@ export const routes: Routes = [
       { path: 'spfp', component: SchoolAdminComponent },
       { path: 'school-needs-engage/:code', component: SchoolNeedsEngageComponent },
       { path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent },
-      { path: 'school-need/:id', component: SchoolNeedComponent },
+      { path: 'school-need/:code', component: SchoolNeedComponent },
     ]
   },
   { // Division Admin routes

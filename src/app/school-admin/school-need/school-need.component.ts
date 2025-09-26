@@ -56,8 +56,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   aipProjects: string[] = [];
-  pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
-  units: string[] = ['Bottles', 'Boxes', 'Classrooms', 'Feet', 'Gallons', 'Hectares', 'Hours', 'Learners', 'Lots', 'Months', 'Non-Teaching Personnel', 'Pieces', 'Reams', 'Rolls', 'Sacks', 'Sheets', 'Spans', 'Teaching Personnel', 'Units', 'Others (pls. specify)']
+  pillars: string[] = [];
+  units: string[] = []
   isOtherSelected = false;
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; }> = [];
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
@@ -96,7 +96,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       specificContribution: ['', [Validators.required]],
       schoolYear: [getSchoolYear(), [Validators.required]],
       projectName: ['', [Validators.required]],
-      intermediateOutcome: ['', [Validators.required]],
+      intermediateOutcome: [''], // Readonly field, populated from project.pillars
       quantityNeeded: [0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
       otherUnit: ['', [this.otherUnitValidator.bind(this)]],
@@ -112,13 +112,15 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadContributionData();
     this.loadCurrentProjects();
-    
-    // Get school need ID from route params
-    const needId = this.route.snapshot.paramMap.get('id');
-    if (needId) {
-      this.loadSchoolNeed(needId);
+    this.loadPillarsAndUnits();
+
+    // Get school need code from route params
+    const needCode = this.route.snapshot.paramMap.get('code');
+    console.log('Route param code:', needCode);
+    if (needCode) {
+      this.loadSchoolNeed(needCode);
     } else {
-      this.showErrorNotification('School need ID not provided');
+      this.showErrorNotification('School need code not provided');
       this.router.navigate(['/school-admin']);
     }
   }
@@ -197,9 +199,10 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadSchoolNeed(needId: string): void {
-    this.schoolNeedService.getSchoolNeedById(needId).pipe(takeUntil(this.destroy$)).subscribe({
+  private loadSchoolNeed(needCode: string): void {
+    this.schoolNeedService.getSchoolNeedByCode(needCode).pipe(takeUntil(this.destroy$)).subscribe({
       next: (need) => {
+        console.log('Received school need data:', need);
         this.schoolNeed = need;
         this.populateForm();
         this.isLoading = false;
@@ -213,14 +216,19 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   }
 
   private populateForm(): void {
-    if (!this.schoolNeed) return;
+    if (!this.schoolNeed) {
+      console.log('No school need data to populate form');
+      return;
+    }
+
+    console.log('Populating form with school need:', this.schoolNeed);
 
     this.schoolNeedsForm.patchValue({
       contributionType: this.schoolNeed.contributionType,
       specificContribution: this.schoolNeed.specificContribution,
       schoolYear: getSchoolYear(),
-      projectName: this.schoolNeed.projectId,
-      intermediateOutcome: '',
+      projectName: typeof this.schoolNeed.projectId === 'object' ? this.schoolNeed.projectId._id : this.schoolNeed.projectId,
+      intermediateOutcome: typeof this.schoolNeed.projectId === 'object' ? this.schoolNeed.projectId.pillars : '',
       quantityNeeded: this.schoolNeed.quantity,
       unit: this.schoolNeed.unit,
       otherUnit: this.schoolNeed.unit === 'Others (pls. specify)' ? this.schoolNeed.unit : '',
@@ -233,6 +241,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
     this.isOtherSelected = this.schoolNeed.unit === 'Others (pls. specify)';
     this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
+    
+    console.log('Form populated successfully. Form value:', this.schoolNeedsForm.value);
   }
 
   private loadCurrentProjects(): void {
@@ -256,6 +266,18 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       );
       this.filteredContributionTypes = [...this.contributionTypes];
       this.filteredSpecificContributions = [...this.specificContributions];
+    }
+  }
+
+  private loadPillarsAndUnits(): void {
+    const pillarsData = this.referenceDataService.get<string[]>('pillars');
+    if (pillarsData) {
+      this.pillars = pillarsData;
+    }
+
+    const unitsData = this.referenceDataService.get<string[]>('units');
+    if (unitsData) {
+      this.units = unitsData;
     }
   }
 
@@ -343,7 +365,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     const currentImageCount = this.previewImages.length;
     const existingImageCount = this.schoolNeed?.images?.length || 0;
     const maxImages = 5;
-    
+
     if (currentImageCount + existingImageCount >= maxImages) {
       this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
       (event.target as HTMLInputElement).value = '';
@@ -366,7 +388,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       };
       reader.readAsDataURL(file);
     });
-    
+
     (event.target as HTMLInputElement).value = '';
   }
 
@@ -406,5 +428,21 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
   get existingImages(): SchoolNeedImage[] {
     return this.schoolNeed?.images || [];
+  }
+
+  removeExistingImage(imageIndex: number): void {
+    if (!this.schoolNeed?.images) return;
+    
+    // Remove from the school need images array
+    this.schoolNeed.images.splice(imageIndex, 1);
+    
+    console.log('Removed existing image at index:', imageIndex);
+    console.log('Remaining existing images:', this.schoolNeed.images);
+  }
+
+  get totalImageCount(): number {
+    const existingCount = this.schoolNeed?.images?.length || 0;
+    const newCount = this.previewImages.length;
+    return existingCount + newCount;
   }
 }

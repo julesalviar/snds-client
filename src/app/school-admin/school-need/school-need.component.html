@@ -65,9 +65,7 @@
 
         <mat-form-field appearance="fill">
           <mat-label>Intermediate Outcome (Pillars)</mat-label>
-          <mat-select formControlName="intermediateOutcome">
-            <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
-          </mat-select>
+          <input matInput formControlName="intermediateOutcome" readonly>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
@@ -148,16 +146,19 @@
         <div *ngIf="hasExistingImages" class="existing-images-section">
           <h4>Existing Images</h4>
           <div class="existing-images-container">
-            <div *ngFor="let image of existingImages" class="existing-image-box">
+            <div *ngFor="let image of existingImages; let i = index" class="existing-image-box">
               <img [src]="image.thumbnailUrl" [alt]="schoolNeed?.description" class="existing-image" />
+              <button mat-icon-button (click)="removeExistingImage(i)" class="remove-existing-image-btn">
+                <mat-icon>close</mat-icon>
+              </button>
             </div>
           </div>
         </div>
 
         <div class="file-upload">
-          <button mat-raised-button type="button" (click)="fileInput.click()" [disabled]="previewImages.length >= 5">
+          <button mat-raised-button type="button" (click)="fileInput.click()" [disabled]="totalImageCount >= 5">
             <mat-icon>attach_file</mat-icon>
-            Attach Additional Images
+            Attach Additional Images ({{totalImageCount}}/5)
           </button>
           <input #fileInput type="file" accept="image/*" multiple (change)="onFileSelected($event)" hidden />
         </div>

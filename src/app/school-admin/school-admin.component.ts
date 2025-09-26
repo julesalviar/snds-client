@@ -61,9 +61,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
-  pillars = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
+  pillars: string[] = [];
   schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
-  units: string[] = ['Bottles', 'Boxes', 'Classrooms', 'Feet', 'Gallons', 'Hectares', 'Hours', 'Learners', 'Lots', 'Months', 'Non-Teaching Personnel', 'Pieces', 'Reams', 'Rolls', 'Sacks', 'Sheets', 'Spans', 'Teaching Personnel', 'Units', 'Others (pls. specify)']
+  units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;
   isOtherSelected = false;
@@ -124,6 +124,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.loadAllSchoolNeeds();
     this.loadCurrentProjects();
     this.loadContributionData();
+    this.loadPillarsAndUnits();
     this.userService.projectTitles$.pipe(takeUntil(this.destroy$)).subscribe(titles => {
       this.aipProjects = titles;
     });
@@ -216,7 +217,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
   editNeed(need: any): void {
     console.log('Editing need:', need);
-    this.router.navigate(['/school-admin/school-need', need._id]);
+    console.log('Need code:', need.code);
+    this.router.navigate(['/school-admin/school-need', need.code]);
   }
 
   onImageError(event: any): void {
@@ -261,7 +263,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     if (!selectedContributionType) {
       return false; // No contribution type selected
     }
-    
+
     const validSpecificContributions = this.getSpecificContributionsForType(selectedContributionType);
     return validSpecificContributions.includes(value);
   }
@@ -278,10 +280,10 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   private showInvalidSpecificContributionDialog(): void {
     const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
-    const message = selectedContributionType 
+    const message = selectedContributionType
       ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
       : 'Please select a contribution type first before entering a specific contribution.';
-    
+
     this.dialog.open(InvalidSpecificContributionDialogComponent, {
       width: '400px',
       position: {
@@ -324,6 +326,18 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       );
       this.filteredContributionTypes = [...this.contributionTypes];
       this.filteredSpecificContributions = [...this.specificContributions];
+    }
+  }
+
+  private loadPillarsAndUnits(): void {
+    const pillarsData = this.referenceDataService.get<string[]>('pillars');
+    if (pillarsData) {
+      this.pillars = pillarsData;
+    }
+
+    const unitsData = this.referenceDataService.get<string[]>('units');
+    if (unitsData) {
+      this.units = unitsData;
     }
   }
 
@@ -436,7 +450,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     // Check if adding new files would exceed the 5 image limit
     const currentImageCount = this.previewImages.length;
     const maxImages = 5;
-    
+
     if (currentImageCount >= maxImages) {
       this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
       (event.target as HTMLInputElement).value = '';
@@ -486,9 +500,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       };
       reader.readAsDataURL(file);
     });
-    
+
     (event.target as HTMLInputElement).value = '';
-    
+
     // Show info message if some files were skipped due to limit
     if (addedCount < Array.from(files).length) {
       this.showErrorNotification(`Only ${addedCount} images were added. Maximum ${maxImages} images allowed.`);
