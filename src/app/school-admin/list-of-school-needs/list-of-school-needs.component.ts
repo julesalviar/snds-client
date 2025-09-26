@@ -111,16 +111,15 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     });
   }
   view(need: SchoolNeed): void {
-    console.log('Viewing:', need);
+    this.router.navigate(['/school-admin/school-need/', need.code]);
   }
 
   edit(need: SchoolNeed): void {
-    console.log('Editing:', need);
+    this.router.navigate(['/school-admin/school-need/', need.code]);
   }
 
   delete(need: SchoolNeed): void {
-    console.log('Deleting:', need);
-    this.schoolNeeds = this.schoolNeeds.filter(n => n.code !== need.code);
+    this.router.navigate(['/school-admin/school-need/', need.code]);
   }
 
   onPageChange(event: PageEvent) {

@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import {NavigationEnd, Router, RouterModule} from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {AuthService} from "../auth/auth.service";
 import {UserType} from "../registration/user-type.enum";
+import {filter} from "rxjs";
 
 @Component({
   standalone: true,
@@ -22,11 +23,30 @@ import {UserType} from "../registration/user-type.enum";
     MatMenuModule
   ]
 })
-export class NavigationComponent {
+export class NavigationComponent implements OnInit {
   isMenuOpen = false;
   userType = UserType;
+  currentRoute = '';
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router
+  ) {
+  }
+
+  ngOnInit(): void {
+    this.currentRoute = this.router.url.split(/[?#!;]/)[0];
+
+    // Listen to route changes to hide login button on sign-in page
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+      )
+      .subscribe((event: NavigationEnd) => {
+        this.currentRoute = event.urlAfterRedirects.split(/[?#!;]/)[0];
+        console.log(this.currentRoute + " << Current Route" );
+      });
+  }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -55,5 +75,9 @@ export class NavigationComponent {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  shouldShowLoginButton(): boolean {
+    return this.currentRoute !== '/sign-in';
   }
 }

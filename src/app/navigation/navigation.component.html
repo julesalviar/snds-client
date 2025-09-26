@@ -95,7 +95,7 @@
       </button>
     </ng-container>
     <ng-template #loginButton>
-      <button mat-raised-button color="primary" class="login-button" routerLink="/sign-in">
+      <button mat-raised-button color="primary" class="login-button" routerLink="/sign-in" *ngIf="shouldShowLoginButton()">
         Login
       </button>
     </ng-template>

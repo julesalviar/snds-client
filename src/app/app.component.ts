@@ -27,7 +27,6 @@ export class AppComponent {
       .subscribe((event: NavigationEnd) => {
         const url = event.urlAfterRedirects.split(/[?#!;]/)[0];
         const hiddenRoutes = [
-          '/sign-in',
           '/school-admin-registration',
           '/register'
         ];
