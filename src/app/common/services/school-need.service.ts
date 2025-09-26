@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {HttpService} from "./http.service";
-import {catchError, Observable} from "rxjs";
+import {catchError, map, Observable} from "rxjs";
 import {API_ENDPOINT} from "../api-endpoints";
 import {SchoolNeed} from "../model/school-need.model";
 
@@ -17,6 +17,19 @@ export class SchoolNeedService {
 
   createSchoolNeed(payload: SchoolNeed): Observable<any> {
     return this.httpService.post(API_ENDPOINT.schoolNeed, payload).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  getSchoolNeedByCode(code: string): Observable<SchoolNeed> {
+    return this.httpService.get<any>(`${API_ENDPOINT.schoolNeed}/${code}`).pipe(
+      map((response: any) => response.data),
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  updateSchoolNeed(id: string, payload: SchoolNeed): Observable<any> {
+    return this.httpService.put(`${API_ENDPOINT.schoolNeed}/${id}`, payload).pipe(
       catchError(this.httpService.handleError)
     );
   }
