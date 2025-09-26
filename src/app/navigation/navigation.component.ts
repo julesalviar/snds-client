@@ -36,21 +36,18 @@ export class NavigationComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentRoute = this.router.url.split(/[?#!;]/)[0];
-
-    // Listen to route changes to hide login button on sign-in page
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)
       )
       .subscribe((event: NavigationEnd) => {
         this.currentRoute = event.urlAfterRedirects.split(/[?#!;]/)[0];
-        console.log(this.currentRoute + " << Current Route" );
       });
   }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
-    console.log('Menu Open:', this.isMenuOpen); // Debugging
+    console.log('Menu Open:', this.isMenuOpen);
   }
 
   closeMenu() {

@@ -23,6 +23,7 @@ import {AuthService} from "../auth/auth.service";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
+import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
@@ -47,7 +48,8 @@ import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-con
     CommonModule,
     MatCardTitle,
     MatIcon,
-    MatProgressBar
+    MatProgressBar,
+    MatPaginator
   ],
   templateUrl: './school-admin.component.html',
   styleUrls: ['./school-admin.component.css']
@@ -58,6 +60,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   projectsData: Aip[] = [];
   schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
+  
+  // Pagination properties
+  pageIndex: number = 0;
+  pageSize: number = 10;
+  totalItems: number = 0;
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
@@ -116,8 +123,15 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     });
   }
   queryData(): void {
+    this.pageIndex = 0; // Reset to first page when changing school year
     this.loadAllSchoolNeeds();
     console.log('Load All School Needs');
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.pageIndex = event.pageIndex;
+    this.loadAllSchoolNeeds();
   }
 
   ngOnInit(): void {
@@ -294,15 +308,17 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   private loadAllSchoolNeeds(): void {
-    this.fetchAllSchoolNeeds().subscribe({
+    const page = this.pageIndex + 1;
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, this.selectedSchoolYear).subscribe({
       next: (response) => {
         this.schoolNeedsData = response.data;
-        this.schoolName = response.schoolName || '';
+        this.schoolName = response.school?.schoolName || '';
+        this.totalItems = response.meta?.totalItems || 0;
       },
       error: (err) => {
         console.error('Error fetching school needs:', err);
       }
-    })
+    });
   }
 
   private loadCurrentProjects(): void {

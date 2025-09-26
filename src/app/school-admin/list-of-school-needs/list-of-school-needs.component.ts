@@ -125,6 +125,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   onPageChange(event: PageEvent) {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
+    this.loadSchoolNeeds();
   }
 
   loadSchoolNeeds(): void {
