@@ -6,11 +6,12 @@ import { CommonModule } from '@angular/common';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatBadgeModule } from '@angular/material/badge';
 import {filter} from "rxjs";
+import { FooterComponent } from './footer/footer.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent, MatTreeModule, MatBadgeModule],
+  imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent, MatTreeModule, MatBadgeModule, FooterComponent ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })

@@ -15,6 +15,7 @@ import { AllSchoolComponent } from './stakeholders/all-school/all-school.compone
 import {AuthGuard} from "./auth/auth.guard";
 import { MyContributionComponent } from './stakeholders/my-contribution/my-contribution.component';
 import { ChangePasswordComponent } from './navigation/change-password/change-password.component';
+import { FooterComponent } from './footer/footer.component';
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'sign-in', component: SignInComponent },
@@ -27,6 +28,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { path: 'change-password', component: ChangePasswordComponent },
+  { path: 'footer', component: FooterComponent},
   { // Stakeholder routes
     path: 'stakeholder',
     canActivateChild: [AuthGuard],
