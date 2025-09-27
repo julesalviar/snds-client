@@ -33,4 +33,10 @@ export class SchoolNeedService {
       catchError(this.httpService.handleError)
     );
   }
+
+  engageSchoolNeed(code: string, engagementData: any): Observable<any> {
+    return this.httpService.patch(`${API_ENDPOINT.schoolNeed}/${code}/engage`, engagementData).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
 }

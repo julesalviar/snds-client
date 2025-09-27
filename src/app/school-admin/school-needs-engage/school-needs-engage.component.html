@@ -2,15 +2,21 @@
   <mat-card class="engage-card">
     <mat-card-title>Engagement Details</mat-card-title>
     <mat-card-content>
-      <p *ngIf="needCode">Engaging with need code: <strong>{{ needCode }}</strong></p> 
+      <p *ngIf="needCode">Engaging with need code: <strong>{{ needCode }}</strong></p>
       <form>
         <mat-form-field appearance="fill">
           <mat-label>Type the name of the stakeholder to engage</mat-label>
-          <mat-select [(ngModel)]="stakeholderName" name="stakeholderName" required>
-            <mat-option *ngFor="let stakeholder of stakeholders" [value]="stakeholders">
-              {{ stakeholder }}
+          <input matInput
+                 [(ngModel)]="stakeholder"
+                 name="stakeholderName"
+                 [matAutocomplete]="auto"
+                 (input)="onStakeholderInput($event)"
+                 required>
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+            <mat-option *ngFor="let stakeholder of filteredStakeholders" [value]="stakeholder">
+              {{ stakeholder.name }}
             </mat-option>
-          </mat-select>
+          </mat-autocomplete>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
@@ -26,8 +32,10 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Unit (pieces, sacks, roll, etc..)</mat-label>
-          <input matInput [(ngModel)]="unit" name="unit" required>
+          <mat-label>Unit (Box, pieces, sack, roll etc.)</mat-label>
+          <mat-select [(ngModel)]="unit" name="unit" required>
+            <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
+          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
