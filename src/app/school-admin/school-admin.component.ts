@@ -60,7 +60,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   projectsData: Aip[] = [];
   schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
-  
+
   // Pagination properties
   pageIndex: number = 0;
   pageSize: number = 10;
@@ -201,6 +201,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         schoolId: this.authService.getSchoolId(),
         images: uploadedImages,
         targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+        schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
       };
 
       this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({

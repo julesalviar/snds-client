@@ -143,11 +143,12 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
         ? await this.uploadImages('school-needs')
         : [];
 
-      const updatedNeed: SchoolNeed = {
+      const updatedNeed: any = {
         ...this.schoolNeed!,
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
         contributionType: this.schoolNeedsForm.get('contributionType')?.value,
         projectId: this.schoolNeedsForm.get('projectName')?.value,
+        schoolId: this.schoolNeed!.schoolId,
         quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
         unit: this.schoolNeedsForm.get('unit')?.value,
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
@@ -180,10 +181,10 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   onCancel(): void {
     const prevUrl = this.navigationService.getPreviousUrl();
     console.log('prevUrl:', prevUrl);
-    
+
     // Remove query parameters and fragments to get the base path
     const basePath = prevUrl.split('?')[0].split('#')[0];
-    
+
     if (basePath === '/school-admin' || basePath.endsWith('/school-admin')) {
       this.router.navigate(['/school-admin']);
     } else {
