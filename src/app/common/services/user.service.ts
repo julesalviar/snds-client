@@ -64,4 +64,23 @@ export class UserService {
   setRole(role: string) {
     this.userRole = role;
   }
+
+  getUsersByRole(role: string, search?: string, limit?: number) {
+    let url = `${environment.API_URL}/users/by-role/${role}`;
+    const params: string[] = [];
+    
+    if (search) {
+      params.push(`search=${encodeURIComponent(search)}`);
+    }
+    
+    if (limit) {
+      params.push(`limit=${limit}`);
+    }
+    
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
+    }
+    
+    return this.httpService.get<any[]>(url);
+  }
 }
