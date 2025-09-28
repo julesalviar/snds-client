@@ -14,6 +14,66 @@ mat-card-title {
   color: #45a049;
 }
 
+.summary-text {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  border-left: 4px solid #45a049;
+}
+
+.summary-text p {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.summary-text p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-text strong {
+  color: #45a049;
+  font-weight: 600;
+}
+
+/* Disabled button styling */
+button[mat-icon-button][disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button[mat-icon-button][disabled] mat-icon {
+  color: #999 !important;
+}
+
+/* Column width constraints */
+.mat-column-implementationStatus {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-beneficiaryPersonnel {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-beneficiaryStudents {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-amount {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-quantity {
+  max-width: 80px;
+  min-width: 80px;
+}
+
 .mat-elevation-z8 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }

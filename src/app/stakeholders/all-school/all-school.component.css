@@ -1,69 +1,243 @@
-.all-schools-container {
+mat-card {
+  margin: 20px;
   padding: 20px;
-  width: 100%;
-  overflow-x: auto; 
+  box-shadow: 0 4px 20px green;
+  border-radius: 8px;
+  border: 1px solid green;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 mat-card-title {
-  font-size: 24px;
-  color: green;
   margin-bottom: 20px;
+  margin-left: 5px;
+  font-size: 20px;
+  color: #45a049;
+}
+
+.search-container {
+  margin-bottom: 20px;
+  padding: 0 5px;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-field .mat-mdc-form-field {
+  font-size: 14px;
+}
+
+.search-field .mat-mdc-form-field-outline {
+  color: #45a049;
+}
+
+.search-field .mat-mdc-form-field-focus-overlay {
+  background-color: rgba(69, 160, 73, 0.1);
+}
+
+.search-field .mat-mdc-form-field-label {
+  color: #45a049;
+}
+
+.search-field .mat-mdc-input-element {
+  color: #333;
+}
+
+.search-field .mat-mdc-form-field-icon-suffix {
+  color: #45a049;
+}
+
+.summary-text {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  border-left: 4px solid #45a049;
+}
+
+.summary-text p {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.summary-text p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-text strong {
+  color: #45a049;
+  font-weight: 600;
+}
+
+/* Disabled button styling */
+button[mat-icon-button][disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button[mat-icon-button][disabled] mat-icon {
+  color: #999 !important;
+}
+
+/* Column width constraints */
+.mat-column-contactNumber {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-designation {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-schoolId {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-accountableName {
+  max-width: 150px;
+  min-width: 150px;
+}
+
+.mat-column-schoolName {
+  max-width: 200px;
+  min-width: 200px;
+}
+
+.mat-elevation-z8 {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.table-container {
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.table-container {
+  min-width: 950px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 16px 0;
-  border: 1px solid green;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.5);
 }
 
-th, td {
-  padding: 12px;
+.mat-header-cell, .mat-cell {
+  padding: 16px;
   text-align: left;
-  vertical-align: middle;
+  border: 1px solid #ddd;
 }
 
-th {
-  background-color: #f2f2f2;
-  color: green;
+tr:hover {
+  background-color: #e4a0a089;
+  color: white;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 15px;
+  background-color: green;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 5px 0;
+}
+
+mat-icon {
+  color: #45a049;
+  cursor: pointer;
+}
+
+mat-icon-button {
+  justify-content: space-between;
+}
+
+td.mat-cell button {
+  margin-right: 5px;
+}
+
+.mat-header-cell {
+  background-color: #f4f4f4;
   font-weight: bold;
 }
 
 tr:hover {
-  background-color: #e9f5e9;
+  background-color: rgba(128, 128, 128, 0.2);
 }
 
-.needs-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.needs-button:hover {
-  background-color: #45a049;
+mat-icon {
+  font-size: 24px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  table {
-    display: block; /* Allow block display for scrolling */
-    overflow-x: auto; /* Enable horizontal scrolling */
-    white-space: nowrap; /* Prevent wrapping of table cells */
+@media (max-width: 1024px) {
+  mat-card {
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
   }
 
-  thead {
-    display: table-header-group; /* Keep the header visible */
+  mat-card-title {
+    font-size: 18px;
   }
 
-  tr {
-    display: table-row; /* Keep rows in table layout */
+  .table-container {
+    margin: 5px 0;
   }
 
-  th, td {
-    display: table-cell; /* Keep cells in table layout */
+  .mat-header-cell, .mat-cell {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  mat-card {
+    width: 100%;
+    margin: 5px;
+    padding: 10px;
+  }
+
+  mat-card-title {
+    font-size: 16px;
+  }
+
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 800px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 435px) {
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 950px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
   }
 }

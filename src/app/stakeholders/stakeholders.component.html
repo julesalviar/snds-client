@@ -1,20 +1,17 @@
 
 <mat-card>
   <mat-card-title class="title">Schools' Needs</mat-card-title>
+  <div class="summary-text">
+    <p>Total School Needs: <strong>{{ totalItems | number }}</strong></p>
+    <p>Schools in Need: <strong>{{ totalBySchool | number }}</strong></p>
+  </div>
   <div class="table-scroll">
     <div class="table-container">
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
-        <ng-container matColumnDef="code">
-          <th mat-header-cell *matHeaderCellDef> Code </th>
-          <td mat-cell *matCellDef="let need"> {{ need.code }}
-            <mat-icon *ngIf="need.engaged">handshake</mat-icon>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="year">
-          <th mat-header-cell *matHeaderCellDef> School Year </th>
-          <td mat-cell *matCellDef="let need"> {{ need.projectId?.schoolYear }} </td>
+        <ng-container matColumnDef="school">
+          <th mat-header-cell *matHeaderCellDef> School </th>
+          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName }} </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">
@@ -50,26 +47,12 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef> Actions </th>
           <td mat-cell *matCellDef="let need" style="white-space: nowrap;">
-            <button mat-icon-button (click)="engageWithNeed(need)" matTooltip="Engage">
-              <mat-icon>person</mat-icon>
+            <button mat-icon-button (click)="engageWithNeed(need)" matTooltip="View">
+              <mat-icon>visibility</mat-icon>
             </button>
-            <button mat-icon-button (click)="viewEngagement(need)" matTooltip="Status">
-              <mat-icon>bar_chart</mat-icon>
+            <button mat-icon-button (click)="viewEngagement(need)" matTooltip="Delete" disabled>
+              <mat-icon>delete</mat-icon>
             </button>
-            <button class="ellipsis-button" mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="More Actions">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #actionMenu="matMenu">
-              <button mat-menu-item (click)="viewDetails(need)">
-                <mat-icon>visibility</mat-icon> View
-              </button>
-              <button mat-menu-item (click)="editSchoolNeed(need)">
-                <mat-icon>edit</mat-icon> Edit
-              </button>
-              <button mat-menu-item (click)="deleteSchoolNeed(need)">
-                <mat-icon>delete</mat-icon> Delete
-              </button>
-            </mat-menu>
           </td>
         </ng-container>
 

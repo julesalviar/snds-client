@@ -1,44 +1,59 @@
-<div class="all-schools-container">
-  <mat-card-title>All Schools</mat-card-title>
-  <table mat-table [dataSource]="schoolList" class="mat-elevation-z8">
-    
-    <ng-container matColumnDef="schoolName">
-      <th mat-header-cell *matHeaderCellDef> School Name </th>
-      <td mat-cell *matCellDef="let school"> {{ school.schoolName }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="schoolId">
-      <th mat-header-cell *matHeaderCellDef> School ID </th>
-      <td mat-cell *matCellDef="let school"> {{ school.schoolId }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="accountableName">
-      <th mat-header-cell *matHeaderCellDef> Accountable Person </th>
-      <td mat-cell *matCellDef="let school"> {{ school.accountableName }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="designation">
-      <th mat-header-cell *matHeaderCellDef> Position </th>
-      <td mat-cell *matCellDef="let school"> {{ school.designation }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="contactNumber">
-      <th mat-header-cell *matHeaderCellDef> Contact Number </th>
-      <td mat-cell *matCellDef="let school"> {{ school.contactNumber }} </td>
-    </ng-container>
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Action</th>
-        <td mat-cell *matCellDef="let school" data-label="Action">
-          <ng-container *ngIf="school.hasEncodedNeeds; else noEncodedNeed">
-          <button mat-button class="needs-button" (click)="viewNeeds(school)">Needs</button>
-        </ng-container>
-        <ng-template #noEncodedNeed>
-          <button mat-button (click)="noEncodedNeeds(school)">No Encoded Needs</button>
-        </ng-template>
-        </td>
-      </ng-container>
-  
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+<mat-card>
+  <mat-card-title class="title">All Schools</mat-card-title>
+  <div class="search-container">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search schools</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Search by school name, ID, or contact person">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
   </div>
+  <div class="table-scroll">
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="schoolName">
+          <th mat-header-cell *matHeaderCellDef> School Name </th>
+          <td mat-cell *matCellDef="let school"> {{ school.schoolName }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="schoolId">
+          <th mat-header-cell *matHeaderCellDef> School ID </th>
+          <td mat-cell *matCellDef="let school"> {{ school.schoolId }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="accountableName">
+          <th mat-header-cell *matHeaderCellDef> Accountable Person </th>
+          <td mat-cell *matCellDef="let school"> {{ school.accountableName }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="designation">
+          <th mat-header-cell *matHeaderCellDef> Position </th>
+          <td mat-cell *matCellDef="let school"> {{ school.designation }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="contactNumber">
+          <th mat-header-cell *matHeaderCellDef> Contact Number </th>
+          <td mat-cell *matCellDef="let school"> {{ school.contactNumber }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Actions </th>
+          <td mat-cell *matCellDef="let school" style="white-space: nowrap;">
+            <button mat-icon-button (click)="viewNeeds(school)" matTooltip="View Needs">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button (click)="noEncodedNeeds(school)" matTooltip="No Encoded Needs" *ngIf="!school.hasEncodedNeeds">
+              <mat-icon>info</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
+                     (page)="onPageChange($event)">
+      </mat-paginator>
+    </div>
+  </div>
+</mat-card>

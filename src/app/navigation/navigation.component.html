@@ -6,7 +6,7 @@
     <!-- Stakeholder Menus -->
     <ng-container *ngIf="userRole === userType.StakeHolder">
       <li>
-        <span>Find School</span>
+        <span tabindex="0">Find School</span>
         <ul>
           <li><a routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
           <li><a routerLink="/stakeholder/schools-by-district" (click)="closeMenu()">By District</a></li>
@@ -16,7 +16,7 @@
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
       <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()">Generated Resources</a></li>
       <li>
-        <span>Support</span>
+        <span tabindex="0">Support</span>
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home/our-strategic-direction"
                  target="_blank" rel="noopener noreferrer">Partners Support</a></li>
@@ -27,7 +27,7 @@
     <!-- School Admin Menus -->
     <ng-container *ngIf="userRole === userType.SchoolAdmin">
       <li>
-        <span>School Needs</span>
+        <span tabindex="0">School Needs</span>
         <ul>
           <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
           <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()">Senior High School</a></li>
@@ -38,7 +38,7 @@
              (click)="closeMenu()">DPDS</a></li>
       <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()">Quick Count</a></li>
       <li>
-        <span>Support</span>
+        <span tabindex="0">Support</span>
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
                  rel="noopener noreferrer">SPFP</a></li>
@@ -52,7 +52,7 @@
     <!-- Division Admin Menus -->
     <ng-container *ngIf="userRole === 'divisionAdmin'">
       <li>
-        <span>Find a School</span>
+        <span tabindex="0">Find a School</span>
         <ul>
           <li><a routerLink="/division-admin/all-schools" (click)="closeMenu()">All</a></li>
           <li><a routerLink="/division-admin/schools-by-district" (click)="closeMenu()">By District</a></li>
@@ -60,14 +60,14 @@
       </li>
       <li><a routerLink="/division-admin/about-us" (click)="closeMenu()">About Us</a></li>
       <li>
-        <span>Support</span>
+        <span tabindex="0">Support</span>
         <ul>
           <li><a routerLink="/division-admin/partners-support" (click)="closeMenu()">Partner Support</a></li>
         </ul>
       </li>
       <li><a routerLink="/division-admin/reports" (click)="closeMenu()">Reports</a></li>
       <li>
-        <span>Administration</span>
+        <span tabindex="0">Administration</span>
         <ul>
           <li><a routerLink="/division-admin/add-district" (click)="closeMenu()">Add District</a></li>
           <li><a routerLink="/division-admin/manage-users" (click)="closeMenu()">Manage Users</a></li>

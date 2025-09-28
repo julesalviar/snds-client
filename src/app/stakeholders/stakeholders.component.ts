@@ -31,8 +31,7 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 })
 export class StakeholdersComponent implements OnInit {
   displayedColumns: string[] = [
-    'code',
-    'year',
+    'school',
     'specificContribution',
     'quantity',
     'amount',
@@ -48,6 +47,7 @@ export class StakeholdersComponent implements OnInit {
   pageSize: number = 10;
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
+  totalBySchool: number = 0;
   selectedContribution: string | null = null;
 
   constructor(
@@ -72,10 +72,11 @@ export class StakeholdersComponent implements OnInit {
   loadSchoolNeeds(): void {
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, this.selectedContribution || undefined).subscribe(response => {
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, this.selectedContribution ?? undefined).subscribe(response => {
       this.schoolName = response.school?.schoolName;
       this.dataSource.data = response.data;
       this.totalItems = response.meta.totalItems;
+      this.totalBySchool = response.meta.totalBySchool;
     });
   }
 
