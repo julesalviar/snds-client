@@ -335,3 +335,13 @@ mat-icon {
     overflow-x: auto;
   }
 }
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}

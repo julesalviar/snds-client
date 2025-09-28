@@ -15,13 +15,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
 import {AipService} from "../../common/services/aip.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {Aip} from "../../common/model/aip.model";
 import {getSchoolYear} from "../../common/date-utils";
 
 @Component({
   selector: 'app-aip',
   standalone: true,
-  imports: [MatFormField, CommonModule, MatFormFieldModule, MatTooltipModule, MatInputModule, MatSelectModule, MatButtonModule, MatCardModule, ReactiveFormsModule, MatIconButton, MatTableModule, MatIcon, MatPaginator],
+  imports: [MatFormField, CommonModule, MatFormFieldModule, MatTooltipModule, MatInputModule, MatSelectModule, MatButtonModule, MatCardModule, ReactiveFormsModule, MatIconButton, MatTableModule, MatIcon, MatPaginator, MatProgressBarModule],
   templateUrl: './aip.component.html',
   styleUrls: ['./aip.component.css'],
   providers: [MatDialog],
@@ -36,6 +37,7 @@ export class AipComponent implements OnInit {
   pageSize: number = 10;
   dataSource = new MatTableDataSource<Aip>();
   totalItems: number = 0;
+  isLoading: boolean = true;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -105,11 +107,19 @@ export class AipComponent implements OnInit {
   }
 
   loadAips(): void {
+    this.isLoading = true;
     const page = this.pageIndex + 1;
-    this.aipService.getAips(page, this.pageSize).subscribe(response => {
-      this.dataSource.data = response.data;
-      this.totalItems = response.meta.totalItems;
-    })
+    this.aipService.getAips(page, this.pageSize).subscribe({
+      next: (response) => {
+        this.dataSource.data = response.data;
+        this.totalItems = response.meta.totalItems;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching AIP projects:', err);
+        this.isLoading = false;
+      }
+    });
   }
 
   onPageChange(event: PageEvent) {

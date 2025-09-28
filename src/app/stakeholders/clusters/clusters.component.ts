@@ -4,12 +4,13 @@ import { CommonModule } from '@angular/common';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
@@ -25,19 +26,19 @@ import { ReferenceDataService } from '../../common/services/reference-data.servi
     MatCardTitle,
     MatIcon,
     MatTooltipModule,
-    MatButton,
     MatIconButton,
     MatPaginator,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    FormsModule
+    FormsModule,
+    MatProgressBarModule
   ],
   templateUrl: './clusters.component.html',
   styleUrls: ['./clusters.component.css']
 })
 export class ClustersComponent implements OnInit {
-  displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
+  displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'ppasEncoded', 'ppasAccomplished', 'needsEncoded', 'needsAccomplished', 'generalResources', 'actions'];
   schoolList: any[] = [];
   filteredSchoolList: any[] = [];
   dataSource = new MatTableDataSource<any>();
@@ -47,6 +48,7 @@ export class ClustersComponent implements OnInit {
   schoolsWithNeeds: number = 0;
   selectedCluster: string = '';
   clusterOptions: any[] = [];
+  isLoading: boolean = true;
 
   constructor(
     private readonly schoolService: SchoolService,
@@ -110,6 +112,7 @@ export class ClustersComponent implements OnInit {
   }
 
   loadSchools(): void {
+    this.isLoading = true;
     this.schoolService.getAllSchools(this.selectedCluster).subscribe({
       next: (response) => {
         // Assuming the API returns data in a specific format
@@ -118,6 +121,7 @@ export class ClustersComponent implements OnInit {
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading schools:', error);
@@ -126,6 +130,7 @@ export class ClustersComponent implements OnInit {
         this.filteredSchoolList = [];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       }
     });
   }
@@ -169,6 +174,7 @@ export class ClustersComponent implements OnInit {
   }
 
   loadSchoolsWithPagination(): void {
+    this.isLoading = true;
     this.schoolService.getSchools(this.pageIndex + 1, this.pageSize).subscribe({
       next: (response) => {
         // Assuming the API returns data in a specific format
@@ -178,6 +184,7 @@ export class ClustersComponent implements OnInit {
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading schools with pagination:', error);
@@ -186,6 +193,7 @@ export class ClustersComponent implements OnInit {
         this.filteredSchoolList = [];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       }
     });
   }

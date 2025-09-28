@@ -121,7 +121,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       this.loadSchoolNeed(needCode);
     } else {
       this.showErrorNotification('School need code not provided');
-      this.router.navigate(['/school-admin']);
+      this.router.navigate(['/school-admin/school-needs']);
     }
   }
 
@@ -163,7 +163,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
         next: () => {
           this.isSaving = false;
           this.showSuccessNotification('School need updated successfully!');
-          this.router.navigate(['/school-admin']);
+          this.router.navigate(['/school-admin/school-needs']);
         },
         error: (err) => {
           console.error('Error updating school need:', err);
@@ -185,8 +185,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     // Remove query parameters and fragments to get the base path
     const basePath = prevUrl.split('?')[0].split('#')[0];
 
-    if (basePath === '/school-admin' || basePath.endsWith('/school-admin')) {
-      this.router.navigate(['/school-admin']);
+    if (basePath === '/school-admin/school-needs' || basePath.endsWith('/school-admin/school-needs')) {
+      this.router.navigate(['/school-admin/school-needs']);
     } else {
       this.router.navigate(['/school-admin/list-of-school-needs']);
     }
@@ -221,7 +221,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error fetching school need:', err);
         this.showErrorNotification('Failed to load school need');
-        this.router.navigate(['/school-admin']);
+        this.router.navigate(['/school-admin/school-needs']);
       }
     });
   }

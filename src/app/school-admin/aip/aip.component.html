@@ -90,7 +90,12 @@
       <mat-card-content>
         <div class="table-wrapper">
           <div class="table-scroll">
-            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <div *ngIf="isLoading" class="loading-container">
+              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              <p>Loading AIP projects...</p>
+            </div>
+            
+            <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
               <thead>
                 <tr>
                   <th *ngFor="let column of displayedColumns">{{ column | titlecase }}</th>
@@ -150,7 +155,7 @@
               <mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></mat-row>
 
             </table>
-            <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
+            <mat-paginator *ngIf="!isLoading" [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
                            (page)="onPageChange($event)">
             </mat-paginator>
           </div>

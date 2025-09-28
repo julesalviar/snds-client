@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import {Router, RouterModule} from "@angular/router";
 import {MatButton, MatIconButton} from "@angular/material/button";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {SchoolNeed} from "../../common/model/school-need.model"
 import {SchoolNeedService} from "../../common/services/school-need.service";
 
@@ -30,7 +31,8 @@ import {SchoolNeedService} from "../../common/services/school-need.service";
     RouterModule,
     MatButton,
     MatIconButton,
-    MatPaginator
+    MatPaginator,
+    MatProgressBarModule
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css']
@@ -53,6 +55,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   pageSize: number = 10;
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
+  isLoading: boolean = true;
 
   constructor(
     private readonly sharedDataService: SharedDataService,
@@ -129,12 +132,20 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   }
 
   loadSchoolNeeds(): void {
+    this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize).subscribe(response => {
-      this.schoolName = response.school?.schoolName;
-      this.dataSource.data = response.data;
-      this.totalItems = response.meta.totalItems;
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize).subscribe({
+      next: (response) => {
+        this.schoolName = response.school?.schoolName;
+        this.dataSource.data = response.data;
+        this.totalItems = response.meta.totalItems;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching school needs:', err);
+        this.isLoading = false;
+      }
     });
   }
 }

@@ -9,8 +9,12 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
+import { AuthService } from '../../auth/auth.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-all-school',
@@ -27,13 +31,14 @@ import { SchoolService } from '../../common/services/school.service';
     MatPaginator,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatProgressBarModule
   ],
   templateUrl: './all-school.component.html',
   styleUrls: ['./all-school.component.css']
 })
 export class AllSchoolComponent implements OnInit {
-  displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
+  displayedColumns: string[] = ['needsIndicator', 'schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
   schoolList: any[] = [];
   filteredSchoolList: any[] = [];
   dataSource = new MatTableDataSource<any>();
@@ -42,23 +47,37 @@ export class AllSchoolComponent implements OnInit {
   totalItems: number = 0;
   schoolsWithNeeds: number = 0;
   searchTerm: string = '';
+  isLoading: boolean = true;
+  private searchSubject = new Subject<string>();
 
   constructor(
     private readonly schoolService: SchoolService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadSchools();
+
+    // Set up debounced search
+    this.searchSubject.pipe(
+      debounceTime(300), // Wait 300ms after user stops typing
+      distinctUntilChanged() // Only emit if the value has changed
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.applyFilter();
+    });
   }
 
   loadSchools(): void {
+    this.isLoading = true;
     this.schoolService.getAllSchools().subscribe({
       next: (response) => {
         this.schoolList = (response.data ?? response) ?? [];
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading schools:', error);
@@ -66,27 +85,36 @@ export class AllSchoolComponent implements OnInit {
         this.filteredSchoolList = [];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       }
     });
   }
 
-  applyFilter(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredSchoolList = [...this.schoolList];
-    } else {
-      const searchLower = this.searchTerm.toLowerCase().trim();
-      this.filteredSchoolList = this.schoolList.filter(school =>
-        school.schoolName.toLowerCase().includes(searchLower) ||
-        school.schoolId.toLowerCase().includes(searchLower) ||
-        school.accountableName.toLowerCase().includes(searchLower) ||
-        school.designation.toLowerCase().includes(searchLower) ||
-        school.contactNumber.includes(searchLower)
-      );
-    }
+  onSearchInput(searchTerm: string): void {
+    this.searchSubject.next(searchTerm);
+  }
 
+  applyFilter(): void {
+    this.isLoading = true;
     this.pageIndex = 0; // Reset to first page when filtering
-    this.updateDataSource();
-    this.calculateSummaryStats();
+
+    this.schoolService.getAllSchools(undefined, this.searchTerm).subscribe({
+      next: (response) => {
+        this.schoolList = (response.data ?? response) ?? [];
+        this.filteredSchoolList = [...this.schoolList];
+        this.updateDataSource();
+        this.calculateSummaryStats();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error searching schools:', error);
+        this.schoolList = [];
+        this.filteredSchoolList = [];
+        this.updateDataSource();
+        this.calculateSummaryStats();
+        this.isLoading = false;
+      }
+    });
   }
 
   updateDataSource(): void {
@@ -95,7 +123,7 @@ export class AllSchoolComponent implements OnInit {
   }
 
   calculateSummaryStats(): void {
-    this.schoolsWithNeeds = this.filteredSchoolList.filter(school => school.hasEncodedNeeds).length;
+    this.schoolsWithNeeds = this.filteredSchoolList.filter(school => school.additionalInfo?.needCount > 0).length;
   }
 
   onPageChange(event: PageEvent): void {
@@ -105,6 +133,7 @@ export class AllSchoolComponent implements OnInit {
   }
 
   loadSchoolsWithPagination(): void {
+    this.isLoading = true;
     this.schoolService.getSchools(this.pageIndex + 1, this.pageSize).subscribe({
       next: (response) => {
         this.schoolList = (response.data ?? response) ?? [];
@@ -112,6 +141,7 @@ export class AllSchoolComponent implements OnInit {
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading schools with pagination:', error);
@@ -119,16 +149,23 @@ export class AllSchoolComponent implements OnInit {
         this.filteredSchoolList = [];
         this.updateDataSource();
         this.calculateSummaryStats();
+        this.isLoading = false;
       }
     });
   }
 
   viewNeeds(school: any): void {
-    console.log('View needs for:', school);
-    this.router.navigate(['/stakeholder']);
-  }
-
-  noEncodedNeeds(school: any): void {
-    console.log('No encoded needs for:', school);
+    const userRole = this.authService.getRole();
+    const schoolId = school._id || school.id;
+    
+    if (userRole === 'stakeholder') {
+      this.router.navigate(['/stakeholder/school-needs'], { 
+        queryParams: { schoolId: schoolId } 
+      });
+    } else {
+      this.router.navigate(['/guest/school-needs'], { 
+        queryParams: { schoolId: schoolId } 
+      });
+    }
   }
 }

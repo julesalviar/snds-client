@@ -120,10 +120,14 @@ nav {
 
 .logout-button {
   margin-left: .8rem; 
-  color: white;
+  color: white !important;
+  background-color: #dc3545 !important;
+  border: 1px solid #dc3545 !important;
 }
 .logout-button:hover{
-  color: white;
+  color: white !important;
+  background-color: #c82333 !important;
+  border: 1px solid #bd2130 !important;
 }
 
 /* Mobile Toggle Button Styles */
@@ -204,12 +208,25 @@ nav {
     }
   }
   @media (max-width: 415.98px) {
-    .menu-toggle {
-      display: block; 
-      margin-bottom: 1rem; 
-      font-size: 1.2rem;
-      border-radius: 5px; 
-      margin-right: 4rem;
-    }
-
+  .menu-toggle {
+    display: block; 
+    margin-bottom: 1rem; 
+    font-size: 1.2rem;
+    border-radius: 5px; 
+    margin-right: 4rem;
   }
+
+}
+
+/* Login Button Styles */
+.login-button {
+  color: white !important;
+  background-color: #007bff !important;
+  border: 1px solid #007bff !important;
+}
+
+.login-button:hover {
+  color: white !important;
+  background-color: #0056b3 !important;
+  border: 1px solid #004085 !important;
+}

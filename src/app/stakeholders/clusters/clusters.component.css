@@ -434,3 +434,13 @@ mat-icon {
 .refresh-button mat-icon {
   margin-right: 8px;
 }
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}

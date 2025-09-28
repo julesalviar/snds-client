@@ -177,7 +177,12 @@
       <button mat-raised-button class="query-button" (click)="queryData()">View Records</button>
     </div>
     <div class="table-scroll">
-      <table mat-table [dataSource]="schoolNeedsData" class="mat-elevation-z8">
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading school needs...</p>
+      </div>
+      
+      <table *ngIf="!isLoading" mat-table [dataSource]="schoolNeedsData" class="mat-elevation-z8">
         <ng-container matColumnDef="contributionType">
           <th mat-header-cell *matHeaderCellDef> Contribution Type </th>
           <td mat-cell *matCellDef="let need"> {{ need.contributionType }} </td>
@@ -234,7 +239,7 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
-    <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
+    <mat-paginator *ngIf="!isLoading" [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
                    (page)="onPageChange($event)">
     </mat-paginator>
     </div>

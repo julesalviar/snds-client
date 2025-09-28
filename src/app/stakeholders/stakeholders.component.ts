@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu, MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute } from '@angular/router';
 import {SchoolNeed} from "../common/model/school-need.model";
 import {SchoolNeedService} from "../common/services/school-need.service";
@@ -21,10 +22,10 @@ import {SchoolNeedService} from "../common/services/school-need.service";
     MatCardTitle,
     MatIcon,
     MatTooltipModule,
-    MatMenu,
     MatMenuModule,
     MatIconButton,
-    MatPaginator
+    MatPaginator,
+    MatProgressBarModule
   ],
   templateUrl: './stakeholders.component.html',
   styleUrl: './stakeholders.component.css'
@@ -49,6 +50,8 @@ export class StakeholdersComponent implements OnInit {
   totalItems: number = 0;
   totalBySchool: number = 0;
   selectedContribution: string | null = null;
+  schoolId: string | null = null;
+  isLoading: boolean = true;
 
   constructor(
     private readonly schoolNeedService: SchoolNeedService,
@@ -56,9 +59,10 @@ export class StakeholdersComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Get the selectedContribution from query parameters
+    // Get the selectedContribution and schoolId from query parameters
     this.route.queryParams.subscribe(params => {
       this.selectedContribution = params['selectedContribution'] || null;
+      this.schoolId = params['schoolId'] || null;
       this.loadSchoolNeeds();
     });
   }
@@ -70,13 +74,21 @@ export class StakeholdersComponent implements OnInit {
   }
 
   loadSchoolNeeds(): void {
+    this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, this.selectedContribution ?? undefined).subscribe(response => {
-      this.schoolName = response.school?.schoolName;
-      this.dataSource.data = response.data;
-      this.totalItems = response.meta.totalItems;
-      this.totalBySchool = response.meta.totalBySchool;
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, this.selectedContribution ?? undefined, this.schoolId ?? undefined).subscribe({
+      next: (response) => {
+        this.schoolName = response.school?.schoolName;
+        this.dataSource.data = response.data;
+        this.totalItems = response.meta.totalItems;
+        this.totalBySchool = response.meta.totalBySchool;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching school needs:', err);
+        this.isLoading = false;
+      }
     });
   }
 

@@ -35,15 +35,24 @@ export const routes: Routes = [
   {path: 'change-password', component: ChangePasswordComponent},
   {path: 'footer', component: FooterComponent},
 
+  {
+    path: 'guest',
+    children: [
+      {path: 'all-school', component: AllSchoolComponent},
+      {path: 'districts', component: ClustersComponent, canActivate: [AuthGuard]},
+      {path: 'school-needs', component: StakeholdersComponent},
+    ],
+  },
+
   { // Stakeholder routes
     path: 'stakeholder',
-    // canActivateChild: [AuthGuard], // uncomment this when we want to protect the stakeholder routes
+    canActivateChild: [AuthGuard],
     children: [
       {path: 'all-school', component: AllSchoolComponent},
       {path: 'partners-support', component: StakeholdersComponent},
       {path: 'my-contribution', component: MyContributionComponent},
       {path: 'districts', component: ClustersComponent},
-      {path: '', component: StakeholdersComponent},
+      {path: 'school-needs', component: StakeholdersComponent},
     ]
   },
 
@@ -54,7 +63,7 @@ export const routes: Routes = [
     path: 'school-admin',
     canActivateChild: [AuthGuard],
     children: [
-      {path: '', component: SchoolAdminComponent},
+      {path: 'school-needs', component: SchoolAdminComponent},
       {path: 'list-of-school-needs', component: ListOfSchoolNeedsComponent},
       {path: 'senior-high-school', component: SchoolAdminComponent},
       {path: 'aip', component: AipComponent},
@@ -62,7 +71,7 @@ export const routes: Routes = [
       {path: 'spfp', component: SchoolAdminComponent},
       {path: 'school-needs-engage/:code', component: SchoolNeedsEngageComponent},
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
-      {path: 'school-need/:code', component: SchoolNeedComponent},
+      {path: 'school-needs/:code', component: SchoolNeedComponent},
     ]
   },
 
@@ -70,7 +79,7 @@ export const routes: Routes = [
     path: 'division-admin',
     // canActivateChild: [AuthGuard],
     children: [
-      {path: '', component: DivisionAdminComponent},
+      {path: 'school-needs', component: DivisionAdminComponent},
       {path: 'all-schools', component: DivisionAdminComponent},
       {path: 'schools-by-district', component: DivisionAdminComponent},
       {path: 'about-us', component: DivisionAdminComponent},

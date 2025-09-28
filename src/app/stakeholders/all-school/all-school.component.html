@@ -3,13 +3,38 @@
   <div class="search-container">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Search schools</mat-label>
-      <input matInput [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Search by school name, ID, or contact person">
+      <input matInput [ngModel]="searchTerm" (input)="onSearchInput($any($event.target).value)" placeholder="Search by school name, ID, or contact person">
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
   </div>
   <div class="table-scroll">
     <div class="table-container">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading schools...</p>
+      </div>
+
+      <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="needsIndicator">
+          <th mat-header-cell *matHeaderCellDef> Needs Status </th>
+          <td mat-cell *matCellDef="let school">
+            <div class="needs-indicator" (click)="viewNeeds(school)">
+              <div *ngIf="school.additionalInfo?.needCount > 0" class="has-needs-container">
+                <mat-icon class="has-needs-icon" matTooltip="Click to view {{ school.additionalInfo.needCount }} encoded needs">
+                  assignment_turned_in
+                </mat-icon>
+                <span class="needs-text">{{ school.additionalInfo.needCount }} Needs</span>
+              </div>
+              <div *ngIf="school.additionalInfo?.needCount === 0" class="no-needs-container">
+                <mat-icon class="no-needs-icon" matTooltip="No encoded needs">
+                  assignment_late
+                </mat-icon>
+                <span class="no-needs-text">No needs encoded</span>
+              </div>
+            </div>
+          </td>
+        </ng-container>
 
         <ng-container matColumnDef="schoolName">
           <th mat-header-cell *matHeaderCellDef> School Name </th>
@@ -23,7 +48,7 @@
 
         <ng-container matColumnDef="accountableName">
           <th mat-header-cell *matHeaderCellDef> Accountable Person </th>
-          <td mat-cell *matCellDef="let school"> {{ school.accountableName }} </td>
+          <td mat-cell *matCellDef="let school"> {{ school.accountablePerson }} </td>
         </ng-container>
 
         <ng-container matColumnDef="designation">
@@ -39,11 +64,8 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef> Actions </th>
           <td mat-cell *matCellDef="let school" style="white-space: nowrap;">
-            <button mat-icon-button (click)="viewNeeds(school)" matTooltip="View Needs">
+            <button mat-icon-button (click)="viewNeeds(school)" matTooltip="View Needs" disabled>
               <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button (click)="noEncodedNeeds(school)" matTooltip="No Encoded Needs" *ngIf="!school.hasEncodedNeeds">
-              <mat-icon>info</mat-icon>
             </button>
           </td>
         </ng-container>
@@ -51,7 +73,7 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
-      <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
+      <mat-paginator *ngIf="!isLoading" [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
                      (page)="onPageChange($event)">
       </mat-paginator>
     </div>

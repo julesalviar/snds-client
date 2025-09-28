@@ -9,7 +9,7 @@ export class SchoolNeedService {
   constructor(private readonly httpService: HttpService) {
   }
 
-  getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string): Observable<any> {
+  getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string, schoolId?: string): Observable<any> {
     let url = `${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}`;
     
     if (schoolYear) {
@@ -18,6 +18,10 @@ export class SchoolNeedService {
     
     if (specificContribution) {
       url += `&specificContribution=${encodeURIComponent(specificContribution)}`;
+    }
+    
+    if (schoolId) {
+      url += `&schoolId=${schoolId}`;
     }
     
     return this.httpService.get<any>(url).pipe(

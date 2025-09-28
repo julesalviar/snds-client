@@ -241,3 +241,130 @@ mat-icon {
     padding: 8px;
   }
 }
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+/* Needs indicator styling */
+.needs-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.needs-indicator:hover {
+  background-color: rgba(69, 160, 73, 0.1);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(69, 160, 73, 0.3);
+}
+
+.needs-indicator:active {
+  transform: scale(0.98);
+  background-color: rgba(69, 160, 73, 0.2);
+}
+
+.has-needs-container,
+.no-needs-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+.needs-indicator:hover .has-needs-container,
+.needs-indicator:hover .no-needs-container {
+  transform: translateY(-2px);
+}
+
+.has-needs-icon {
+  color: #4caf50 !important; /* Green for schools with needs */
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.needs-indicator:hover .has-needs-icon {
+  color: #2e7d32 !important;
+  transform: scale(1.1);
+}
+
+.no-needs-icon {
+  color: #f44336 !important; /* Red for schools without needs */
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.needs-indicator:hover .no-needs-icon {
+  color: #c62828 !important;
+  transform: scale(1.1);
+}
+
+.needs-text {
+  color: #4caf50;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.needs-indicator:hover .needs-text {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.no-needs-text {
+  color: #f44336;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.needs-indicator:hover .no-needs-text {
+  color: #c62828;
+  font-weight: 600;
+}
+
+.mat-column-needsIndicator {
+  width: 150px;
+  text-align: center;
+}
+
+/* Add a subtle pulse animation for schools with needs */
+.needs-indicator .has-needs-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background-color: rgba(76, 175, 80, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 40px;
+    height: 40px;
+    opacity: 0;
+  }
+}

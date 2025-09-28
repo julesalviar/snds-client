@@ -20,7 +20,7 @@ import {AipService} from "../common/services/aip.service";
 import {Aip} from "../common/model/aip.model";
 import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
 import {AuthService} from "../auth/auth.service";
-import {MatProgressBar} from "@angular/material/progress-bar";
+import {MatProgressBar, MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
@@ -49,6 +49,7 @@ import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-con
     MatCardTitle,
     MatIcon,
     MatProgressBar,
+    MatProgressBarModule,
     MatPaginator
   ],
   templateUrl: './school-admin.component.html',
@@ -65,6 +66,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   pageIndex: number = 0;
   pageSize: number = 10;
   totalItems: number = 0;
+  isLoading: boolean = true;
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
@@ -231,9 +233,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   }
   editNeed(need: any): void {
-    console.log('Editing need:', need);
-    console.log('Need code:', need.code);
-    this.router.navigate(['/school-admin/school-need', need.code]);
+    this.router.navigate(['/school-admin/school-needs', need.code]);
   }
 
   onImageError(event: any): void {
@@ -309,15 +309,18 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   private loadAllSchoolNeeds(): void {
+    this.isLoading = true;
     const page = this.pageIndex + 1;
     this.schoolNeedService.getSchoolNeeds(page, this.pageSize, this.selectedSchoolYear).subscribe({
       next: (response) => {
         this.schoolNeedsData = response.data;
         this.schoolName = response.school?.schoolName || '';
         this.totalItems = response.meta?.totalItems || 0;
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error fetching school needs:', err);
+        this.isLoading = false;
       }
     });
   }

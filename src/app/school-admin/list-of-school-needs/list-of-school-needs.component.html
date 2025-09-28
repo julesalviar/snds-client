@@ -8,7 +8,12 @@
   <mat-card-title class="title">Schools' Needs</mat-card-title>
   <div class="table-scroll">
     <div class="table-container">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading school needs...</p>
+      </div>
+      
+      <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
         <ng-container matColumnDef="code">
           <th mat-header-cell *matHeaderCellDef> Code </th>
@@ -81,7 +86,7 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
-      <mat-paginator [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
+      <mat-paginator *ngIf="!isLoading" [length]="totalItems" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25]"
                      (page)="onPageChange($event)">
       </mat-paginator>
     </div>

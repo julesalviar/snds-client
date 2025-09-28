@@ -8,6 +8,7 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 import {AuthService} from "../auth/auth.service";
 import {forkJoin, Observable, of, switchMap} from "rxjs";
 import {MatIcon} from "@angular/material/icon";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
 
 interface TreeNode {
     name: string;
@@ -19,7 +20,7 @@ interface TreeNode {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatBadgeModule, MatIcon],
+  imports: [CommonModule, MatBadgeModule, MatIcon, MatProgressBarModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 
@@ -31,6 +32,7 @@ export class HomeComponent implements OnInit {
 
   treeData: TreeNode[] = [];
   schoolNeedData: any[] = [];
+  isLoading: boolean = true;
 
     constructor(
       private readonly userService: UserService,
@@ -70,19 +72,18 @@ export class HomeComponent implements OnInit {
 
       switch (this.userRole) {
         case 'schoolAdmin':
-          path = '/school-admin';
+          path = '/school-admin/school-needs';
           break;
         case 'divisionAdmin':
-          path = '/division-admin';
+          path = '/division-admin/school-needs';
           break;
         case 'stakeholder':
-          path = '/stakeholder';
+          path = '/stakeholder/school-needs';
           queryParams = { selectedContribution: child.name };
           break;
         default:
-          path = '/stakeholder';
+          path = '/guest/school-needs';
           queryParams = { selectedContribution: child.name };
-          // path = '/home';
           console.warn(`Unknown or undefined role: ${this.userRole}`);
           break;
       }
@@ -128,6 +129,7 @@ export class HomeComponent implements OnInit {
     }
 
     private loadSchoolNeeds(): void {
+      this.isLoading = true;
       forkJoin({
         tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
         needs: this.fetchAllSchoolNeeds()
@@ -137,9 +139,11 @@ export class HomeComponent implements OnInit {
           this.schoolNeedData = needs.data;
 
           this.mapCountsToTree(needs.data);
+          this.isLoading = false;
         },
         error: (err) => {
           console.error('Error fetching school needs:', err);
+          this.isLoading = false;
         }
       })
     }

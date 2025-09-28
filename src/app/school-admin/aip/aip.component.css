@@ -306,3 +306,13 @@ mat-header-row, mat-row {
 .mat-column-apn {
   flex: 0.5;
 }
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}

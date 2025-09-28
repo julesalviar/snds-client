@@ -78,6 +78,17 @@
         </ul>
       </li>
     </ng-container>
+
+    <!-- Guest Menus - for users who are not logged in -->
+    <ng-container *ngIf="!isLoggedIn()">
+      <li>
+        <span tabindex="0">Find School</span>
+        <ul>
+          <li><a routerLink="/guest/all-school" (click)="closeMenu()">All</a></li>
+          <li><a routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
+        </ul>
+      </li>
+    </ng-container>
   </ul>
 
   <!-- Profile section -->
