@@ -1,5 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
-@import '@angular/material/prebuilt-themes/rose-red.css';
+
+/* Alternative: Import only Material core styles instead of full theme */
+/* Uncomment the line below if you want minimal Material styles */
+/* @import '@angular/material/prebuilt-themes/indigo-pink.css'; */
 *{
   box-sizing: border-box;
 }
@@ -147,6 +150,69 @@ body {
 /* Ensure select dropdowns work properly */
 .mat-mdc-select-panel {
   z-index: 2000 !important;
+}
+
+/* Tree structure spacing fixes - replaces Material theme spacing */
+ul {
+  line-height: 1.3;
+}
+
+li {
+  margin-bottom: 2px;
+  padding: 1px 0;
+}
+
+.node-name {
+  display: inline-block;
+  padding: 2px 4px;
+  margin: 1px 0;
+  line-height: 1.2;
+}
+
+/* Ensure proper spacing for nested tree items */
+ul ul li {
+  margin-left: 20px;
+  margin-bottom: 1px;
+  padding: 1px 0;
+}
+
+/* Badge spacing */
+.mat-badge {
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Typography fixes - replaces Material theme typography */
+body {
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.3;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+p {
+  line-height: 1.6;
+  margin-bottom: 1em;
+}
+
+/* Material Design inspired spacing for interactive elements */
+.mat-mdc-button, .mat-mdc-raised-button, .mat-mdc-outlined-button {
+  line-height: 1.4;
+  padding: 8px 16px;
+  margin: 4px;
+}
+
+/* Ensure proper spacing for Material components */
+.mat-mdc-form-field {
+  margin-bottom: 16px;
+}
+
+.mat-mdc-card {
+  margin-bottom: 16px;
 }
 
 

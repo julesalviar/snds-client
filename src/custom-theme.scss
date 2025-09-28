@@ -22,10 +22,28 @@ $sndsapp-theme: mat.define-theme((
 ));
 
 // Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
-// that you are using.
+// Only include the components that are actually used to reduce bundle size
 :root {
-  @include mat.all-component-themes($sndsapp-theme);
+  @include mat.core-theme($sndsapp-theme);
+  @include mat.form-field-theme($sndsapp-theme);
+  @include mat.input-theme($sndsapp-theme);
+  @include mat.button-theme($sndsapp-theme);
+  @include mat.card-theme($sndsapp-theme);
+  @include mat.table-theme($sndsapp-theme);
+  @include mat.icon-theme($sndsapp-theme);
+  @include mat.menu-theme($sndsapp-theme);
+  @include mat.tooltip-theme($sndsapp-theme);
+  @include mat.paginator-theme($sndsapp-theme);
+  @include mat.select-theme($sndsapp-theme);
+  @include mat.datepicker-theme($sndsapp-theme);
+  @include mat.autocomplete-theme($sndsapp-theme);
+  @include mat.progress-bar-theme($sndsapp-theme);
+  @include mat.snack-bar-theme($sndsapp-theme);
+  @include mat.dialog-theme($sndsapp-theme);
+  @include mat.sidenav-theme($sndsapp-theme);
+  @include mat.tree-theme($sndsapp-theme);
+  @include mat.badge-theme($sndsapp-theme);
+  @include mat.radio-theme($sndsapp-theme);
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
