@@ -67,21 +67,22 @@ export class HomeComponent implements OnInit {
       this.userService.setContribution(selectedContribution);
       let path: string;
       let queryParams: any = {};
-      
+
       switch (this.userRole) {
         case 'schoolAdmin':
           path = '/school-admin';
           break;
-        case 'stakeholder':
-          path = '/stakeholder';
-          // Pass selectedContribution as query parameter for stakeholder
-          queryParams = { selectedContribution: child.name };
-          break;
         case 'divisionAdmin':
           path = '/division-admin';
           break;
+        case 'stakeholder':
+          path = '/stakeholder';
+          queryParams = { selectedContribution: child.name };
+          break;
         default:
-          path = '/home';
+          path = '/stakeholder';
+          queryParams = { selectedContribution: child.name };
+          // path = '/home';
           console.warn(`Unknown or undefined role: ${this.userRole}`);
           break;
       }

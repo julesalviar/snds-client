@@ -37,7 +37,7 @@ export const routes: Routes = [
 
   { // Stakeholder routes
     path: 'stakeholder',
-    canActivateChild: [AuthGuard],
+    // canActivateChild: [AuthGuard], // uncomment this when we want to protect the stakeholder routes
     children: [
       {path: 'all-school', component: AllSchoolComponent},
       {path: 'partners-support', component: StakeholdersComponent},
