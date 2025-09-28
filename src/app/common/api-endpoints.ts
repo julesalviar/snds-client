@@ -8,5 +8,6 @@ export const API_ENDPOINT = {
   referenceData: `${environment.API_URL}/reference-data`,
   aip: `${environment.API_URL}/aips`,
   schoolNeed: `${environment.API_URL}/school-needs`,
+  schools: `${environment.API_URL}/schools`,
   upload: `${environment.API_URL}/upload`,
 }

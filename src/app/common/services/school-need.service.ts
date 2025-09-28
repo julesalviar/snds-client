@@ -9,8 +9,18 @@ export class SchoolNeedService {
   constructor(private readonly httpService: HttpService) {
   }
 
-  getSchoolNeeds(page: number, limit: number, schoolYear?: string): Observable<any> {
-    return this.httpService.get<any>(`${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}&schoolYear=${schoolYear}`).pipe(
+  getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string): Observable<any> {
+    let url = `${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}`;
+    
+    if (schoolYear) {
+      url += `&schoolYear=${schoolYear}`;
+    }
+    
+    if (specificContribution) {
+      url += `&specificContribution=${encodeURIComponent(specificContribution)}`;
+    }
+    
+    return this.httpService.get<any>(url).pipe(
       catchError(this.httpService.handleError)
     )
   }

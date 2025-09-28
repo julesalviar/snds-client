@@ -38,6 +38,23 @@ mat-card-title {
   font-weight: 600;
 }
 
+.search-container {
+  margin-bottom: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-field .mat-form-field-wrapper {
+  padding-bottom: 0;
+}
+
 /* Disabled button styling */
 button[mat-icon-button][disabled] {
   opacity: 0.4;
@@ -49,36 +66,35 @@ button[mat-icon-button][disabled] mat-icon {
 }
 
 /* Column width constraints */
-.mat-column-implementationStatus {
+.mat-column-totalNeeds {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-totalPersonnel {
   max-width: 120px;
   min-width: 120px;
 }
 
-.mat-column-beneficiaryPersonnel {
-  max-width: 100px;
-  min-width: 100px;
+.mat-column-totalStudents {
+  max-width: 120px;
+  min-width: 120px;
 }
 
-.mat-column-beneficiaryStudents {
-  max-width: 100px;
-  min-width: 100px;
+.mat-column-schoolCount {
+  max-width: 120px;
+  min-width: 120px;
 }
 
-.mat-column-amount {
-  max-width: 100px;
-  min-width: 100px;
-}
-
-.mat-column-quantity {
-  max-width: 80px;
-  min-width: 80px;
+.mat-column-clusterName {
+  min-width: 150px;
 }
 
 .mat-elevation-z8 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.school-icon {
+.cluster-icon {
   font-size: 30px;
   margin: 0;
   padding: 30px 30px;
@@ -144,6 +160,7 @@ tr:hover {
   background-color: #e4a0a089;
   color: white;
 }
+
 .table-scroll {
   overflow-x: auto;
   margin-top: 15px;
@@ -151,10 +168,12 @@ tr:hover {
   border-radius: 6px;
   padding: 2px;
 }
+
 .table-scroll {
   overflow-x: auto;
   margin: 5px 0;
 }
+
 mat-icon {
   color: #45a049;
   cursor: pointer;
@@ -192,6 +211,10 @@ td.mat-cell button {
     font-size: 18px;
   }
 
+  .search-field {
+    width: 250px;
+  }
+
   .download-button {
     margin-right: 15px;
     padding: 8px;
@@ -202,7 +225,7 @@ td.mat-cell button {
     align-items: flex-start;
   }
 
-  .school-icon {
+  .cluster-icon {
     font-size: 30px;
     margin-bottom: 0;
     margin-top: 0;
@@ -226,7 +249,15 @@ td.mat-cell button {
     font-size: 16px;
   }
 
-  .school-icon {
+  .search-field {
+    width: 100%;
+  }
+
+  .search-container {
+    justify-content: center;
+  }
+
+  .cluster-icon {
     font-size: 24px;
     padding: 20px;
     margin: 0;
@@ -249,7 +280,6 @@ td.mat-cell button {
   }
 }
 
-
 @media (max-width: 1024px) {
   .table-container {
     margin: 5px 0;
@@ -264,6 +294,7 @@ td.mat-cell button {
     padding: 8px;
   }
 }
+
 @media (max-width: 767px) {
   .table-scroll {
     margin: 5px 0;
@@ -300,7 +331,7 @@ td.mat-cell button {
     margin-bottom: 10px;
   }
 
-  .school-icon {
+  .cluster-icon {
     padding: 15px;
   }
 
@@ -393,4 +424,13 @@ mat-icon {
     justify-content: flex-start;
     overflow-x: auto;
   }
+}
+
+.refresh-button {
+  height: 56px;
+  min-width: 120px;
+}
+
+.refresh-button mat-icon {
+  margin-right: 8px;
 }

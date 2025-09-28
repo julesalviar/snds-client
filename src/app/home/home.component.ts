@@ -59,24 +59,23 @@ export class HomeComponent implements OnInit {
     }
 
     onChildClick(child: TreeNode): void {
-      // Find the selected contribution type based on the clicked child
       const selectedContribution = {
           name: this.treeData.find(node => node.children?.includes(child))?.name,
           specificContribution: child.name
       };
 
-      // Set the contribution data in the service
       this.userService.setContribution(selectedContribution);
-
-      // Navigate to the School Admin based on the user role
       let path: string;
-
+      let queryParams: any = {};
+      
       switch (this.userRole) {
         case 'schoolAdmin':
           path = '/school-admin';
           break;
         case 'stakeholder':
-          path = '/stakeholders';
+          path = '/stakeholder';
+          // Pass selectedContribution as query parameter for stakeholder
+          queryParams = { selectedContribution: child.name };
           break;
         case 'divisionAdmin':
           path = '/division-admin';
@@ -87,7 +86,7 @@ export class HomeComponent implements OnInit {
           break;
       }
 
-      this.router.navigate([path]);
+      this.router.navigate([path], { queryParams });
   }
 
 

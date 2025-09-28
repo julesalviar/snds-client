@@ -7,6 +7,7 @@ nav {
   background-color: #36383ac4; 
   color: #ecf0f1; 
   padding: .6rem; 
+  z-index: 999;
 }
 
 .nav-list {
@@ -19,6 +20,9 @@ nav {
 .nav-list li {
   margin-right: 2rem;
   text-decoration: none; 
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .nav-list li a {
@@ -26,24 +30,72 @@ nav {
   text-decoration: none; 
   padding: 0.5rem 1rem;
   transition: background 0.3s; 
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .nav-list li a:hover {
   background-color: #225c29; 
 }
 
+.nav-list li span {
+  color: #ecf0f1; 
+  text-decoration: none; 
+  padding: 0.5rem 1rem;
+  transition: background 0.3s; 
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.nav-list li span:hover {
+  background-color: #225c29; 
+}
+
+.nav-list li span:focus {
+  outline: 2px solid #10712d; 
+  outline-offset: 2px; 
+}
+
 .nav-list ul {
   display: none; 
   position: absolute; 
+  top: 100%;
+  left: 0;
   background: #556677; 
   padding: 0; 
   margin: 0; 
   border-radius: 5px; 
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+  z-index: 1000;
+  min-width: 150px;
+  width: auto;
+  list-style: none;
 }
 
 .nav-list li:hover ul {
   display: block;
+}
+
+.nav-list ul li {
+  margin: 0;
+  position: relative;
+  width: 100%;
+}
+
+.nav-list ul li a {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  color: #ecf0f1;
+  text-decoration: none;
+  border-radius: 3px;
+  transition: background-color 0.3s;
+  box-sizing: border-box;
+}
+
+.nav-list ul li a:hover {
+  background-color: #225c29;
 }
 
 /* Profile Section Styles */
