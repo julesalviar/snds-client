@@ -55,16 +55,13 @@ export class AllSchoolComponent implements OnInit {
   loadSchools(): void {
     this.schoolService.getAllSchools().subscribe({
       next: (response) => {
-        // Assuming the API returns data in a specific format
-        // Adjust this based on your actual API response structure
-        this.schoolList = response.data || response || [];
+        this.schoolList = (response.data ?? response) ?? [];
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
       },
       error: (error) => {
         console.error('Error loading schools:', error);
-        // Fallback to empty array if API fails
         this.schoolList = [];
         this.filteredSchoolList = [];
         this.updateDataSource();
@@ -104,24 +101,20 @@ export class AllSchoolComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
-    // Load data from service with pagination
     this.loadSchoolsWithPagination();
   }
 
   loadSchoolsWithPagination(): void {
     this.schoolService.getSchools(this.pageIndex + 1, this.pageSize).subscribe({
       next: (response) => {
-        // Assuming the API returns data in a specific format
-        // Adjust this based on your actual API response structure
-        this.schoolList = response.data || response || [];
-        this.totalItems = response.total || response.count || this.schoolList.length;
+        this.schoolList = (response.data ?? response) ?? [];
+        this.totalItems = (response.total ?? response.count) ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
       },
       error: (error) => {
         console.error('Error loading schools with pagination:', error);
-        // Fallback to empty array if API fails
         this.schoolList = [];
         this.filteredSchoolList = [];
         this.updateDataSource();
