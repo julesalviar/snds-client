@@ -36,7 +36,8 @@ export const routes: Routes = [
     children: [
       { path: 'all-school', component: AllSchoolComponent },
       { path: 'partners-support', component: StakeholdersComponent },
-       { path: 'my-contribution', component: MyContributionComponent },
+      { path: 'my-contribution', component: MyContributionComponent },
+      { path: '', component: StakeholdersComponent },
     ]
   },
   // School Admin routes

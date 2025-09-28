@@ -43,6 +43,8 @@ export interface SchoolNeed {
 
   projectId: ProjectInfo | string;
   schoolId: SchoolInfo | string;
+  school?: SchoolInfo;
+  project?: ProjectInfo;
   images: SchoolNeedImage[];
   engagement?: any[];
 }
