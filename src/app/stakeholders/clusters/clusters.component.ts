@@ -8,12 +8,14 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
+import { ReferenceDataService } from '../../common/services/reference-data.service';
 
 @Component({
-  selector: 'app-all-school',
+  selector: 'app-clusters',
   standalone: true,
   imports: [
     MatTable,
@@ -23,16 +25,18 @@ import { SchoolService } from '../../common/services/school.service';
     MatCardTitle,
     MatIcon,
     MatTooltipModule,
+    MatButton,
     MatIconButton,
     MatPaginator,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     FormsModule
   ],
-  templateUrl: './all-school.component.html',
-  styleUrls: ['./all-school.component.css']
+  templateUrl: './clusters.component.html',
+  styleUrls: ['./clusters.component.css']
 })
-export class AllSchoolComponent implements OnInit {
+export class ClustersComponent implements OnInit {
   displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
   schoolList: any[] = [];
   filteredSchoolList: any[] = [];
@@ -41,19 +45,72 @@ export class AllSchoolComponent implements OnInit {
   pageSize: number = 10;
   totalItems: number = 0;
   schoolsWithNeeds: number = 0;
-  searchTerm: string = '';
+  selectedCluster: string = '';
+  clusterOptions: any[] = [];
 
   constructor(
     private readonly schoolService: SchoolService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly referenceDataService: ReferenceDataService
   ) {}
 
   ngOnInit(): void {
+    this.loadClusterOptions();
     this.loadSchools();
   }
 
+  async loadClusterOptions(): Promise<void> {
+    try {
+      await this.referenceDataService.initialize();
+
+      const regionData = this.referenceDataService.get('region');
+
+      if (regionData) {
+        let regionsArray: any[] = [];
+
+        if (Array.isArray(regionData)) {
+          regionsArray = regionData;
+        } else if (regionData.value && Array.isArray(regionData.value)) {
+          regionsArray = regionData.value;
+        } else if (regionData.data && Array.isArray(regionData.data)) {
+          regionsArray = regionData.data;
+        }
+
+        // Collect all clusters from all divisions across all regions
+        const allClusters: string[] = [];
+        
+        regionsArray.forEach((region: any) => {
+          if (region.divisions) {
+            region.divisions.forEach((division: any) => {
+              if (division.clusters && Array.isArray(division.clusters)) {
+                allClusters.push(...division.clusters);
+              }
+            });
+          }
+        });
+
+        // Remove duplicates and create options
+        const uniqueClusters = [...new Set(allClusters)];
+        
+        this.clusterOptions = [
+          { value: '', label: 'All Clusters/Districts' },
+          ...uniqueClusters.map(cluster => ({
+            value: cluster,
+            label: cluster
+          }))
+        ];
+      }
+    } catch (error) {
+      console.error('Error loading cluster options:', error);
+      // Fallback to empty options
+      this.clusterOptions = [
+        { value: '', label: 'All Clusters/Districts' }
+      ];
+    }
+  }
+
   loadSchools(): void {
-    this.schoolService.getAllSchools().subscribe({
+    this.schoolService.getAllSchools(this.selectedCluster).subscribe({
       next: (response) => {
         // Assuming the API returns data in a specific format
         // Adjust this based on your actual API response structure
@@ -74,22 +131,25 @@ export class AllSchoolComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (!this.searchTerm.trim()) {
+    if (!this.selectedCluster) {
       this.filteredSchoolList = [...this.schoolList];
     } else {
-      const searchLower = this.searchTerm.toLowerCase().trim();
       this.filteredSchoolList = this.schoolList.filter(school =>
-        school.schoolName.toLowerCase().includes(searchLower) ||
-        school.schoolId.toLowerCase().includes(searchLower) ||
-        school.accountableName.toLowerCase().includes(searchLower) ||
-        school.designation.toLowerCase().includes(searchLower) ||
-        school.contactNumber.includes(searchLower)
+        school.district === this.selectedCluster
       );
     }
 
     this.pageIndex = 0; // Reset to first page when filtering
     this.updateDataSource();
     this.calculateSummaryStats();
+  }
+
+  onClusterChange(): void {
+    this.loadSchools(); // Reload schools with new district filter
+  }
+
+  refreshSchools(): void {
+    this.loadSchools(); // Manual refresh button
   }
 
   updateDataSource(): void {

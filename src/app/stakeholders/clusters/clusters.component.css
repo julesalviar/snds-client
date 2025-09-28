@@ -1,0 +1,436 @@
+mat-card {
+  margin: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 20px green;
+  border-radius: 8px;
+  border: 1px solid green;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+mat-card-title {
+  margin-bottom: 20px;
+  margin-left: 5px;
+  font-size: 20px;
+  color: #45a049;
+}
+
+.summary-text {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  border-left: 4px solid #45a049;
+}
+
+.summary-text p {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.summary-text p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-text strong {
+  color: #45a049;
+  font-weight: 600;
+}
+
+.search-container {
+  margin-bottom: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-field .mat-form-field-wrapper {
+  padding-bottom: 0;
+}
+
+/* Disabled button styling */
+button[mat-icon-button][disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button[mat-icon-button][disabled] mat-icon {
+  color: #999 !important;
+}
+
+/* Column width constraints */
+.mat-column-totalNeeds {
+  max-width: 100px;
+  min-width: 100px;
+}
+
+.mat-column-totalPersonnel {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-totalStudents {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-schoolCount {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-clusterName {
+  min-width: 150px;
+}
+
+.mat-elevation-z8 {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.cluster-icon {
+  font-size: 30px;
+  margin: 0;
+  padding: 30px 30px;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+  margin-left: 20px;
+}
+
+span {
+  font-weight: bold;
+  font-size: 20px;
+  color: #45a049;
+  padding: 0;
+  margin-left: 5px;
+  margin-top: 22px;
+}
+
+.download-button {
+  margin-left: auto;
+  margin-right: 25px;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  color: #45a049;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.download-button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  color: white;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.table-container {
+  min-width: 950px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mat-header-cell, .mat-cell {
+  padding: 16px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+tr:hover {
+  background-color: #e4a0a089;
+  color: white;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 15px;
+  background-color: green;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 5px 0;
+}
+
+mat-icon {
+  color: #45a049;
+  cursor: pointer;
+}
+
+mat-icon-button {
+  justify-content: space-between;
+}
+
+.ellipsis-button {
+  margin-left: 10px;
+}
+
+td.mat-cell button {
+  margin-right: 5px;
+}
+
+.mat-menu-item {
+  display: flex;
+  align-items: center;
+}
+
+.mat-menu-item mat-icon {
+  margin-right: 8px;
+}
+
+@media (max-width: 1024px) {
+  mat-card {
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+  }
+
+  .search-field {
+    width: 250px;
+  }
+
+  .download-button {
+    margin-right: 15px;
+    padding: 8px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cluster-icon {
+    font-size: 30px;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  span {
+    font-size: 18px;
+    margin-left: 70px;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  mat-card {
+    width: 100%;
+    margin: 5px;
+    padding: 10px;
+  }
+
+  mat-card-title {
+    font-size: 16px;
+  }
+
+  .search-field {
+    width: 100%;
+  }
+
+  .search-container {
+    justify-content: center;
+  }
+
+  .cluster-icon {
+    font-size: 24px;
+    padding: 20px;
+    margin: 0;
+  }
+
+  .download-button {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  span {
+    font-size: 18px;
+    margin-left: 0;
+    margin-top: 0;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 1024px) {
+  .table-container {
+    margin: 5px 0;
+  }
+
+  .mat-header-cell, .mat-cell {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .download-button {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 767px) {
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 800px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 435px) {
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 950px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 767px) {
+  .header {
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+
+  .cluster-icon {
+    padding: 15px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  span {
+    font-size: 16px;
+    margin-left: 0;
+  }
+
+  mat-card-title {
+    font-size: 14px;
+  }
+
+  .download-button {
+    margin: 10px 0;
+  }
+
+  td.mat-cell button {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+.mat-header-cell {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+tr:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+mat-icon {
+  font-size: 24px;
+}
+
+.mat-menu-item {
+  padding: 10px;
+}
+
+.mat-menu-item mat-icon {
+  margin-right: 10px;
+}
+
+.mat-action-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.mat-action-buttons button {
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+@media (max-width: 767px) {
+  .mat-action-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .mat-action-buttons button {
+    margin-bottom: 0;
+    margin-right: 10px;
+    min-width: 100px;
+  }
+
+  .download-button {
+    width: auto;
+    margin: 10px 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .mat-action-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+}
+
+.refresh-button {
+  height: 56px;
+  min-width: 120px;
+}
+
+.refresh-button mat-icon {
+  margin-right: 8px;
+}

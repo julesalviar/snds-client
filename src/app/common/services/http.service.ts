@@ -64,6 +64,11 @@ export class HttpService {
     return this.http.patch<T>(url, data, { headers: this.getHeaders() });
   }
 
+  delete<T>(url: string): Observable<T> {
+    console.log(`deleting url: ${url}`);
+    return this.http.delete<T>(url, { headers: this.getHeaders() });
+  }
+
   uploadFile<T>(url: string, formData: FormData): Observable<T> {
     console.log(`uploading file to url: ${url}`);
     return this.http.post<T>(url, formData, { headers: this.getUploadHeaders() });
