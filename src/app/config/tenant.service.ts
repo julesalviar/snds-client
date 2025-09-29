@@ -9,15 +9,18 @@ export class TenantService {
     const domain = window.location.hostname;
     // console.log(domain);
     switch (domain) {
-      case 'dev.local':
-      case 'dev.mysnds.com':
-        return Tenant.DEV;
       case 'tacurong.local' :
       case 'tacurong.mysnds.com':
       case 'sdotacurong.mysnds.com':
         return Tenant.TACURONG;
-      default:
+      case 'gensan.local' :
+      case 'gensan.mysnds.com':
+      case 'sdogensan.mysnds.com':
         return Tenant.GENSAN;
+      case 'dev.local':
+      case 'dev.mysnds.com':
+      default:
+        return Tenant.DEV;
     }
   }
 }
