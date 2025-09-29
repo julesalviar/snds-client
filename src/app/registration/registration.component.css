@@ -221,6 +221,17 @@ button:hover {
 mat-card {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
 }
+.image-container {
+  display: flex;               
+  justify-content: center;     
+  align-items: center;         
+  margin: 10px 0;            
+}
+
+.info-image {
+  max-width: 100%;           
+  height: auto;               
+}
 
 .info-card,
 .form-card {
