@@ -12,9 +12,9 @@
           <li><a routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
-      <li><a routerLink="/stakeholder/about-us" (click)="closeMenu()">About Us</a></li>
+      <li><a routerLink="about-us-gensan" (click)="closeMenu()">About Us</a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">My Contribution</a></li>
-      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()">Generated Resources</a></li>
+      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
       <li>
         <span tabindex="0">Support</span>
         <ul>
@@ -30,13 +30,13 @@
         <span tabindex="0">School Needs</span>
         <ul>
           <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
-          <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()">Senior High School</a></li>
+          <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()"class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Senior High School</a></li>
         </ul>
       </li>
       <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
       <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
              (click)="closeMenu()">DPDS</a></li>
-      <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()">Quick Count</a></li>
+      <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Quick Count</a></li>
       <li>
         <span tabindex="0">Support</span>
         <ul>
@@ -45,8 +45,8 @@
           <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li>
         </ul>
       </li>
-      <li><a routerLink="/school-admin/reports" (click)="closeMenu()">Reports</a></li>
-      <li><a routerLink="/school-admin/about-us" (click)="closeMenu()">About Us</a></li>
+      <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
+      <li><a routerLink="about-us-gensan" (click)="closeMenu()">About Us</a></li>
     </ng-container>
 
     <!-- Division Admin Menus -->
@@ -99,7 +99,7 @@
       <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
       <mat-menu #profileMenu="matMenu">
         <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
-        <button mat-menu-item (click)="editProfile()">Edit Profile</button>
+        <button mat-menu-item (click)="editProfile()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Edit Profile</button>
       </mat-menu>
       <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">
         Logout
