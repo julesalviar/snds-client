@@ -20,13 +20,13 @@ import {MyContributionComponent} from './stakeholders/my-contribution/my-contrib
 import {ClustersComponent} from './stakeholders/clusters/clusters.component';
 import {ChangePasswordComponent} from './navigation/change-password/change-password.component';
 import {FooterComponent} from './footer/footer.component';
+import {AboutUsComponent} from './navigation/about-us-gensan/about-us.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: 'sign-in', component: SignInComponent},
   {path: 'register', component: RegistrationComponent},
   {path: 'school-admin-registration', component: SchoolAdminRegistrationComponent},
-  {path: 'school-admin/about-us', component: StakeholdersComponent},
   {
     path: 'home',
     component: HomeComponent,
@@ -58,7 +58,7 @@ export const routes: Routes = [
 
   // School Admin routes
   {path: 'school-admin/reports', component: ReportsComponent},
-  {path: 'school-admin/about-us', component: StakeholdersComponent},
+  {path: 'about-us-gensan', component: AboutUsComponent},
   {
     path: 'school-admin',
     canActivateChild: [AuthGuard],
