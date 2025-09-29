@@ -9,6 +9,9 @@ export class TenantService {
     const domain = window.location.hostname;
     // console.log(domain);
     switch (domain) {
+      case 'dev.local':
+      case 'dev.mysnds.com':
+        return Tenant.DEV;
       case 'tacurong.local' :
       case 'tacurong.mysnds.com':
       case 'sdotacurong.mysnds.com':
