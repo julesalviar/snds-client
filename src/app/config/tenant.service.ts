@@ -13,8 +13,14 @@ export class TenantService {
       case 'tacurong.mysnds.com':
       case 'sdotacurong.mysnds.com':
         return Tenant.TACURONG;
-      default:
+      case 'gensan.local' :
+      case 'gensan.mysnds.com':
+      case 'sdogensan.mysnds.com':
         return Tenant.GENSAN;
+      case 'dev.local':
+      case 'dev.mysnds.com':
+      default:
+        return Tenant.DEV;
     }
   }
 }
