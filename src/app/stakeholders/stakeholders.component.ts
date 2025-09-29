@@ -48,6 +48,7 @@ export class StakeholdersComponent implements OnInit {
   pageSize: number = 10;
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
+  totalQuantity: number = 0;
   totalBySchool: number = 0;
   selectedContribution: string | null = null;
   schoolId: string | null = null;
@@ -61,8 +62,8 @@ export class StakeholdersComponent implements OnInit {
   ngOnInit(): void {
     // Get the selectedContribution and schoolId from query parameters
     this.route.queryParams.subscribe(params => {
-      this.selectedContribution = params['selectedContribution'] || null;
-      this.schoolId = params['schoolId'] || null;
+      this.selectedContribution = params['selectedContribution'] ?? null;
+      this.schoolId = params['schoolId'] ?? null;
       this.loadSchoolNeeds();
     });
   }
@@ -82,6 +83,7 @@ export class StakeholdersComponent implements OnInit {
         this.schoolName = response.school?.schoolName;
         this.dataSource.data = response.data;
         this.totalItems = response.meta.totalItems;
+        this.totalQuantity = response.meta.totalQuantity;
         this.totalBySchool = response.meta.totalBySchool;
         this.isLoading = false;
       },
