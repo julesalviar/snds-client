@@ -36,7 +36,8 @@ export class AuthService {
   }
 
   getUsername(): string {
-    return this.getTokenPayload()?.username ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.username ?? '' : '';
   }
 
   getName(): string {
@@ -44,7 +45,8 @@ export class AuthService {
   }
 
   getSchoolId(): string {
-    return this.getTokenPayload()?.['sid'] ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.['sid'] ?? '' : '';
   }
 
   getRole(): string {
