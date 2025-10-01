@@ -32,11 +32,7 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const payload = this.getTokenPayload();
-    if (!payload) return false;
-
-    const now = Math.floor(Date.now() / 1000);
-    return payload.exp > now;
+    return this.isTokenValid(this.getTokenPayload());
   }
 
   getUsername(): string {
@@ -52,7 +48,8 @@ export class AuthService {
   }
 
   getRole(): string {
-    return this.getTokenPayload()?.role ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.role ?? '' : '';
   }
 
   private getTokenPayload(): JwtPayload | null {
@@ -64,5 +61,12 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  private isTokenValid(token: JwtPayload | null): boolean {
+    if (!token) return false;
+
+    const now = Math.floor(Date.now() / 1000);
+    return token.exp > now;
   }
 }
