@@ -41,7 +41,8 @@ export class AuthService {
   }
 
   getName(): string {
-    return this.getTokenPayload()?.['name'] ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.['name'] ?? '' : '';
   }
 
   getSchoolId(): string {
