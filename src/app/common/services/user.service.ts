@@ -1,10 +1,11 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, catchError, Observable} from 'rxjs';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
 import {TenantService} from "../../config/tenant.service";
 import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
+import {SchoolNeed} from "../model/school-need.model";
 
 @Injectable({
   providedIn: 'root',
@@ -68,19 +69,26 @@ export class UserService {
   getUsersByRole(role: string, search?: string, limit?: number) {
     let url = `${environment.API_URL}/users/by-role/${role}`;
     const params: string[] = [];
-    
+
     if (search) {
       params.push(`search=${encodeURIComponent(search)}`);
     }
-    
+
     if (limit) {
       params.push(`limit=${limit}`);
     }
-    
+
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }
-    
+
     return this.httpService.get<any[]>(url);
+  }
+
+  changePassword(currentPassword: string, newPassword: string) {
+      const payload = { currentPassword, newPassword };
+      return this.httpService.patch(`${API_ENDPOINT.users}/change-password`, payload).pipe(
+        catchError(this.httpService.handleError)
+      );
   }
 }
