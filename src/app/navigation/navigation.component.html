@@ -1,4 +1,8 @@
 <nav>
+  <!-- Mobile Menu Toggle Button -->
+  <button (click)="toggleMenu()" class="menu-toggle" aria-label="Toggle menu">
+    {{ isMenuOpen ? 'Close' : 'Menu' }}
+  </button>
 
   <ul class="nav-list" [class.open]="isMenuOpen">
     <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
@@ -13,7 +17,7 @@
         </ul>
       </li>
       <li><a routerLink="about-us-gensan" (click)="closeMenu()">About Us</a></li>
-      <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">My Contribution</a></li>
+      <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
       <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
       <li>
         <span tabindex="0">Support</span>
@@ -95,7 +99,6 @@
   <!-- Profile section -->
   <div class="profile">
     <ng-container *ngIf="isLoggedIn(); else loginButton">
-      <button (click)="toggleMenu()" class="menu-toggle" aria-label="Open menu">Menu</button>
       <mat-icon aria-label="User profile">account_circle</mat-icon>
       <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
       <mat-menu #profileMenu="matMenu">

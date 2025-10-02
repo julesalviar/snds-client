@@ -55,6 +55,11 @@ export class AuthService {
     return this.isTokenValid(payload) ? payload?.role ?? '' : '';
   }
 
+  getUserId(): string {
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.['sub'] ?? payload?.['userId'] ?? '' : '';
+  }
+
   private getTokenPayload(): JwtPayload | null {
     const token = localStorage.getItem('token');
     if (!token) return null;

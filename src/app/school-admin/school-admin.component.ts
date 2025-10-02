@@ -13,7 +13,7 @@ import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { UserService } from '../common/services/user.service';
-import {forkJoin, lastValueFrom, map, Observable, of, Subject, switchMap, takeUntil} from "rxjs";
+import {forkJoin, lastValueFrom, map, Observable, of, Subject, switchMap, takeUntil, catchError} from "rxjs";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {getSchoolYear} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
@@ -164,12 +164,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     if (this.schoolNeedsForm.invalid) {
       this.markFormGroupTouched();
+      this.showFormValidationErrors();
       return;
     }
 
     // Validate contribution type
     const contributionType = this.schoolNeedsForm.get('contributionType')?.value;
     if (contributionType && !this.validateContributionType(contributionType)) {
+      this.showErrorNotification('The contribution type you entered is not available. Please select from the available options.');
       this.showInvalidContributionTypeDialog();
       return;
     }
@@ -177,6 +179,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     // Validate specific contribution
     const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
     if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
+      const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+      const errorMessage = selectedContributionType
+        ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
+        : 'Please select a contribution type first before entering a specific contribution.';
+      this.showErrorNotification(errorMessage);
       this.showInvalidSpecificContributionDialog();
       return;
     }
@@ -189,6 +196,22 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         : [];
 
       console.log(uploadedImages);
+
+      const hasImages = this.previewImages.length > 0;
+      const hasSuccessfulUploads = uploadedImages.length > 0;
+      const hasFailedUploads = hasImages && !hasSuccessfulUploads;
+
+      if (hasFailedUploads) {
+        this.isSaving = false;
+        this.showErrorNotification('All image uploads failed. Please check your images and try again.');
+        return;
+      }
+
+      // Show warning if some images failed but others succeeded
+      if (hasImages && uploadedImages.length < this.previewImages.length) {
+        const failedCount = this.previewImages.length - uploadedImages.length;
+        this.showErrorNotification(`${failedCount} image(s) failed to upload. The school need will be saved with ${uploadedImages.length} successful upload(s).`);
+      }
 
       const newNeed: SchoolNeed = {
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
@@ -219,13 +242,53 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error creating school need:', err);
           this.isSaving = false;
-          this.showErrorNotification('Failed to save school need. Please try again.');
+
+          let errorMessage = 'Failed to save school need. Please try again.';
+
+          if (err?.error?.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMessage = err.error.message.join('\n• ');
+              if (err.error.message.length > 1) {
+                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+              }
+            } else if (typeof err.error.message === 'string') {
+              errorMessage = err.error.message;
+            }
+          } else if (err?.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
+          }
+
+          this.showErrorNotification(errorMessage);
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during form submission:', error);
       this.isSaving = false;
-      this.showErrorNotification('An unexpected error occurred. Please try again.');
+
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+
+      if (error?.error?.message) {
+        if (Array.isArray(error.error.message)) {
+          errorMessage = error.error.message.join('\n• ');
+          if (error.error.message.length > 1) {
+            errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+          }
+        } else if (typeof error.error.message === 'string') {
+          errorMessage = error.error.message;
+        }
+      } else if (error?.error && typeof error.error === 'string') {
+        errorMessage = error.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
+      this.showErrorNotification(errorMessage);
     }
   }
   viewResponses(need: any): void {
@@ -261,8 +324,10 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   private showErrorNotification(message: string): void {
+    const duration = message.includes('\n') ? 8000 : 5000;
+
     this.snackBar.open(message, 'Close', {
-      duration: 5000,
+      duration: duration,
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
@@ -463,6 +528,26 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     });
   }
 
+  private showFormValidationErrors(): void {
+    // Count invalid fields for general message
+    let invalidFieldCount = 0;
+
+    Object.keys(this.schoolNeedsForm.controls).forEach(key => {
+      const control = this.schoolNeedsForm.get(key);
+      if (control && control.invalid && control.errors) {
+        invalidFieldCount++;
+      }
+    });
+
+    if (invalidFieldCount > 0) {
+      const errorMessage = invalidFieldCount === 1
+        ? 'Invalid data:Please check the form field and try again.'
+        : `Invalid data: Please check the ${invalidFieldCount} form fields and try again.`;
+
+      this.showErrorNotification(errorMessage);
+    }
+  }
+
   protected onFileSelected(event: Event): void {
     const files = (event.target as HTMLInputElement).files;
     if (!files) return;
@@ -546,6 +631,38 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           img.uploading = false;
           img.progress = 100;
           return response;
+        }),
+        catchError(error => {
+          img.uploading = false;
+          img.progress = 0;
+
+          // Extract error message from backend response
+          let errorMessage = 'Failed to upload image';
+
+          // Check for backend error response in error.error (response body)
+          if (error?.error?.message) {
+            if (Array.isArray(error.error.message)) {
+              // Handle array of error messages from backend
+              errorMessage = error.error.message.join(', ');
+            } else if (typeof error.error.message === 'string') {
+              // Handle single error message from backend
+              errorMessage = error.error.message;
+            }
+          } else if (error?.error && typeof error.error === 'string') {
+            // Handle case where error.error is a string
+            errorMessage = error.error;
+          } else if (error?.message) {
+            // Fallback to generic error message
+            errorMessage = error.message;
+          } else if (typeof error === 'string') {
+            errorMessage = error;
+          }
+
+          // Show error message in snackbar
+          this.showErrorNotification(`Image upload failed: ${errorMessage}`);
+
+          // Return null for failed uploads
+          return of(null);
         })
       );
     });
@@ -555,7 +672,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     }
 
     const results = await lastValueFrom(forkJoin(uploadRequests));
-    this.schoolNeedsForm.get('images')?.setValue(results);
-    return results;
+
+    // Filter out failed uploads (null values)
+    const successfulUploads = results.filter(result => result !== null);
+
+    this.schoolNeedsForm.get('images')?.setValue(successfulUploads);
+    return successfulUploads;
   }
 }
