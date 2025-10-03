@@ -82,11 +82,9 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly aipService: AipService,
-    private readonly authService: AuthService,
     private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
-    private readonly dialog: MatDialog,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly navigationService: NavigationService,
@@ -180,7 +178,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
   onCancel(): void {
     const prevUrl = this.navigationService.getPreviousUrl();
-    console.log('prevUrl:', prevUrl);
 
     // Remove query parameters and fragments to get the base path
     const basePath = prevUrl.split('?')[0].split('#')[0];

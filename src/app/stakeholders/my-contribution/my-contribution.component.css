@@ -1,44 +1,257 @@
-.my-contribution-container {
+mat-card {
+  margin: 20px;
   padding: 20px;
-}
-h2 {
-    color:green;
-    font-size: 20px;
-    margin-bottom: 5px;
-}
-th {
-    color: green;
-    font-weight: bold;
-}
-.table-responsive {
-  overflow-x: auto; 
-  margin: 8px 0; 
-}
-
-table {
-  flex: 2;
-  width: 100%;
-  overflow: hidden;
-  margin: 8px 0; 
   box-shadow: 0 4px 20px green;
   border-radius: 8px;
-  border-color: green;
-  border: 1px solid;
-  background-color: rgba(255, 255, 255, 0.379);
+  border: 1px solid green;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
-th.mat-header-cell, td.mat-cell {
-  padding: 8px; 
-}
-
-tr:hover {
-  background-color: rgba(0, 128, 0, 0.2); 
-}
-
-.mat-header-cell:hover, .mat-cell:hover {
-  background-color: rgba(0, 128, 0, 0.3); 
+mat-card-title {
+  margin-bottom: 20px;
+  margin-left: 5px;
+  font-size: 20px;
+  color: #45a049;
 }
 
 .mat-elevation-z8 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.table-container {
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.table-container {
+  min-width: 950px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mat-header-cell, .mat-cell {
+  padding: 16px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+tr:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 15px;
+  background-color: green;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 5px 0;
+}
+
+mat-icon {
+  color: #45a049;
+  cursor: pointer;
+}
+
+.mat-header-cell {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+mat-icon {
+  font-size: 24px;
+}
+
+.loading-container, .error-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+}
+
+.error-container {
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 4px;
+}
+
+.error-container button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.error-container button:hover {
+  background-color: #b71c1c;
+}
+
+/* Status indicator styling */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  gap: 8px;
+}
+
+.status-icon {
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.status-icon.completed {
+  color: #4caf50 !important;
+}
+
+.status-icon.pending {
+  color: #ff9800 !important;
+}
+
+.status-icon.in-progress {
+  color: #2196f3 !important;
+}
+
+.status-text {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.status-completed .status-text {
+  color: #4caf50;
+}
+
+.status-pending .status-text {
+  color: #ff9800;
+}
+
+.status-in-progress .status-text {
+  color: #2196f3;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 48px !important;
+  color: #ccc !important;
+  margin-bottom: 16px;
+}
+
+/* Column width constraints */
+.mat-column-need {
+  max-width: 200px;
+  min-width: 200px;
+}
+
+.mat-column-schoolName {
+  max-width: 200px;
+  min-width: 200px;
+}
+
+.mat-column-engaged {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-amount {
+  max-width: 120px;
+  min-width: 120px;
+}
+
+.mat-column-status {
+  max-width: 150px;
+  min-width: 150px;
+  text-align: center;
+}
+
+.mat-column-movs {
+  max-width: 150px;
+  min-width: 150px;
+}
+
+@media (max-width: 1024px) {
+  mat-card {
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+  }
+
+  .table-container {
+    margin: 5px 0;
+  }
+
+  .mat-header-cell, .mat-cell {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  mat-card {
+    width: 100%;
+    margin: 5px;
+    padding: 10px;
+  }
+
+  mat-card-title {
+    font-size: 16px;
+  }
+
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 800px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 435px) {
+  .table-scroll {
+    margin: 5px 0;
+  }
+
+  .table-container {
+    min-width: 950px;
+  }
+
+  .mat-header-cell, .mat-cell {
+    font-size: 12px;
+    padding: 8px;
+  }
 }

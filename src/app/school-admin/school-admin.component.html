@@ -48,12 +48,12 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Select Project Name</mat-label>
-        <mat-select formControlName="projectName">
+        <mat-label>Select PPA Name</mat-label>
+        <mat-select formControlName="ppaName">
           <mat-option *ngFor="let project of projectsData" [value]="project._id">{{ project.title }}</mat-option>
         </mat-select>
         <mat-error *ngIf="schoolNeedsForm.get('projectName')?.invalid && schoolNeedsForm.get('projectName')?.touched">
-          Project Name is required
+          PPA Name is required
         </mat-error>
       </mat-form-field>
 
@@ -75,7 +75,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Unit (Box, pieces, sack, roll etc.)</mat-label>
-        <mat-select formControlName="unit" (selectionChange)="onUnitChange($event.value)">
+        <mat-select formControlName="unit">
           <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
         </mat-select>
         <mat-error *ngIf="schoolNeedsForm.get('unit')?.invalid && schoolNeedsForm.get('unit')?.touched">
@@ -83,15 +83,6 @@
         </mat-error>
       </mat-form-field>
 
-      <div *ngIf="isOtherSelected">
-        <mat-form-field appearance="fill">
-          <mat-label>Please specify unit</mat-label>
-          <input matInput formControlName="otherUnit" />
-          <mat-error *ngIf="schoolNeedsForm.get('otherUnit')?.invalid && schoolNeedsForm.get('otherUnit')?.touched">
-            Please specify the unit
-          </mat-error>
-        </mat-form-field>
-      </div>
 
       <mat-form-field appearance="fill">
         <mat-label>Estimated Cost(<span style="color: red;"> don't put comma,peso sign or letters</span>)</mat-label>
@@ -131,7 +122,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Description / Other Info</mat-label>
+        <mat-label>PPA Description/Information</mat-label>
         <textarea matInput formControlName="description"></textarea>
         <mat-error *ngIf="schoolNeedsForm.get('description')?.invalid && schoolNeedsForm.get('description')?.touched">
           Description must be 500 characters or less
@@ -139,23 +130,6 @@
       </mat-form-field>
 
 
-      <div class="file-upload">
-        <button mat-raised-button type="button" (click)="fileInput.click()" [disabled]="previewImages.length >= 5">
-          <mat-icon>attach_file</mat-icon>
-          Attach Image
-        </button>
-        <input #fileInput type="file" accept="image/*" multiple (change)="onFileSelected($event)" hidden />
-      </div>
-
-      <div class="preview-container">
-        <div *ngFor="let img of previewImages; let i = index" class="preview-box">
-          <img [src]="img.dataUrl" alt="remove" />
-          <button mat-icon-button (click)="removeImage(i)">
-            <mat-icon>close</mat-icon>
-          </button>
-          <mat-progress-bar *ngIf="img.uploading" mode="determinate" [value]="img.progress"></mat-progress-bar>
-        </div>
-      </div>
       <div class="save-section">
         <mat-progress-bar *ngIf="isSaving" mode="indeterminate" class="save-progress-bar"></mat-progress-bar>
         <button mat-raised-button type="button" (click)="onSubmit()" [disabled]="isSaving">
@@ -181,7 +155,7 @@
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         <p>Loading school needs...</p>
       </div>
-      
+
       <table *ngIf="!isLoading" mat-table [dataSource]="schoolNeedsData" class="mat-elevation-z8">
         <ng-container matColumnDef="contributionType">
           <th mat-header-cell *matHeaderCellDef> Contribution Type </th>

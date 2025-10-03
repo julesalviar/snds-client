@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,7 +13,7 @@ import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { UserService } from '../common/services/user.service';
-import {forkJoin, lastValueFrom, map, Observable, of, Subject, switchMap, takeUntil} from "rxjs";
+import {forkJoin, lastValueFrom, map, Observable, of, Subject, switchMap, takeUntil, catchError} from "rxjs";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {getSchoolYear} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
@@ -75,9 +75,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;
-  isOtherSelected = false;
-  previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   isSaving: boolean = false;
 
   contributionTypes: string[] = [];
@@ -87,13 +84,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
 
-  private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
-    const unit = this.schoolNeedsForm?.get('unit')?.value;
-    if (unit === 'Others (pls. specify)' && (!control.value || control.value.trim() === '')) {
-      return { required: true };
-    }
-    return null;
-  }
 
   constructor(
     private readonly fb: FormBuilder,
@@ -111,17 +101,15 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
       schoolYear: [getSchoolYear(), [Validators.required]],
-      projectName: ['', [Validators.required]],
+      ppaName: ['', [Validators.required]],
       intermediateOutcome: ['', [Validators.required]],
       quantityNeeded: [0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
-      otherUnit: ['', [this.otherUnitValidator.bind(this)]],
       estimatedCost: [0, [Validators.required, Validators.min(0)]],
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(500)]],
-      images: [[]],
     });
   }
   queryData(): void {
@@ -164,12 +152,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   async onSubmit(): Promise<void> {
     if (this.schoolNeedsForm.invalid) {
       this.markFormGroupTouched();
+      this.showFormValidationErrors();
       return;
     }
 
     // Validate contribution type
     const contributionType = this.schoolNeedsForm.get('contributionType')?.value;
     if (contributionType && !this.validateContributionType(contributionType)) {
+      this.showErrorNotification('The contribution type you entered is not available. Please select from the available options.');
       this.showInvalidContributionTypeDialog();
       return;
     }
@@ -177,6 +167,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     // Validate specific contribution
     const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
     if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
+      const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+      const errorMessage = selectedContributionType
+        ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
+        : 'Please select a contribution type first before entering a specific contribution.';
+      this.showErrorNotification(errorMessage);
       this.showInvalidSpecificContributionDialog();
       return;
     }
@@ -184,16 +179,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.isSaving = true;
 
     try {
-      const uploadedImages = this.previewImages.length
-        ? await this.uploadImages('school-needs')
-        : [];
-
-      console.log(uploadedImages);
 
       const newNeed: SchoolNeed = {
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
         contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.schoolNeedsForm.get('projectName')?.value,
+        projectId: this.schoolNeedsForm.get('ppaName')?.value,
         quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
         unit: this.schoolNeedsForm.get('unit')?.value,
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
@@ -201,7 +191,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
         description: this.schoolNeedsForm.get('description')?.value,
         schoolId: this.authService.getSchoolId(),
-        images: uploadedImages,
+        images: [],
         targetDate: this.schoolNeedsForm.get('targetDate')?.value,
         schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
       };
@@ -211,7 +201,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           const currentSchoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
           this.schoolNeedsForm.reset();
           this.schoolNeedsForm.patchValue({ schoolYear: currentSchoolYear });
-          this.previewImages = [];
           this.queryData();
           this.isSaving = false;
           this.showSuccessNotification('School need saved successfully!');
@@ -219,13 +208,53 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error creating school need:', err);
           this.isSaving = false;
-          this.showErrorNotification('Failed to save school need. Please try again.');
+
+          let errorMessage = 'Failed to save school need. Please try again.';
+
+          if (err?.error?.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMessage = err.error.message.join('\n• ');
+              if (err.error.message.length > 1) {
+                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+              }
+            } else if (typeof err.error.message === 'string') {
+              errorMessage = err.error.message;
+            }
+          } else if (err?.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
+          }
+
+          this.showErrorNotification(errorMessage);
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during form submission:', error);
       this.isSaving = false;
-      this.showErrorNotification('An unexpected error occurred. Please try again.');
+
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+
+      if (error?.error?.message) {
+        if (Array.isArray(error.error.message)) {
+          errorMessage = error.error.message.join('\n• ');
+          if (error.error.message.length > 1) {
+            errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+          }
+        } else if (typeof error.error.message === 'string') {
+          errorMessage = error.error.message;
+        }
+      } else if (error?.error && typeof error.error === 'string') {
+        errorMessage = error.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
+      this.showErrorNotification(errorMessage);
     }
   }
   viewResponses(need: any): void {
@@ -261,8 +290,10 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   private showErrorNotification(message: string): void {
+    const duration = message.includes('\n') ? 8000 : 5000;
+
     this.snackBar.open(message, 'Close', {
-      duration: 5000,
+      duration: duration,
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
@@ -314,8 +345,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.schoolNeedService.getSchoolNeeds(page, this.pageSize, this.selectedSchoolYear).subscribe({
       next: (response) => {
         this.schoolNeedsData = response.data;
-        this.schoolName = response.school?.schoolName || '';
-        this.totalItems = response.meta?.totalItems || 0;
+        this.schoolName = response.school?.schoolName ?? '';
+        this.totalItems = response.meta?.totalItems ?? 0;
         this.isLoading = false;
       },
       error: (err) => {
@@ -393,15 +424,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     );
   }
 
-  protected onUnitChange(selectedUnit: string): void {
-    this.isOtherSelected = selectedUnit === 'Others (pls. specify)';
-    if (!this.isOtherSelected) {
-      this.schoolNeedsForm.get('otherUnit')?.reset();
-    }
-
-    // Trigger validation for otherUnit field
-    this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
-  }
 
   protected filterContributionTypes(value: string): void {
     const filterValue = value.toLowerCase();
@@ -463,99 +485,26 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected onFileSelected(event: Event): void {
-    const files = (event.target as HTMLInputElement).files;
-    if (!files) return;
+  private showFormValidationErrors(): void {
+    // Count invalid fields for general message
+    let invalidFieldCount = 0;
 
-    // Check if adding new files would exceed the 5 image limit
-    const currentImageCount = this.previewImages.length;
-    const maxImages = 5;
-
-    if (currentImageCount >= maxImages) {
-      this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
-      (event.target as HTMLInputElement).value = '';
-      return;
-    }
-
-    const selectionSeen = new Set<string>();
-    let addedCount = 0;
-    const remainingSlots = maxImages - currentImageCount;
-
-    Array.from(files).forEach(file => {
-      // Stop if we've reached the limit
-      if (addedCount >= remainingSlots) {
-        console.warn('Image limit reached, skipping remaining files');
-        return;
+    Object.keys(this.schoolNeedsForm.controls).forEach(key => {
+      const control = this.schoolNeedsForm.get(key);
+      if (control && control.invalid && control.errors) {
+        invalidFieldCount++;
       }
-
-      if (!file.type.startsWith('image/') || file.size === 0) {
-        console.warn('Invalid image skipped:', file.name);
-        return;
-      }
-
-      const key = `${file.name}__${file.size}__${file.lastModified}`;
-
-      const alreadyAdded = this.previewImages.some(img =>
-        img?.file?.name === file.name &&
-        img?.file?.size === file.size &&
-        img?.file?.lastModified === file.lastModified
-      ) || selectionSeen.has(key);
-
-      if (alreadyAdded) {
-        console.warn('Duplicate image ignored:', file.name);
-        return;
-      }
-
-      selectionSeen.add(key);
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewImages.push({
-          file,
-          dataUrl: reader.result,
-          uploading: false,
-          progress: 0,
-        });
-        addedCount++;
-      };
-      reader.readAsDataURL(file);
     });
 
-    (event.target as HTMLInputElement).value = '';
+    if (invalidFieldCount > 0) {
+      const errorMessage = invalidFieldCount === 1
+        ? 'Invalid data:Please check the form field and try again.'
+        : `Invalid data: Please check the ${invalidFieldCount} form fields and try again.`;
 
-    // Show info message if some files were skipped due to limit
-    if (addedCount < Array.from(files).length) {
-      this.showErrorNotification(`Only ${addedCount} images were added. Maximum ${maxImages} images allowed.`);
+      this.showErrorNotification(errorMessage);
     }
   }
 
-  removeImage(index: number) {
-    this.previewImages.splice(index, 1);
-  }
 
-  async uploadImages(category: string): Promise<any[]> {
-    const uploadRequests = this.previewImages.map(img => {
-      img.uploading = true;
-      img.progress = 0;
-      const formData = new FormData();
-      formData.append('file', img.file);
-      formData.append('category', category);
 
-      return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
-        map(response => {
-          img.uploading = false;
-          img.progress = 100;
-          return response;
-        })
-      );
-    });
-
-    if (uploadRequests.length === 0) {
-      return [];
-    }
-
-    const results = await lastValueFrom(forkJoin(uploadRequests));
-    this.schoolNeedsForm.get('images')?.setValue(results);
-    return results;
-  }
 }

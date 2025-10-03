@@ -32,27 +32,32 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const payload = this.getTokenPayload();
-    if (!payload) return false;
-
-    const now = Math.floor(Date.now() / 1000);
-    return payload.exp > now;
+    return this.isTokenValid(this.getTokenPayload());
   }
 
   getUsername(): string {
-    return this.getTokenPayload()?.username ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.username ?? '' : '';
   }
 
   getName(): string {
-    return this.getTokenPayload()?.['name'] ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.['name'] ?? '' : '';
   }
 
   getSchoolId(): string {
-    return this.getTokenPayload()?.['sid'] ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.['sid'] ?? '' : '';
   }
 
   getRole(): string {
-    return this.getTokenPayload()?.role ?? '';
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.role ?? '' : '';
+  }
+
+  getUserId(): string {
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.['sub'] ?? payload?.['userId'] ?? '' : '';
   }
 
   private getTokenPayload(): JwtPayload | null {
@@ -64,5 +69,12 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  private isTokenValid(token: JwtPayload | null): boolean {
+    if (!token) return false;
+
+    const now = Math.floor(Date.now() / 1000);
+    return token.exp > now;
   }
 }

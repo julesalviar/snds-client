@@ -30,7 +30,6 @@ export const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
-    // canActivate: [AuthGuard]
   },
   {path: 'change-password', component: ChangePasswordComponent},
   {path: 'footer', component: FooterComponent},

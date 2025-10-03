@@ -1,10 +1,13 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, catchError, Observable} from 'rxjs';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
 import {TenantService} from "../../config/tenant.service";
 import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
+import {SchoolNeed} from "../model/school-need.model";
+import {MyContributionsResponse} from "../model/my-contribution.model";
+import {AuthService} from "../../auth/auth.service";
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +24,8 @@ export class UserService {
   constructor(
     private readonly http: HttpClient,
     private readonly tenantService: TenantService,
-    private readonly httpService: HttpService) { }
+    private readonly httpService: HttpService,
+    private readonly authService: AuthService) { }
 
   login(userName: string, password: string) {
     const tenant = this.tenantService.getCurrentDomainTenant();
@@ -68,19 +72,38 @@ export class UserService {
   getUsersByRole(role: string, search?: string, limit?: number) {
     let url = `${environment.API_URL}/users/by-role/${role}`;
     const params: string[] = [];
-    
+
     if (search) {
       params.push(`search=${encodeURIComponent(search)}`);
     }
-    
+
     if (limit) {
       params.push(`limit=${limit}`);
     }
-    
+
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }
-    
+
     return this.httpService.get<any[]>(url);
+  }
+
+  changePassword(currentPassword: string, newPassword: string) {
+      const payload = { currentPassword, newPassword };
+      return this.httpService.patch(`${API_ENDPOINT.users}/change-password`, payload).pipe(
+        catchError(this.httpService.handleError)
+      );
+  }
+
+  getMyContributions(): Observable<MyContributionsResponse> {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      throw new Error('User ID not found');
+    }
+    
+    const url = `${API_ENDPOINT.users}/${userId}/my-contributions`;
+    return this.httpService.get<MyContributionsResponse>(url).pipe(
+      catchError(this.httpService.handleError)
+    );
   }
 }

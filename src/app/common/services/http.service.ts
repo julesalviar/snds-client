@@ -75,14 +75,21 @@ export class HttpService {
   }
 
   public handleError(error: any): Observable<never> {
-    console.error(error);
-    let message = 'An unexpected error occurred';
+    console.error('HTTP Error:', error);
+    
+    // Preserve the original error structure so components can extract the actual error response
     if (error.error instanceof ErrorEvent) {
-      message = `Client Error: ${error.error.message}`;
+      // Client-side error
+      console.error(`Client Error: ${error.error.message}`);
     } else {
-      message = `Server Error: ${error.status} ${error.message}`;
+      // Server-side error - preserve the error response body
+      console.error(`Server Error: ${error.status} ${error.statusText}`);
+      if (error.error) {
+        console.error('Error response body:', error.error);
+      }
     }
-    console.error(message);
-    return throwError(() => new Error(message));
+    
+    // Return the original error to preserve the response body
+    return throwError(() => error);
   }
 }
