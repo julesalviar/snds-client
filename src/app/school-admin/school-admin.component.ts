@@ -101,7 +101,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
       schoolYear: [getSchoolYear(), [Validators.required]],
-      projectName: ['', [Validators.required]],
+      ppaName: ['', [Validators.required]],
       intermediateOutcome: ['', [Validators.required]],
       quantityNeeded: [0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
@@ -183,7 +183,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       const newNeed: SchoolNeed = {
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
         contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.schoolNeedsForm.get('projectName')?.value,
+        projectId: this.schoolNeedsForm.get('ppaName')?.value,
         quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
         unit: this.schoolNeedsForm.get('unit')?.value,
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
