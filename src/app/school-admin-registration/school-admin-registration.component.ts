@@ -1,23 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
-import { UserService } from '../common/services/user.service';
-import { ReferenceDataService } from '../common/services/reference-data.service';
-import { controlHasErrorAndTouched } from "../common/form-utils";
-import { switchMap } from "rxjs";
-import { UserType } from "../registration/user-type.enum";
-import { RegionOption } from '../common/model/region.model';
-import { DivisionOption } from '../common/model/division.model';
-import { RegistrationErrorDialogComponent } from './registration-error-dialog.component';
+import {Component, OnInit} from '@angular/core';
+import {ReactiveFormsModule, FormBuilder, FormGroup, Validators, ValidationErrors} from '@angular/forms';
+import {Router} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCardModule} from '@angular/material/card';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatDialog} from '@angular/material/dialog';
+import {UserService} from '../common/services/user.service';
+import {ReferenceDataService} from '../common/services/reference-data.service';
+import {controlHasErrorAndTouched} from "../common/form-utils";
+import {switchMap} from "rxjs";
+import {UserType} from "../registration/user-type.enum";
+import {RegionOption} from '../common/model/region.model';
+import {DivisionOption} from '../common/model/division.model';
+import {RegistrationErrorDialogComponent} from './registration-error-dialog.component';
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -70,7 +70,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
       officialEmail: this.fb.control('', [Validators.required, Validators.email]),
       password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
       confirmPassword: [this.defaultPassword, Validators.required],
-    }, { validators: this.passwordMatchValidator });
+    }, {validators: this.passwordMatchValidator});
   }
 
   ngOnInit(): void {
@@ -83,14 +83,12 @@ export class SchoolAdminRegistrationComponent implements OnInit {
 
   private async loadSchoolOfferings(): Promise<void> {
     await this.referenceDataService.initialize();
-    
+
     const schoolOfferingData = this.referenceDataService.get('schoolOffering');
-    
+
     if (schoolOfferingData && Array.isArray(schoolOfferingData)) {
       this.schoolOfferings = schoolOfferingData;
     }
-    
-    console.log('schoolOfferings loaded:', this.schoolOfferings);
   }
 
   private async loadRegions(): Promise<void> {
@@ -122,9 +120,6 @@ export class SchoolAdminRegistrationComponent implements OnInit {
           display: region.display
         }));
     }
-
-    console.log('processed regions:', this.regions);
-    console.log('regions length:', this.regions.length);
 
     // Set up disabled regions based on active field
     this.setupDisabledRegions();
@@ -283,7 +278,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   // Custom validator for password matching
   passwordMatchValidator(form: FormGroup): ValidationErrors | null {
     return form.get('password')?.value === form.get('confirmPassword')?.value
-      ? null : { mismatch: true };
+      ? null : {mismatch: true};
   }
 
   private showSuccessNotification(message: string): void {
@@ -301,12 +296,11 @@ export class SchoolAdminRegistrationComponent implements OnInit {
       position: {
         top: '20vh'
       },
-      data: { message }
+      data: {message}
     });
   }
 
   onSubmit() {
-    console.log('Form submitted', this.registrationForm.value);
     this.passwordMismatch = false; // Reset password mismatch flag
     if (this.registrationForm.valid) {
       const schoolData = {
@@ -328,9 +322,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
 
       if (this.registrationForm.value.password !== this.registrationForm.value.confirmPassword) {
         this.passwordMismatch = true;
-        console.log('Passwords do not match.');
       } else {
-        console.log(schoolData);
         this.userService.register(schoolData).pipe(
           switchMap(() => this.router.navigate(['/sign-in']))
         ).subscribe({
@@ -338,8 +330,8 @@ export class SchoolAdminRegistrationComponent implements OnInit {
             this.success = true;
             this.showSuccessNotification('School admin registration successful! You can now sign in with your credentials.');
           },
-          error: err => { 
-            this.success = false; 
+          error: err => {
+            this.success = false;
             console.error('Registration error', err);
             this.showErrorDialog('Registration failed. Please check your information and try again.');
           }

@@ -379,8 +379,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.schoolNeedService.getSchoolNeeds(page, this.pageSize, this.selectedSchoolYear).subscribe({
       next: (response) => {
         this.schoolNeedsData = response.data;
-        this.schoolName = response.school?.schoolName || '';
-        this.totalItems = response.meta?.totalItems || 0;
+        this.schoolName = response.school?.schoolName ?? '';
+        this.totalItems = response.meta?.totalItems ?? 0;
         this.isLoading = false;
       },
       error: (err) => {
