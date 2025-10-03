@@ -47,6 +47,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   disabledRegions: string[] = [];
   disabledDivisions: string[] = [];
   regionData: any[] = []; // Store full region data to access active field
+  schoolOfferings: string[] = [];
 
   constructor(
     private readonly fb: FormBuilder,
@@ -74,10 +75,23 @@ export class SchoolAdminRegistrationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRegions();
+    this.loadSchoolOfferings();
     this.setupRegionChangeListener();
     this.setupDivisionChangeListener();
   }
 
+
+  private async loadSchoolOfferings(): Promise<void> {
+    await this.referenceDataService.initialize();
+    
+    const schoolOfferingData = this.referenceDataService.get('schoolOffering');
+    
+    if (schoolOfferingData && Array.isArray(schoolOfferingData)) {
+      this.schoolOfferings = schoolOfferingData;
+    }
+    
+    console.log('schoolOfferings loaded:', this.schoolOfferings);
+  }
 
   private async loadRegions(): Promise<void> {
     await this.referenceDataService.initialize();
