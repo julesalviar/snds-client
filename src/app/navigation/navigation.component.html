@@ -24,6 +24,9 @@
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home/our-strategic-direction"
                  target="_blank" rel="noopener noreferrer">Partners Support</a></li>
+          <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
+                 rel="noopener noreferrer">SPFP</a></li>
+          <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li>
         </ul>
       </li>
     </ng-container>
@@ -41,14 +44,6 @@
       <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
              (click)="closeMenu()">DPDS</a></li>
       <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Quick Count</a></li>
-      <li>
-        <span tabindex="0">Support</span>
-        <ul>
-          <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
-                 rel="noopener noreferrer">SPFP</a></li>
-          <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li>
-        </ul>
-      </li>
       <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
       <li><a routerLink="about-us-gensan" (click)="closeMenu()">About Us</a></li>
     </ng-container>
@@ -78,7 +73,6 @@
           <li><a routerLink="/division-admin/permission-levels" (click)="closeMenu()">Permission Levels</a></li>
           <li><a routerLink="/division-admin/open-registration" (click)="closeMenu()">Open Registration</a></li>
           <li><a routerLink="/division-admin/close-registration" (click)="closeMenu()">Close Registration</a></li>
-          <li><a routerLink="/division-admin/partnership-link" (click)="closeMenu()">Create Partnership Link</a></li>
         </ul>
       </li>
     </ng-container>
@@ -90,6 +84,16 @@
         <ul>
           <li><a routerLink="/guest/all-school" (click)="closeMenu()">All</a></li>
           <li><a routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
+        </ul>
+      </li>
+      <li>
+        <span tabindex="0">Support</span>
+        <ul>
+          <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home/our-strategic-direction"
+                 target="_blank" rel="noopener noreferrer">Partners Support</a></li>
+          <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
+                 rel="noopener noreferrer">SPFP</a></li>
+          <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li>
         </ul>
       </li>
       <li><a routerLink="about-us-gensan" (click)="closeMenu()">About Us</a></li>
