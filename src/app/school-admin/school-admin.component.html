@@ -139,23 +139,6 @@
       </mat-form-field>
 
 
-      <div class="file-upload">
-        <button mat-raised-button type="button" (click)="fileInput.click()" [disabled]="previewImages.length >= 5">
-          <mat-icon>attach_file</mat-icon>
-          Attach Image
-        </button>
-        <input #fileInput type="file" accept="image/*" multiple (change)="onFileSelected($event)" hidden />
-      </div>
-
-      <div class="preview-container">
-        <div *ngFor="let img of previewImages; let i = index" class="preview-box">
-          <img [src]="img.dataUrl" alt="remove" />
-          <button mat-icon-button (click)="removeImage(i)">
-            <mat-icon>close</mat-icon>
-          </button>
-          <mat-progress-bar *ngIf="img.uploading" mode="determinate" [value]="img.progress"></mat-progress-bar>
-        </div>
-      </div>
       <div class="save-section">
         <mat-progress-bar *ngIf="isSaving" mode="indeterminate" class="save-progress-bar"></mat-progress-bar>
         <button mat-raised-button type="button" (click)="onSubmit()" [disabled]="isSaving">
