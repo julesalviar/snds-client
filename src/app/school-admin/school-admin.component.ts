@@ -75,7 +75,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;
-  isOtherSelected = false;
   isSaving: boolean = false;
 
   contributionTypes: string[] = [];
@@ -85,13 +84,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
 
-  private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
-    const unit = this.schoolNeedsForm?.get('unit')?.value;
-    if (unit === 'Others (pls. specify)' && (!control.value || control.value.trim() === '')) {
-      return { required: true };
-    }
-    return null;
-  }
 
   constructor(
     private readonly fb: FormBuilder,
@@ -113,7 +105,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       intermediateOutcome: ['', [Validators.required]],
       quantityNeeded: [0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
-      otherUnit: ['', [this.otherUnitValidator.bind(this)]],
       estimatedCost: [0, [Validators.required, Validators.min(0)]],
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
@@ -433,15 +424,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     );
   }
 
-  protected onUnitChange(selectedUnit: string): void {
-    this.isOtherSelected = selectedUnit === 'Others (pls. specify)';
-    if (!this.isOtherSelected) {
-      this.schoolNeedsForm.get('otherUnit')?.reset();
-    }
-
-    // Trigger validation for otherUnit field
-    this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
-  }
 
   protected filterContributionTypes(value: string): void {
     const filterValue = value.toLowerCase();

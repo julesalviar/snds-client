@@ -75,7 +75,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Unit (Box, pieces, sack, roll etc.)</mat-label>
-        <mat-select formControlName="unit" (selectionChange)="onUnitChange($event.value)">
+        <mat-select formControlName="unit">
           <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
         </mat-select>
         <mat-error *ngIf="schoolNeedsForm.get('unit')?.invalid && schoolNeedsForm.get('unit')?.touched">
@@ -83,15 +83,6 @@
         </mat-error>
       </mat-form-field>
 
-      <div *ngIf="isOtherSelected">
-        <mat-form-field appearance="fill">
-          <mat-label>Please specify unit</mat-label>
-          <input matInput formControlName="otherUnit" />
-          <mat-error *ngIf="schoolNeedsForm.get('otherUnit')?.invalid && schoolNeedsForm.get('otherUnit')?.touched">
-            Please specify the unit
-          </mat-error>
-        </mat-form-field>
-      </div>
 
       <mat-form-field appearance="fill">
         <mat-label>Estimated Cost(<span style="color: red;"> don't put comma,peso sign or letters</span>)</mat-label>
