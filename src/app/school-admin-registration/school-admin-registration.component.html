@@ -68,7 +68,11 @@
 
                     <mat-form-field appearance="fill">
                         <mat-label>School Offering</mat-label>
-                        <input matInput formControlName="schoolOffering" required>
+                        <mat-select formControlName="schoolOffering" required>
+                            <mat-option *ngFor="let offering of schoolOfferings" [value]="offering">
+                                {{ offering }}
+                            </mat-option>
+                        </mat-select>
                         <mat-error *ngIf="controlHasErrorAndTouched('schoolOffering', 'required')">
                             School Offering is required.
                         </mat-error>
