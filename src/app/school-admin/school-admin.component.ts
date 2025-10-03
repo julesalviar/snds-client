@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -75,9 +75,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;
-  isOtherSelected = false;
-  previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; } > = [];
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   isSaving: boolean = false;
 
   contributionTypes: string[] = [];
@@ -87,13 +84,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
 
-  private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
-    const unit = this.schoolNeedsForm?.get('unit')?.value;
-    if (unit === 'Others (pls. specify)' && (!control.value || control.value.trim() === '')) {
-      return { required: true };
-    }
-    return null;
-  }
 
   constructor(
     private readonly fb: FormBuilder,
@@ -111,17 +101,15 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
       schoolYear: [getSchoolYear(), [Validators.required]],
-      projectName: ['', [Validators.required]],
+      ppaName: ['', [Validators.required]],
       intermediateOutcome: ['', [Validators.required]],
       quantityNeeded: [0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
-      otherUnit: ['', [this.otherUnitValidator.bind(this)]],
       estimatedCost: [0, [Validators.required, Validators.min(0)]],
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(500)]],
-      images: [[]],
     });
   }
   queryData(): void {
@@ -191,32 +179,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.isSaving = true;
 
     try {
-      const uploadedImages = this.previewImages.length
-        ? await this.uploadImages('school-needs')
-        : [];
-
-      console.log(uploadedImages);
-
-      const hasImages = this.previewImages.length > 0;
-      const hasSuccessfulUploads = uploadedImages.length > 0;
-      const hasFailedUploads = hasImages && !hasSuccessfulUploads;
-
-      if (hasFailedUploads) {
-        this.isSaving = false;
-        this.showErrorNotification('All image uploads failed. Please check your images and try again.');
-        return;
-      }
-
-      // Show warning if some images failed but others succeeded
-      if (hasImages && uploadedImages.length < this.previewImages.length) {
-        const failedCount = this.previewImages.length - uploadedImages.length;
-        this.showErrorNotification(`${failedCount} image(s) failed to upload. The school need will be saved with ${uploadedImages.length} successful upload(s).`);
-      }
 
       const newNeed: SchoolNeed = {
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
         contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.schoolNeedsForm.get('projectName')?.value,
+        projectId: this.schoolNeedsForm.get('ppaName')?.value,
         quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
         unit: this.schoolNeedsForm.get('unit')?.value,
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
@@ -224,7 +191,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
         description: this.schoolNeedsForm.get('description')?.value,
         schoolId: this.authService.getSchoolId(),
-        images: uploadedImages,
+        images: [],
         targetDate: this.schoolNeedsForm.get('targetDate')?.value,
         schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
       };
@@ -234,7 +201,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           const currentSchoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
           this.schoolNeedsForm.reset();
           this.schoolNeedsForm.patchValue({ schoolYear: currentSchoolYear });
-          this.previewImages = [];
           this.queryData();
           this.isSaving = false;
           this.showSuccessNotification('School need saved successfully!');
@@ -458,15 +424,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     );
   }
 
-  protected onUnitChange(selectedUnit: string): void {
-    this.isOtherSelected = selectedUnit === 'Others (pls. specify)';
-    if (!this.isOtherSelected) {
-      this.schoolNeedsForm.get('otherUnit')?.reset();
-    }
-
-    // Trigger validation for otherUnit field
-    this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
-  }
 
   protected filterContributionTypes(value: string): void {
     const filterValue = value.toLowerCase();
@@ -548,135 +505,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected onFileSelected(event: Event): void {
-    const files = (event.target as HTMLInputElement).files;
-    if (!files) return;
 
-    // Check if adding new files would exceed the 5 image limit
-    const currentImageCount = this.previewImages.length;
-    const maxImages = 5;
 
-    if (currentImageCount >= maxImages) {
-      this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
-      (event.target as HTMLInputElement).value = '';
-      return;
-    }
-
-    const selectionSeen = new Set<string>();
-    let addedCount = 0;
-    const remainingSlots = maxImages - currentImageCount;
-
-    Array.from(files).forEach(file => {
-      // Stop if we've reached the limit
-      if (addedCount >= remainingSlots) {
-        console.warn('Image limit reached, skipping remaining files');
-        return;
-      }
-
-      if (!file.type.startsWith('image/') || file.size === 0) {
-        console.warn('Invalid image skipped:', file.name);
-        return;
-      }
-
-      const key = `${file.name}__${file.size}__${file.lastModified}`;
-
-      const alreadyAdded = this.previewImages.some(img =>
-        img?.file?.name === file.name &&
-        img?.file?.size === file.size &&
-        img?.file?.lastModified === file.lastModified
-      ) || selectionSeen.has(key);
-
-      if (alreadyAdded) {
-        console.warn('Duplicate image ignored:', file.name);
-        return;
-      }
-
-      selectionSeen.add(key);
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewImages.push({
-          file,
-          dataUrl: reader.result,
-          uploading: false,
-          progress: 0,
-        });
-        addedCount++;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    (event.target as HTMLInputElement).value = '';
-
-    // Show info message if some files were skipped due to limit
-    if (addedCount < Array.from(files).length) {
-      this.showErrorNotification(`Only ${addedCount} images were added. Maximum ${maxImages} images allowed.`);
-    }
-  }
-
-  removeImage(index: number) {
-    this.previewImages.splice(index, 1);
-  }
-
-  async uploadImages(category: string): Promise<any[]> {
-    const uploadRequests = this.previewImages.map(img => {
-      img.uploading = true;
-      img.progress = 0;
-      const formData = new FormData();
-      formData.append('file', img.file);
-      formData.append('category', category);
-
-      return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
-        map(response => {
-          img.uploading = false;
-          img.progress = 100;
-          return response;
-        }),
-        catchError(error => {
-          img.uploading = false;
-          img.progress = 0;
-
-          // Extract error message from backend response
-          let errorMessage = 'Failed to upload image';
-
-          // Check for backend error response in error.error (response body)
-          if (error?.error?.message) {
-            if (Array.isArray(error.error.message)) {
-              // Handle array of error messages from backend
-              errorMessage = error.error.message.join(', ');
-            } else if (typeof error.error.message === 'string') {
-              // Handle single error message from backend
-              errorMessage = error.error.message;
-            }
-          } else if (error?.error && typeof error.error === 'string') {
-            // Handle case where error.error is a string
-            errorMessage = error.error;
-          } else if (error?.message) {
-            // Fallback to generic error message
-            errorMessage = error.message;
-          } else if (typeof error === 'string') {
-            errorMessage = error;
-          }
-
-          // Show error message in snackbar
-          this.showErrorNotification(`Image upload failed: ${errorMessage}`);
-
-          // Return null for failed uploads
-          return of(null);
-        })
-      );
-    });
-
-    if (uploadRequests.length === 0) {
-      return [];
-    }
-
-    const results = await lastValueFrom(forkJoin(uploadRequests));
-
-    // Filter out failed uploads (null values)
-    const successfulUploads = results.filter(result => result !== null);
-
-    this.schoolNeedsForm.get('images')?.setValue(successfulUploads);
-    return successfulUploads;
-  }
 }
