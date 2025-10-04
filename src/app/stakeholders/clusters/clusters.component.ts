@@ -95,7 +95,7 @@ export class ClustersComponent implements OnInit {
         const uniqueClusters = [...new Set(allClusters)];
         
         this.clusterOptions = [
-          { value: '', label: 'All Clusters/Districts' },
+          { value: '', label: 'All Districts/Clusters' },
           ...uniqueClusters.map(cluster => ({
             value: cluster,
             label: cluster
@@ -106,7 +106,7 @@ export class ClustersComponent implements OnInit {
       console.error('Error loading cluster options:', error);
       // Fallback to empty options
       this.clusterOptions = [
-        { value: '', label: 'All Clusters/Districts' }
+        { value: '', label: 'All Districts/Clusters' }
       ];
     }
   }

@@ -24,7 +24,7 @@ ul {
 }
 
 .contact-image {
-  width: 250px; 
+  width: 300px; 
   height: auto; 
   border-radius: 20%; 
   margin: 0;
@@ -33,5 +33,6 @@ ul {
 .contact-details {
   font-family: Microsoft JhengHei;
   color: #333;
+  font-size: small;
   margin: 0;
 }
