@@ -1,9 +1,7 @@
 
 <div class="about-container">
   <h1>ABOUT US</h1>
-  <p>
-    School Needs Data System (SNDS) is the official online partnership engagement system of the Schools Division Office of General Santos City Division Social Mobilization and Networking Unit, located at Tiongson Street, Barangay Lagao, General Santos City. (see google map below).
-  </p>
+  <p>{{ aboutUs }}</p>
 
   <h2>What is School Needs Data System (SNDS)?</h2>
   <p>
@@ -36,16 +34,19 @@
   <p>
     Information published on our page is accurate and regularly updated. Should you wish to know more about us, you may contact us and we will be more than happy to discuss your queries.
   </p>
-  
+
   <div class="contact-info">
   <div class="contact-details">
     <p><strong>For more information, please don't hesitate to contact our Division Partnership Focal Person:</strong></p>
-        <img src="assets/gensanAdmin.jpeg" alt="Herven A. Allado" class="contact-image"/>
-      <p>
-      <strong>Email: <a href="mailto:depedgensan.smn@deped.gov.ph">depedgensan.smn&#64;deped.gov.ph</a></strong> <br>
-      <strong>Landline: (083) - 552-8909</strong> <br>
-      <strong>Mobile No.: 09324963007</strong>
-    </p>
+        <img [src]="image" [alt]="contactName" class="contact-image"/>
+      <div class="contact-person-info">
+        <h3 *ngIf="contactName">{{ contactName }}</h3>
+        <p *ngIf="contactTitle">{{ contactTitle }}</p>
+        <p *ngIf="contactAddress">{{ contactAddress }}</p>
+        <p *ngIf="email"><a [href]="'mailto:' + email">{{ email }}</a></p>
+        <p *ngIf="landline">Telephone Number: {{ landline }}</p>
+        <p *ngIf="mobile">Mobile Number: {{ mobile }}</p>
+      </div>
   </div>
 </div>
 </div>

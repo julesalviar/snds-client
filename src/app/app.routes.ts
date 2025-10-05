@@ -20,7 +20,7 @@ import {MyContributionComponent} from './stakeholders/my-contribution/my-contrib
 import {ClustersComponent} from './stakeholders/clusters/clusters.component';
 import {ChangePasswordComponent} from './navigation/change-password/change-password.component';
 import {FooterComponent} from './footer/footer.component';
-import {AboutUsComponent} from './navigation/about-us-gensan/about-us.component';
+import {AboutUsComponent} from './navigation/about-us/about-us.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -57,7 +57,7 @@ export const routes: Routes = [
 
   // School Admin routes
   {path: 'school-admin/reports', component: ReportsComponent},
-  {path: 'about-us-gensan', component: AboutUsComponent},
+  {path: 'about-us', component: AboutUsComponent},
   {
     path: 'school-admin',
     canActivateChild: [AuthGuard],
