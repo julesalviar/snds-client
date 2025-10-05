@@ -1,17 +1,17 @@
 import { Injectable } from "@angular/core";
 import {API_ENDPOINT} from "../api-endpoints";
-import {HttpClient} from "@angular/common/http";
+import {HttpService} from "./http.service";
 import {BaseReferenceDataService} from "./base-reference-data.service";
 
 @Injectable({ providedIn: 'root' })
-export class ReferenceDataService extends BaseReferenceDataService {
+export class InternalReferenceDataService extends BaseReferenceDataService {
   constructor(
-    private readonly http: HttpClient) {
+    private readonly http: HttpService) {
     super();
   }
 
   protected getEndpoint(): string {
-    return API_ENDPOINT.referenceData;
+    return API_ENDPOINT.internalReferenceData;
   }
 
   protected getHttpClient(): { get<T>(url: string): any } {
@@ -19,6 +19,6 @@ export class ReferenceDataService extends BaseReferenceDataService {
   }
 
   protected getErrorMessage(): string {
-    return 'Reference data failed';
+    return 'Internal reference data failed';
   }
 }
