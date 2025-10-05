@@ -49,7 +49,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   needCode: string | null = null;
   stakeholder: any = null;
   moaDate: Date | null = null;
-  quantityDonated: number | null = null;
+  quantity: number | null = null;
   unit: string = '';
   amount: number | null = null;
   startDate: Date | null = null;
@@ -60,8 +60,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   readonly STAKEHOLDER_LIMIT = 50; // Limit the number of stakeholders loaded
   units: string[] = [];
 
-  private searchSubject = new Subject<string>();
-  private destroy$ = new Subject<void>();
+  private readonly searchSubject = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -171,22 +171,15 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   saveEngagement(): void {
-    console.log('Stakeholder Name:', this.stakeholder);
-    console.log('MOA Date:', this.moaDate);
-    console.log('Quantity Donated:', this.quantityDonated);
-    console.log('Unit:', this.unit);
-    console.log('Amount:', this.amount);
-    console.log('Start Date:', this.startDate);
-    console.log('End Date:', this.endDate);
-
     if (this.needCode) {
       const engagementData = {
         stakeholderId: this.stakeholder._id,
         signingDate: this.moaDate,
-        unitMeasure: this.unit,
-        donatedAmount: this.amount,
+        unit: this.unit,
+        amount: this.amount,
         startDate: this.startDate,
-        endDate: this.endDate
+        endDate: this.endDate,
+        quantity: this.quantity,
       };
 
       this.schoolNeedService.engageSchoolNeed(this.needCode, engagementData)
@@ -213,7 +206,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   clearForm(): void {
     this.stakeholder = null;
     this.moaDate = null;
-    this.quantityDonated = null;
+    this.quantity = null;
     this.unit = '';
     this.amount = null;
     this.startDate = null;
