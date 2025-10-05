@@ -1,44 +1,53 @@
-
 <div class="about-container">
   <h1>ABOUT US</h1>
   <p>{{ aboutUs }}</p>
 
   <h2>What is School Needs Data System (SNDS)?</h2>
   <p>
-    ➢ It is a web-based partnership system that serves as an information hub reflecting all the needs of the schools/learning centers based on their respective Annual Improvement Plans (AIP).
+    ➢ It is a web-based partnership system that serves as an information hub reflecting all the needs of the
+    schools/learning centers based on their respective Annual Improvement Plans (AIP).
   </p>
 
   <h2>School Needs Data Goal</h2>
   <ul>
-    <li>Strengthen public-private partnerships to generate continuous support that is responsive to the needs of the learners.</li>
+    <li>Strengthen public-private partnerships to generate continuous support that is responsive to the needs of the
+      learners.</li>
   </ul>
 
   <h2>What does SNDS offer?</h2>
   <ul>
-    <li>Provide stakeholders with a clear picture of the educational needs of the schools, districts, and divisions (school needs menu is categorized into infra and infra and a special feature that profiles our senior high school learners).</li>
+    <li>Provide stakeholders with a clear picture of the educational needs of the schools, districts, and divisions
+      (school needs menu is categorized into infra and infra and a special feature that profiles our senior high school
+      learners).</li>
     <li>Makes partnership engagement easier.</li>
     <li>Facilitates purposive engagement.</li>
     <li>Facilitates equitable distribution of resources.</li>
-    <li>Track utilization of funds coming from School MOOE, School Canteen, School IGP, SPTA, BLGU, LGU, SEF, National Funded Programs & Projects, and other sources to support the accomplishment of the AIP.</li>
+    <li>Track utilization of funds coming from School MOOE, School Canteen, School IGP, SPTA, BLGU, LGU, SEF, National
+      Funded Programs & Projects, and other sources to support the accomplishment of the AIP.</li>
     <li>Monitor partnership initiatives entered into by public schools/LCs and their stakeholders.</li>
-    <li>Serves as a feedback mechanism between the school and stakeholders – (i.e., the status of the program & progress report).</li>
+    <li>Serves as a feedback mechanism between the school and stakeholders – (i.e., the status of the program & progress
+      report).</li>
     <li>Provides portal for our skilled senior high school graduates who are looking for work.</li>
     <li>Provides portal for our senior high school learners who are looking for work immersion venue.</li>
     <li>Consolidate stakeholders’ profiles.</li>
     <li>Consolidate generated resources at the school, district, & division level through partnership.</li>
     <li>Ensures that stakeholders are working along with the plans indicated in the AIP.</li>
-    <li>Provides relevant information for our program holders that aids in conducting Quality Assurance, Technical Assistance, & Monitoring & Evaluation.</li>
-    <li>Serves as a relevant tool for every program holder in tracking the implementation of their respective program in the school.</li>
+    <li>Provides relevant information for our program holders that aids in conducting Quality Assurance, Technical
+      Assistance, & Monitoring & Evaluation.</li>
+    <li>Serves as a relevant tool for every program holder in tracking the implementation of their respective program in
+      the school.</li>
   </ul>
 
   <p>
-    Information published on our page is accurate and regularly updated. Should you wish to know more about us, you may contact us and we will be more than happy to discuss your queries.
+    Information published on our page is accurate and regularly updated. Should you wish to know more about us, you may
+    contact us and we will be more than happy to discuss your queries.
   </p>
 
   <div class="contact-info">
-  <div class="contact-details">
-    <p><strong>For more information, please don't hesitate to contact our Division Partnership Focal Person:</strong></p>
-        <img [src]="image" [alt]="contactName" class="contact-image"/>
+    <div class="contact-details">
+      <p><strong>For more information, please don't hesitate to contact our Division Partnership Focal Person:</strong>
+      </p>
+      <img [src]="image" [alt]="contactName" class="contact-image" />
       <div class="contact-person-info">
         <h3 *ngIf="contactName">{{ contactName }}</h3>
         <p *ngIf="contactTitle">{{ contactTitle }}</p>
@@ -47,8 +56,20 @@
         <p *ngIf="landline">Telephone Number: {{ landline }}</p>
         <p *ngIf="mobile">Mobile Number: {{ mobile }}</p>
       </div>
+    </div>
+  </div>
+  <div class="map-section">
+    <h2>Our Location</h2>
+    <div class="map-container">
+      <iframe
+        [src]="mapUrl | safeUrl"
+        width="100%"
+        height="300"
+        style="border:0;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
   </div>
 </div>
-</div>
-
-

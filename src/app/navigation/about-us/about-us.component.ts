@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from "@angular/material/card";
 import { CommonModule } from '@angular/common';
 import { InternalReferenceDataService } from "../../common/services/internal-reference-data.service";
+import { SafeUrlPipe } from "../../common/pipes/safe-url.pipe";
 
 @Component({
   selector: 'app-about-us',
   standalone: true,
-  imports: [MatCardModule, CommonModule],
+  imports: [MatCardModule, CommonModule, SafeUrlPipe],
   templateUrl: './about-us.component.html',
   styleUrl: './about-us.component.css'
 })
@@ -19,6 +20,7 @@ export class AboutUsComponent implements OnInit {
   contactTitle: string = '';
   contactAddress: string = '';
   aboutUs: string = '';
+  mapUrl: string = '';
 
   constructor(
     private readonly internalReferenceDataService: InternalReferenceDataService
@@ -41,6 +43,7 @@ export class AboutUsComponent implements OnInit {
       this.contactName = aboutContent.contactName ?? '';
       this.contactTitle = aboutContent.contactTitle ?? '';
       this.contactAddress = aboutContent.contactAddress ?? '';
+      this.mapUrl = aboutContent.mapUrl ?? '';
     }
   }
 
