@@ -33,6 +33,7 @@ export const routes: Routes = [
   },
   {path: 'change-password', component: ChangePasswordComponent},
   {path: 'footer', component: FooterComponent},
+  {path: 'about-us', component: AboutUsComponent},
 
   {
     path: 'guest',
@@ -57,7 +58,6 @@ export const routes: Routes = [
 
   // School Admin routes
   {path: 'school-admin/reports', component: ReportsComponent},
-  {path: 'about-us', component: AboutUsComponent},
   {
     path: 'school-admin',
     canActivateChild: [AuthGuard],
@@ -81,7 +81,6 @@ export const routes: Routes = [
       {path: 'school-needs', component: DivisionAdminComponent},
       {path: 'all-schools', component: DivisionAdminComponent},
       {path: 'schools-by-district', component: DivisionAdminComponent},
-      {path: 'about-us', component: DivisionAdminComponent},
       {path: 'partners-support', component: DivisionAdminComponent},
       {path: 'reports', component: ReportsComponent}, //  Reports component
       {path: 'add-district', component: DivisionAdminComponent},
