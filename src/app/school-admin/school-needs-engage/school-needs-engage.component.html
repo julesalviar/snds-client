@@ -27,8 +27,8 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Quantity Donated Amount</mat-label>
-          <input matInput type="number" [(ngModel)]="quantityDonated" name="quantityDonated" required>
+          <mat-label>Quantity Donated</mat-label>
+          <input matInput type="number" [(ngModel)]="quantity" name="quantity" min="0" required>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
@@ -40,7 +40,7 @@
 
         <mat-form-field appearance="fill">
           <mat-label>Amount contribution or appraised value of item (do not put commas)</mat-label>
-          <input matInput type="number" [(ngModel)]="amount" name="amount" required>
+          <input matInput type="number" [(ngModel)]="amount" name="amount" min="0" required>
         </mat-form-field>
       </form>
     </mat-card-content>

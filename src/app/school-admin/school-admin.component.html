@@ -125,7 +125,7 @@
         <mat-label>PPA Description/Information</mat-label>
         <textarea matInput formControlName="description"></textarea>
         <mat-error *ngIf="schoolNeedsForm.get('description')?.invalid && schoolNeedsForm.get('description')?.touched">
-          Description must be 500 characters or less
+          PPA Description/Information must not exceed 500 characters
         </mat-error>
       </mat-form-field>
 
