@@ -124,6 +124,21 @@
           </mat-error>
         </mat-form-field>
 
+         <mat-form-field appearance="fill">
+          <mat-label>Accountable Person</mat-label>
+          <textarea matInput formControlName="accountablePerson"></textarea>
+          <mat-error *ngIf="schoolNeedsForm.get('accountablePerson')?.invalid && schoolNeedsForm.get('accountablePerson')?.touched">
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Contact Number</mat-label>
+          <textarea matInput formControlName="contactNumber"></textarea>
+          <mat-error *ngIf="schoolNeedsForm.get('contactNumber')?.invalid && schoolNeedsForm.get('contactNumber')?.touched">
+          </mat-error>
+        </mat-form-field>
+
+
         <mat-form-field appearance="fill">
           <mat-label>Target Date of Implementation</mat-label>
           <input matInput [matDatepicker]="picker" formControlName="targetDate">

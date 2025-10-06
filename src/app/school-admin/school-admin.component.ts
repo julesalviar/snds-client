@@ -30,7 +30,6 @@ import {ReferenceDataService} from "../common/services/reference-data.service";
 import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
 
-
 @Component({
   selector: 'app-school-admin',
   standalone: true,
@@ -110,8 +109,17 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(500), Validators.required]],
+      accountablePerson: ['', [Validators.required]],
+      contactNumber: ['', [Validators.required, this.phoneNumberValidator]],
     });
   }
+   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    //check if the value is a valid phone number format
+    const isValidPhoneNumber = /^[0-9]{11}$/.test(value); 
+
+    return isValidPhoneNumber ? null : { invalidPhoneNumber: true };
+   }
   queryData(): void {
     this.pageIndex = 0; // Reset to first page when changing school year
     this.loadAllSchoolNeeds();
@@ -164,6 +172,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
+
     // Validate specific contribution
     const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
     if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
@@ -176,6 +185,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
+    
     this.isSaving = true;
 
     try {
@@ -189,6 +199,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
         studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
         personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+        accountablePerson: this.schoolNeedsForm.get('accountablePerson')?.value,
+        contactNumber: this.schoolNeedsForm.get('contactNumber')?.value,
         description: this.schoolNeedsForm.get('description')?.value,
         schoolId: this.authService.getSchoolId(),
         images: [],
@@ -261,8 +273,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     console.log('Viewing responses for:', need);
 
   }
-  editNeed(need: any): void {
-    this.router.navigate(['/school-admin/school-needs', need.code]);
+  editNeed(need: SchoolNeed): void {
+    this.router.navigate(['/school-admin/school-need', need.code]);
   }
 
   onImageError(event: any): void {

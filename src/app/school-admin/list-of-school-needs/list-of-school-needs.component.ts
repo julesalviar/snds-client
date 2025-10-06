@@ -14,7 +14,7 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {SchoolNeed} from "../../common/model/school-need.model"
 import {SchoolNeedService} from "../../common/services/school-need.service";
-
+import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.component';
 
 @Component({
   selector: 'app-list-of-school-needs',
@@ -56,6 +56,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   isLoading: boolean = true;
+  schoolneedsview = SchoolNeedViewComponent;
 
   constructor(
     private readonly sharedDataService: SharedDataService,
@@ -114,10 +115,10 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     });
   }
   view(need: SchoolNeed): void {
-    this.router.navigate(['/school-admin/school-need/', need.code]);
-  }
-
+  this.router.navigate(['/school-admin/school-need-view/', need.code]);
+}
   edit(need: SchoolNeed): void {
+     console.log('Navigating to:', `/school-admin/school-need/${need.code}`);
     this.router.navigate(['/school-admin/school-need/', need.code]);
   }
 
