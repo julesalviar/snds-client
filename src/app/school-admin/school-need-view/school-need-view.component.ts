@@ -1,66 +1,100 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import {Subject, takeUntil} from "rxjs";
+import {SchoolNeedService} from "../../common/services/school-need.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {SchoolNeed} from "../../common/model/school-need.model";
+import {DecimalPipe} from "@angular/common";
 @Component({
   selector: 'app-school-need-view',
   standalone: true,
-   imports: [
+  imports: [
     MatCardModule,
-    MatIconModule, 
+    MatIconModule,
     MatButtonModule,
     MatTableModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    DecimalPipe
 
-  ] ,
+  ],
   templateUrl: './school-need-view.component.html',
   styleUrls: ['./school-need-view.component.css']
- 
+
 })
-export class SchoolNeedViewComponent implements OnInit {
+export class SchoolNeedViewComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  schoolNeed: SchoolNeed | null = null;
   code: string | null = null;
-  
-  // Properties for school information
-  schoolName = 'NATIONAL HIGH SCHOOL';
-  category = 'Infrastructure';
-  schoolNeeds = 'Chairs';
-  quantity = 2;
-  estimatedAmount = '₱500,000';
-  noOfBeneficiaryStudents = 30;
-  noOfBeneficiaryPersonnel = 5;
-  implementationDate = '2025-10-30';
-  accountablePerson = 'John John';
-  contactNumber = '(083) 552-8909';
-  
-  progressValue = 40; // Example progress value (from 10% to 100%)
-  
-  // Project description
-  projectDescription = 'For accessible coordination of inquiries for our beloved learners in need of assistance.';
-  
-  // Stakeholders data
-  stakeholders = [
-    { name: 'PACIFIC BOARD - DEPT. FOUNDATION, INC.', quantity: 1, amount: '₱15,000' },
-    { name: 'SAMPLE PRIVATE ORG.', quantity: 1, amount: '₱45,000' },
-  ];
+  isLoading: boolean = true;
+
+  progressValue = 0; // Example progress value (from 10% to 100%)
 
   // Columns for the stakeholder table
   displayedColumns: string[] = ['contributor', 'quantity', 'amount', 'action'];
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly schoolNeedService: SchoolNeedService,
+    private readonly snackBar: MatSnackBar,
+    private readonly router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.code = this.route.snapshot.paramMap.get('code');
     console.log('View component code:', this.code);
+
+    if (this.code) {
+      this.loadSchoolNeed(this.code);
+    } else {
+      this.showErrorNotification('School need code not provided');
+      this.router.navigate(['/school-admin/school-needs']);
+    }
   }
 
-  // delete a stakeholder
-  deleteStakeholder(element: any) {
-    const index = this.stakeholders.indexOf(element);
-    if (index >= 0) {
-      this.stakeholders.splice(index, 1);
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadSchoolNeed(needCode: string): void {
+    this.schoolNeedService.getSchoolNeedByCode(needCode).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (need) => {
+        console.log('Received school need data:', need);
+        this.schoolNeed = need;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching school need:', err);
+        this.showErrorNotification('Failed to load school need');
+        this.router.navigate(['/school-admin/school-needs']);
+      }
+    });
+  }
+
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  deleteStakeholder() {
+    
   }
 }
