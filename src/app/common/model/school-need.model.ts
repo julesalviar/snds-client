@@ -40,8 +40,6 @@ export interface SchoolNeed {
   schoolYear?: string;
   createdAt?: string;
   updatedAt?: string;
-  accountablePerson?: string;
-  contactNumber?: string;
 
   projectId: ProjectInfo | string;
   schoolId: SchoolInfo | string;

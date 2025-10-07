@@ -109,8 +109,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(500), Validators.required]],
-      accountablePerson: ['', [Validators.required]],
-      contactNumber: ['', [Validators.required, this.phoneNumberValidator]],
+     
     });
   }
    phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
@@ -199,8 +198,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
         studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
         personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-        accountablePerson: this.schoolNeedsForm.get('accountablePerson')?.value,
-        contactNumber: this.schoolNeedsForm.get('contactNumber')?.value,
+        
         description: this.schoolNeedsForm.get('description')?.value,
         schoolId: this.authService.getSchoolId(),
         images: [],
