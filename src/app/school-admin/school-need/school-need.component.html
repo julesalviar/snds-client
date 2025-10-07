@@ -124,16 +124,7 @@
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Target Date of Implementation</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="targetDate">
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-          <mat-error *ngIf="schoolNeedsForm.get('targetDate')?.invalid && schoolNeedsForm.get('targetDate')?.touched">
-            Target Date is required
-          </mat-error>
-        </mat-form-field>
-
+         
         <mat-form-field appearance="fill">
           <mat-label>Description / Other Info</mat-label>
           <textarea matInput formControlName="description"></textarea>

@@ -95,10 +95,10 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       schoolYear: [getSchoolYear(), [Validators.required]],
       projectName: ['', [Validators.required]],
       intermediateOutcome: [''], // Readonly field, populated from project.pillars
-      quantityNeeded: [0, [Validators.required, Validators.min(1)]],
+      quantityNeeded: [ 0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
       otherUnit: ['', [this.otherUnitValidator.bind(this)]],
-      estimatedCost: [0, [Validators.required, Validators.min(0)]],
+      estimatedCost: [ 0,[Validators.required, Validators.min(0)]],
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],

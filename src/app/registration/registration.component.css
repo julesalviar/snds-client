@@ -205,17 +205,12 @@ mat-radio-button {
 }
 
 button {
-  background-color: #439347;  
-  color: white;  
+  color: Green;  
   border: none;  
   border-radius: 5px;  
   padding: 10px;  
   cursor: pointer;  
   transition: background-color 0.3s;  
-}
-
-button:hover {
-  background-color: #367e36;  
 }
 
 mat-card {

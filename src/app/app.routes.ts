@@ -21,6 +21,7 @@ import {ClustersComponent} from './stakeholders/clusters/clusters.component';
 import {ChangePasswordComponent} from './navigation/change-password/change-password.component';
 import {FooterComponent} from './footer/footer.component';
 import {AboutUsComponent} from './navigation/about-us/about-us.component';
+import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-need-view.component";
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -70,7 +71,8 @@ export const routes: Routes = [
       {path: 'spfp', component: SchoolAdminComponent},
       {path: 'school-needs-engage/:code', component: SchoolNeedsEngageComponent},
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
-      {path: 'school-needs/:code', component: SchoolNeedComponent},
+      {path: 'school-need/:code', component: SchoolNeedComponent},
+      {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
     ]
   },
 
