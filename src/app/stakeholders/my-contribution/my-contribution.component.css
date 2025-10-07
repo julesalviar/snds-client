@@ -14,6 +14,29 @@ mat-card-title {
   color: #45a049;
 }
 
+/* Filter section styling */
+.filter-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: rgba(245, 245, 245, 0.7);
+  border-radius: 6px;
+}
+
+.filter-field {
+  width: 250px;
+  margin-right: 15px;
+}
+
+.filter-field ::ng-deep .mat-mdc-form-field-focus-overlay {
+  background-color: transparent;
+}
+
+.filter-field ::ng-deep .mat-mdc-text-field-wrapper {
+  background-color: white;
+}
+
 .mat-elevation-z8 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
@@ -206,6 +229,10 @@ mat-icon {
     font-size: 18px;
   }
 
+  .filter-field {
+    width: 200px;
+  }
+
   .table-container {
     margin: 5px 0;
   }
@@ -225,6 +252,17 @@ mat-icon {
 
   mat-card-title {
     font-size: 16px;
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-field {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
   }
 
   .table-scroll {

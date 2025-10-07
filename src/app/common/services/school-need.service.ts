@@ -11,19 +11,19 @@ export class SchoolNeedService {
 
   getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string, schoolId?: string): Observable<any> {
     let url = `${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}`;
-    
+
     if (schoolYear) {
       url += `&schoolYear=${schoolYear}`;
     }
-    
+
     if (specificContribution) {
       url += `&specificContribution=${encodeURIComponent(specificContribution)}`;
     }
-    
+
     if (schoolId) {
       url += `&schoolId=${schoolId}`;
     }
-    
+
     return this.httpService.get<any>(url).pipe(
       catchError(this.httpService.handleError)
     )
@@ -48,8 +48,8 @@ export class SchoolNeedService {
     );
   }
 
-  engageSchoolNeed(code: string, engagementData: any): Observable<any> {
-    return this.httpService.patch(`${API_ENDPOINT.schoolNeed}/${code}/engage`, engagementData).pipe(
+  engageSchoolNeed(engagementData: any): Observable<any> {
+    return this.httpService.post(`${API_ENDPOINT.engagements}`, engagementData).pipe(
       catchError(this.httpService.handleError)
     );
   }

@@ -173,16 +173,17 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   saveEngagement(): void {
     if (this.needCode) {
       const engagementData = {
-        stakeholderId: this.stakeholder._id,
+        stakeholderUserId: this.stakeholder._id,
         signingDate: this.moaDate,
         unit: this.unit,
         amount: this.amount,
         startDate: this.startDate,
         endDate: this.endDate,
         quantity: this.quantity,
+        schoolNeedCode: +this.needCode,
       };
 
-      this.schoolNeedService.engageSchoolNeed(this.needCode, engagementData)
+      this.schoolNeedService.engageSchoolNeed(engagementData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {
