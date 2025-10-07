@@ -1,6 +1,18 @@
 <mat-card>
   <mat-card-title class="title">My Contributions</mat-card-title>
-  
+
+  <!-- Filter Section -->
+  <div class="filter-container">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Filter by School Year</mat-label>
+      <mat-select [(value)]="selectedSchoolYear" (selectionChange)="onSchoolYearChange($event.value)">
+        <mat-option *ngFor="let year of schoolYears" [value]="year">
+          {{ year }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
   <div class="table-scroll">
     <div class="table-container">
       <!-- Loading State -->
@@ -12,7 +24,7 @@
       <!-- Error State -->
       <div *ngIf="error" class="error-container">
         <p>{{ error }}</p>
-        <button mat-button (click)="loadMyContributions()">Retry</button>
+        <button mat-button (click)="loadMyContributions(selectedSchoolYear)">Retry</button>
       </div>
 
       <!-- Data Table -->
@@ -28,9 +40,14 @@
           <td mat-cell *matCellDef="let element"> {{element.schoolName}} </td>
         </ng-container>
 
-        <ng-container matColumnDef="engaged">
-          <th mat-header-cell *matHeaderCellDef> Engaged </th>
-          <td mat-cell *matCellDef="let element"> {{element.engaged | date:'yyyy/MM/dd'}} </td>
+        <ng-container matColumnDef="schoolYear">
+          <th mat-header-cell *matHeaderCellDef> School Year </th>
+          <td mat-cell *matCellDef="let element"> {{element.schoolYear}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef> Quantity </th>
+          <td mat-cell *matCellDef="let element"> {{element.quantity}} </td>
         </ng-container>
 
         <ng-container matColumnDef="amount">
@@ -38,21 +55,9 @@
           <td mat-cell *matCellDef="let element"> {{element.amount | currency: 'PHP':'symbol': '1.2-2'}} </td>
         </ng-container>
 
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef> Status </th>
-          <td mat-cell *matCellDef="let element">
-            <div class="status-indicator" [ngClass]="'status-' + element.status.toLowerCase().replace(' ', '-')">
-              <mat-icon *ngIf="element.status === 'Completed'" class="status-icon completed">check_circle</mat-icon>
-              <mat-icon *ngIf="element.status === 'Pending'" class="status-icon pending">schedule</mat-icon>
-              <mat-icon *ngIf="element.status === 'In Progress'" class="status-icon in-progress">hourglass_empty</mat-icon>
-              <span class="status-text">{{element.status}}</span>
-            </div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="movs">
-          <th mat-header-cell *matHeaderCellDef> MOVs </th>
-          <td mat-cell *matCellDef="let element"> {{element.movs}} </td>
+        <ng-container matColumnDef="engagements">
+          <th mat-header-cell *matHeaderCellDef> Engagement </th>
+          <td mat-cell *matCellDef="let element"> {{element.engagements}} </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

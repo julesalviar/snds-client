@@ -1,12 +1,3 @@
-export interface MyContributionEngagement {
-  stakeholderId: string;
-  signingDate: string;
-  unitMeasure: string;
-  donatedAmount: number;
-  startDate: string;
-  endDate: string;
-}
-
 export interface SchoolInfo {
   _id: string;
   division: string;
@@ -15,24 +6,18 @@ export interface SchoolInfo {
 }
 
 export interface MyContribution {
-  _id: string;
+  totalAmount: number;
+  totalQuantity: number;
+  engagementCount: number;
+  engagementDates: string;
+  specificContribution: string;
+  schoolYear: string;
   schoolId: SchoolInfo;
-  code: number;
-  description: string;
-  myEngagements: MyContributionEngagement[];
-}
-
-export interface MyContributionSummary {
-  totalDonatedAmt: number;
-  numberOfSchools: number;
 }
 
 export interface MyContributionMeta {
-  summary: MyContributionSummary;
   count: number;
-  totalItems: number;
-  currentPage: number;
-  totalPages: number;
+  timestamp: string;
 }
 
 export interface MyContributionsResponse {

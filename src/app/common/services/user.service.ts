@@ -94,16 +94,4 @@ export class UserService {
         catchError(this.httpService.handleError)
       );
   }
-
-  getMyContributions(): Observable<MyContributionsResponse> {
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      throw new Error('User ID not found');
-    }
-    
-    const url = `${API_ENDPOINT.users}/${userId}/my-contributions`;
-    return this.httpService.get<MyContributionsResponse>(url).pipe(
-      catchError(this.httpService.handleError)
-    );
-  }
 }
