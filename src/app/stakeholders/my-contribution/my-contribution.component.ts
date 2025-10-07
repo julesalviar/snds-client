@@ -1,49 +1,57 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTableDataSource, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatHeaderRow, MatHeaderRowDef, MatRowDef } from '@angular/material/table'; 
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatHeaderRow, MatHeaderRowDef, MatRowDef } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { UserService } from '../../common/services/user.service';
-import { MyContribution, MyContributionEngagement } from '../../common/model/my-contribution.model';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MyContribution } from '../../common/model/my-contribution.model';
+import {EngagementService} from "../../common/services/engagement.service";
+import {getSchoolYear} from "../../common/date-utils";
 @Component({
   selector: 'app-my-contribution',
   standalone: true,
   templateUrl: './my-contribution.component.html',
   styleUrls: ['./my-contribution.component.css'],
-  imports: [CommonModule, 
-    MatHeaderCellDef, 
+  imports: [CommonModule,
+    MatHeaderCellDef,
     MatHeaderCell,
-    MatCellDef, 
+    MatCellDef,
     MatHeaderRow,
-    MatHeaderRowDef, 
+    MatHeaderRowDef,
     MatRowDef,
     MatTableModule,
     MatButtonModule,
     MatCard,
     MatCardTitle,
     MatIcon,
-    MatProgressBarModule]
+    MatProgressBarModule,
+    MatSelectModule,
+    MatFormFieldModule]
 })
 export class MyContributionComponent implements OnInit {
-  displayedColumns: string[] = ['need', 'schoolName', 'engaged', 'amount', 'status', 'movs'];
+  displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements'];
   dataSource = new MatTableDataSource<Contribution>([]);
+  schoolYears: string[] = [];
+  selectedSchoolYear: string = getSchoolYear();
   loading = false;
   error: string | null = null;
 
-  constructor(private userService: UserService) {}
-
-  ngOnInit(): void {
-    this.loadMyContributions();
+  constructor(private readonly engagementService: EngagementService) {
+    this.schoolYears = this.generateSchoolYears();
   }
 
-  loadMyContributions(): void {
+  ngOnInit(): void {
+    this.loadMyContributions(this.selectedSchoolYear);
+  }
+
+  loadMyContributions(schoolYear?: string): void {
     this.loading = true;
     this.error = null;
-    
-    this.userService.getMyContributions().subscribe({
+
+    this.engagementService.getMyContributions(schoolYear).subscribe({
       next: (response) => {
         const contributions = this.transformContributionsData(response.data);
         this.dataSource.data = contributions;
@@ -57,50 +65,64 @@ export class MyContributionComponent implements OnInit {
     });
   }
 
-  private transformContributionsData(myContributions: MyContribution[]): Contribution[] {
-    const contributions: Contribution[] = [];
+  private generateSchoolYears(): string[] {
+    const currentSchoolYear = getSchoolYear();
+    const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
+    const years: string[] = [];
     
-    myContributions.forEach(contribution => {
-      contribution.myEngagements.forEach(engagement => {
-        contributions.push({
-          need: contribution.description,
-          schoolName: contribution.schoolId.schoolName,
-          engaged: new Date(engagement.signingDate),
-          amount: engagement.donatedAmount,
-          status: this.getEngagementStatus(engagement),
-          movs: this.getEngagementMovs(engagement)
-        });
-      });
+    // Generate from 2015-2016 to current school year
+    for (let year = currentStartYear; year >= 2015; year--) {
+      years.push(`${year}-${year + 1}`);
+    }
+    
+    return years;
+  }
+
+  onSchoolYearChange(schoolYear: string): void {
+    this.selectedSchoolYear = schoolYear;
+    this.loadMyContributions(schoolYear);
+  }
+
+  private transformContributionsData(myContributions: MyContribution[]): Contribution[] {
+    return myContributions.map(contribution => ({
+      need: contribution.specificContribution,
+      schoolName: contribution.schoolId.schoolName,
+      schoolYear: contribution.schoolYear,
+      quantity: contribution.totalQuantity,
+      amount: contribution.totalAmount,
+      engagements: this.formatEngagementDates(contribution.engagementDates)
+    }));
+  }
+
+  private formatEngagementDates(engagementDates: string): string {
+    if (!engagementDates) return '';
+    
+    // Split by comma and trim whitespace
+    const dates = engagementDates.split(',').map(date => date.trim());
+    
+    // Format each date to short date (MM/dd/yyyy)
+    const formattedDates = dates.map(dateStr => {
+      const date = new Date(dateStr);
+      // Check if date is valid
+      if (isNaN(date.getTime())) return dateStr;
+      
+      // Format as MM/dd/yyyy
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${month}/${day}/${year}`;
     });
     
-    return contributions;
-  }
-
-  private getEngagementStatus(engagement: MyContributionEngagement): string {
-    const now = new Date();
-    const startDate = new Date(engagement.startDate);
-    const endDate = new Date(engagement.endDate);
-    
-    if (now < startDate) {
-      return 'Pending';
-    } else if (now >= startDate && now <= endDate) {
-      return 'In Progress';
-    } else {
-      return 'Completed';
-    }
-  }
-
-  private getEngagementMovs(engagement: MyContributionEngagement): string {
-    // For now, return a placeholder. This could be enhanced based on actual MOVs data
-    return `Receipt #${engagement.stakeholderId.slice(-4)}`;
+    return formattedDates.join(', ');
   }
 }
 
 interface Contribution {
   need: string;
   schoolName: string;
-  engaged: Date;
+  schoolYear: string;
+  quantity: number;
   amount: number;
-  status: string;
-  movs: string;
+  engagements: string;
 }
