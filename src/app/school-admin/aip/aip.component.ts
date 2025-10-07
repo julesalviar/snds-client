@@ -18,6 +18,7 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {Aip} from "../../common/model/aip.model";
 import {getSchoolYear} from "../../common/date-utils";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-aip',
@@ -42,7 +43,8 @@ export class AipComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     protected dialog: MatDialog,
-    private readonly aipService: AipService) {
+    private readonly aipService: AipService,
+    private readonly snackBar: MatSnackBar) {
     this.aipForm = this.fb.group({
       schoolYear: [getSchoolYear(), Validators.required],
       title: ['', Validators.required],
@@ -77,8 +79,32 @@ export class AipComponent implements OnInit {
           this.aipForm.markAsPristine();
           this.aipForm.markAsUntouched();
           this.loadAips();
+          this.showSuccessNotification('AIP project saved successfully!');
         },
-        error: (err) => { console.log('Component caught error:', err); }
+        error: (err) => {
+          console.error('Error creating AIP project:', err);
+
+          let errorMessage = 'Failed to save AIP project. Please try again.';
+
+          if (err?.error?.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMessage = err.error.message.join('\n• ');
+              if (err.error.message.length > 1) {
+                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+              }
+            } else if (typeof err.error.message === 'string') {
+              errorMessage = err.error.message;
+            }
+          } else if (err?.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
+          }
+
+          this.showErrorNotification(errorMessage);
+        }
       });
     }
   }
@@ -118,6 +144,27 @@ export class AipComponent implements OnInit {
       error: (err) => {
         console.error('Error fetching AIP projects:', err);
         this.isLoading = false;
+
+        let errorMessage = 'Failed to load AIP projects. Please try again.';
+
+        if (err?.error?.message) {
+          if (Array.isArray(err.error.message)) {
+            errorMessage = err.error.message.join('\n• ');
+            if (err.error.message.length > 1) {
+              errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+            }
+          } else if (typeof err.error.message === 'string') {
+            errorMessage = err.error.message;
+          }
+        } else if (err?.error && typeof err.error === 'string') {
+          errorMessage = err.error;
+        } else if (err?.message) {
+          errorMessage = err.message;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+
+        this.showErrorNotification(errorMessage);
       }
     });
   }
@@ -128,5 +175,24 @@ export class AipComponent implements OnInit {
     this.loadAips();
   }
 
+  private showErrorNotification(message: string): void {
+    const duration = message.includes('\n') ? 8000 : 5000;
+
+    this.snackBar.open(message, 'Close', {
+      duration: duration,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
 
 }
