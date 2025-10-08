@@ -5,6 +5,7 @@ import { MatIcon } from '@angular/material/icon';
 import {MatMenu, MatMenuModule} from '@angular/material/menu';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SharedDataService } from '../../common/services/shared-data.service';
 import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -65,6 +66,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     private readonly router: Router,
     private readonly dialog: MatDialog,
     private readonly schoolNeedService: SchoolNeedService,
+    private readonly snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -157,6 +159,14 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     
     // Collapse the feedback buttons after selection
     this.expandedRowId = null;
+    
+    // Show work in progress alert
+    this.snackBar.open('Feedback feature is work in progress', 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['info-snackbar']
+    });
     
     // TODO: Send feedback to backend API
     console.log('Feedback submitted:', {

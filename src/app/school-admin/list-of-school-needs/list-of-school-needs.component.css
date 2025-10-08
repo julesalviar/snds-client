@@ -346,6 +346,16 @@ mat-icon {
   color: #666;
 }
 
+/* Snackbar styles */
+::ng-deep .info-snackbar {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+::ng-deep .info-snackbar .mat-mdc-button {
+  color: white !important;
+}
+
 /* Feedback container styling */
 .feedback-container {
   position: relative;
