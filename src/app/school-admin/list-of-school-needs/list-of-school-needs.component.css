@@ -6,6 +6,8 @@ mat-card {
   border-color: green;
   border: 1px solid;
   background-color: rgba(255, 255, 255, 0.5);
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 mat-card-title {
@@ -62,16 +64,15 @@ span {
 }
 
 .table-container {
-  overflow-x: auto;
-  margin: 10px 0;
-}
-
-.table-container {
-  min-width: 950px;
+  width: max-content;
+  min-width: 100%;
+  position: relative;
+  display: block;
 }
 
 table {
   width: 100%;
+  min-width: 1200px;
   border-collapse: collapse;
 }
 
@@ -79,6 +80,29 @@ table {
   padding: 16px;
   text-align: left;
   border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+/* Allow badge to overflow in engaged column */
+.mat-column-engaged {
+  overflow: visible !important;
+  position: relative;
+}
+
+.mat-column-engaged .mat-header-cell,
+.mat-column-engaged .mat-cell {
+  overflow: visible !important;
+  position: relative;
+}
+
+.mat-column-engaged button {
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Adjust badge position in engaged column */
+.mat-column-engaged button ::ng-deep .mat-badge-content {
+  transform: translate(-6px, 6px) !important;
 }
 
 tr:hover {
@@ -87,14 +111,14 @@ tr:hover {
 }
 .table-scroll {
   overflow-x: auto;
-  margin-top: 15px;
+  overflow-y: visible;
+  margin: 0 -20px;
   background-color: green;
   border-radius: 6px;
   padding: 2px;
-}
-.table-scroll {
-  overflow-x: auto;
-  margin: 5px 0;
+  -webkit-overflow-scrolling: touch;
+  width: calc(100% + 40px);
+  display: block;
 }
 mat-icon {
   color: #45a049;
@@ -127,6 +151,13 @@ td.mat-cell button {
     width: 95%;
     margin: 10px auto;
     padding: 15px;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .table-scroll {
+    margin: 0 -15px;
+    width: calc(100% + 30px);
   }
 
   mat-card-title {
@@ -158,9 +189,16 @@ td.mat-cell button {
 
 @media (max-width: 767px) {
   mat-card {
-    width: 100%;
+    width: calc(100% - 10px);
     margin: 5px;
     padding: 10px;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .table-scroll {
+    margin: 0 -10px;
+    width: calc(100% + 20px);
   }
 
   mat-card-title {
@@ -210,8 +248,8 @@ td.mat-cell button {
     margin: 5px 0;
   }
 
-  .table-container {
-    min-width: 800px;
+  table {
+    min-width: 1000px;
   }
 
   .mat-header-cell, .mat-cell {
@@ -221,17 +259,26 @@ td.mat-cell button {
 }
 
 @media (max-width: 435px) {
-  .table-scroll {
-    margin: 5px 0;
+  mat-card {
+    width: calc(100% - 10px);
+    margin: 5px;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
-  .table-container {
-    min-width: 950px;
+  .table-scroll {
+    margin: 0 -8px;
+    width: calc(100% + 16px);
+  }
+
+  table {
+    min-width: 900px;
   }
 
   .mat-header-cell, .mat-cell {
-    font-size: 12px;
-    padding: 8px;
+    font-size: 11px;
+    padding: 6px;
   }
 }
 
@@ -368,17 +415,11 @@ mat-icon {
   width: 100%;
 }
 
-/* Ensure table cells allow overflow */
-.mat-cell {
-  overflow: visible !important;
-  position: relative;
-}
-
+/* Ensure specific cells and rows allow overflow for badges/popups */
 .mat-row {
   overflow: visible !important;
 }
 
-/* Table container overflow */
 .mat-table {
   overflow: visible !important;
 }
@@ -398,13 +439,10 @@ table {
   position: relative;
 }
 
-/* Table wrapper overflow */
-.table-container {
+/* Ensure feedback column allows overflow for popup */
+.mat-column-feedback {
   overflow: visible !important;
-}
-
-.table-scroll {
-  overflow: visible !important;
+  position: relative;
 }
 
 /* Feedback trigger button (collapsed state) */
