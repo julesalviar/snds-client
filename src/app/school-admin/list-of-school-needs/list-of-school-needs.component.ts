@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import {MatMenu, MatMenuModule} from '@angular/material/menu';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatBadgeModule } from '@angular/material/badge';
 import { SharedDataService } from '../../common/services/shared-data.service';
 import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,7 +34,8 @@ import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.co
     MatButton,
     MatIconButton,
     MatPaginator,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatBadgeModule
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css']
@@ -41,6 +43,7 @@ import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.co
 export class ListOfSchoolNeedsComponent implements OnInit {
   displayedColumns: string[] = [
     'code',
+    'engaged',
     'year',
     'specificContribution',
     'quantity',
@@ -58,7 +61,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   isLoading: boolean = true;
-  schoolneedsview = SchoolNeedViewComponent;
   expandedRowId: string | null = null;
 
   constructor(
@@ -73,26 +75,8 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     this.loadSchoolNeeds();
   }
 
-  openStatusDialog(need: SchoolNeed): void {
-    const dialogRef = this.dialog.open(ImplementationStatusDialogComponent, {
-      data: {
-        implementationStatus: need.implementationStatus,
-        schoolName: this.schoolName // Pass the school name
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('Dialog closed with result:', result);
-    });
-  }
-
   navigateToEngage(code: string): void {
     this.router.navigate(['/school-admin/school-needs-engage', code]);
-  }
-
-  engage(need: SchoolNeed): void {
-    need.engaged = true; // Mark as engaged locally
-    console.log('Engaging with:', need);
   }
 
   progress(need: SchoolNeed): void {
@@ -103,7 +87,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
         code: need.code,
         engaged: need.engaged,
         specificContribution:need.specificContribution,
-
       }
     });
 
@@ -139,7 +122,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize).subscribe({
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, undefined, undefined, true).subscribe({
       next: (response) => {
         this.schoolName = response.school?.schoolName;
         this.dataSource.data = response.data;
@@ -154,27 +137,23 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   }
 
   onFeedbackClick(need: SchoolNeed, feedbackValue: string): void {
-    // Update the feedback value for this school need
     (need as any).feedback = feedbackValue;
-    
-    // Collapse the feedback buttons after selection
+
     this.expandedRowId = null;
-    
-    // Show work in progress alert
+
     this.snackBar.open('Feedback feature is work in progress', 'Close', {
       duration: 3000,
       horizontalPosition: 'center',
       verticalPosition: 'top',
       panelClass: ['info-snackbar']
     });
-    
+
     // TODO: Send feedback to backend API
     console.log('Feedback submitted:', {
       need: need,
       feedback: feedbackValue
     });
-    
-    // You can add a service call here to save the feedback
+
     // this.schoolNeedService.submitFeedback(need.code, feedbackValue).subscribe(...);
   }
 
@@ -187,7 +166,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   toggleFeedbackExpansion(need: SchoolNeed): void {
     // Toggle on click for both desktop and mobile
     const rowId = this.getRowId(need);
-    
+
     if (this.expandedRowId === rowId) {
       this.expandedRowId = null;
     } else {
@@ -226,5 +205,34 @@ export class ListOfSchoolNeedsComponent implements OnInit {
       'very-satisfied': 'Very Satisfied'
     };
     return labelMap[feedback] || '';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    // If no popup is open, do nothing
+    if (!this.expandedRowId) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+
+    // Check if the click is outside the feedback popup and feedback trigger button
+    const clickedInsidePopup = target.closest('.feedback-popup');
+    const clickedInsideTrigger = target.closest('.feedback-trigger');
+
+    // If clicked outside both popup and trigger, close the popup
+    if (!clickedInsidePopup && !clickedInsideTrigger) {
+      this.expandedRowId = null;
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent): void {
+    // If a popup is open, close it when ESC is pressed
+    if (this.expandedRowId) {
+      this.expandedRowId = null;
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 }
