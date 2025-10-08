@@ -83,7 +83,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
 
-
   constructor(
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
@@ -108,14 +107,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
-      description: ['', [Validators.maxLength(500), Validators.required]],
-      
+      description: ['', [Validators.maxLength(2000), Validators.required]],
+
     });
   }
    phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     //check if the value is a valid phone number format
-    const isValidPhoneNumber = /^[0-9]{11}$/.test(value); 
+    const isValidPhoneNumber = /^[0-9]{11}$/.test(value);
 
     return isValidPhoneNumber ? null : { invalidPhoneNumber: true };
    }
@@ -171,7 +170,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-
     // Validate specific contribution
     const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
     if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
@@ -184,9 +182,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    
     this.isSaving = true;
-
     try {
 
       const newNeed: SchoolNeed = {
@@ -433,7 +429,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     );
   }
 
-
   protected filterContributionTypes(value: string): void {
     const filterValue = value.toLowerCase();
     this.filteredContributionTypes = this.contributionTypes.filter(option =>
@@ -513,7 +508,4 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       this.showErrorNotification(errorMessage);
     }
   }
-
-
-
 }

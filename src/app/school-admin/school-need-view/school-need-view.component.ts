@@ -95,6 +95,6 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   }
 
   deleteStakeholder() {
-    
+
   }
 }
