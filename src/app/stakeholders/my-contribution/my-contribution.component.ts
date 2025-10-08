@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatHeaderRow, MatHeaderRowDef, MatRowDef } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatCard, MatCardTitle } from '@angular/material/card';
-import { MatIcon } from '@angular/material/icon';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MyContribution } from '../../common/model/my-contribution.model';
 import {EngagementService} from "../../common/services/engagement.service";
 import {getSchoolYear} from "../../common/date-utils";
@@ -24,20 +25,25 @@ import {getSchoolYear} from "../../common/date-utils";
     MatRowDef,
     MatTableModule,
     MatButtonModule,
+    MatIconButton,
     MatCard,
     MatCardTitle,
     MatIcon,
+    MatIconModule,
     MatProgressBarModule,
     MatSelectModule,
-    MatFormFieldModule]
+    MatFormFieldModule,
+    MatTooltipModule]
 })
 export class MyContributionComponent implements OnInit {
-  displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements'];
+  displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements', 'mov', 'feedback'];
   dataSource = new MatTableDataSource<Contribution>([]);
   schoolYears: string[] = [];
   selectedSchoolYear: string = getSchoolYear();
   loading = false;
   error: string | null = null;
+  expandedRowId: string | null = null;
+  isDesktop = window.innerWidth > 768;
 
   constructor(private readonly engagementService: EngagementService) {
     this.schoolYears = this.generateSchoolYears();
@@ -90,7 +96,9 @@ export class MyContributionComponent implements OnInit {
       schoolYear: contribution.schoolYear,
       quantity: contribution.totalQuantity,
       amount: contribution.totalAmount,
-      engagements: this.formatEngagementDates(contribution.engagementDates)
+      engagements: this.formatEngagementDates(contribution.engagementDates),
+      mov: (contribution as any).mov || '',
+      feedback: (contribution as any).feedback || ''
     }));
   }
 
@@ -116,6 +124,86 @@ export class MyContributionComponent implements OnInit {
     
     return formattedDates.join(', ');
   }
+
+  onFeedbackClick(contribution: Contribution, feedbackValue: string): void {
+    // Update the feedback value for this contribution
+    contribution.feedback = feedbackValue;
+    
+    // Collapse the feedback buttons after selection
+    this.expandedRowId = null;
+    
+    // TODO: Send feedback to backend API
+    console.log('Feedback submitted:', {
+      contribution: contribution,
+      feedback: feedbackValue
+    });
+    
+    // You can add a service call here to save the feedback
+    // this.engagementService.submitFeedback(contribution.id, feedbackValue).subscribe(...);
+  }
+
+  getRowId(contribution: Contribution): string {
+    // Create a unique ID for each row based on contribution properties
+    const rowId = `${contribution.need}-${contribution.schoolName}-${contribution.schoolYear}`.replace(/\s+/g, '-');
+    return rowId;
+  }
+
+
+  toggleFeedbackExpansion(contribution: Contribution): void {
+    // Toggle on click for both desktop and mobile
+    const rowId = this.getRowId(contribution);
+    
+    if (this.expandedRowId === rowId) {
+      this.expandedRowId = null;
+    } else {
+      this.expandedRowId = rowId;
+    }
+  }
+
+  getFeedbackEmoji(feedback: string): string {
+    const emojiMap: { [key: string]: string } = {
+      'very-dissatisfied': '😢',
+      'dissatisfied': '😞',
+      'neutral': '😐',
+      'satisfied': '🙂',
+      'very-satisfied': '😄'
+    };
+    return emojiMap[feedback] || '😊';
+  }
+
+  getFeedbackIcon(feedback: string): string {
+    const iconMap: { [key: string]: string } = {
+      'very-dissatisfied': 'sentiment_very_dissatisfied',
+      'dissatisfied': 'sentiment_dissatisfied',
+      'neutral': 'sentiment_neutral',
+      'satisfied': 'sentiment_satisfied',
+      'very-satisfied': 'sentiment_very_satisfied'
+    };
+    return iconMap[feedback] || 'rate_review';
+  }
+
+  getFeedbackColor(feedback: string): string {
+    if (feedback === 'very-dissatisfied' || feedback === 'dissatisfied') {
+      return 'warn';
+    } else if (feedback === 'neutral') {
+      return 'accent';
+    } else if (feedback === 'satisfied' || feedback === 'very-satisfied') {
+      return 'primary';
+    }
+    return '';
+  }
+
+  getFeedbackLabel(feedback: string): string {
+    const labelMap: { [key: string]: string } = {
+      'very-dissatisfied': 'Very Dissatisfied',
+      'dissatisfied': 'Dissatisfied',
+      'neutral': 'Neutral',
+      'satisfied': 'Satisfied',
+      'very-satisfied': 'Very Satisfied'
+    };
+    return labelMap[feedback] || '';
+  }
+
 }
 
 interface Contribution {
@@ -125,4 +213,6 @@ interface Contribution {
   quantity: number;
   amount: number;
   engagements: string;
+  mov: string;
+  feedback: string;
 }

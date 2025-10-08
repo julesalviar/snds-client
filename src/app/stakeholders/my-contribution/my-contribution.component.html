@@ -60,6 +60,75 @@
           <td mat-cell *matCellDef="let element"> {{element.engagements}} </td>
         </ng-container>
 
+        <ng-container matColumnDef="mov">
+          <th mat-header-cell *matHeaderCellDef matTooltip="Work in Progress"> MOV </th>
+          <td mat-cell *matCellDef="let element" matTooltip="Work in Progress"> {{element.mov}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="feedback">
+          <th mat-header-cell *matHeaderCellDef matTooltip="Work in Progress"> Feedback </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="feedback-container">
+
+              <!-- Collapsed state: Show single icon -->
+              <button mat-icon-button
+                      class="feedback-trigger"
+                      (click)="toggleFeedbackExpansion(element)"
+                      [matTooltip]="element.feedback ? getFeedbackLabel(element.feedback) : 'Rate your experience'">
+                <mat-icon [color]="element.feedback ? getFeedbackColor(element.feedback) : ''">
+                  {{ element.feedback ? getFeedbackIcon(element.feedback) : 'sentiment_very_satisfied' }}
+                </mat-icon>
+              </button>
+
+              <!-- Floating popup: Show all emojis (messenger-style) -->
+              <div class="feedback-popup" 
+                   [class.visible]="expandedRowId === getRowId(element)"
+                   [style.display]="expandedRowId === getRowId(element) ? 'flex' : 'none'"
+                   [style.opacity]="expandedRowId === getRowId(element) ? '1' : '0'"
+                   [style.transform]="expandedRowId === getRowId(element) ? 'translateX(-50%) translateY(-30px) scale(1)' : 'translateX(-50%) translateY(-20px) scale(0.8)'"
+                   [style.pointer-events]="expandedRowId === getRowId(element) ? 'all' : 'none'">
+                <div class="feedback-buttons">
+                  <button mat-icon-button
+                          [class.selected]="element.feedback === 'very-dissatisfied'"
+                          (click)="onFeedbackClick(element, 'very-dissatisfied')"
+                          matTooltip="Very Dissatisfied"
+                          type="button">
+                    <mat-icon>sentiment_very_dissatisfied</mat-icon>
+                  </button>
+                  <button mat-icon-button
+                          [class.selected]="element.feedback === 'dissatisfied'"
+                          (click)="onFeedbackClick(element, 'dissatisfied')"
+                          matTooltip="Dissatisfied"
+                          type="button">
+                    <mat-icon>sentiment_dissatisfied</mat-icon>
+                  </button>
+                  <button mat-icon-button
+                          [class.selected]="element.feedback === 'neutral'"
+                          (click)="onFeedbackClick(element, 'neutral')"
+                          matTooltip="Neutral"
+                          type="button">
+                    <mat-icon>sentiment_neutral</mat-icon>
+                  </button>
+                  <button mat-icon-button
+                          [class.selected]="element.feedback === 'satisfied'"
+                          (click)="onFeedbackClick(element, 'satisfied')"
+                          matTooltip="Satisfied"
+                          type="button">
+                    <mat-icon>sentiment_satisfied</mat-icon>
+                  </button>
+                  <button mat-icon-button
+                          [class.selected]="element.feedback === 'very-satisfied'"
+                          (click)="onFeedbackClick(element, 'very-satisfied')"
+                          matTooltip="Very Satisfied"
+                          type="button">
+                    <mat-icon>sentiment_very_satisfied</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
