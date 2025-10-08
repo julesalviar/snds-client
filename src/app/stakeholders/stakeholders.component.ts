@@ -8,7 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {SchoolNeed} from "../common/model/school-need.model";
 import {SchoolNeedService} from "../common/services/school-need.service";
 
@@ -55,6 +55,7 @@ export class StakeholdersComponent implements OnInit {
   isLoading: boolean = true;
 
   constructor(
+    private readonly router: Router,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly route: ActivatedRoute,
   ) {}
@@ -104,18 +105,11 @@ export class StakeholdersComponent implements OnInit {
     // Implement edit logic
   }
 
-  engageWithNeed(schoolNeed: SchoolNeed): void {
-    console.log('Engage with school need:', schoolNeed);
-    // Implement engagement logic
-  }
-
-  viewEngagement(schoolNeed: SchoolNeed): void {
-    console.log('View engagement for:', schoolNeed);
-    // Implement engagement view logic
+  viewSchoolNeed(schoolNeed: SchoolNeed): void {
+    this.router.navigate(['/school-admin/school-need-view/', schoolNeed.code]);
   }
 
   deleteSchoolNeed(schoolNeed: SchoolNeed): void {
     console.log('Delete school need:', schoolNeed);
-    // Implement delete logic
   }
 }

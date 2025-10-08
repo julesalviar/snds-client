@@ -54,6 +54,7 @@ export const routes: Routes = [
       {path: 'my-contribution', component: MyContributionComponent},
       {path: 'districts', component: ClustersComponent},
       {path: 'school-needs', component: StakeholdersComponent},
+      {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
     ]
   },
 
