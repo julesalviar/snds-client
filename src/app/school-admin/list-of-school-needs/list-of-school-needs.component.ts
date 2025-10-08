@@ -6,6 +6,7 @@ import {MatMenu, MatMenuModule} from '@angular/material/menu';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatBadgeModule } from '@angular/material/badge';
 import { SharedDataService } from '../../common/services/shared-data.service';
 import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,7 +34,8 @@ import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.co
     MatButton,
     MatIconButton,
     MatPaginator,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatBadgeModule
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css']
@@ -41,6 +43,7 @@ import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.co
 export class ListOfSchoolNeedsComponent implements OnInit {
   displayedColumns: string[] = [
     'code',
+    'engaged',
     'year',
     'specificContribution',
     'quantity',
@@ -84,7 +87,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
         code: need.code,
         engaged: need.engaged,
         specificContribution:need.specificContribution,
-
       }
     });
 
@@ -120,7 +122,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize).subscribe({
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, undefined, undefined, true).subscribe({
       next: (response) => {
         this.schoolName = response.school?.schoolName;
         this.dataSource.data = response.data;

@@ -9,7 +9,7 @@ export class SchoolNeedService {
   constructor(private readonly httpService: HttpService) {
   }
 
-  getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string, schoolId?: string): Observable<any> {
+  getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string, schoolId?: string, withEngagements?: boolean): Observable<any> {
     let url = `${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}`;
 
     if (schoolYear) {
@@ -22,6 +22,10 @@ export class SchoolNeedService {
 
     if (schoolId) {
       url += `&schoolId=${schoolId}`;
+    }
+
+    if (withEngagements) {
+      url += `&withEngagements=true`;
     }
 
     return this.httpService.get<any>(url).pipe(

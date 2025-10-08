@@ -17,8 +17,21 @@
 
         <ng-container matColumnDef="code">
           <th mat-header-cell *matHeaderCellDef> Code </th>
-          <td mat-cell *matCellDef="let need"> {{ need.code }}
-            <mat-icon *ngIf="need.engaged">handshake</mat-icon>
+          <td mat-cell *matCellDef="let need"> {{ need.code }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="engaged">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let need">
+            <button mat-icon-button 
+                    (click)="view(need)" 
+                    *ngIf="need.engagements && need.engagements.length > 0" 
+                    matTooltip="Engage"
+                    [matBadge]="need.engagements.length > 1 ? need.engagements.length : null"
+                    matBadgeColor="primary"
+                    matBadgeSize="medium">
+              <mat-icon>handshake</mat-icon>
+            </button>
           </td>
         </ng-container>
 
