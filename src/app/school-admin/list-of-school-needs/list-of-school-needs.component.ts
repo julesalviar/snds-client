@@ -47,6 +47,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     'beneficiaryStudents',
     'beneficiaryPersonnel',
     'implementationStatus',
+    'feedback',
     'actions'
   ];
   schoolNeeds: SchoolNeed[] = [];
@@ -57,6 +58,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   totalItems: number = 0;
   isLoading: boolean = true;
   schoolneedsview = SchoolNeedViewComponent;
+  expandedRowId: string | null = null;
 
   constructor(
     private readonly sharedDataService: SharedDataService,
@@ -147,5 +149,72 @@ export class ListOfSchoolNeedsComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  onFeedbackClick(need: SchoolNeed, feedbackValue: string): void {
+    // Update the feedback value for this school need
+    (need as any).feedback = feedbackValue;
+    
+    // Collapse the feedback buttons after selection
+    this.expandedRowId = null;
+    
+    // TODO: Send feedback to backend API
+    console.log('Feedback submitted:', {
+      need: need,
+      feedback: feedbackValue
+    });
+    
+    // You can add a service call here to save the feedback
+    // this.schoolNeedService.submitFeedback(need.code, feedbackValue).subscribe(...);
+  }
+
+  getRowId(need: SchoolNeed): string {
+    // Create a unique ID for each row based on school need properties
+    const rowId = `${need.code}-${need.specificContribution}`.replace(/\s+/g, '-');
+    return rowId;
+  }
+
+  toggleFeedbackExpansion(need: SchoolNeed): void {
+    // Toggle on click for both desktop and mobile
+    const rowId = this.getRowId(need);
+    
+    if (this.expandedRowId === rowId) {
+      this.expandedRowId = null;
+    } else {
+      this.expandedRowId = rowId;
+    }
+  }
+
+  getFeedbackIcon(feedback: string): string {
+    const iconMap: { [key: string]: string } = {
+      'very-dissatisfied': 'sentiment_very_dissatisfied',
+      'dissatisfied': 'sentiment_dissatisfied',
+      'neutral': 'sentiment_neutral',
+      'satisfied': 'sentiment_satisfied',
+      'very-satisfied': 'sentiment_very_satisfied'
+    };
+    return iconMap[feedback] || 'rate_review';
+  }
+
+  getFeedbackColor(feedback: string): string {
+    if (feedback === 'very-dissatisfied' || feedback === 'dissatisfied') {
+      return 'warn';
+    } else if (feedback === 'neutral') {
+      return 'accent';
+    } else if (feedback === 'satisfied' || feedback === 'very-satisfied') {
+      return 'primary';
+    }
+    return '';
+  }
+
+  getFeedbackLabel(feedback: string): string {
+    const labelMap: { [key: string]: string } = {
+      'very-dissatisfied': 'Very Dissatisfied',
+      'dissatisfied': 'Dissatisfied',
+      'neutral': 'Neutral',
+      'satisfied': 'Satisfied',
+      'very-satisfied': 'Very Satisfied'
+    };
+    return labelMap[feedback] || '';
   }
 }
