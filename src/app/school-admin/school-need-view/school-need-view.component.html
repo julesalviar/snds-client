@@ -67,7 +67,36 @@
 
         <h3 class="project-description">Brief Description of the Project</h3>
         <p class="project-description">{{ schoolNeed?.description }}</p>
+
+        <!-- Image Carousel -->
+        <div class="image-carousel" *ngIf="schoolNeed && schoolNeed.images && schoolNeed.images.length > 0">
+          <h4 class="carousel-title">Project Images</h4>
+          <div class="carousel-container">
+            <div class="carousel-track">
+              <div class="carousel-item" *ngFor="let image of schoolNeed!.images; let i = index">
+                <img [src]="image.thumbnailUrl" [alt]="'Image ' + (i + 1)" (click)="openImagePreview(i)" />
+              </div>
+            </div>
+          </div>
+        </div>
       </mat-card-content>
     </mat-card>
+  </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="image-preview-modal" *ngIf="showImagePreview" (click)="closeImagePreview()">
+  <div class="preview-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeImagePreview()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <button class="nav-btn prev-btn" (click)="previousImage()" [disabled]="currentPreviewIndex === 0">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <img [src]="getCurrentImage()" alt="Preview" class="preview-image" />
+    <button class="nav-btn next-btn" (click)="nextImage()" [disabled]="!schoolNeed || !schoolNeed.images || currentPreviewIndex === schoolNeed.images.length - 1">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+    <div class="image-counter">{{ currentPreviewIndex + 1 }} / {{ (schoolNeed && schoolNeed.images) ? schoolNeed.images.length : 0 }}</div>
   </div>
 </div>

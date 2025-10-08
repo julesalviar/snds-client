@@ -19,7 +19,7 @@
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
       <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
-      <li>
+      <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
@@ -45,7 +45,7 @@
              (click)="closeMenu()">DPDS</a></li>
       <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Quick Count</a></li>
       <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
-       <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
+     <li *ngIf="currentTenant === tenant.GENSAN"><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
                  rel="noopener noreferrer">SPFP</a></li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
     </ng-container>
@@ -60,7 +60,7 @@
         </ul>
       </li>
       <li><a routerLink="/division-admin/about-us" (click)="closeMenu()">About Us</a></li>
-      <li>
+      <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>
         <ul>
           <li><a routerLink="/division-admin/partners-support" (click)="closeMenu()">Partner Support</a></li>
@@ -88,7 +88,7 @@
           <li><a routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
-      <li>
+      <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"

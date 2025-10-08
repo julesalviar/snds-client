@@ -9,7 +9,7 @@ import {Subject, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../../common/services/school-need.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {SchoolNeed} from "../../common/model/school-need.model";
-import {DecimalPipe} from "@angular/common";
+import {DecimalPipe, NgForOf, NgIf} from "@angular/common";
 @Component({
   selector: 'app-school-need-view',
   standalone: true,
@@ -19,7 +19,9 @@ import {DecimalPipe} from "@angular/common";
     MatButtonModule,
     MatTableModule,
     MatProgressBarModule,
-    DecimalPipe
+    DecimalPipe,
+    NgForOf,
+    NgIf
 
   ],
   templateUrl: './school-need-view.component.html',
@@ -36,6 +38,10 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
 
   // Columns for the stakeholder table
   displayedColumns: string[] = ['contributor', 'quantity', 'amount', 'action'];
+
+  // Image preview properties
+  showImagePreview: boolean = false;
+  currentPreviewIndex: number = 0;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -96,5 +102,30 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
 
   deleteStakeholder() {
 
+  }
+
+  openImagePreview(index: number): void {
+    this.currentPreviewIndex = index;
+    this.showImagePreview = true;
+  }
+
+  closeImagePreview(): void {
+    this.showImagePreview = false;
+  }
+
+  nextImage(): void {
+    if (this.schoolNeed?.images && this.currentPreviewIndex < this.schoolNeed.images.length - 1) {
+      this.currentPreviewIndex++;
+    }
+  }
+
+  previousImage(): void {
+    if (this.currentPreviewIndex > 0) {
+      this.currentPreviewIndex--;
+    }
+  }
+
+  getCurrentImage(): string {
+    return this.schoolNeed?.images[this.currentPreviewIndex]?.originalUrl || '';
   }
 }
