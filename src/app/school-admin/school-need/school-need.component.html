@@ -7,7 +7,7 @@
   <div class="content-wrapper">
     <div class="form-container">
       <mat-card-title>Edit School Need</mat-card-title>
-      
+
       <div *ngIf="isLoading" class="loading-container">
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         <p>Loading school need...</p>
@@ -124,12 +124,12 @@
           </mat-error>
         </mat-form-field>
 
-         
+
         <mat-form-field appearance="fill">
           <mat-label>Description / Other Info</mat-label>
           <textarea matInput formControlName="description"></textarea>
           <mat-error *ngIf="schoolNeedsForm.get('description')?.invalid && schoolNeedsForm.get('description')?.touched">
-            Description must be 500 characters or less
+            Description must be 2000 characters or less
           </mat-error>
         </mat-form-field>
 
