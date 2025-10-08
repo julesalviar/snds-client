@@ -157,15 +157,70 @@ export class AllSchoolComponent implements OnInit {
   viewNeeds(school: any): void {
     const userRole = this.authService.getRole();
     const schoolId = school._id || school.id;
-    
+
     if (userRole === 'stakeholder') {
-      this.router.navigate(['/stakeholder/school-needs'], { 
-        queryParams: { schoolId: schoolId } 
+      this.router.navigate(['/stakeholder/school-needs'], {
+        queryParams: { schoolId: schoolId }
       });
     } else {
-      this.router.navigate(['/guest/school-needs'], { 
-        queryParams: { schoolId: schoolId } 
+      this.router.navigate(['/guest/school-needs'], {
+        queryParams: { schoolId: schoolId }
       });
+    }
+  }
+
+  maskContactNumber(contactNumber: string): string {
+    if (!contactNumber) {
+      return '';
+    }
+
+    // Remove any spaces for processing
+    const cleanNumber = contactNumber.replace(/\s/g, '');
+
+    // If starts with + (area code)
+    if (cleanNumber.startsWith('+')) {
+      // Find where the area code ends (look for the first non-digit after +)
+      let areaCodeLength = 1; // Start after the +
+      while (areaCodeLength < cleanNumber.length && /\d/.test(cleanNumber[areaCodeLength])) {
+        areaCodeLength++;
+
+        if (areaCodeLength > 3) break;
+      }
+
+      const digitsAfterAreaCode = 2; // Show 4 digits after area code
+      const totalVisibleLength = areaCodeLength + digitsAfterAreaCode;
+
+      if (cleanNumber.length <= totalVisibleLength) {
+        return contactNumber; // Too short to mask properly
+      }
+
+      // Show area code and next 4 digits, mask the rest
+      const areaCode = cleanNumber.substring(0, areaCodeLength);
+      const nextDigits = cleanNumber.substring(areaCodeLength, totalVisibleLength);
+      const maskedPart = ' *** ****';
+      return areaCode + ' ' + nextDigits + maskedPart;
+    }
+    // If starts with 0
+    else if (cleanNumber.startsWith('0')) {
+      if (cleanNumber.length <= 4) {
+        return contactNumber; // Too short to mask properly
+      }
+      // Show first 4 digits, mask the rest
+      const visiblePart = cleanNumber.substring(0, 4);
+      const maskedLength = cleanNumber.length - 4;
+      const maskedPart = '*'.repeat(maskedLength);
+      return visiblePart + maskedPart;
+    }
+    // For any other format, show first 2 digits and mask the rest
+    else {
+      if (cleanNumber.length <= 2) {
+        return contactNumber; // Too short to mask properly
+      }
+      // Show first 2 digits, mask the rest
+      const visiblePart = cleanNumber.substring(0, 2);
+      const maskedLength = cleanNumber.length - 2;
+      const maskedPart = '*'.repeat(maskedLength);
+      return visiblePart + maskedPart;
     }
   }
 }
