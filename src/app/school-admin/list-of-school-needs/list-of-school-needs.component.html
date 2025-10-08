@@ -12,7 +12,7 @@
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         <p>Loading school needs...</p>
       </div>
-      
+
       <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
         <ng-container matColumnDef="code">
@@ -72,8 +72,8 @@
                 </mat-icon>
               </button>
 
-              <!-- Floating popup: Show all emojis (messenger-style) -->
-              <div class="feedback-popup" 
+              <!-- Floating popup: Show all emojis -->
+              <div class="feedback-popup"
                    [class.visible]="expandedRowId === getRowId(need)"
                    [style.display]="expandedRowId === getRowId(need) ? 'flex' : 'none'"
                    [style.opacity]="expandedRowId === getRowId(need) ? '1' : '0'"
