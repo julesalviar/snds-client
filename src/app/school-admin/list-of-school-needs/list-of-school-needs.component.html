@@ -67,7 +67,23 @@
 
         <ng-container matColumnDef="implementationStatus">
           <th mat-header-cell *matHeaderCellDef> Status of Implementation </th>
-          <td mat-cell *matCellDef="let need"> {{ need.implementationStatus }} </td>
+          <td mat-cell *matCellDef="let need">
+            <span *ngIf="getEngagementStatus(need) === 'Looking for partner'"
+                  class="status-badge looking-for-partner">
+              <mat-icon>search</mat-icon>
+              Looking for partner
+            </span>
+            <span *ngIf="getEngagementStatus(need) === 'Completed'"
+                  class="status-badge completed">
+              <mat-icon>check_circle</mat-icon>
+              Completed
+            </span>
+            <span *ngIf="getEngagementStatus(need) !== 'Looking for partner' && getEngagementStatus(need) !== 'Completed'"
+                  class="status-badge in-progress">
+              <mat-icon>schedule</mat-icon>
+              {{ getEngagementStatus(need) }}
+            </span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="feedback">
@@ -139,9 +155,6 @@
           <td mat-cell *matCellDef="let need" style="white-space: nowrap;">
             <button mat-icon-button (click)="navigateToEngage(need.code)" matTooltip="Engage">
               <mat-icon>person</mat-icon>
-            </button>
-            <button mat-icon-button (click)="progress(need)" matTooltip="Status">
-              <mat-icon>bar_chart</mat-icon>
             </button>
             <button class="ellipsis-button" mat-icon-button [matMenuTriggerFor]="actionMenu" matTooltip="More Actions">
               <mat-icon>more_vert</mat-icon>

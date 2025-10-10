@@ -8,8 +8,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { SharedDataService } from '../../common/services/shared-data.service';
-import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import {Router, RouterModule} from "@angular/router";
 import {MatButton, MatIconButton} from "@angular/material/button";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
@@ -66,7 +64,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   constructor(
     private readonly sharedDataService: SharedDataService,
     private readonly router: Router,
-    private readonly dialog: MatDialog,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly snackBar: MatSnackBar
   ) {}
@@ -79,28 +76,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     this.router.navigate(['/school-admin/school-needs-engage', code]);
   }
 
-  progress(need: SchoolNeed): void {
-    const dialogRef = this.dialog.open(ImplementationStatusDialogComponent, {
-      data: {
-        implementationStatus: need.implementationStatus,
-        schoolName: this.schoolName,
-        code: need.code,
-        engaged: need.engaged,
-        specificContribution:need.specificContribution,
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Update the implementation status in the list
-        const updatedNeed = this.schoolNeeds.find(n => n.code === need.code);
-        if (updatedNeed) {
-          updatedNeed.implementationStatus = result.implementationStatus; // Update status
-        }
-        console.log('Dialog closed with updated status:', result);
-      }
-    });
-  }
   view(need: SchoolNeed): void {
   this.router.navigate(['/school-admin/school-need-view/', need.code]);
 }
@@ -224,6 +199,51 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     if (!clickedInsidePopup && !clickedInsideTrigger) {
       this.expandedRowId = null;
     }
+  }
+
+  getStatusImplementation(schoolNeed: SchoolNeed): string {
+    // schoolNeed.engagements?.reduce()
+    return '';
+  }
+
+  getEngagementStatus(schoolNeed: SchoolNeed): string {
+    const engagements = schoolNeed?.engagements;
+    const targetQuantity = schoolNeed?.quantity ?? 0;
+
+    if (!engagements || engagements.length === 0) {
+      return 'Looking for partner';
+    }
+
+    const totalQuantity = engagements.reduce((sum, engagement) => {
+      return sum + (typeof engagement.quantity === 'number' ? engagement.quantity : 0);
+    }, 0);
+
+    if (targetQuantity === 0) {
+      return 'Target quantity not set';
+    }
+
+    if (totalQuantity >= targetQuantity) {
+      return 'Completed';
+    }
+
+    const percentage = Math.round((totalQuantity / targetQuantity) * 100);
+    return `${percentage}% completed`;
+  }
+
+  getProgressPercentage(schoolNeed: SchoolNeed): number {
+    const engagements = schoolNeed?.engagements;
+    const targetQuantity = schoolNeed?.quantity ?? 0;
+
+    if (!engagements || engagements.length === 0 || targetQuantity === 0) {
+      return 0;
+    }
+
+    const totalQuantity = engagements.reduce((sum, engagement) => {
+      return sum + (typeof engagement.quantity === 'number' ? engagement.quantity : 0);
+    }, 0);
+
+    const percentage = Math.round((totalQuantity / targetQuantity) * 100);
+    return Math.min(percentage, 100); // Cap at 100%
   }
 
   @HostListener('document:keydown.escape', ['$event'])

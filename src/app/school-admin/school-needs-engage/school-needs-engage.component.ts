@@ -15,10 +15,9 @@ import { ReferenceDataService } from '../../common/services/reference-data.servi
 import { SchoolNeedService } from '../../common/services/school-need.service';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from "@angular/material/button";
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import {SchoolNeed} from "../../common/model/school-need.model";
 
 @Component({
   selector: 'app-school-needs-engage',
@@ -39,13 +38,13 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
     MatFormField,
     MatLabel,
     MatDatepickerToggle,
-    MatButton,
-    MatSelectModule
+    MatButton
   ],
   templateUrl: './school-needs-engage.component.html',
   styleUrls: ['./school-needs-engage.component.css']
 })
 export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
+  schoolNeed: SchoolNeed | undefined;
   needCode: string | null = null;
   stakeholder: any = null;
   moaDate: Date | null = null;
@@ -58,7 +57,6 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   stakeholders: any[] = [];
   filteredStakeholders: any[] = [];
   readonly STAKEHOLDER_LIMIT = 50; // Limit the number of stakeholders loaded
-  units: string[] = [];
 
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
@@ -71,17 +69,16 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     private readonly referenceDataService: ReferenceDataService,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly snackBar: MatSnackBar,
-    private readonly dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.needCode = this.route.snapshot.paramMap.get('code');
     if (this.needCode) {
       console.log('Engaging with need code:', this.needCode);
+      this.loadSchoolNeed(this.needCode);
     }
 
     this.loadStakeholders();
-    this.loadPillarsAndUnits();
     this.setupDebouncedSearch();
   }
 
@@ -101,12 +98,20 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadPillarsAndUnits(): void {
-    const unitsData = this.referenceDataService.get<string[]>('units');
-    if (unitsData) {
-      this.units = unitsData;
-      console.log('Loaded units:', this.units);
-    }
+  loadSchoolNeed(code: string): void {
+    this.schoolNeedService.getSchoolNeedByCode(code).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (need) => {
+        if (need) {
+          console.log('Loaded school need:', need);
+          this.unit = need.unit ?? '';
+          this.schoolNeed = need;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading school need:', error);
+        this.showErrorNotification('Failed to load school need details. Please try again.');
+      }
+    });
   }
 
   setupDebouncedSearch(): void {
@@ -149,7 +154,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   displayFn(stakeholder: any): string {
-    return stakeholder && stakeholder.name ? stakeholder.name : '';
+    return stakeholder?.name ?? '';
   }
 
   private showSuccessNotification(message: string): void {
