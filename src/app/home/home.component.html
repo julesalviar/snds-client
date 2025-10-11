@@ -15,19 +15,18 @@
       <p>All the needs of our schools are given in the menu categories below.</p>
     </div>
     <h2>Menu of Education Investment</h2>
-    
+
     <div *ngIf="isLoading" class="loading-container">
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       <p>Loading school needs...</p>
     </div>
-    
+
     <ul *ngIf="!isLoading">
       <li *ngFor="let node of treeData">
         <div (click)="toggleChildren(node)" style="cursor: pointer;">
           <span
             class="node-name"
             [ngClass]="{ 'expanded-node': node.expanded }"
-            [matBadge]="(node?.count ?? 0) > 0 && !node?.expanded ? node.count : null"
             matBadgeColor="primary"
             matBadgeOverlap="false"
           >
