@@ -32,8 +32,8 @@
       <mat-card-content>
         <h4 class="mat-progress-bar-title">Progress Indicator</h4>
         <div class="progress-container">
-          <mat-progress-bar class="custom-progress-bar" mode="determinate" [value]="progressValue"></mat-progress-bar>
-          <div class="progress-label">{{ progressValue }}%</div>
+          <mat-progress-bar class="custom-progress-bar" mode="determinate" [value]="getEngagementStatus(schoolNeed)?.progress ?? 0"></mat-progress-bar>
+          <div class="progress-label">{{ getEngagementStatus(schoolNeed)?.status ?? '' }}</div>
         </div>
 
         <div class="table-container">

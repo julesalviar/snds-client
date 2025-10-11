@@ -10,6 +10,12 @@ import {SchoolNeedService} from "../../common/services/school-need.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {SchoolNeed} from "../../common/model/school-need.model";
 import {DecimalPipe, NgForOf, NgIf} from "@angular/common";
+
+interface ImplementationStatus {
+  progress: number;
+  status: string;
+}
+
 @Component({
   selector: 'app-school-need-view',
   standalone: true,
@@ -30,7 +36,7 @@ import {DecimalPipe, NgForOf, NgIf} from "@angular/common";
 })
 export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
-  schoolNeed: SchoolNeed | null = null;
+  schoolNeed: SchoolNeed | undefined = undefined;
   code: string | null = null;
   isLoading: boolean = true;
 
@@ -126,6 +132,31 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   }
 
   getCurrentImage(): string {
-    return this.schoolNeed?.images[this.currentPreviewIndex]?.originalUrl || '';
+    return this.schoolNeed?.images[this.currentPreviewIndex]?.originalUrl ?? '';
+  }
+
+  getEngagementStatus(schoolNeed?: SchoolNeed | undefined): ImplementationStatus {
+    if (!schoolNeed) return { progress: 0, status: 'Empty' };
+    const engagements = schoolNeed?.engagements;
+    const targetQuantity = schoolNeed?.quantity ?? 0;
+
+    if (!engagements || engagements.length === 0) {
+      return { progress: 0, status: 'Looking for partner' };
+    }
+
+    const totalQuantity = engagements.reduce((sum, engagement) => {
+      return sum + (typeof engagement.quantity === 'number' ? engagement.quantity : 0);
+    }, 0);
+
+    if (targetQuantity === 0) {
+      return { progress: targetQuantity, status: 'Target quantity not set' };
+    }
+
+    if (totalQuantity >= targetQuantity) {
+      return { progress: 100, status: 'Completed' };
+    }
+
+    const percentage = Math.round((totalQuantity / targetQuantity) * 100);
+    return { progress: percentage, status: `${percentage}% completed` };
   }
 }

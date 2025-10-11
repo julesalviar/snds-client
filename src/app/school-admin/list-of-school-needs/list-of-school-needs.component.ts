@@ -230,22 +230,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     return `${percentage}% completed`;
   }
 
-  getProgressPercentage(schoolNeed: SchoolNeed): number {
-    const engagements = schoolNeed?.engagements;
-    const targetQuantity = schoolNeed?.quantity ?? 0;
-
-    if (!engagements || engagements.length === 0 || targetQuantity === 0) {
-      return 0;
-    }
-
-    const totalQuantity = engagements.reduce((sum, engagement) => {
-      return sum + (typeof engagement.quantity === 'number' ? engagement.quantity : 0);
-    }, 0);
-
-    const percentage = Math.round((totalQuantity / targetQuantity) * 100);
-    return Math.min(percentage, 100); // Cap at 100%
-  }
-
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(event: KeyboardEvent): void {
     // If a popup is open, close it when ESC is pressed

@@ -55,8 +55,18 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: red;
-  font-weight: bold;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    -1px -1px 2px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.5px;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 4px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
 }
 
 .description-title {
@@ -148,6 +158,12 @@ mat-card-title {
   .binding {
     margin-left: 5px; 
     display: inline-block;
+  }
+
+  .progress-label {
+    font-size: 13px;
+    padding: 3px 12px;
+    letter-spacing: 0.3px;
   }
 }
 
