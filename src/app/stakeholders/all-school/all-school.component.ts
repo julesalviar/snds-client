@@ -76,6 +76,7 @@ export class AllSchoolComponent implements OnInit {
     this.schoolService.getAllSchools().subscribe({
       next: (response) => {
         this.schoolList = (response.data ?? response) ?? [];
+        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
@@ -85,6 +86,7 @@ export class AllSchoolComponent implements OnInit {
         console.error('Error loading schools:', error);
         this.schoolList = [];
         this.filteredSchoolList = [];
+        this.totalItems = 0;
         this.updateDataSource();
         this.calculateSummaryStats();
         this.isLoading = false;
@@ -103,6 +105,7 @@ export class AllSchoolComponent implements OnInit {
     this.schoolService.getAllSchools(undefined, this.searchTerm).subscribe({
       next: (response) => {
         this.schoolList = (response.data ?? response) ?? [];
+        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
@@ -112,6 +115,7 @@ export class AllSchoolComponent implements OnInit {
         console.error('Error searching schools:', error);
         this.schoolList = [];
         this.filteredSchoolList = [];
+        this.totalItems = 0;
         this.updateDataSource();
         this.calculateSummaryStats();
         this.isLoading = false;
@@ -121,7 +125,6 @@ export class AllSchoolComponent implements OnInit {
 
   updateDataSource(): void {
     this.dataSource.data = this.filteredSchoolList;
-    this.totalItems = this.filteredSchoolList.length;
   }
 
   calculateSummaryStats(): void {
@@ -139,7 +142,7 @@ export class AllSchoolComponent implements OnInit {
     this.schoolService.getSchools(this.pageIndex + 1, this.pageSize).subscribe({
       next: (response) => {
         this.schoolList = (response.data ?? response) ?? [];
-        this.totalItems = (response.total ?? response.count) ?? this.schoolList.length;
+        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
