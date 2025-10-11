@@ -108,7 +108,7 @@ export class HomeComponent implements OnInit {
       this.treeData = this.referenceDataService.get<TreeNode[]>('contributionTree');
     }
 
-    private fetchAllSchoolNeeds(page= 1, size = 1000, acc: any[] = []): Observable<{data: any[], schoolName: string}> {
+    private fetchAllSchoolNeeds(page= 1, size = 10000, acc: any[] = []): Observable<{data: any[], schoolName: string}> {
       return this.schoolNeedService.getSchoolNeeds(page, size).pipe(
         switchMap(res => {
           const currentData = res?.data ?? [];
@@ -155,12 +155,16 @@ export class HomeComponent implements OnInit {
 
         if(node.children) {
           for (const child of node.children) {
-            const count = needs.filter(
+            const specificNeeds = needs.filter(
               need => need.specificContribution === child.name
-            ).length;
+            );
 
-            child.count = count;
-            countTotal += count;
+            const totalQuantity = specificNeeds.reduce((acc, child) => {
+              return acc + (child.quantity ?? 0);
+            }, 0);
+
+            child.count = totalQuantity;
+            countTotal += totalQuantity;
           }
         }
 
