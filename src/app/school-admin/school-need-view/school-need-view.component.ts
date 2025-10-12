@@ -9,7 +9,7 @@ import {Subject, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../../common/services/school-need.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {SchoolNeed} from "../../common/model/school-need.model";
-import {DecimalPipe, NgForOf, NgIf} from "@angular/common";
+import {DecimalPipe, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
 
 interface ImplementationStatus {
   progress: number;
@@ -27,7 +27,8 @@ interface ImplementationStatus {
     MatProgressBarModule,
     DecimalPipe,
     NgForOf,
-    NgIf
+    NgIf,
+    UpperCasePipe
 
   ],
   templateUrl: './school-need-view.component.html',

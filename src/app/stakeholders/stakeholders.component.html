@@ -7,7 +7,7 @@
       <p>Schools in Need: <strong>{{ totalBySchool | number }}</strong></p>
     </ng-container>
     <ng-template #schoolSpecificView>
-      <p *ngIf="schoolName"><mat-icon>school</mat-icon> {{ schoolName }}</p>
+      <p *ngIf="schoolName"><mat-icon>school</mat-icon> {{ schoolName | uppercase }}</p>
     </ng-template>
   </div>
   <div class="table-scroll">
@@ -21,7 +21,7 @@
 
         <ng-container matColumnDef="school">
           <th mat-header-cell *matHeaderCellDef> School </th>
-          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName | uppercase }} </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">

@@ -37,7 +37,7 @@
 
         <ng-container matColumnDef="schoolName">
           <th mat-header-cell *matHeaderCellDef> Name of School </th>
-          <td mat-cell *matCellDef="let element"> {{element.schoolName}} </td>
+          <td mat-cell *matCellDef="let element"> {{element.schoolName | uppercase}} </td>
         </ng-container>
 
         <ng-container matColumnDef="schoolYear">
