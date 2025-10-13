@@ -6,13 +6,26 @@ export interface SchoolInfo {
 }
 
 export interface MyContribution {
-  totalAmount: number;
-  totalQuantity: number;
-  engagementCount: number;
-  engagementDates: string;
-  specificContribution: string;
+  amount: number;
+  quantity: number;
+  signingDate: string;
+  startDate: string;
+  endDate: string;
+  unit: string;
   schoolYear: string;
   schoolId: SchoolInfo;
+  schoolNeedId: {
+    _id: string;
+    specificContribution: string;
+    images: Image[];
+  }
+}
+
+export interface Image {
+  id: string;
+  category: string;
+  originalUrl: string;
+  thumbnailUrl: string;
 }
 
 export interface MyContributionMeta {

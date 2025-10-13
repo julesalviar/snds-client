@@ -213,6 +213,12 @@ mat-icon {
   text-align: center;
 }
 
+.mat-column-mov {
+  max-width: 120px;
+  min-width: 120px;
+  text-align: center;
+}
+
 .mat-column-movs {
   max-width: 150px;
   min-width: 150px;

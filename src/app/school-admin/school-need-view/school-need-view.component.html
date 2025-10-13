@@ -74,7 +74,7 @@
           <div class="carousel-container">
             <div class="carousel-track">
               <div class="carousel-item" *ngFor="let image of schoolNeed!.images; let i = index">
-                <img [src]="image.thumbnailUrl" [alt]="'Image ' + (i + 1)" (click)="openImagePreview(i)" />
+                <img [src]="image.thumbnailUrl" (click)="openImagePreview(i)" />
               </div>
             </div>
           </div>

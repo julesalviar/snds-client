@@ -1,15 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatTableDataSource, MatTableModule, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatHeaderRow, MatHeaderRowDef, MatRowDef } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardTitle } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MyContribution } from '../../common/model/my-contribution.model';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {
+  MatCellDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRowDef,
+  MatTableDataSource,
+  MatTableModule
+} from '@angular/material/table';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardTitle} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatSelectModule} from '@angular/material/select';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MyContribution} from '../../common/model/my-contribution.model';
 import {EngagementService} from "../../common/services/engagement.service";
 import {getSchoolYear} from "../../common/date-utils";
+import {ThumbnailUtils} from "../../common/utils/thumbnail.utils";
+import {SchoolNeedImage} from "../../common/model/school-need.model";
+
 @Component({
   selector: 'app-my-contribution',
   standalone: true,
@@ -54,8 +66,7 @@ export class MyContributionComponent implements OnInit {
 
     this.engagementService.getMyContributions(schoolYear).subscribe({
       next: (response) => {
-        const contributions = this.transformContributionsData(response.data);
-        this.dataSource.data = contributions;
+        this.dataSource.data = this.transformContributionsData(response.data);
         this.loading = false;
       },
       error: (error) => {
@@ -70,12 +81,12 @@ export class MyContributionComponent implements OnInit {
     const currentSchoolYear = getSchoolYear();
     const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
     const years: string[] = [];
-    
+
     // Generate from 2015-2016 to current school year
     for (let year = currentStartYear; year >= 2015; year--) {
       years.push(`${year}-${year + 1}`);
     }
-    
+
     return years;
   }
 
@@ -86,37 +97,22 @@ export class MyContributionComponent implements OnInit {
 
   private transformContributionsData(myContributions: MyContribution[]): Contribution[] {
     return myContributions.map(contribution => ({
-      need: contribution.specificContribution,
-      schoolName: contribution.schoolId.schoolName,
+      need: contribution.schoolNeedId?.specificContribution ?? '',
+      schoolName: contribution.schoolId?.schoolName,
       schoolYear: contribution.schoolYear,
-      quantity: contribution.totalQuantity,
-      amount: contribution.totalAmount,
-      engagements: this.formatEngagementDates(contribution.engagementDates),
-      mov: (contribution as any).mov || ''
+      quantity: contribution.quantity,
+      amount: contribution.amount,
+      engagement: contribution.startDate,
+      images: contribution.schoolNeedId?.images ?? []
     }));
   }
 
-  private formatEngagementDates(engagementDates: string): string {
-    if (!engagementDates) return '';
-    
-    // Split by comma and trim whitespace
-    const dates = engagementDates.split(',').map(date => date.trim());
-    
-    // Format each date to short date (MM/dd/yyyy)
-    const formattedDates = dates.map(dateStr => {
-      const date = new Date(dateStr);
-      // Check if date is valid
-      if (isNaN(date.getTime())) return dateStr;
-      
-      // Format as MM/dd/yyyy
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const year = date.getFullYear();
-      
-      return `${month}/${day}/${year}`;
-    });
-    
-    return formattedDates.join(', ');
+  getThumbnailImages(contribution: any): SchoolNeedImage[] {
+    return ThumbnailUtils.getThumbnailImages(contribution);
+  }
+
+  onImageError(event: any): void {
+    ThumbnailUtils.onImageError(event);
   }
 
 }
@@ -127,6 +123,6 @@ interface Contribution {
   schoolYear: string;
   quantity: number;
   amount: number;
-  engagements: string;
-  mov: string;
+  engagement: string;
+  images: SchoolNeedImage[];
 }

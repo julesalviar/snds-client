@@ -29,6 +29,7 @@ import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
 import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
+import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
 
 @Component({
   selector: 'app-school-admin',
@@ -270,19 +271,12 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.router.navigate(['/school-admin/school-need', need.code]);
   }
 
-  onImageError(event: any): void {
-    event.target.style.display = 'none';
+  getThumbnailImages(need: any): SchoolNeedImage[] {
+    return ThumbnailUtils.getThumbnailImages(need);
   }
 
-  getThumbnailImages(need: any): SchoolNeedImage[] {
-    const images = need?.images ?? [];
-    if (images.length <= 5) {
-      return images;
-    }
-
-    // Randomly select up to 5 images from the array for the fanned layout
-    const shuffled = [...images].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 5);
+  onImageError(event: any): void {
+    ThumbnailUtils.onImageError(event);
   }
 
   private showSuccessNotification(message: string): void {

@@ -14,6 +14,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
+import {InternalReferenceDataService} from "../../common/services/internal-reference-data.service";
 
 @Component({
   selector: 'app-clusters',
@@ -53,7 +54,7 @@ export class ClustersComponent implements OnInit {
   constructor(
     private readonly schoolService: SchoolService,
     private readonly router: Router,
-    private readonly referenceDataService: ReferenceDataService
+    private readonly internalReferenceDataService: InternalReferenceDataService
   ) {}
 
   ngOnInit(): void {
@@ -63,40 +64,16 @@ export class ClustersComponent implements OnInit {
 
   async loadClusterOptions(): Promise<void> {
     try {
-      await this.referenceDataService.initialize();
+      await this.internalReferenceDataService.initialize();
 
-      const regionData = this.referenceDataService.get('region');
+      const clusters: string[] = this.internalReferenceDataService.get('clusters');
 
-      if (regionData) {
-        let regionsArray: any[] = [];
+      console.log(clusters);
 
-        if (Array.isArray(regionData)) {
-          regionsArray = regionData;
-        } else if (regionData.value && Array.isArray(regionData.value)) {
-          regionsArray = regionData.value;
-        } else if (regionData.data && Array.isArray(regionData.data)) {
-          regionsArray = regionData.data;
-        }
-
-        // Collect all clusters from all divisions across all regions
-        const allClusters: string[] = [];
-
-        regionsArray.forEach((region: any) => {
-          if (region.divisions) {
-            region.divisions.forEach((division: any) => {
-              if (division.clusters && Array.isArray(division.clusters)) {
-                allClusters.push(...division.clusters);
-              }
-            });
-          }
-        });
-
-        // Remove duplicates and create options
-        const uniqueClusters = [...new Set(allClusters)];
-
+      if (clusters) {
         this.clusterOptions = [
           { value: '', label: 'All Districts/Clusters' },
-          ...uniqueClusters.map(cluster => ({
+          ...clusters.map(cluster => ({
             value: cluster,
             label: cluster
           }))

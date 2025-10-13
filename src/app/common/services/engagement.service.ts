@@ -20,13 +20,13 @@ export class EngagementService {
       throw new Error('User ID not found');
     }
 
-    let url = `${API_ENDPOINT.engagements}/my-contributions/summary`;
-    
+    let url = `${API_ENDPOINT.engagements}/my-contributions/`;
+
     // Add schoolYear query parameter if provided
     if (schoolYear) {
       url += `?schoolYear=${encodeURIComponent(schoolYear)}`;
     }
-    
+
     return this.httpService.get<MyContributionsResponse>(url).pipe(
       catchError(this.httpService.handleError)
     );

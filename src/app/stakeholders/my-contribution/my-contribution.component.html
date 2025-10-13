@@ -32,37 +32,45 @@
 
         <ng-container matColumnDef="need">
           <th mat-header-cell *matHeaderCellDef> Need </th>
-          <td mat-cell *matCellDef="let element"> {{element.need}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.need}} </td>
         </ng-container>
 
         <ng-container matColumnDef="schoolName">
           <th mat-header-cell *matHeaderCellDef> Name of School </th>
-          <td mat-cell *matCellDef="let element"> {{element.schoolName | uppercase}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.schoolName | uppercase}} </td>
         </ng-container>
 
         <ng-container matColumnDef="schoolYear">
           <th mat-header-cell *matHeaderCellDef> School Year </th>
-          <td mat-cell *matCellDef="let element"> {{element.schoolYear}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.schoolYear}} </td>
         </ng-container>
 
         <ng-container matColumnDef="quantity">
           <th mat-header-cell *matHeaderCellDef> Quantity </th>
-          <td mat-cell *matCellDef="let element"> {{element.quantity}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.quantity}} </td>
         </ng-container>
 
         <ng-container matColumnDef="amount">
           <th mat-header-cell *matHeaderCellDef> Amount </th>
-          <td mat-cell *matCellDef="let element"> {{element.amount | currency: 'PHP':'symbol': '1.2-2'}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.amount | currency: 'PHP':'symbol': '1.2-2'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="engagements">
           <th mat-header-cell *matHeaderCellDef> Engagement </th>
-          <td mat-cell *matCellDef="let element"> {{element.engagements}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.engagement | date: 'shortDate' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="mov">
-          <th mat-header-cell *matHeaderCellDef matTooltip="Work in Progress"> MOV </th>
-          <td mat-cell *matCellDef="let element" matTooltip="Work in Progress"> {{element.mov}} </td>
+          <th mat-header-cell *matHeaderCellDef> MOV </th>
+          <td mat-cell *matCellDef="let contribution" class="thumbnails-column">
+            <div class="thumbnail-container">
+              <img *ngFor="let image of getThumbnailImages(contribution)"
+                   [src]="image.thumbnailUrl"
+                   [alt]="contribution.need"
+                   class="thumbnail-image"
+                   (error)="onImageError($event)">
+            </div>
+          </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
