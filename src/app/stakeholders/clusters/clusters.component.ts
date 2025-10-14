@@ -14,6 +14,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
+import {InternalReferenceDataService} from "../../common/services/internal-reference-data.service";
 
 @Component({
   selector: 'app-clusters',
@@ -53,7 +54,7 @@ export class ClustersComponent implements OnInit {
   constructor(
     private readonly schoolService: SchoolService,
     private readonly router: Router,
-    private readonly referenceDataService: ReferenceDataService
+    private readonly internalReferenceDataService: InternalReferenceDataService
   ) {}
 
   ngOnInit(): void {
@@ -63,40 +64,12 @@ export class ClustersComponent implements OnInit {
 
   async loadClusterOptions(): Promise<void> {
     try {
-      await this.referenceDataService.initialize();
-
-      const regionData = this.referenceDataService.get('region');
-
-      if (regionData) {
-        let regionsArray: any[] = [];
-
-        if (Array.isArray(regionData)) {
-          regionsArray = regionData;
-        } else if (regionData.value && Array.isArray(regionData.value)) {
-          regionsArray = regionData.value;
-        } else if (regionData.data && Array.isArray(regionData.data)) {
-          regionsArray = regionData.data;
-        }
-
-        // Collect all clusters from all divisions across all regions
-        const allClusters: string[] = [];
-        
-        regionsArray.forEach((region: any) => {
-          if (region.divisions) {
-            region.divisions.forEach((division: any) => {
-              if (division.clusters && Array.isArray(division.clusters)) {
-                allClusters.push(...division.clusters);
-              }
-            });
-          }
-        });
-
-        // Remove duplicates and create options
-        const uniqueClusters = [...new Set(allClusters)];
-        
+      await this.internalReferenceDataService.initialize();
+      const clusters: string[] = this.internalReferenceDataService.get('clusters');
+      if (clusters) {
         this.clusterOptions = [
           { value: '', label: 'All Districts/Clusters' },
-          ...uniqueClusters.map(cluster => ({
+          ...clusters.map(cluster => ({
             value: cluster,
             label: cluster
           }))
@@ -115,9 +88,7 @@ export class ClustersComponent implements OnInit {
     this.isLoading = true;
     this.schoolService.getAllSchools(this.selectedCluster).subscribe({
       next: (response) => {
-        // Assuming the API returns data in a specific format
-        // Adjust this based on your actual API response structure
-        this.schoolList = response.data || response || [];
+        this.schoolList = response.data ?? response ?? [];
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
@@ -179,8 +150,8 @@ export class ClustersComponent implements OnInit {
       next: (response) => {
         // Assuming the API returns data in a specific format
         // Adjust this based on your actual API response structure
-        this.schoolList = response.data || response || [];
-        this.totalItems = response.total || response.count || this.schoolList.length;
+        this.schoolList = response.data ?? response ?? [];
+        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
@@ -199,7 +170,6 @@ export class ClustersComponent implements OnInit {
   }
 
   viewNeeds(school: any): void {
-    console.log('View needs for:', school);
     this.router.navigate(['/stakeholder']);
   }
 

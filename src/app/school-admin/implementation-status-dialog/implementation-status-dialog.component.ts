@@ -27,7 +27,7 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class ImplementationStatusDialogComponent {
   selectedStatus: string = '';
-  selectedDate: Date | null = null; 
+  selectedDate: Date | null = null;
   statusOptions: string[] = [
     '5% Complete', '10% Complete', '15% Complete', '20% Complete', '25% Complete', '30% Complete', '35% Complete', '40% Complete', '45% Complete', '50% Complete',
     '55% Complete', '60% Complete', '65% Complete', '70% Complete', '75% Complete', '80% Complete', '85% Complete', '90% Complete',
@@ -36,13 +36,13 @@ export class ImplementationStatusDialogComponent {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialogRef: MatDialogRef<ImplementationStatusDialogComponent>
+    private readonly dialogRef: MatDialogRef<ImplementationStatusDialogComponent>
   ) {  this.selectedStatus = data.implementationStatus; }
   save(): void {
     // Emit the updated status and close the dialog
     this.dialogRef.close({
       implementationStatus: this.selectedStatus,
-      dateModified: this.selectedDate 
+      dateModified: this.selectedDate
     });
   }
 

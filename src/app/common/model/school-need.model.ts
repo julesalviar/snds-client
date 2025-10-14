@@ -20,6 +20,9 @@ export interface SchoolInfo {
   schoolName: string;
   schoolOffering: string;
   officialEmailAddress: string;
+  accountablePerson: string;
+  contactNumber: string;
+  designation: string;
 }
 
 export interface SchoolNeed {
@@ -42,10 +45,12 @@ export interface SchoolNeed {
   updatedAt?: string;
   
 
+
   projectId: ProjectInfo | string;
   schoolId: SchoolInfo | string;
   school?: SchoolInfo;
   project?: ProjectInfo;
   images: SchoolNeedImage[];
-  engagement?: any[];
+
+  engagements?: any[];
 }

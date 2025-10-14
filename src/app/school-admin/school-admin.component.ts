@@ -29,6 +29,7 @@ import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
 import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
+import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
 
 @Component({
   selector: 'app-school-admin',
@@ -67,7 +68,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   totalItems: number = 0;
   isLoading: boolean = true;
 
-  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
+  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'unit', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars: string[] = [];
   schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
@@ -83,14 +84,12 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
 
-
   constructor(
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
-    private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
@@ -108,17 +107,11 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
-      description: ['', [Validators.maxLength(500), Validators.required]],
-      
+      description: ['', [Validators.maxLength(2000), Validators.required]],
+
     });
   }
-   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    //check if the value is a valid phone number format
-    const isValidPhoneNumber = /^[0-9]{11}$/.test(value); 
 
-    return isValidPhoneNumber ? null : { invalidPhoneNumber: true };
-   }
   queryData(): void {
     this.pageIndex = 0; // Reset to first page when changing school year
     this.loadAllSchoolNeeds();
@@ -186,7 +179,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
     
     this.isSaving = true;
-
     try {
 
       const newNeed: SchoolNeed = {
@@ -274,19 +266,12 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.router.navigate(['/school-admin/school-need', need.code]);
   }
 
-  onImageError(event: any): void {
-    event.target.style.display = 'none';
+  getThumbnailImages(need: any): SchoolNeedImage[] {
+    return ThumbnailUtils.getThumbnailImages(need);
   }
 
-  getThumbnailImages(need: any): SchoolNeedImage[] {
-    const images = need?.images ?? [];
-    if (images.length <= 5) {
-      return images;
-    }
-
-    // Randomly select up to 5 images from the array for the fanned layout
-    const shuffled = [...images].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 5);
+  onImageError(event: any): void {
+    ThumbnailUtils.onImageError(event);
   }
 
   private showSuccessNotification(message: string): void {
@@ -433,7 +418,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     );
   }
 
-
   protected filterContributionTypes(value: string): void {
     const filterValue = value.toLowerCase();
     this.filteredContributionTypes = this.contributionTypes.filter(option =>
@@ -513,7 +497,4 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       this.showErrorNotification(errorMessage);
     }
   }
-
-
-
 }

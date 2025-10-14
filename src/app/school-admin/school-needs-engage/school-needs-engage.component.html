@@ -2,7 +2,15 @@
   <mat-card class="engage-card">
     <mat-card-title>Engagement Details</mat-card-title>
     <mat-card-content>
-      <p *ngIf="needCode">Engaging with need code: <strong>{{ needCode }}</strong></p>
+      <p *ngIf="needCode">Engaging with need code: <strong>{{ this.schoolNeed?.code }}</strong></p>
+      <p *ngIf="schoolNeed?.description"><strong>Description:</strong> {{ this.schoolNeed?.description }}</p>
+      <p *ngIf="schoolNeed?.contributionType"><strong>Contribution Type:</strong> {{ this.schoolNeed?.contributionType }}</p>
+      <p *ngIf="schoolNeed?.specificContribution"><strong>Specific Contribution:</strong> {{ this.schoolNeed?.specificContribution }}</p>
+      <p *ngIf="schoolNeed?.quantity"><strong>Required Quantity:</strong> {{ this.schoolNeed?.quantity }} {{ this.schoolNeed?.unit }}</p>
+      <p *ngIf="schoolNeed?.estimatedCost"><strong>Estimated Cost:</strong> ₱{{ this.schoolNeed?.estimatedCost | number:'1.2-2' }}</p>
+      <p *ngIf="schoolNeed?.studentBeneficiaries"><strong>Student Beneficiaries:</strong> {{ this.schoolNeed?.studentBeneficiaries }}</p>
+      <p *ngIf="schoolNeed?.personnelBeneficiaries"><strong>Personnel Beneficiaries:</strong> {{ this.schoolNeed?.personnelBeneficiaries }}</p>
+      <p *ngIf="schoolNeed?.targetDate"><strong>Target Date:</strong> {{ this.schoolNeed?.targetDate | date:'mediumDate' }}</p>
       <form>
         <mat-form-field appearance="fill">
           <mat-label>Type the name of the stakeholder to engage</mat-label>
@@ -32,10 +40,8 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Unit (Box, pieces, sack, roll etc.)</mat-label>
-          <mat-select [(ngModel)]="unit" name="unit" required>
-            <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
-          </mat-select>
+          <mat-label>Unit</mat-label>
+          <input matInput [(ngModel)]="unit" name="unit" readonly required>
         </mat-form-field>
 
         <mat-form-field appearance="fill">

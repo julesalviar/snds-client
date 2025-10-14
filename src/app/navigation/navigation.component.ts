@@ -8,6 +8,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import {AuthService} from "../auth/auth.service";
 import {UserType} from "../registration/user-type.enum";
 import {filter} from "rxjs";
+import {TenantService} from "../config/tenant.service";
+import {Tenant} from "../config/tenants.enum";
 
 @Component({
   standalone: true,
@@ -26,10 +28,12 @@ import {filter} from "rxjs";
 export class NavigationComponent implements OnInit {
   isMenuOpen = false;
   userType = UserType;
+  tenant = Tenant;
   currentRoute = '';
 
   constructor(
     private readonly authService: AuthService,
+    private readonly tenantService: TenantService,
     private readonly router: Router
   ) {
   }
@@ -60,6 +64,10 @@ export class NavigationComponent implements OnInit {
 
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
+  }
+
+  get currentTenant(): Tenant {
+    return this.tenantService.getCurrentDomainTenant();
   }
 
   changePassword() {

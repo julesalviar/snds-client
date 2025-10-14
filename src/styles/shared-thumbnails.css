@@ -1,0 +1,94 @@
+/* Shared Thumbnail Styles for Tables */
+
+/* Thumbnail container and column styling */
+.thumbnails-column {
+  max-width: 120px !important;
+  width: 120px !important;
+  text-align: center;
+}
+
+.thumbnail-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 120px;
+  position: relative;
+  height: 40px;
+}
+
+.thumbnail-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  flex-shrink: 0;
+  position: absolute;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Single image - centered */
+.thumbnail-image:only-child {
+  position: relative;
+  transform: none;
+}
+
+/* Multiple images - fanned layout */
+.thumbnail-container:has(.thumbnail-image:nth-child(2)) {
+  height: 50px;
+  perspective: 200px;
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(2)) .thumbnail-image {
+  width: 35px;
+  height: 35px;
+}
+
+/* Fanned layout - curved arrangement for multiple images */
+.thumbnail-container:has(.thumbnail-image:nth-child(2)) .thumbnail-image:nth-child(1) {
+  z-index: 3;
+  transform: rotate(-15deg) translateX(-8px) translateY(-2px);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(2)) .thumbnail-image:nth-child(2) {
+  z-index: 2;
+  transform: rotate(-5deg) translateX(0px) translateY(0px);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(3)) .thumbnail-image:nth-child(3) {
+  z-index: 1;
+  transform: rotate(5deg) translateX(8px) translateY(-2px);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(4)) .thumbnail-image:nth-child(4) {
+  z-index: 1;
+  transform: rotate(15deg) translateX(16px) translateY(-4px);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(5)) .thumbnail-image:nth-child(5) {
+  z-index: 1;
+  transform: rotate(25deg) translateX(24px) translateY(-6px);
+}
+
+/* Hover effect to spread the fan - only for multiple images */
+.thumbnail-container:has(.thumbnail-image:nth-child(2)):hover .thumbnail-image:nth-child(1) {
+  transform: rotate(-25deg) translateX(-15px) translateY(-8px) scale(1.1);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(2)):hover .thumbnail-image:nth-child(2) {
+  transform: rotate(-10deg) translateX(-5px) translateY(-3px) scale(1.1);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(3)):hover .thumbnail-image:nth-child(3) {
+  transform: rotate(0deg) translateX(5px) translateY(0px) scale(1.1);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(4)):hover .thumbnail-image:nth-child(4) {
+  transform: rotate(10deg) translateX(15px) translateY(-3px) scale(1.1);
+}
+
+.thumbnail-container:has(.thumbnail-image:nth-child(5)):hover .thumbnail-image:nth-child(5) {
+  transform: rotate(25deg) translateX(25px) translateY(-6px) scale(1.1);
+}
+

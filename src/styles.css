@@ -3,6 +3,9 @@
 /* Alternative: Import only Material core styles instead of full theme */
 /* Uncomment the line below if you want minimal Material styles */
 /* @import '@angular/material/prebuilt-themes/indigo-pink.css'; */
+
+/* Import shared thumbnail styles */
+@import './styles/shared-thumbnails.css';
 *{
   box-sizing: border-box;
 }

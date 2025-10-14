@@ -102,7 +102,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
-      description: ['', [Validators.maxLength(500)]],
+      description: ['', [Validators.maxLength(2000)]],
       images: [[]],
     });
   }

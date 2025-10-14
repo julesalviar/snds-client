@@ -7,7 +7,7 @@
       <p>Schools in Need: <strong>{{ totalBySchool | number }}</strong></p>
     </ng-container>
     <ng-template #schoolSpecificView>
-      <p *ngIf="schoolName"><mat-icon>school</mat-icon> {{ schoolName }}</p>
+      <p *ngIf="schoolName"><mat-icon>school</mat-icon> {{ schoolName | uppercase }}</p>
     </ng-template>
   </div>
   <div class="table-scroll">
@@ -21,7 +21,7 @@
 
         <ng-container matColumnDef="school">
           <th mat-header-cell *matHeaderCellDef> School </th>
-          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName }} </td>
+          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName | uppercase }} </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">
@@ -57,10 +57,10 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef> Actions </th>
           <td mat-cell *matCellDef="let need" style="white-space: nowrap;">
-            <button mat-icon-button (click)="engageWithNeed(need)" matTooltip="View" disabled>
+            <button mat-icon-button (click)="viewSchoolNeed(need)" matTooltip="View">
               <mat-icon>visibility</mat-icon>
             </button>
-            <button mat-icon-button (click)="viewEngagement(need)" matTooltip="Delete" disabled>
+            <button mat-icon-button (click)="deleteSchoolNeed(need)" matTooltip="Delete" disabled>
               <mat-icon>delete</mat-icon>
             </button>
           </td>

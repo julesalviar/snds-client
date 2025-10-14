@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import {MatMenu, MatMenuModule} from '@angular/material/menu';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatBadgeModule } from '@angular/material/badge';
 import { SharedDataService } from '../../common/services/shared-data.service';
-import { ImplementationStatusDialogComponent } from '../implementation-status-dialog/implementation-status-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import {Router, RouterModule} from "@angular/router";
 import {MatButton, MatIconButton} from "@angular/material/button";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
@@ -32,7 +32,8 @@ import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.co
     MatButton,
     MatIconButton,
     MatPaginator,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatBadgeModule
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css']
@@ -40,6 +41,7 @@ import { SchoolNeedViewComponent } from '../school-need-view/school-need-view.co
 export class ListOfSchoolNeedsComponent implements OnInit {
   displayedColumns: string[] = [
     'code',
+    'engaged',
     'year',
     'specificContribution',
     'quantity',
@@ -47,6 +49,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     'beneficiaryStudents',
     'beneficiaryPersonnel',
     'implementationStatus',
+    'feedback',
     'actions'
   ];
   schoolNeeds: SchoolNeed[] = [];
@@ -56,64 +59,23 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   isLoading: boolean = true;
-  schoolneedsview = SchoolNeedViewComponent;
+  expandedRowId: string | null = null;
 
   constructor(
     private readonly sharedDataService: SharedDataService,
     private readonly router: Router,
-    private readonly dialog: MatDialog,
     private readonly schoolNeedService: SchoolNeedService,
+    private readonly snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.loadSchoolNeeds();
   }
 
-  openStatusDialog(need: SchoolNeed): void {
-    const dialogRef = this.dialog.open(ImplementationStatusDialogComponent, {
-      data: {
-        implementationStatus: need.implementationStatus,
-        schoolName: this.schoolName // Pass the school name
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('Dialog closed with result:', result);
-    });
-  }
-
   navigateToEngage(code: string): void {
     this.router.navigate(['/school-admin/school-needs-engage', code]);
   }
 
-  engage(need: SchoolNeed): void {
-    need.engaged = true; // Mark as engaged locally
-    console.log('Engaging with:', need);
-  }
-
-  progress(need: SchoolNeed): void {
-    const dialogRef = this.dialog.open(ImplementationStatusDialogComponent, {
-      data: {
-        implementationStatus: need.implementationStatus,
-        schoolName: this.schoolName,
-        code: need.code,
-        engaged: need.engaged,
-        specificContribution:need.specificContribution,
-
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Update the implementation status in the list
-        const updatedNeed = this.schoolNeeds.find(n => n.code === need.code);
-        if (updatedNeed) {
-          updatedNeed.implementationStatus = result.implementationStatus; // Update status
-        }
-        console.log('Dialog closed with updated status:', result);
-      }
-    });
-  }
   view(need: SchoolNeed): void {
   this.router.navigate(['/school-admin/school-need-view/', need.code]);
 }
@@ -136,7 +98,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize).subscribe({
+    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, undefined, undefined, true).subscribe({
       next: (response) => {
         this.schoolName = response.school?.schoolName;
         this.dataSource.data = response.data;
@@ -148,5 +110,134 @@ export class ListOfSchoolNeedsComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  onFeedbackClick(need: SchoolNeed, feedbackValue: string): void {
+    (need as any).feedback = feedbackValue;
+
+    this.expandedRowId = null;
+
+    this.snackBar.open('Feedback feature is work in progress', 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['info-snackbar']
+    });
+
+    // TODO: Send feedback to backend API
+    console.log('Feedback submitted:', {
+      need: need,
+      feedback: feedbackValue
+    });
+
+    // this.schoolNeedService.submitFeedback(need.code, feedbackValue).subscribe(...);
+  }
+
+  getRowId(need: SchoolNeed): string {
+    // Create a unique ID for each row based on school need properties
+    const rowId = `${need.code}-${need.specificContribution}`.replace(/\s+/g, '-');
+    return rowId;
+  }
+
+  toggleFeedbackExpansion(need: SchoolNeed): void {
+    // Toggle on click for both desktop and mobile
+    const rowId = this.getRowId(need);
+
+    if (this.expandedRowId === rowId) {
+      this.expandedRowId = null;
+    } else {
+      this.expandedRowId = rowId;
+    }
+  }
+
+  getFeedbackIcon(feedback: string): string {
+    const iconMap: { [key: string]: string } = {
+      'very-dissatisfied': 'sentiment_very_dissatisfied',
+      'dissatisfied': 'sentiment_dissatisfied',
+      'neutral': 'sentiment_neutral',
+      'satisfied': 'sentiment_satisfied',
+      'very-satisfied': 'sentiment_very_satisfied'
+    };
+    return iconMap[feedback] || 'rate_review';
+  }
+
+  getFeedbackColor(feedback: string): string {
+    if (feedback === 'very-dissatisfied' || feedback === 'dissatisfied') {
+      return 'warn';
+    } else if (feedback === 'neutral') {
+      return 'accent';
+    } else if (feedback === 'satisfied' || feedback === 'very-satisfied') {
+      return 'primary';
+    }
+    return '';
+  }
+
+  getFeedbackLabel(feedback: string): string {
+    const labelMap: { [key: string]: string } = {
+      'very-dissatisfied': 'Very Dissatisfied',
+      'dissatisfied': 'Dissatisfied',
+      'neutral': 'Neutral',
+      'satisfied': 'Satisfied',
+      'very-satisfied': 'Very Satisfied'
+    };
+    return labelMap[feedback] || '';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    // If no popup is open, do nothing
+    if (!this.expandedRowId) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+
+    // Check if the click is outside the feedback popup and feedback trigger button
+    const clickedInsidePopup = target.closest('.feedback-popup');
+    const clickedInsideTrigger = target.closest('.feedback-trigger');
+
+    // If clicked outside both popup and trigger, close the popup
+    if (!clickedInsidePopup && !clickedInsideTrigger) {
+      this.expandedRowId = null;
+    }
+  }
+
+  getStatusImplementation(schoolNeed: SchoolNeed): string {
+    // schoolNeed.engagements?.reduce()
+    return '';
+  }
+
+  getEngagementStatus(schoolNeed: SchoolNeed): string {
+    const engagements = schoolNeed?.engagements;
+    const targetQuantity = schoolNeed?.quantity ?? 0;
+
+    if (!engagements || engagements.length === 0) {
+      return 'Looking for partner';
+    }
+
+    const totalQuantity = engagements.reduce((sum, engagement) => {
+      return sum + (typeof engagement.quantity === 'number' ? engagement.quantity : 0);
+    }, 0);
+
+    if (targetQuantity === 0) {
+      return 'Target quantity not set';
+    }
+
+    if (totalQuantity >= targetQuantity) {
+      return 'Completed';
+    }
+
+    const percentage = Math.round((totalQuantity / targetQuantity) * 100);
+    return `${percentage}% completed`;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent): void {
+    // If a popup is open, close it when ESC is pressed
+    if (this.expandedRowId) {
+      this.expandedRowId = null;
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 }
