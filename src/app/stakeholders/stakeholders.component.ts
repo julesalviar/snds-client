@@ -106,7 +106,7 @@ export class StakeholdersComponent implements OnInit {
   }
 
   viewSchoolNeed(schoolNeed: SchoolNeed): void {
-    this.router.navigate(['/school-admin/school-need-view/', schoolNeed.code]);
+    this.router.navigate(['/stakeholder/school-need-view/', schoolNeed.code]);
   }
 
   deleteSchoolNeed(schoolNeed: SchoolNeed): void {

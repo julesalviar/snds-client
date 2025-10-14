@@ -65,11 +65,7 @@ export class ClustersComponent implements OnInit {
   async loadClusterOptions(): Promise<void> {
     try {
       await this.internalReferenceDataService.initialize();
-
       const clusters: string[] = this.internalReferenceDataService.get('clusters');
-
-      console.log(clusters);
-
       if (clusters) {
         this.clusterOptions = [
           { value: '', label: 'All Districts/Clusters' },
@@ -174,7 +170,6 @@ export class ClustersComponent implements OnInit {
   }
 
   viewNeeds(school: any): void {
-    console.log('View needs for:', school);
     this.router.navigate(['/stakeholder']);
   }
 

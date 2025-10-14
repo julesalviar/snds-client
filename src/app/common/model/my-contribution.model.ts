@@ -16,6 +16,7 @@ export interface MyContribution {
   schoolId: SchoolInfo;
   schoolNeedId: {
     _id: string;
+    code: number;
     specificContribution: string;
     images: Image[];
   }

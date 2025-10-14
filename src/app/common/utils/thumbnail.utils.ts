@@ -6,7 +6,6 @@ export class ThumbnailUtils {
    * If there are more than 5 images, randomly select 5 for the fanned layout
    */
   static getThumbnailImages(item: any): SchoolNeedImage[] {
-    console.log('Getting thumbnail images for item:', item);
     if (!item?.images || !Array.isArray(item.images)) {
       return [];
     }

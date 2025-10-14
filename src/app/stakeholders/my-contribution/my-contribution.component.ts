@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, HostListener} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {
   MatCellDef,
@@ -16,11 +16,14 @@ import {MatIcon, MatIconModule} from '@angular/material/icon';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {MyContribution} from '../../common/model/my-contribution.model';
 import {EngagementService} from "../../common/services/engagement.service";
 import {getSchoolYear} from "../../common/date-utils";
 import {ThumbnailUtils} from "../../common/utils/thumbnail.utils";
 import {SchoolNeedImage} from "../../common/model/school-need.model";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-my-contribution',
@@ -42,17 +45,23 @@ import {SchoolNeedImage} from "../../common/model/school-need.model";
     MatIconModule,
     MatProgressBarModule,
     MatSelectModule,
-    MatFormFieldModule]
+    MatFormFieldModule,
+    MatTooltipModule]
 })
 export class MyContributionComponent implements OnInit {
-  displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements', 'mov'];
-  dataSource = new MatTableDataSource<Contribution>([]);
+  displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements', 'mov', 'feedback', 'actions'];
+  dataSource = new MatTableDataSource<MyContribution>([]);
   schoolYears: string[] = [];
   selectedSchoolYear: string = getSchoolYear();
   loading = false;
   error: string | null = null;
+  expandedRowId: string | null = null;
 
-  constructor(private readonly engagementService: EngagementService) {
+  constructor(
+    private readonly engagementService: EngagementService,
+    private readonly router: Router,
+    private readonly snackBar: MatSnackBar
+  ) {
     this.schoolYears = this.generateSchoolYears();
   }
 
@@ -66,7 +75,7 @@ export class MyContributionComponent implements OnInit {
 
     this.engagementService.getMyContributions(schoolYear).subscribe({
       next: (response) => {
-        this.dataSource.data = this.transformContributionsData(response.data);
+        this.dataSource.data = response.data;
         this.loading = false;
       },
       error: (error) => {
@@ -95,24 +104,110 @@ export class MyContributionComponent implements OnInit {
     this.loadMyContributions(schoolYear);
   }
 
-  private transformContributionsData(myContributions: MyContribution[]): Contribution[] {
-    return myContributions.map(contribution => ({
-      need: contribution.schoolNeedId?.specificContribution ?? '',
-      schoolName: contribution.schoolId?.schoolName,
-      schoolYear: contribution.schoolYear,
-      quantity: contribution.quantity,
-      amount: contribution.amount,
-      engagement: contribution.startDate,
-      images: contribution.schoolNeedId?.images ?? []
-    }));
-  }
-
   getThumbnailImages(contribution: any): SchoolNeedImage[] {
     return ThumbnailUtils.getThumbnailImages(contribution);
   }
 
   onImageError(event: any): void {
     ThumbnailUtils.onImageError(event);
+  }
+
+  onFeedbackClick(contribution: Contribution, feedbackValue: string): void {
+    (contribution as any).feedback = feedbackValue;
+
+    this.expandedRowId = null;
+
+    this.snackBar.open('Feedback feature is work in progress', 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['info-snackbar']
+    });
+
+    // TODO: Send feedback to backend API
+    console.log('Feedback submitted:', {
+      contribution: contribution,
+      feedback: feedbackValue
+    });
+
+    // this.engagementService.submitFeedback(contribution.engagement, feedbackValue).subscribe(...);
+  }
+
+  getRowId(contribution: Contribution): string {
+    const rowId = `${contribution.need}-${contribution.schoolName}-${contribution.engagement}`.replace(/\s+/g, '-');
+    return rowId;
+  }
+
+  toggleFeedbackExpansion(contribution: Contribution): void {
+    const rowId = this.getRowId(contribution);
+
+    if (this.expandedRowId === rowId) {
+      this.expandedRowId = null;
+    } else {
+      this.expandedRowId = rowId;
+    }
+  }
+
+  getFeedbackIcon(feedback: string): string {
+    const iconMap: { [key: string]: string } = {
+      'very-dissatisfied': 'sentiment_very_dissatisfied',
+      'dissatisfied': 'sentiment_dissatisfied',
+      'neutral': 'sentiment_neutral',
+      'satisfied': 'sentiment_satisfied',
+      'very-satisfied': 'sentiment_very_satisfied'
+    };
+    return iconMap[feedback] || 'rate_review';
+  }
+
+  getFeedbackColor(feedback: string): string {
+    if (feedback === 'very-dissatisfied' || feedback === 'dissatisfied') {
+      return 'warn';
+    } else if (feedback === 'neutral') {
+      return 'accent';
+    } else if (feedback === 'satisfied' || feedback === 'very-satisfied') {
+      return 'primary';
+    }
+    return '';
+  }
+
+  getFeedbackLabel(feedback: string): string {
+    const labelMap: { [key: string]: string } = {
+      'very-dissatisfied': 'Very Dissatisfied',
+      'dissatisfied': 'Dissatisfied',
+      'neutral': 'Neutral',
+      'satisfied': 'Satisfied',
+      'very-satisfied': 'Very Satisfied'
+    };
+    return labelMap[feedback] || '';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    if (!this.expandedRowId) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+
+    const clickedInsidePopup = target.closest('.feedback-popup');
+    const clickedInsideTrigger = target.closest('.feedback-trigger');
+
+    if (!clickedInsidePopup && !clickedInsideTrigger) {
+      this.expandedRowId = null;
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent): void {
+    if (this.expandedRowId) {
+      this.expandedRowId = null;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  viewContribution(contribution: MyContribution): void {
+    this.router.navigate(['/stakeholder/school-need-view/', contribution.schoolNeedId?.code]);
   }
 
 }
