@@ -71,6 +71,13 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.initializeData();
+  }
+
+  private async initializeData(): Promise<void> {
+    await this.referenceDataService.initialize();
+    await this.internalReferenceDataService.initialize();
+    
     this.loadRegions();
     this.loadDivisions();
     this.loadClusters();
@@ -78,16 +85,14 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   }
 
 
-  private async loadSchoolOfferings(): Promise<void> {
-    await this.referenceDataService.initialize();
+  private loadSchoolOfferings(): void {
     const schoolOfferingData = this.referenceDataService.get('schoolOffering');
     if (schoolOfferingData && Array.isArray(schoolOfferingData)) {
       this.schoolOfferings = schoolOfferingData;
     }
   }
 
-  private async loadRegions(): Promise<void> {
-    await this.internalReferenceDataService.initialize();
+  private loadRegions(): void {
     const regionData: { code: string, name: string} = this.internalReferenceDataService.get('region');
 
     if (regionData) {
@@ -96,8 +101,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     }
   }
 
-  private async loadDivisions(): Promise<void> {
-    await this.internalReferenceDataService.initialize();
+  private loadDivisions(): void {
     const divisionData: string = this.internalReferenceDataService.get('division');
 
     if (divisionData) {
@@ -106,8 +110,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     }
   }
 
-  private async loadClusters(): Promise<void> {
-    await this.internalReferenceDataService.initialize();
+  private loadClusters(): void {
     const clusterData: string[] = this.internalReferenceDataService.get('clusters');
     if (clusterData) {
       this.clusters = clusterData;
