@@ -32,12 +32,12 @@
 
         <ng-container matColumnDef="need">
           <th mat-header-cell *matHeaderCellDef> Need </th>
-          <td mat-cell *matCellDef="let contribution"> {{contribution.need}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.schoolNeedId?.specificContribution ?? ''}} </td>
         </ng-container>
 
         <ng-container matColumnDef="schoolName">
           <th mat-header-cell *matHeaderCellDef> Name of School </th>
-          <td mat-cell *matCellDef="let contribution"> {{contribution.schoolName | uppercase}} </td>
+          <td mat-cell *matCellDef="let contribution"> {{ (contribution.schoolId?.schoolName ?? '') | uppercase}} </td>
         </ng-container>
 
         <ng-container matColumnDef="schoolYear">
@@ -57,16 +57,16 @@
 
         <ng-container matColumnDef="engagements">
           <th mat-header-cell *matHeaderCellDef> Engagement </th>
-          <td mat-cell *matCellDef="let contribution"> {{contribution.engagement | date: 'shortDate' }} </td>
+          <td mat-cell *matCellDef="let contribution"> {{contribution.startDate | date: 'shortDate' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="mov">
           <th mat-header-cell *matHeaderCellDef> MOV </th>
           <td mat-cell *matCellDef="let contribution" class="thumbnails-column">
             <div class="thumbnail-container">
-              <img *ngFor="let image of getThumbnailImages(contribution)"
+              <img *ngFor="let image of getThumbnailImages(contribution?.schoolNeedId)"
                    [src]="image.thumbnailUrl"
-                   [alt]="contribution.need"
+                   [alt]="contribution.schoolNeedId?.description"
                    class="thumbnail-image"
                    (error)="onImageError($event)">
             </div>
