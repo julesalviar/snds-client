@@ -15,9 +15,8 @@ import {ReferenceDataService} from '../common/services/reference-data.service';
 import {controlHasErrorAndTouched} from "../common/form-utils";
 import {switchMap} from "rxjs";
 import {UserType} from "../registration/user-type.enum";
-import {RegionOption} from '../common/model/region.model';
-import {DivisionOption} from '../common/model/division.model';
 import {RegistrationErrorDialogComponent} from './registration-error-dialog.component';
+import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 
 @Component({
   selector: 'app-school-admin-registration',
@@ -41,12 +40,9 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   defaultPassword: string = '123456'; // Default password
   success: boolean = false;
 
-  regions: RegionOption[] = [];
-  divisions: DivisionOption[] = [];
+  regions: [{ value: string, label: string }] | [] | null | undefined = [];
+  divisions: [{ value: string, label: string }] | [] | null | undefined = [];
   clusters: string[] = [];
-  disabledRegions: string[] = [];
-  disabledDivisions: string[] = [];
-  regionData: any[] = []; // Store full region data to access active field
   schoolOfferings: string[] = [];
 
   constructor(
@@ -54,6 +50,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     private readonly router: Router,
     private readonly userService: UserService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly internalReferenceDataService: InternalReferenceDataService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog
   ) {
@@ -75,207 +72,48 @@ export class SchoolAdminRegistrationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRegions();
+    this.loadDivisions();
+    this.loadClusters();
     this.loadSchoolOfferings();
-    this.setupRegionChangeListener();
-    this.setupDivisionChangeListener();
   }
 
 
   private async loadSchoolOfferings(): Promise<void> {
     await this.referenceDataService.initialize();
-
     const schoolOfferingData = this.referenceDataService.get('schoolOffering');
-
     if (schoolOfferingData && Array.isArray(schoolOfferingData)) {
       this.schoolOfferings = schoolOfferingData;
     }
   }
 
   private async loadRegions(): Promise<void> {
-    await this.referenceDataService.initialize();
-
-    const regionData = this.referenceDataService.get('region');
+    await this.internalReferenceDataService.initialize();
+    const regionData: { code: string, name: string} = this.internalReferenceDataService.get('region');
 
     if (regionData) {
-      let regionsArray: any[] = [];
-
-      if (Array.isArray(regionData)) {
-        regionsArray = regionData;
-      } else if (regionData.value && Array.isArray(regionData.value)) {
-        regionsArray = regionData.value;
-      } else if (regionData.data && Array.isArray(regionData.data)) {
-        regionsArray = regionData.data;
-      } else {
-        console.log('Unknown region data structure:', regionData);
-        return;
-      }
-
-      this.regionData = regionsArray;
-
-      this.regions = regionsArray
-        .filter((region: any) => region.display !== false) // Only include if display is not false
-        .map((region: any) => ({
-          value: region.code ?? region.id ?? region.value,
-          label: region.name ?? region.label,
-          display: region.display
-        }));
-    }
-
-    // Set up disabled regions based on active field
-    this.setupDisabledRegions();
-
-    // Find the first active region for preselection
-    const activeRegion = this.regionData.find((region: any) => region.active);
-    if (activeRegion) {
-      this.registrationForm.get('region')?.setValue(activeRegion.code);
-
-      this.loadDivisions(activeRegion.code);
-
-      if (activeRegion.divisions && activeRegion.divisions.length > 0) {
-        const activeDivision = activeRegion.divisions.find((division: any) => division.active);
-        if (activeDivision) {
-          this.registrationForm.get('division')?.setValue(activeDivision.name);
-        }
-      }
+      this.regions = [{ 'value': regionData.code, 'label': regionData.code }];
+      this.registrationForm.get('region')?.setValue(this.regions[0].value);
     }
   }
 
-  private setupRegionChangeListener(): void {
-    this.registrationForm.get('region')?.valueChanges.subscribe(regionCode => {
-      if (regionCode) {
-        this.loadDivisions(regionCode);
-        this.registrationForm.get('division')?.setValue('');
-        this.registrationForm.get('district')?.setValue('');
-        this.clusters = [];
-      } else {
-        this.divisions = [];
-        this.clusters = [];
-        this.registrationForm.get('division')?.setValue('');
-        this.registrationForm.get('district')?.setValue('');
-      }
-    });
-  }
+  private async loadDivisions(): Promise<void> {
+    await this.internalReferenceDataService.initialize();
+    const divisionData: string = this.internalReferenceDataService.get('division');
 
-  private setupDivisionChangeListener(): void {
-    this.registrationForm.get('division')?.valueChanges.subscribe(divisionName => {
-      if (divisionName) {
-        this.loadClusters(divisionName);
-        this.registrationForm.get('district')?.setValue('');
-      } else {
-        this.clusters = [];
-        this.registrationForm.get('district')?.setValue('');
-      }
-    });
-  }
-
-  private async loadDivisions(regionCode: string): Promise<void> {
-    try {
-      await this.referenceDataService.initialize();
-
-      const regionData = this.referenceDataService.get('region');
-
-      if (regionData) {
-        let regionsArray: any[] = [];
-
-        if (Array.isArray(regionData)) {
-          regionsArray = regionData;
-        } else if (regionData.value && Array.isArray(regionData.value)) {
-          regionsArray = regionData.value;
-        } else if (regionData.data && Array.isArray(regionData.data)) {
-          regionsArray = regionData.data;
-        }
-
-        const selectedRegion = regionsArray.find((region: any) =>
-          region.code === regionCode
-        );
-
-        if (selectedRegion?.divisions) {
-          this.divisions = selectedRegion.divisions
-            .filter((division: any) => division.display !== false) // Only include if display is not false
-            .map((division: any) => ({
-              value: division.name,
-              label: division.name,
-              active: division.active,
-              display: division.display
-            }));
-
-          this.setupDisabledDivisions();
-        } else {
-          this.divisions = [];
-          this.disabledDivisions = [];
-        }
-      }
-    } catch (error) {
-      console.error('Error loading divisions:', error);
-      this.divisions = [];
+    if (divisionData) {
+      this.divisions = [{ 'value': divisionData, 'label': divisionData }];
+      this.registrationForm.get('division')?.setValue(this.divisions[0].value);
     }
   }
 
-  private async loadClusters(divisionName: string): Promise<void> {
-    try {
-      await this.referenceDataService.initialize();
-
-      const regionData = this.referenceDataService.get('region');
-
-      if (regionData) {
-        let regionsArray: any[] = [];
-
-        if (Array.isArray(regionData)) {
-          regionsArray = regionData;
-        } else if (regionData.value && Array.isArray(regionData.value)) {
-          regionsArray = regionData.value;
-        } else if (regionData.data && Array.isArray(regionData.data)) {
-          regionsArray = regionData.data;
-        }
-
-        const selectedRegion = regionsArray.find((region: any) =>
-          region.code === this.registrationForm.get('region')?.value
-        );
-
-        if (selectedRegion?.divisions) {
-          const selectedDivision = selectedRegion.divisions.find((division: any) =>
-            division.name === divisionName
-          );
-
-          if (selectedDivision?.clusters) {
-            this.clusters = selectedDivision.clusters;
-          } else {
-            this.clusters = [];
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading clusters:', error);
-      this.clusters = [];
+  private async loadClusters(): Promise<void> {
+    await this.internalReferenceDataService.initialize();
+    const clusterData: string[] = this.internalReferenceDataService.get('clusters');
+    if (clusterData) {
+      this.clusters = clusterData;
     }
   }
 
-  private setupDisabledRegions(): void {
-    this.disabledRegions = this.regions
-      .filter(region => !this.isRegionActive(region.value))
-      .map(region => region.value);
-  }
-
-  isRegionActive(regionValue: string): boolean {
-    const region = this.regionData.find((r: any) => r.code === regionValue);
-    return region ? region.active : false;
-  }
-
-  isRegionDisabled(regionValue: string): boolean {
-    return this.disabledRegions.includes(regionValue);
-  }
-
-  private setupDisabledDivisions(): void {
-    this.disabledDivisions = this.divisions
-      .filter(division => !division.active)
-      .map(division => division.value);
-  }
-
-  isDivisionDisabled(divisionValue: string): boolean {
-    return this.disabledDivisions.includes(divisionValue);
-  }
-
-  // Custom validator for password matching
   passwordMatchValidator(form: FormGroup): ValidationErrors | null {
     return form.get('password')?.value === form.get('confirmPassword')?.value
       ? null : {mismatch: true};

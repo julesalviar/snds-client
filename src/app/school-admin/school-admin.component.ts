@@ -68,7 +68,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   totalItems: number = 0;
   isLoading: boolean = true;
 
-  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
+  displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'unit', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars: string[] = [];
   schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
@@ -90,7 +90,6 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly schoolNeedService: SchoolNeedService,
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
-    private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
@@ -112,13 +111,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
     });
   }
-   phoneNumberValidator(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    //check if the value is a valid phone number format
-    const isValidPhoneNumber = /^[0-9]{11}$/.test(value);
 
-    return isValidPhoneNumber ? null : { invalidPhoneNumber: true };
-   }
   queryData(): void {
     this.pageIndex = 0; // Reset to first page when changing school year
     this.loadAllSchoolNeeds();
