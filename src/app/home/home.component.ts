@@ -1,14 +1,15 @@
 import {Component, OnInit} from '@angular/core';
-import { UserService } from '../common/services/user.service';
-import { CommonModule } from '@angular/common';
-import { MatBadgeModule } from '@angular/material/badge';
-import { Router } from '@angular/router';
+import {UserService} from '../common/services/user.service';
+import {CommonModule} from '@angular/common';
+import {MatBadgeModule} from '@angular/material/badge';
+import {Router} from '@angular/router';
 import {ReferenceDataService} from "../common/services/reference-data.service";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {AuthService} from "../auth/auth.service";
 import {forkJoin, Observable, of, switchMap} from "rxjs";
 import {MatIcon} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {getSchoolYear} from "../common/date-utils";
 
 interface TreeNode {
     name: string;
@@ -91,25 +92,8 @@ export class HomeComponent implements OnInit {
       this.router.navigate([path], { queryParams });
   }
 
-
-    getContributions(): string[] {
-      return this.treeData.map(node => {
-        const contributionType = node.name;
-        const specificContributions = node.children?.map(child => child.name).join(', ') ?? 'No specific contributions';
-        return `Contribution type: ${contributionType}, Specific Contribution: ${specificContributions}`;
-      });
-    }
-
-    onImageClick(): void {
-      console.log('Image clicked');
-    }
-
-    private loadTreeTemplate(): void {
-      this.treeData = this.referenceDataService.get<TreeNode[]>('contributionTree');
-    }
-
     private fetchAllSchoolNeeds(page= 1, size = 10000, acc: any[] = []): Observable<{data: any[], schoolName: string}> {
-      return this.schoolNeedService.getSchoolNeeds(page, size).pipe(
+      return this.schoolNeedService.getSchoolNeeds(page, size, getSchoolYear(), undefined, undefined, true).pipe(
         switchMap(res => {
           const currentData = res?.data ?? [];
           const allData = [...acc, ...currentData];
@@ -151,7 +135,6 @@ export class HomeComponent implements OnInit {
 
     private mapCountsToTree(needs: any[]): void {
       for (const node of this.treeData) {
-        let countTotal = 0;
 
         if(node.children) {
           for (const child of node.children) {
@@ -159,16 +142,16 @@ export class HomeComponent implements OnInit {
               need => need.specificContribution === child.name
             );
 
-            const totalQuantity = specificNeeds.reduce((acc, child) => {
-              return acc + (child.quantity ?? 0);
+            child.count = specificNeeds.reduce((acc, child) => {
+              const totalEngaged = (child.engagements ?? []).reduce((engAcc: number, eng: any) => engAcc + (eng.quantity ?? 0), 0);
+              return acc + (child.quantity ?? 0) - totalEngaged;
             }, 0);
 
-            child.count = totalQuantity;
-            countTotal += totalQuantity;
+            if ((child?.count ?? 0) <= 0) {
+              child.count = undefined;
+            }
           }
         }
-
-        node.count = countTotal;
       }
     }
   }
