@@ -154,10 +154,10 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     }
 
     if (totalQuantity >= targetQuantity) {
-      return { progress: 100, status: 'Completed' };
+      return { progress: 100, status: 'Complete' };
     }
 
     const percentage = Math.round((totalQuantity / targetQuantity) * 100);
-    return { progress: percentage, status: `${percentage}% completed` };
+    return { progress: percentage, status: `${percentage}% complete` };
   }
 }
