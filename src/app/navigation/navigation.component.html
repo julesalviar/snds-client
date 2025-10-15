@@ -8,14 +8,24 @@
     <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
 
     <!-- Stakeholder Menus -->
-    <ng-container *ngIf="userRole === userType.StakeHolder">
-      <li>
-        <span tabindex="0">Find School</span>
-        <ul>
-          <li><a routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
-          <li><a routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
+   <ng-container *ngIf="userRole === userType.StakeHolder">
+  <li class="dropdown">
+    <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
+    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+      <li class="submenu">
+       <span tabindex="0" (click)="toggleSubmenu()">
+        School<i class="fas fa-chevron-down"></i>
+      </span>
+        <ul class="nested-dropdown" [class.show]="submenuVisible">
+          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
+          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
+      <li>
+        <a routerLink="/stakeholder/offices" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
+      </li>
+    </ul>
+  </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
       <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
@@ -24,22 +34,21 @@
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
                  target="_blank" rel="noopener noreferrer">Partners Support</a></li>
-         <!-- <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
-                 rel="noopener noreferrer">SPFP</a></li>
-          <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li>-->
         </ul>
       </li>
     </ng-container>
 
-    <!-- School Admin Menus -->
+      <!-- School Admin Menus -->
     <ng-container *ngIf="userRole === userType.SchoolAdmin">
-      <li>
-        <span tabindex="0">School Needs</span>
-        <ul>
+     <li class="dropdown">
+    <span tabindex="0" (click)="toggleDropdown()">School Needs</span>
+    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+      <li class="submenu">
           <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
           <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()"class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Senior High School</a></li>
         </ul>
-      </li>
+  </li> 
+      
       <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
       <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
              (click)="closeMenu()">DPDS</a></li>
@@ -48,17 +57,28 @@
      <li *ngIf="currentTenant === tenant.GENSAN"><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
                  rel="noopener noreferrer">SPFP</a></li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
+   
     </ng-container>
 
-    <!-- Division Admin Menus -->
+     <!-- Division Admin Menus -->
     <ng-container *ngIf="userRole === 'divisionAdmin'">
-      <li>
-        <span tabindex="0">Find a School</span>
-        <ul>
-          <li><a routerLink="/division-admin/all-schools" (click)="closeMenu()">All</a></li>
-          <li><a routerLink="/division-admin/schools-by-district" (click)="closeMenu()">By District</a></li>
+      <li class="dropdown">
+    <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
+    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+      <li class="submenu">
+        <span tabindex="0" (click)="toggleSubmenu()">
+        School<i class="fas fa-chevron-down"></i>
+      </span>
+        <ul class="nested-dropdown" [class.show]="submenuVisible">
+          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
+          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
+      <li>
+        <a routerLink="/stakeholder/offices" (click)="closeMenu()">Office</a>
+      </li>
+    </ul>
+  </li>
       <li><a routerLink="/division-admin/about-us" (click)="closeMenu()">About Us</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>
@@ -81,21 +101,28 @@
 
     <!-- Guest Menus - for users who are not logged in -->
     <ng-container *ngIf="!isLoggedIn()">
-      <li>
-        <span tabindex="0">Find School</span>
-        <ul>
-          <li><a routerLink="/guest/all-school" (click)="closeMenu()">All</a></li>
-          <li><a routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
+     <li class="dropdown">
+    <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
+    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+      <li class="submenu">
+        <span tabindex="0" (click)="toggleSubmenu()">
+        School <i class="fas fa-chevron-down"></i>
+        </span>
+        <ul class="nested-dropdown" [class.show]="submenuVisible">
+          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
+          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
+      <li>
+        <a routerLink="/stakeholder/offices" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
+      </li>
+    </ul>
+  </li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>
         <ul>
           <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
                  target="_blank" rel="noopener noreferrer">Partners Support</a></li>
-         <!-- <li><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
-                 rel="noopener noreferrer">SPFP</a></li>
-          <li><a routerLink="/school-admin/partnership" (click)="closeMenu()">Partnership</a></li> -->
         </ul>
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
