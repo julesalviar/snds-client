@@ -168,6 +168,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
+
     // Validate specific contribution
     const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
     if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
@@ -179,6 +180,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       this.showInvalidSpecificContributionDialog();
       return;
     }
+
 
     this.isSaving = true;
     try {
