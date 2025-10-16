@@ -26,6 +26,8 @@ import {Tenant} from "../config/tenants.enum";
   ]
 })
 export class NavigationComponent implements OnInit {
+  dropdownVisible = false;
+  submenuVisible = false;
   isMenuOpen = false;
   userType = UserType;
   tenant = Tenant;
@@ -49,6 +51,14 @@ export class NavigationComponent implements OnInit {
       });
   }
 
+   toggleDropdown() {
+    this.dropdownVisible = !this.dropdownVisible;
+    this.submenuVisible = false; // Close submenu when main dropdown is toggled
+  }
+
+  toggleSubmenu() {
+    this.submenuVisible = !this.submenuVisible;
+  }
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
     console.log('Menu Open:', this.isMenuOpen);
@@ -56,6 +66,8 @@ export class NavigationComponent implements OnInit {
 
   closeMenu() {
     this.isMenuOpen = false;
+     this.dropdownVisible = false; 
+    this.submenuVisible = false; 
   }
 
   get userRole(): string {
@@ -85,4 +97,6 @@ export class NavigationComponent implements OnInit {
   shouldShowLoginButton(): boolean {
     return this.currentRoute !== '/sign-in';
   }
+
 }
+
