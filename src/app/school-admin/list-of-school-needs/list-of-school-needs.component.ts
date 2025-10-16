@@ -80,7 +80,6 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   this.router.navigate(['/school-admin/school-need-view/', need.code]);
 }
   edit(need: SchoolNeed): void {
-     console.log('Navigating to:', `/school-admin/school-need/${need.code}`);
     this.router.navigate(['/school-admin/school-need/', need.code]);
   }
 

@@ -47,8 +47,8 @@
           <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
           <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()"class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Senior High School</a></li>
         </ul>
-  </li> 
-      
+  </li>
+
       <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
       <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
              (click)="closeMenu()">DPDS</a></li>
@@ -57,7 +57,7 @@
      <li *ngIf="currentTenant === tenant.GENSAN"><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
                  rel="noopener noreferrer">SPFP</a></li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
-   
+
     </ng-container>
 
      <!-- Division Admin Menus -->
@@ -70,12 +70,12 @@
         School<i class="fas fa-chevron-down"></i>
       </span>
         <ul class="nested-dropdown" [class.show]="submenuVisible">
-          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
-          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
+          <li><a class="custom-link" routerLink="/division-admin/all-school" (click)="closeMenu()">All</a></li>
+          <li><a class="custom-link" routerLink="/division-admin/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
       <li>
-        <a routerLink="/stakeholder/offices" (click)="closeMenu()">Office</a>
+        <a routerLink="/division-admin/offices" (click)="closeMenu()">Office</a>
       </li>
     </ul>
   </li>
@@ -109,12 +109,12 @@
         School <i class="fas fa-chevron-down"></i>
         </span>
         <ul class="nested-dropdown" [class.show]="submenuVisible">
-          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
-          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
+          <li><a class="custom-link" routerLink="/guest/all-school" (click)="closeMenu()">All</a></li>
+          <li><a class="custom-link" routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
         </ul>
       </li>
       <li>
-        <a routerLink="/stakeholder/offices" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
+        <a routerLink="/guest/offices" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
       </li>
     </ul>
   </li>
