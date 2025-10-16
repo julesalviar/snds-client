@@ -45,7 +45,7 @@ export interface SchoolNeed {
   updatedAt?: string;
 
 
-  projectId: ProjectInfo | string;
+  projectId: (ProjectInfo | string)[];
   schoolId: SchoolInfo | string;
   school?: SchoolInfo;
   project?: ProjectInfo;

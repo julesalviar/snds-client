@@ -25,6 +25,7 @@ import { HttpService } from "../../common/services/http.service";
 import { API_ENDPOINT } from "../../common/api-endpoints";
 import { ReferenceDataService } from "../../common/services/reference-data.service";
 import {NavigationService} from "../../common/services/navigation.service";
+import {MatChipsModule} from '@angular/material/chips';
 
 @Component({
   selector: 'app-school-need',
@@ -42,7 +43,8 @@ import {NavigationService} from "../../common/services/navigation.service";
     CommonModule,
     MatCardTitle,
     MatIcon,
-    MatProgressBar
+    MatProgressBar,
+    MatChipsModule
   ],
   templateUrl: './school-need.component.html',
   styleUrl: './school-need.component.css'
@@ -69,6 +71,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   filteredSpecificContributions: string[] = [];
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
+  
+  selectedProjectIds: string[] = [];
 
   private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
     const unit = this.schoolNeedsForm?.get('unit')?.value;
@@ -93,7 +97,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
       schoolYear: [getSchoolYear(), [Validators.required]],
-      projectName: ['', [Validators.required]],
+      projectName: [[], [Validators.required, Validators.minLength(1)]],
       intermediateOutcome: [''], // Readonly field, populated from project.pillars
       quantityNeeded: [ 0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
@@ -145,7 +149,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
         ...this.schoolNeed!,
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
         contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.schoolNeedsForm.get('projectName')?.value,
+        projectId: this.selectedProjectIds,
         schoolId: this.schoolNeed!.schoolId,
         quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
         unit: this.schoolNeedsForm.get('unit')?.value,
@@ -231,12 +235,21 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
     console.log('Populating form with school need:', this.schoolNeed);
 
+    // Extract project IDs from the array
+    this.selectedProjectIds = this.schoolNeed.projectId.map(project => 
+      typeof project === 'object' ? project._id : project
+    );
+
+    // Get intermediate outcome from first project (if available)
+    const firstProject = this.schoolNeed.projectId[0];
+    const intermediateOutcome = firstProject && typeof firstProject === 'object' ? firstProject.pillars : '';
+
     this.schoolNeedsForm.patchValue({
       contributionType: this.schoolNeed.contributionType,
       specificContribution: this.schoolNeed.specificContribution,
       schoolYear: getSchoolYear(),
-      projectName: typeof this.schoolNeed.projectId === 'object' ? this.schoolNeed.projectId._id : this.schoolNeed.projectId,
-      intermediateOutcome: typeof this.schoolNeed.projectId === 'object' ? this.schoolNeed.projectId.pillars : '',
+      projectName: this.selectedProjectIds,
+      intermediateOutcome: intermediateOutcome,
       quantityNeeded: this.schoolNeed.quantity,
       unit: this.schoolNeed.unit,
       otherUnit: this.schoolNeed.unit === 'Others (pls. specify)' ? this.schoolNeed.unit : '',
@@ -452,5 +465,26 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     const existingCount = this.schoolNeed?.images?.length || 0;
     const newCount = this.previewImages.length;
     return existingCount + newCount;
+  }
+
+  protected addProject(projectId: string): void {
+    if (projectId && !this.selectedProjectIds.includes(projectId)) {
+      this.selectedProjectIds.push(projectId);
+      this.schoolNeedsForm.get('projectName')?.setValue(this.selectedProjectIds);
+      this.schoolNeedsForm.get('projectName')?.markAsTouched();
+    }
+  }
+
+  protected removeProject(projectId: string): void {
+    const index = this.selectedProjectIds.indexOf(projectId);
+    if (index >= 0) {
+      this.selectedProjectIds.splice(index, 1);
+      this.schoolNeedsForm.get('projectName')?.setValue(this.selectedProjectIds);
+    }
+  }
+
+  protected getProjectTitle(projectId: string): string {
+    const project = this.projectsData.find(p => p._id === projectId);
+    return project ? `${project.apn} - ${project.title}` : projectId;
   }
 }

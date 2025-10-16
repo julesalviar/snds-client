@@ -22,6 +22,7 @@ import {ChangePasswordComponent} from './navigation/change-password/change-passw
 import {FooterComponent} from './footer/footer.component';
 import {AboutUsComponent} from './navigation/about-us/about-us.component';
 import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-need-view.component";
+import { QuickCountComponent } from './school-admin/quick-count/quick-count.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -55,6 +56,7 @@ export const routes: Routes = [
       {path: 'districts', component: ClustersComponent},
       {path: 'school-needs', component: StakeholdersComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
+      {path: 'quick-count', component: QuickCountComponent},
     ]
   },
 

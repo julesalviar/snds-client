@@ -9,8 +9,19 @@ export class SchoolService {
   }
 
   getSchools(page: number, limit: number): Observable<any> {
-    const url = `${API_ENDPOINT.schools}?page=${page}&limit=${limit}&withNeedCount=true`;
-    
+    let url = API_ENDPOINT.schools;
+    const params: string[] = ['withNeed=true'];
+
+    if (page) {
+      params.push(`page=${page}`);
+    }
+
+    if (limit) {
+      params.push(`limit=${limit}`);
+    }
+
+    url += `?${params.join('&')}`;
+
     return this.httpService.get<any>(url).pipe(
       catchError(this.httpService.handleError)
     );
@@ -18,18 +29,18 @@ export class SchoolService {
 
   getAllSchools(district?: string, search?: string): Observable<any> {
     let url = API_ENDPOINT.schools;
-    const params: string[] = ['withNeedCount=true'];
-    
+    const params: string[] = ['withNeed=true'];
+
     if (district) {
       params.push(`district=${encodeURIComponent(district.toLowerCase())}`);
     }
-    
+
     if (search) {
       params.push(`search=${encodeURIComponent(search.trim())}`);
     }
-    
+
     url += `?${params.join('&')}`;
-    
+
     return this.httpService.get<any>(url).pipe(
       catchError(this.httpService.handleError)
     );

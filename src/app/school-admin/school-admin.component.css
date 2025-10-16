@@ -316,3 +316,98 @@ button[disabled]:hover {
   margin-top: 16px;
   color: #666;
 }
+
+/* Chips container styles */
+.chips-container {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  min-height: 48px;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+}
+
+.chips-container mat-chip-set {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Apply background color to all chip elements */
+::ng-deep .chips-container mat-chip {
+  max-width: 435px !important;
+  margin: 4px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  cursor: default !important;
+  background-color: #4CAF50 !important;
+  transition: all 0.2s ease !important;
+  padding: 8px 12px !important;
+  min-height: 36px !important;
+  font-size: 14px !important;
+}
+
+::ng-deep .chips-container mat-chip:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16) !important;
+  background-color: #45a049 !important;
+}
+
+/* Ensure all internal elements have consistent styling */
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__cell,
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__action,
+::ng-deep .chips-container mat-chip .mat-mdc-chip-action-label,
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__graphic,
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__text-label {
+  background-color: transparent !important;
+  color: white !important;
+}
+
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__cell,
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__action {
+  height: 100% !important;
+  align-items: center !important;
+}
+
+::ng-deep .chips-container mat-chip .mdc-evolution-chip__text-label {
+  max-width: 295px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  color: white !important;
+}
+
+::ng-deep .chips-container mat-chip .mat-mdc-chip-action-label {
+  max-width: 295px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Style the remove button */
+::ng-deep .chips-container mat-chip button {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+}
+
+::ng-deep .chips-container mat-chip button:hover {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+::ng-deep .chips-container mat-chip button:active {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+::ng-deep .chips-container mat-chip button mat-icon {
+  color: white !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}

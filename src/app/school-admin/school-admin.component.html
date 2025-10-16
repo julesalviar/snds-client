@@ -49,13 +49,26 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Select PPA Name</mat-label>
-        <mat-select formControlName="ppaName">
-          <mat-option *ngFor="let project of projectsData" [value]="project._id">{{ project.title }}</mat-option>
+        <mat-select #projectSelect (selectionChange)="addProject(projectSelect.value); projectSelect.value = ''">
+          <mat-option *ngFor="let project of projectsData" [value]="project._id" [disabled]="selectedProjectIds.includes(project._id)">
+            {{ project.apn }} - {{ project.title }}
+          </mat-option>
         </mat-select>
-        <mat-error *ngIf="schoolNeedsForm.get('projectName')?.invalid && schoolNeedsForm.get('projectName')?.touched">
-          PPA Name is required
+        <mat-error *ngIf="schoolNeedsForm.get('ppaName')?.invalid && schoolNeedsForm.get('ppaName')?.touched">
+          At least one PPA Name is required
         </mat-error>
       </mat-form-field>
+
+      <div *ngIf="selectedProjectIds.length > 0" class="chips-container">
+        <mat-chip-set aria-label="Selected Projects">
+          <mat-chip *ngFor="let projectId of selectedProjectIds" (removed)="removeProject(projectId)" [title]="getProjectTitle(projectId)">
+            {{ getProjectTitle(projectId) }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
+      </div>
 
       <mat-form-field appearance="fill">
         <mat-label>Intermediate Outcome (Pillars)</mat-label>
