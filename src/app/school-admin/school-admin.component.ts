@@ -177,7 +177,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    
+
     this.isSaving = true;
     try {
 
