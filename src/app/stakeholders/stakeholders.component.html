@@ -7,7 +7,13 @@
       <p>Schools in Need: <strong>{{ totalBySchool | number }}</strong></p>
     </ng-container>
     <ng-template #schoolSpecificView>
-      <p *ngIf="schoolName"><mat-icon>school</mat-icon> {{ schoolName | uppercase }}</p>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <p *ngIf="schoolName">
+          <mat-icon>school</mat-icon>
+          <span>{{ schoolName | uppercase }}</span>
+        </p>
+        <button mat-button (click)="viewAnnualImplementationPlan()">View Annual Implementation Plan</button>
+      </div>
     </ng-template>
   </div>
   <div class="table-scroll">

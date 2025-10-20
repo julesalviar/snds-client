@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule} from '@angular/forms';
 import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
@@ -19,6 +19,10 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {Aip} from "../../common/model/aip.model";
 import {getSchoolYear} from "../../common/date-utils";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {AuthService} from "../../auth/auth.service";
+import {UserType} from "../../registration/user-type.enum";
+import {ActivatedRoute} from "@angular/router";
+import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
 
 @Component({
   selector: 'app-aip',
@@ -30,7 +34,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 })
 export class AipComponent implements OnInit {
   aipForm: FormGroup;
-  displayedColumns: string[] = [ 'apn', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
+  displayedColumns: string[] = [ 'apn', 'school', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
   projects: AIPProject[] = [];
   pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
@@ -40,11 +44,16 @@ export class AipComponent implements OnInit {
   totalItems: number = 0;
   isLoading: boolean = true;
 
+  protected readonly UserType = UserType;
+
   constructor(
     private readonly fb: FormBuilder,
     protected dialog: MatDialog,
     private readonly aipService: AipService,
-    private readonly snackBar: MatSnackBar) {
+    private readonly snackBar: MatSnackBar,
+    private readonly authService: AuthService,
+    private readonly route: ActivatedRoute,
+  ) {
     this.aipForm = this.fb.group({
       schoolYear: [getSchoolYear(), Validators.required],
       title: ['', Validators.required],
@@ -59,7 +68,8 @@ export class AipComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadAips();
+    const schoolId = this.route.snapshot.params['schoolId'];
+    this.loadAips(schoolId);
   }
 
   onSubmit() {
@@ -132,10 +142,10 @@ export class AipComponent implements OnInit {
     });
   }
 
-  loadAips(): void {
+  loadAips(schoolId?: string): void {
     this.isLoading = true;
     const page = this.pageIndex + 1;
-    this.aipService.getAips(page, this.pageSize).subscribe({
+    this.aipService.getAips(page, this.pageSize, schoolId).subscribe({
       next: (response) => {
         this.dataSource.data = response.data;
         this.totalItems = response.meta.totalItems;
@@ -175,6 +185,14 @@ export class AipComponent implements OnInit {
     this.loadAips();
   }
 
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  get userRole(): string {
+    return this.authService.getRole();
+  }
+
   private showErrorNotification(message: string): void {
     const duration = message.includes('\n') ? 8000 : 5000;
 
@@ -194,5 +212,4 @@ export class AipComponent implements OnInit {
       panelClass: ['success-snackbar']
     });
   }
-
 }

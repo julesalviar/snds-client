@@ -25,7 +25,8 @@ import {SchoolNeedService} from "../common/services/school-need.service";
     MatMenuModule,
     MatIconButton,
     MatPaginator,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatButton
   ],
   templateUrl: './stakeholders.component.html',
   styleUrl: './stakeholders.component.css'
@@ -111,5 +112,9 @@ export class StakeholdersComponent implements OnInit {
 
   deleteSchoolNeed(schoolNeed: SchoolNeed): void {
     console.log('Delete school need:', schoolNeed);
+  }
+
+  viewAnnualImplementationPlan() {
+    this.router.navigate(['/stakeholder/aip/', this.schoolId]);
   }
 }

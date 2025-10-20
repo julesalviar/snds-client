@@ -57,6 +57,7 @@ export const routes: Routes = [
       {path: 'school-needs', component: StakeholdersComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: QuickCountComponent},
+      {path: 'aip/:schoolId', component: AipComponent},
     ]
   },
 
