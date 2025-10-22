@@ -8,7 +8,7 @@ export class SchoolService {
   constructor(private readonly httpService: HttpService) {
   }
 
-  getSchools(page: number, limit: number): Observable<any> {
+  getSchools(page: number, limit: number, district?: string): Observable<any> {
     let url = API_ENDPOINT.schools;
     const params: string[] = ['withNeed=true'];
 
@@ -18,6 +18,10 @@ export class SchoolService {
 
     if (limit) {
       params.push(`limit=${limit}`);
+    }
+
+    if (district) {
+      params.push(`district=${encodeURIComponent(district.toLowerCase())}`);
     }
 
     url += `?${params.join('&')}`;

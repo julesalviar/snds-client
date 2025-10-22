@@ -11,13 +11,13 @@
       </mat-card-header>
       <mat-card-content>
         <p><strong>School Needs:</strong> <span class="binding">{{ schoolNeed?.specificContribution }}</span></p>
-        <p><strong>Quantity:</strong> <span class="binding">{{ schoolNeed?.quantity }}</span></p>
-        <p><strong>Estimated Amount:</strong> <span class="binding">{{ schoolNeed?.amount }}</span></p>
+        <p><strong>Quantity:</strong> <span class="binding">{{ schoolNeed?.quantity | number: '1.0-2' }}</span></p>
+        <p><strong>Estimated Amount:</strong> <span class="binding">{{ schoolNeed?.estimatedCost | currency: 'PHP' }}</span></p>
         <p><strong>No. of Beneficiary Students:</strong> <span
-          class="binding">{{ schoolNeed?.studentBeneficiaries }}</span></p>
+          class="binding">{{ schoolNeed?.studentBeneficiaries | number: '1.0-2' }}</span></p>
         <p><strong>No. of Beneficiary Personnel:</strong> <span
-          class="binding">{{ schoolNeed?.personnelBeneficiaries }}</span></p>
-        <p><strong>Date of Implementation:</strong> <span class="binding">{{ schoolNeed?.targetDate }}</span></p>
+          class="binding">{{ schoolNeed?.personnelBeneficiaries | number: '1.0-2' }}</span></p>
+        <p><strong>Date of Implementation:</strong> <span class="binding">{{ schoolNeed?.targetDate | date: 'shortDate' }}</span></p>
         <p><strong>Accountable Person:</strong> <span class="binding">{{ schoolNeed?.school?.accountablePerson }}</span>
         </p>
         <p><strong>Contact Number:</strong> <span class="binding">{{ schoolNeed?.school?.contactNumber }}</span></p>

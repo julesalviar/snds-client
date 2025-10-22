@@ -89,6 +89,7 @@ export class ClustersComponent implements OnInit {
     this.schoolService.getAllSchools(this.selectedCluster).subscribe({
       next: (response) => {
         this.schoolList = response.data ?? response ?? [];
+        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
@@ -130,7 +131,6 @@ export class ClustersComponent implements OnInit {
 
   updateDataSource(): void {
     this.dataSource.data = this.filteredSchoolList;
-    this.totalItems = this.filteredSchoolList.length;
   }
 
   calculateSummaryStats(): void {
@@ -146,7 +146,7 @@ export class ClustersComponent implements OnInit {
 
   loadSchoolsWithPagination(): void {
     this.isLoading = true;
-    this.schoolService.getSchools(this.pageIndex + 1, this.pageSize).subscribe({
+    this.schoolService.getSchools(this.pageIndex + 1, this.pageSize, this.selectedCluster).subscribe({
       next: (response) => {
         // Assuming the API returns data in a specific format
         // Adjust this based on your actual API response structure
