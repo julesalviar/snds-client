@@ -57,7 +57,23 @@
 
         <ng-container matColumnDef="implementationStatus">
           <th mat-header-cell *matHeaderCellDef> Status of Implementation </th>
-          <td mat-cell *matCellDef="let need"> {{ need.implementationStatus }} </td>
+          <td mat-cell *matCellDef="let need">
+            <span *ngIf="getEngagementStatus(need) === 'Looking for partner'"
+                  class="status-badge looking-for-partner">
+              <mat-icon>search</mat-icon>
+              Looking for partner
+            </span>
+            <span *ngIf="getEngagementStatus(need) === 'Completed'"
+                  class="status-badge completed">
+              <mat-icon>check_circle</mat-icon>
+              Completed
+            </span>
+            <span *ngIf="getEngagementStatus(need) !== 'Looking for partner' && getEngagementStatus(need) !== 'Completed'"
+                  class="status-badge in-progress">
+              <mat-icon>schedule</mat-icon>
+              {{ getEngagementStatus(need) }}
+            </span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">

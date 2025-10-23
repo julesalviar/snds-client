@@ -117,4 +117,8 @@ export class StakeholdersComponent implements OnInit {
   viewAnnualImplementationPlan() {
     this.router.navigate(['/stakeholder/aip/', this.schoolId]);
   }
+
+  getEngagementStatus(schoolNeed: SchoolNeed): string {
+    return schoolNeed.implementationStatus ?? 'Looking for partner';
+  }
 }

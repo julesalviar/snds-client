@@ -404,3 +404,87 @@ mat-icon {
   margin-top: 16px;
   color: #666;
 }
+
+
+/* Status Badge Styling */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: middle;
+  margin-top: 0;
+}
+
+.status-badge mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+}
+
+/* Adjust table cell alignment for status column */
+.mat-column-implementationStatus .mat-cell {
+  vertical-align: middle !important;
+  text-align: center !important;
+}
+
+/* Looking for Partner */
+.status-badge.looking-for-partner {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffb74d;
+}
+
+.status-badge.looking-for-partner mat-icon {
+  color: #e65100;
+}
+
+/* Completed */
+.status-badge.completed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #66bb6a;
+}
+
+.status-badge.completed mat-icon {
+  color: #2e7d32;
+}
+
+/* In Progress */
+.status-badge.in-progress {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #64b5f6;
+}
+
+.status-badge.in-progress mat-icon {
+  color: #1565c0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .status-badge {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .status-badge mat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .status-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    gap: 4px;
+  }
+}
