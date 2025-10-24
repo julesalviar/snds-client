@@ -22,7 +22,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "../../auth/auth.service";
 import {UserType} from "../../registration/user-type.enum";
 import {ActivatedRoute} from "@angular/router";
-import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
 
 @Component({
   selector: 'app-aip',
@@ -33,6 +32,7 @@ import {debounceTime, distinctUntilChanged, Subject} from "rxjs";
   providers: [MatDialog],
 })
 export class AipComponent implements OnInit {
+  schoolId: string = '';
   aipForm: FormGroup;
   displayedColumns: string[] = [ 'apn', 'school', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
   projects: AIPProject[] = [];
@@ -68,8 +68,8 @@ export class AipComponent implements OnInit {
   }
 
   ngOnInit() {
-    const schoolId = this.route.snapshot.params['schoolId'];
-    this.loadAips(schoolId);
+    this.schoolId = this.route.snapshot.params['schoolId'];
+    this.loadAips(this.schoolId);
   }
 
   onSubmit() {
@@ -88,7 +88,7 @@ export class AipComponent implements OnInit {
 
           this.aipForm.markAsPristine();
           this.aipForm.markAsUntouched();
-          this.loadAips();
+          this.loadAips(this.schoolId);
           this.showSuccessNotification('AIP project saved successfully!');
         },
         error: (err) => {
@@ -182,7 +182,7 @@ export class AipComponent implements OnInit {
   onPageChange(event: PageEvent) {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
-    this.loadAips();
+    this.loadAips(this.schoolId);
   }
 
   get isLoggedIn(): boolean {
