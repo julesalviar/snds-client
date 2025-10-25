@@ -218,4 +218,36 @@ p {
   margin-bottom: 16px;
 }
 
+/* Menu styling for school needs actions */
+.mat-menu-item {
+  color: #45a049 !important;
+}
+
+.mat-menu-item mat-icon {
+  color: #45a049 !important;
+  margin-right: 10px;
+}
+
+.mat-mdc-menu-item {
+  color: #45a049 !important;
+}
+
+.mat-mdc-menu-item mat-icon {
+  color: #45a049 !important;
+  margin-right: 10px;
+}
+
+.mat-mdc-menu-submenu-icon {
+  color: #45a049 !important;
+}
+
+/* Make delete menu item red */
+.delete-menu-item {
+  color: #d32f2f !important;
+}
+
+.delete-menu-item mat-icon {
+  color: #d32f2f !important;
+}
+
 

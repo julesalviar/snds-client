@@ -7,6 +7,7 @@ import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatDialog } from '@angular/material/dialog';
 import { SharedDataService } from '../../common/services/shared-data.service';
 import {Router, RouterModule} from "@angular/router";
 import {MatButton, MatIconButton} from "@angular/material/button";
@@ -14,6 +15,7 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {SchoolNeed} from "../../common/model/school-need.model"
 import {SchoolNeedService} from "../../common/services/school-need.service";
+import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-list-of-school-needs',
@@ -61,7 +63,8 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     private readonly sharedDataService: SharedDataService,
     private readonly router: Router,
     private readonly schoolNeedService: SchoolNeedService,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -80,7 +83,77 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   }
 
   delete(need: SchoolNeed): void {
-    this.router.navigate(['/school-admin/school-need/', need.code]);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete School Need',
+        message: `Are you sure you want to delete the school need "${need.code ?? 'Unknown'}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.performDelete(need);
+      }
+    });
+  }
+
+  private performDelete(need: SchoolNeed): void {
+    if (!need.code) {
+      this.snackBar.open('Cannot delete school need: missing code', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'right',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Show loading state
+    this.isLoading = true;
+
+    this.schoolNeedService.deleteSchoolNeed(need?.code).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.snackBar.open('School need deleted successfully', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+        this.loadSchoolNeeds(); // Refresh the list
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Error deleting school need:', err);
+
+        // Extract specific error message from server response
+        let errorMessage = 'Failed to delete school need';
+
+        if (err.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err.error?.error) {
+          errorMessage = err.error.error;
+        } else if (err.status === 404) {
+          errorMessage = 'School need not found';
+        } else if (err.status === 403) {
+          errorMessage = 'You do not have permission to delete this school need';
+        } else if (err.status === 500) {
+          errorMessage = 'Server error occurred while deleting school need';
+        } else if (err.status === 0) {
+          errorMessage = 'Unable to connect to server. Please check your internet connection';
+        }
+
+        this.snackBar.open(errorMessage, 'Close', {
+          duration: 5000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   onPageChange(event: PageEvent) {

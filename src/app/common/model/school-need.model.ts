@@ -27,7 +27,7 @@ export interface SchoolInfo {
 
 export interface SchoolNeed {
   _id?: string;
-  code?: string | number;
+  code?: string;
   description: string;
   specificContribution: string;
   contributionType: string,
@@ -43,7 +43,7 @@ export interface SchoolNeed {
   schoolYear?: string;
   createdAt?: string;
   updatedAt?: string;
-  
+
 
 
   projectId: (ProjectInfo | string)[];

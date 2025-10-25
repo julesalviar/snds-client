@@ -340,10 +340,6 @@ mat-icon {
   padding: 10px;
 }
 
-.mat-menu-item mat-icon {
-  margin-right: 10px;
-}
-
 .mat-action-buttons {
   display: flex;
   flex-wrap: nowrap;
