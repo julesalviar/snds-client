@@ -22,6 +22,8 @@ import {ChangePasswordComponent} from './navigation/change-password/change-passw
 import {FooterComponent} from './footer/footer.component';
 import {AboutUsComponent} from './navigation/about-us/about-us.component';
 import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-need-view.component";
+import {ResponsesComponent} from "./school-admin/responses/responses.component";
+import {ProfileComponent} from "./navigation/profile/profile.component";  
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -35,6 +37,8 @@ export const routes: Routes = [
   {path: 'change-password', component: ChangePasswordComponent},
   {path: 'footer', component: FooterComponent},
   {path: 'about-us', component: AboutUsComponent},
+   {path: 'profile', component: ProfileComponent},
+  
 
   {
     path: 'guest',
@@ -74,6 +78,8 @@ export const routes: Routes = [
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
       {path: 'school-need/:code', component: SchoolNeedComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
+      {path: 'responses', component: ResponsesComponent},
+     
     ]
   },
 

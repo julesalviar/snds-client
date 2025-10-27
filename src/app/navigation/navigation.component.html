@@ -136,7 +136,7 @@
       <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
       <mat-menu #profileMenu="matMenu">
         <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
-        <button mat-menu-item (click)="editProfile()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Edit Profile</button>
+        <button mat-menu-item [routerLink]="['/profile']" >Edit Profile</button>
       </mat-menu>
       <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">
         Logout

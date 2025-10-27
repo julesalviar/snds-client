@@ -258,7 +258,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       this.showErrorNotification(errorMessage);
     }
   }
-  viewResponses(need: any): void {
+  viewResponses(need: Response): void {
+    this.router.navigate(['/school-admin/responses', need]);
     console.log('Viewing responses for:', need);
 
   }
