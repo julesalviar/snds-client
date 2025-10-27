@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
@@ -39,9 +39,20 @@ export class SignInComponent implements OnInit {
     private readonly dialog: MatDialog
   ) {
     this.signInForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, this.customEmailValidator()]],
       password: ['', [Validators.required]],
     });
+  }
+
+  private customEmailValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null;
+      }
+      const trimmedValue = control.value.trim();
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return emailPattern.test(trimmedValue) ? null : { email: true };
+    };
   }
 
   ngOnInit() {
@@ -73,7 +84,9 @@ export class SignInComponent implements OnInit {
 
   onSubmit() {
     if (this.signInForm.valid) {
-      const { email, password } = this.signInForm.value;
+      const email = this.signInForm.get('email')?.value?.trim() ?? '';
+      const password = this.signInForm.get('password')?.value;
+
       this.isSubmitting = true;
       this.authService.login({ userName: email, password }).subscribe({
         next: (response: any) => {
