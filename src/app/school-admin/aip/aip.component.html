@@ -1,5 +1,5 @@
 <div class="container">
-  <div class="form-container">
+  <div class="form-container" *ngIf="userRole===UserType.SchoolAdmin">
     <mat-card class="form-card">
       <mat-card-title>PPA (Programs, Project, Activities) Information</mat-card-title>
       <mat-card-content>
@@ -86,7 +86,7 @@
 
   <div class="table-container">
     <mat-card class="table-card">
-      <mat-card-title>AIP Projects List</mat-card-title>
+      <mat-card-title>List of Programs, Projects & Activities</mat-card-title>
       <mat-card-content>
         <div class="table-wrapper">
           <div class="table-scroll">
@@ -94,7 +94,7 @@
               <mat-progress-bar mode="indeterminate"></mat-progress-bar>
               <p>Loading AIP projects...</p>
             </div>
-            
+
             <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
               <thead>
                 <tr>
@@ -119,6 +119,11 @@
                     {{ project.title }}
                   </div>
                 </mat-cell>
+              </ng-container>
+              <!-- School Column -->
+              <ng-container matColumnDef="school">
+                <mat-header-cell *matHeaderCellDef> School </mat-header-cell>
+                <mat-cell *matCellDef="let project"> {{ project.schoolId?.schoolName | uppercase }} </mat-cell>
               </ng-container>
               <!-- Budget Column -->
               <ng-container matColumnDef="totalBudget">

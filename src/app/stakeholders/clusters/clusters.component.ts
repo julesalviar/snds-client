@@ -13,8 +13,8 @@ import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
-import { ReferenceDataService } from '../../common/services/reference-data.service';
 import {InternalReferenceDataService} from "../../common/services/internal-reference-data.service";
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
   selector: 'app-clusters',
@@ -54,7 +54,8 @@ export class ClustersComponent implements OnInit {
   constructor(
     private readonly schoolService: SchoolService,
     private readonly router: Router,
-    private readonly internalReferenceDataService: InternalReferenceDataService
+    private readonly internalReferenceDataService: InternalReferenceDataService,
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +90,7 @@ export class ClustersComponent implements OnInit {
     this.schoolService.getAllSchools(this.selectedCluster).subscribe({
       next: (response) => {
         this.schoolList = response.data ?? response ?? [];
+        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
         this.updateDataSource();
         this.calculateSummaryStats();
@@ -130,7 +132,6 @@ export class ClustersComponent implements OnInit {
 
   updateDataSource(): void {
     this.dataSource.data = this.filteredSchoolList;
-    this.totalItems = this.filteredSchoolList.length;
   }
 
   calculateSummaryStats(): void {
@@ -146,7 +147,7 @@ export class ClustersComponent implements OnInit {
 
   loadSchoolsWithPagination(): void {
     this.isLoading = true;
-    this.schoolService.getSchools(this.pageIndex + 1, this.pageSize).subscribe({
+    this.schoolService.getSchools(this.pageIndex + 1, this.pageSize, this.selectedCluster).subscribe({
       next: (response) => {
         // Assuming the API returns data in a specific format
         // Adjust this based on your actual API response structure
@@ -170,7 +171,18 @@ export class ClustersComponent implements OnInit {
   }
 
   viewNeeds(school: any): void {
-    this.router.navigate(['/stakeholder']);
+    const userRole = this.authService.getRole();
+    const schoolId = school._id ?? school.id;
+
+    if (userRole === 'stakeholder') {
+      this.router.navigate(['/stakeholder/school-needs'], {
+        queryParams: {schoolId: schoolId}
+      });
+    } else {
+      this.router.navigate(['/guest/school-needs'], {
+        queryParams: {schoolId: schoolId}
+      });
+    }
   }
 
   noEncodedNeeds(school: any): void {

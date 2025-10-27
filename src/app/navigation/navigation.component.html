@@ -28,50 +28,69 @@
   </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
-      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
+      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled"
+             style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
-        <span tabindex="0">Support</span>
-        <ul>
-          <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
-                 target="_blank" rel="noopener noreferrer">Partners Support</a></li>
-        </ul>
+        <button mat-button [matMenuTriggerFor]="stakeholderSupportMenu" class="menu-trigger">Support</button>
+        <mat-menu #stakeholderSupportMenu="matMenu">
+          <a mat-menu-item href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
+             target="_blank" rel="noopener noreferrer">Partners Support</a>
+        </mat-menu>
       </li>
     </ng-container>
 
       <!-- School Admin Menus -->
     <ng-container *ngIf="userRole === userType.SchoolAdmin">
-     <li class="dropdown">
-    <span tabindex="0" (click)="toggleDropdown()">School Needs</span>
-    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-      <li class="submenu">
+      <li class="dropdown">
+        <span tabindex="0" (click)="toggleDropdown()">School Needs</span>
+        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+          <li class="submenu">
           <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
-          <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()"class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Senior High School</a></li>
+          <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()" class="disabled"
+                 style="pointer-events: none; color: #ccc; cursor: not-allowed;">Senior High School</a></li>
         </ul>
-  </li> 
-      
+      </li>
+
       <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
       <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
              (click)="closeMenu()">DPDS</a></li>
-      <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Quick Count</a></li>
-      <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled" style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
-     <li *ngIf="currentTenant === tenant.GENSAN"><a href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
-                 rel="noopener noreferrer">SPFP</a></li>
+      <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" class="disabled"
+             style="pointer-events: none; color: #ccc; cursor: not-allowed;">Quick Count</a></li>
+      <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled"
+             style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
+      <li *ngIf="currentTenant === tenant.GENSAN">
+        <a
+        href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
+        rel="noopener noreferrer">SPFP</a></li>
+      <li *ngIf="currentTenant === tenant.GENSAN">
+        <button mat-button [matMenuTriggerFor]="schoolAdminSupportMenu" class="menu-trigger">Support</button>
+        <mat-menu #schoolAdminSupportMenu="matMenu">
+          <a mat-menu-item href="https://sites.google.com/deped.gov.ph/spfp-support/home"
+             target="_blank" rel="noopener noreferrer">Partners Support</a>
+        </mat-menu>
+      </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
-   
+
     </ng-container>
 
      <!-- Division Admin Menus -->
     <ng-container *ngIf="userRole === 'divisionAdmin'">
       <li class="dropdown">
-    <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
-    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-      <li class="submenu">
+        <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
+        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+          <li class="submenu">
         <span tabindex="0" (click)="toggleSubmenu()">
         School<i class="fas fa-chevron-down"></i>
       </span>
-        <ul class="nested-dropdown" [class.show]="submenuVisible">
-          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
-          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
+            <ul class="nested-dropdown" [class.show]="submenuVisible">
+              <li><a class="custom-link" routerLink="/division-admin/all-school" (click)="closeMenu()">All</a></li>
+              <li><a class="custom-link" routerLink="/division-admin/districts" (click)="closeMenu()">By District</a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a routerLink="/division-admin/offices" (click)="closeMenu()">Office</a>
+          </li>
         </ul>
       </li>
       <li>
@@ -101,16 +120,22 @@
 
     <!-- Guest Menus - for users who are not logged in -->
     <ng-container *ngIf="!isLoggedIn()">
-     <li class="dropdown">
-    <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
-    <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-      <li class="submenu">
+      <li class="dropdown">
+        <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
+        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
+          <li class="submenu">
         <span tabindex="0" (click)="toggleSubmenu()">
         School <i class="fas fa-chevron-down"></i>
         </span>
-        <ul class="nested-dropdown" [class.show]="submenuVisible">
-          <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
-          <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
+            <ul class="nested-dropdown" [class.show]="submenuVisible">
+              <li><a class="custom-link" routerLink="/guest/all-school" (click)="closeMenu()">All</a></li>
+              <li><a class="custom-link" routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
+            </ul>
+          </li>
+          <li>
+            <a routerLink="/guest/offices" (click)="closeMenu()" class="disabled"
+               style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
+          </li>
         </ul>
       </li>
       <li>
@@ -143,7 +168,8 @@
       </button>
     </ng-container>
     <ng-template #loginButton>
-      <button mat-raised-button color="primary" class="login-button" routerLink="/sign-in" *ngIf="shouldShowLoginButton()">
+      <button mat-raised-button color="primary" class="login-button" routerLink="/sign-in"
+              *ngIf="shouldShowLoginButton()">
         Login
       </button>
     </ng-template>

@@ -30,6 +30,7 @@ import {ReferenceDataService} from "../common/services/reference-data.service";
 import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
 import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
+import {MatChipsModule} from '@angular/material/chips';
 
 @Component({
   selector: 'app-school-admin',
@@ -50,7 +51,8 @@ import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
     MatIcon,
     MatProgressBar,
     MatProgressBarModule,
-    MatPaginator
+    MatPaginator,
+    MatChipsModule
   ],
   templateUrl: './school-admin.component.html',
   styleUrls: ['./school-admin.component.css']
@@ -83,6 +85,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   filteredSpecificContributions: string[] = [];
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
+  
+  selectedProjectIds: string[] = [];
 
   constructor(
     private readonly fb: FormBuilder,
@@ -99,7 +103,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
       schoolYear: [getSchoolYear(), [Validators.required]],
-      ppaName: ['', [Validators.required]],
+      ppaName: [[], [Validators.required, Validators.minLength(1)]],
       intermediateOutcome: ['', [Validators.required]],
       quantityNeeded: [0, [Validators.required, Validators.min(1)]],
       unit: ['', [Validators.required]],
@@ -177,14 +181,14 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    
+
     this.isSaving = true;
     try {
 
       const newNeed: SchoolNeed = {
         specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
         contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.schoolNeedsForm.get('ppaName')?.value,
+        projectId: this.selectedProjectIds,
         quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
         unit: this.schoolNeedsForm.get('unit')?.value,
         estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
@@ -201,7 +205,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         next: () => {
           const currentSchoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
           this.schoolNeedsForm.reset();
-          this.schoolNeedsForm.patchValue({ schoolYear: currentSchoolYear });
+          this.schoolNeedsForm.patchValue({ schoolYear: currentSchoolYear, ppaName: [] });
+          this.selectedProjectIds = [];
           this.queryData();
           this.isSaving = false;
           this.showSuccessNotification('School need saved successfully!');
@@ -497,5 +502,26 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
       this.showErrorNotification(errorMessage);
     }
+  }
+
+  protected addProject(projectId: string): void {
+    if (projectId && !this.selectedProjectIds.includes(projectId)) {
+      this.selectedProjectIds.push(projectId);
+      this.schoolNeedsForm.get('ppaName')?.setValue(this.selectedProjectIds);
+      this.schoolNeedsForm.get('ppaName')?.markAsTouched();
+    }
+  }
+
+  protected removeProject(projectId: string): void {
+    const index = this.selectedProjectIds.indexOf(projectId);
+    if (index >= 0) {
+      this.selectedProjectIds.splice(index, 1);
+      this.schoolNeedsForm.get('ppaName')?.setValue(this.selectedProjectIds);
+    }
+  }
+
+  protected getProjectTitle(projectId: string): string {
+    const project = this.projectsData.find(p => p._id === projectId);
+    return project ? `${project.apn} - ${project.title}` : projectId;
   }
 }

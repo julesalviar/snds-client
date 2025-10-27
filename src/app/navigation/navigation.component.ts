@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {NavigationEnd, Router, RouterModule} from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatSidenavModule} from '@angular/material/sidenav';
 import {AuthService} from "../auth/auth.service";
 import {UserType} from "../registration/user-type.enum";
 import {filter} from "rxjs";
@@ -28,6 +28,7 @@ import {Tenant} from "../config/tenants.enum";
 export class NavigationComponent implements OnInit {
   dropdownVisible = false;
   submenuVisible = false;
+  supportMenuVisible = false;
   isMenuOpen = false;
   userType = UserType;
   tenant = Tenant;
@@ -51,7 +52,7 @@ export class NavigationComponent implements OnInit {
       });
   }
 
-   toggleDropdown() {
+  toggleDropdown() {
     this.dropdownVisible = !this.dropdownVisible;
     this.submenuVisible = false; // Close submenu when main dropdown is toggled
   }
@@ -59,6 +60,11 @@ export class NavigationComponent implements OnInit {
   toggleSubmenu() {
     this.submenuVisible = !this.submenuVisible;
   }
+
+  toggleSupportMenu() {
+    this.supportMenuVisible = !this.supportMenuVisible;
+  }
+
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
     console.log('Menu Open:', this.isMenuOpen);
@@ -66,8 +72,9 @@ export class NavigationComponent implements OnInit {
 
   closeMenu() {
     this.isMenuOpen = false;
-     this.dropdownVisible = false; 
-    this.submenuVisible = false; 
+    this.dropdownVisible = false;
+    this.submenuVisible = false;
+    this.submenuVisible = false;
   }
 
   get userRole(): string {

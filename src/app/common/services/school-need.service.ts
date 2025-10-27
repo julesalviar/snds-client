@@ -57,4 +57,14 @@ export class SchoolNeedService {
       catchError(this.httpService.handleError)
     );
   }
+
+  deleteSchoolNeed(code?: string): Observable<any> {
+    if (!code) {
+      throw new Error('School need code is required for deletion.');
+    }
+
+    return this.httpService.delete(`${API_ENDPOINT.schoolNeed}/${code}`).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
 }
