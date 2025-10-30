@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, catchError, Observable} from 'rxjs';
+import {BehaviorSubject, catchError, Observable, of} from 'rxjs';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
 import {TenantService} from "../../config/tenant.service";
@@ -87,6 +87,17 @@ export class UserService {
 
     return this.httpService.get<any[]>(url);
   }
+
+  // Method to get user profile, for UI only
+   getUserProfile(): any {
+    return JSON.parse(localStorage.getItem('userProfile') || '{}');
+  }
+
+  updateUserProfile(profileData: any): Observable<any> {
+    localStorage.setItem('userProfile', JSON.stringify(profileData));
+    return of(profileData); 
+  }
+
 
   changePassword(currentPassword: string, newPassword: string) {
       const payload = { currentPassword, newPassword };
