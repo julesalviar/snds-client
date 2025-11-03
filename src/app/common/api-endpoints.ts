@@ -11,6 +11,9 @@ export const API_ENDPOINT = {
   schoolNeed: `${environment.API_URL}/school-needs`,
   schools: `${environment.API_URL}/schools`,
   upload: `${environment.API_URL}/upload`,
-  users: `${environment.API_URL}/users`,
+  users: {
+    profile: `${environment.API_URL}/users/profile`,
+    changePassword: `${environment.API_URL}/users/change-password`,
+  },
   engagements: `${environment.API_URL}/engagements`,
 }

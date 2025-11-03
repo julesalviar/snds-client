@@ -33,6 +33,7 @@ export class NavigationComponent implements OnInit {
   userType = UserType;
   tenant = Tenant;
   currentRoute = '';
+  protected readonly UserType = UserType;
 
   constructor(
     private readonly authService: AuthService,
