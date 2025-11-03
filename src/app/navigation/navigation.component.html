@@ -153,7 +153,7 @@
       <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
       <mat-menu #profileMenu="matMenu">
         <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
-        <button mat-menu-item [routerLink]="['/profile']" >Edit Profile</button>
+        <button mat-menu-item [routerLink]="['/profile']" *ngIf="userRole === UserType.SchoolAdmin">Edit Profile</button>
       </mat-menu>
       <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">
         Logout
