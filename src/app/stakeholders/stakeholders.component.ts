@@ -33,7 +33,6 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 })
 export class StakeholdersComponent implements OnInit {
   displayedColumns: string[] = [
-    'school',
     'specificContribution',
     'quantity',
     'amount',

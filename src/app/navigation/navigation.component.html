@@ -61,14 +61,10 @@
       <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled"
              style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
-        <a
-        href="https://sites.google.com/deped.gov.ph/spfp-support/home/adopt-a-school-program" target="_blank"
-        rel="noopener noreferrer">SPFP</a></li>
-      <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="schoolAdminSupportMenu" class="menu-trigger">Support</button>
         <mat-menu #schoolAdminSupportMenu="matMenu">
           <a mat-menu-item href="https://sites.google.com/deped.gov.ph/spfp-support/home"
-             target="_blank" rel="noopener noreferrer">Partners Support</a>
+             target="_blank" rel="noopener noreferrer">SPFP Support</a>
         </mat-menu>
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>

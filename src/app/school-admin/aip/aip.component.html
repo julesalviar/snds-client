@@ -120,11 +120,6 @@
                   </div>
                 </mat-cell>
               </ng-container>
-              <!-- School Column -->
-              <ng-container matColumnDef="school">
-                <mat-header-cell *matHeaderCellDef> School </mat-header-cell>
-                <mat-cell *matCellDef="let project"> {{ project.schoolId?.schoolName | uppercase }} </mat-cell>
-              </ng-container>
               <!-- Budget Column -->
               <ng-container matColumnDef="totalBudget">
                 <mat-header-cell *matHeaderCellDef> Budget </mat-header-cell>
@@ -147,16 +142,16 @@
                   <button mat-icon-button (click)="viewProject(project)" matTooltip="View the project details">
                     <mat-icon>visibility</mat-icon>
                   </button>
-                  <button mat-icon-button 
+                  <button mat-icon-button
                           [disabled]="userRole !== UserType.SchoolAdmin"
-                          (click)="editProject(project)" 
+                          (click)="editProject(project)"
                           [matTooltip]="userRole === UserType.SchoolAdmin ? 'Edit this project' : 'Only School Admins can edit'">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button 
-                          class="delete-button" 
+                  <button mat-icon-button
+                          class="delete-button"
                           [disabled]="userRole !== UserType.SchoolAdmin"
-                          (click)="deleteProject(project)" 
+                          (click)="deleteProject(project)"
                           [matTooltip]="userRole === UserType.SchoolAdmin ? 'Delete this project' : 'Only School Admins can delete'">
                     <mat-icon>delete</mat-icon>
                   </button>

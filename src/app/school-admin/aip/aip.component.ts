@@ -34,7 +34,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 export class AipComponent implements OnInit {
   schoolId: string = '';
   aipForm: FormGroup;
-  displayedColumns: string[] = [ 'apn', 'school', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
+  displayedColumns: string[] = [ 'apn', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
   projects: AIPProject[] = [];
   pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
@@ -133,7 +133,7 @@ export class AipComponent implements OnInit {
       console.warn('Unauthorized edit attempt by user role:', this.userRole);
       return;
     }
-    
+
     this.router.navigate(['/school-admin/aip/edit', project._id]);
   }
 
@@ -144,7 +144,7 @@ export class AipComponent implements OnInit {
       console.warn('Unauthorized delete attempt by user role:', this.userRole);
       return;
     }
-    
+
     const dialogRef = this.dialog.open(ConfirmDeleteDialogComponent, {
       data: {
         title: 'Delete AIP Project',
@@ -160,7 +160,7 @@ export class AipComponent implements OnInit {
           console.warn('Unauthorized delete attempt by user role:', this.userRole);
           return;
         }
-        
+
         this.aipService.deleteAip(project._id).subscribe({
           next: () => {
             this.showSuccessNotification('AIP project deleted successfully!');
@@ -168,9 +168,9 @@ export class AipComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error deleting AIP project:', err);
-            
+
             let errorMessage = 'Failed to delete AIP project. Please try again.';
-            
+
             if (err?.error?.message) {
               if (Array.isArray(err.error.message)) {
                 errorMessage = err.error.message.join('\n• ');
@@ -187,7 +187,7 @@ export class AipComponent implements OnInit {
             } else if (typeof err === 'string') {
               errorMessage = err;
             }
-            
+
             this.showErrorNotification(errorMessage);
           }
         });
