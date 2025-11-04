@@ -1,8 +1,8 @@
-<h2 mat-dialog-title class="dialog-title">Confirm Deletion</h2>
-<mat-dialog-content>
-  <p class="dialog-message">This will delete the record. Are you sure?</p>
+<h2 mat-dialog-title class="dialog-title">{{ title }}</h2>
+<mat-dialog-content class="mat-typography">
+  <p class="dialog-message">{{ message }}</p>
 </mat-dialog-content>
-<mat-dialog-actions>
-  <button mat-button class="cancel-button" (click)="onCancel()">Cancel</button>
-  <button mat-button color="primary" class="continue-button" (click)="onConfirm()">Continue</button>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="warn" (click)="onConfirm()" cdkFocusInitial>Delete</button>
 </mat-dialog-actions>

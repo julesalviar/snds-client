@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {catchError, Observable} from "rxjs";
+import {catchError, map, Observable} from "rxjs";
 import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
 import {Aip} from "../model/aip.model";
@@ -37,5 +37,24 @@ export class AipService {
   createAip(payload: Aip): Observable<any> {
     return this.httpService.post(API_ENDPOINT.aip, payload).pipe(
       catchError(this.httpService.handleError));
+  }
+
+  getAipById(id: string): Observable<Aip> {
+    return this.httpService.get<Aip>(`${API_ENDPOINT.aip}/${id}`).pipe(
+      map((response: any) => response.data),
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  updateAip(id: string, payload: Partial<Aip>): Observable<any> {
+    return this.httpService.patch(`${API_ENDPOINT.aip}/${id}`, payload).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  deleteAip(id: string): Observable<any> {
+    return this.httpService.delete(`${API_ENDPOINT.aip}/${id}`).pipe(
+      catchError(this.httpService.handleError)
+    );
   }
 }

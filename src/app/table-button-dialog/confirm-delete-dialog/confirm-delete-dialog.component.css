@@ -1,31 +1,22 @@
 .dialog-title {
-    color: #4caf50;
-    text-align: center;
-    font-size: 16px;
-  }
-  
-  .dialog-message {
-    text-align: center;
-    color: #555;
-    margin: 10px 0;
-  }
-  
-  .cancel-button {
-    color: #f44336; 
-    border: none;
-    cursor: pointer;
-  }
-  
-  .continue-button {
-    background-color: #4caf50; 
-    color: white; 
-    border-radius: 4px; 
-    margin-left: 10px;
-    cursor: pointer;
-    border: none;
-    transition: background-color 0.3s;
-  }
-  
-  .continue-button:hover {
-    background-color: #45a049; 
-  }
+  color: #4caf50;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+mat-dialog-content {
+  min-width: 400px;
+  padding: 20px 24px;
+}
+
+.dialog-message {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+mat-dialog-actions {
+  padding: 8px 24px 16px;
+  gap: 8px;
+}
