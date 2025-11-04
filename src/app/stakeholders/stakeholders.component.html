@@ -25,6 +25,11 @@
 
       <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
+        <ng-container matColumnDef="school">
+          <th mat-header-cell *matHeaderCellDef> School </th>
+          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName | uppercase }} </td>
+        </ng-container>
+
         <ng-container matColumnDef="specificContribution">
           <th mat-header-cell *matHeaderCellDef> Specific Contribution </th>
           <td mat-cell *matCellDef="let need"> {{ need.specificContribution }} </td>

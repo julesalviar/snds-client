@@ -33,6 +33,7 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 })
 export class StakeholdersComponent implements OnInit {
   displayedColumns: string[] = [
+    'school',
     'specificContribution',
     'quantity',
     'amount',
@@ -65,8 +66,35 @@ export class StakeholdersComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.selectedContribution = params['selectedContribution'] ?? null;
       this.schoolId = params['schoolId'] ?? null;
+      this.updateDisplayedColumns();
       this.loadSchoolNeeds();
     });
+  }
+
+  updateDisplayedColumns(): void {
+    // Hide school column when viewing a specific school's needs
+    if (this.schoolId) {
+      this.displayedColumns = [
+        'specificContribution',
+        'quantity',
+        'amount',
+        'beneficiaryStudents',
+        'beneficiaryPersonnel',
+        'implementationStatus',
+        'actions'
+      ];
+    } else {
+      this.displayedColumns = [
+        'school',
+        'specificContribution',
+        'quantity',
+        'amount',
+        'beneficiaryStudents',
+        'beneficiaryPersonnel',
+        'implementationStatus',
+        'actions'
+      ];
+    }
   }
 
   onPageChange(event: PageEvent) {
