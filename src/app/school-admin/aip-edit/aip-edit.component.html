@@ -1,0 +1,105 @@
+<div class="container">
+  <div class="form-container">
+    <mat-card class="form-card">
+      <mat-card-title>Edit PPA (Programs, Project, Activities)</mat-card-title>
+      <mat-card-content>
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p>Loading project details...</p>
+        </div>
+
+        <form *ngIf="!isLoading" [formGroup]="aipForm" (ngSubmit)="onSubmit()">
+
+          <mat-form-field appearance="fill">
+            <mat-label>APN (Project Number)</mat-label>
+            <input matInput formControlName="apn" readonly>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>School Year for the Project</mat-label>
+            <input matInput formControlName="schoolYear" readonly>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Enter Project Title</mat-label>
+            <input matInput formControlName="title">
+            <mat-error *ngIf="aipForm.get('title')?.invalid && (aipForm.get('title')?.touched || aipForm.get('title')?.dirty)">
+              Project Title is required.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Objectives of the Project<br> (max 500 words)</mat-label>
+            <textarea matInput formControlName="objectives" rows="5"></textarea>
+            <mat-error *ngIf="aipForm.get('objectives')?.invalid && (aipForm.get('objectives')?.touched || aipForm.get('objectives')?.dirty)">
+              Objectives are required and must be less than 500 words.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Intermediate Outcome (Pillars)</mat-label>
+            <mat-select formControlName="intermediateOutcome">
+              <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="aipForm.get('intermediateOutcome')?.invalid && (aipForm.get('intermediateOutcome')?.touched || aipForm.get('intermediateOutcome')?.dirty)">
+              Please select an intermediate outcome pillar.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Persons Responsible</mat-label>
+            <input matInput formControlName="responsiblePerson">
+            <mat-error *ngIf="aipForm.get('responsiblePerson')?.invalid && (aipForm.get('responsiblePerson')?.touched || aipForm.get('personsResponsible')?.dirty)">
+              This field is required.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Materials Needed</mat-label>
+            <input matInput formControlName="materialsNeeded">
+            <mat-error *ngIf="aipForm.get('materialsNeeded')?.invalid && (aipForm.get('materialsNeeded')?.touched || aipForm.get('materialsNeeded')?.dirty)">
+              This field is required.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Total Budget</mat-label>
+            <input matInput formControlName="totalBudget" type="number">
+            <mat-error *ngIf="aipForm.get('totalBudget')?.invalid && (aipForm.get('totalBudget')?.touched || aipForm.get('totalBudget')?.dirty)">
+              Please enter a valid budget amount.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Budget Source</mat-label>
+            <input matInput formControlName="budgetSource">
+            <mat-error *ngIf="aipForm.get('budgetSource')?.invalid && (aipForm.get('budgetSource')?.touched || aipForm.get('budgetSource')?.dirty)">
+              This field is required.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option *ngFor="let status of statuses" [value]="status">{{ status }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="aipForm.get('status')?.invalid && (aipForm.get('status')?.touched || aipForm.get('status')?.dirty)">
+              Please select a status.
+            </mat-error>
+          </mat-form-field>
+
+          <div class="button-group">
+            <button mat-raised-button color="primary" (click)="onSubmit()" type="button" class="submit-button">
+              Update Project
+            </button>
+            <button mat-raised-button type="button" class="cancel-button" (click)="onCancel()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+

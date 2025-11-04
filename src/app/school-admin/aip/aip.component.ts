@@ -21,7 +21,7 @@ import {getSchoolYear} from "../../common/date-utils";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "../../auth/auth.service";
 import {UserType} from "../../registration/user-type.enum";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-aip',
@@ -53,6 +53,7 @@ export class AipComponent implements OnInit {
     private readonly snackBar: MatSnackBar,
     private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
   ) {
     this.aipForm = this.fb.group({
       schoolYear: [getSchoolYear(), Validators.required],
@@ -125,17 +126,71 @@ export class AipComponent implements OnInit {
     });
   }
 
-  editProject(project: AIPProject) {
-      console.log("Editing project", project);
+  editProject(project: Aip) {
+    // Security check: Only School Admins can edit
+    if (this.userRole !== UserType.SchoolAdmin) {
+      this.showErrorNotification('Unauthorized: Only School Admins can edit projects.');
+      console.warn('Unauthorized edit attempt by user role:', this.userRole);
+      return;
+    }
+    
+    this.router.navigate(['/school-admin/aip/edit', project._id]);
   }
 
-  deleteProject(project: AIPProject): void {
-    const dialogRef = this.dialog.open(ConfirmDeleteDialogComponent);
+  deleteProject(project: Aip): void {
+    // Security check: Only School Admins can delete
+    if (this.userRole !== UserType.SchoolAdmin) {
+      this.showErrorNotification('Unauthorized: Only School Admins can delete projects.');
+      console.warn('Unauthorized delete attempt by user role:', this.userRole);
+      return;
+    }
+    
+    const dialogRef = this.dialog.open(ConfirmDeleteDialogComponent, {
+      data: {
+        title: 'Delete AIP Project',
+        message: `Are you sure you want to delete the project "${project.title}"? This action cannot be undone.`
+      }
+    });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Deleted project:', project);
-        this.projects = this.projects.filter(p => p.apn !== project.apn);
+        // Double-check authorization before API call
+        if (this.userRole !== UserType.SchoolAdmin) {
+          this.showErrorNotification('Unauthorized: Only School Admins can delete projects.');
+          console.warn('Unauthorized delete attempt by user role:', this.userRole);
+          return;
+        }
+        
+        this.aipService.deleteAip(project._id).subscribe({
+          next: () => {
+            this.showSuccessNotification('AIP project deleted successfully!');
+            this.loadAips(this.schoolId);
+          },
+          error: (err) => {
+            console.error('Error deleting AIP project:', err);
+            
+            let errorMessage = 'Failed to delete AIP project. Please try again.';
+            
+            if (err?.error?.message) {
+              if (Array.isArray(err.error.message)) {
+                errorMessage = err.error.message.join('\n• ');
+                if (err.error.message.length > 1) {
+                  errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+                }
+              } else if (typeof err.error.message === 'string') {
+                errorMessage = err.error.message;
+              }
+            } else if (err?.error && typeof err.error === 'string') {
+              errorMessage = err.error;
+            } else if (err?.message) {
+              errorMessage = err.message;
+            } else if (typeof err === 'string') {
+              errorMessage = err;
+            }
+            
+            this.showErrorNotification(errorMessage);
+          }
+        });
       } else {
         console.log('Deletion canceled');
       }

@@ -147,10 +147,17 @@
                   <button mat-icon-button (click)="viewProject(project)" matTooltip="View the project details">
                     <mat-icon>visibility</mat-icon>
                   </button>
-                  <button disabled mat-icon-button (click)="editProject(project)" matTooltip="Edit this project">
+                  <button mat-icon-button 
+                          [disabled]="userRole !== UserType.SchoolAdmin"
+                          (click)="editProject(project)" 
+                          [matTooltip]="userRole === UserType.SchoolAdmin ? 'Edit this project' : 'Only School Admins can edit'">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button disabled mat-icon-button class="delete-button" (click)="deleteProject(project)" matTooltip="Delete this project">
+                  <button mat-icon-button 
+                          class="delete-button" 
+                          [disabled]="userRole !== UserType.SchoolAdmin"
+                          (click)="deleteProject(project)" 
+                          [matTooltip]="userRole === UserType.SchoolAdmin ? 'Delete this project' : 'Only School Admins can delete'">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </mat-cell>
