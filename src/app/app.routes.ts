@@ -8,7 +8,7 @@ import {SchoolAdminComponent} from './school-admin/school-admin.component';
 import {DivisionAdminComponent} from './division-admin/division-admin.component';
 import {ReportsComponent} from './reports/reports.component';
 import {AipComponent} from './school-admin/aip/aip.component';
-import {AipEditComponent} from './school-admin/aip-edit/aip-edit.component';
+import {AipEditComponent} from './school-admin/aip/aip-edit/aip-edit.component';
 import {ListOfSchoolNeedsComponent} from './school-admin/list-of-school-needs/list-of-school-needs.component';
 import {SchoolNeedsEngageComponent} from './school-admin/school-needs-engage/school-needs-engage.component';
 import {
@@ -81,7 +81,7 @@ export const routes: Routes = [
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
       {path: 'school-need/:code', component: SchoolNeedComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
-     
+
     ]
   },
 

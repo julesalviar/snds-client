@@ -8,11 +8,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AipService } from '../../common/services/aip.service';
+import { AipService } from '../../../common/services/aip.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Aip } from '../../common/model/aip.model';
-import { AuthService } from '../../auth/auth.service';
-import { UserType } from '../../registration/user-type.enum';
+import { Aip } from '../../../common/model/aip.model';
+import { AuthService } from '../../../auth/auth.service';
+import { UserType } from '../../../registration/user-type.enum';
 
 @Component({
   selector: 'app-aip-edit',
@@ -67,7 +67,7 @@ export class AipEditComponent implements OnInit {
       this.router.navigate(['/school-admin', 'aip']);
       return;
     }
-    
+
     this.projectId = this.route.snapshot.params['id'];
     if (this.projectId) {
       this.loadProjectData();
@@ -109,7 +109,7 @@ export class AipEditComponent implements OnInit {
       console.warn('Unauthorized update attempt by user role:', this.authService.getRole());
       return;
     }
-    
+
     if (this.aipForm.valid) {
       const { intermediateOutcome, apn, ...filteredValues } = this.aipForm.value;
       const updatedProject: Partial<Aip> = {
