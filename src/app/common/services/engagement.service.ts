@@ -31,4 +31,10 @@ export class EngagementService {
       catchError(this.httpService.handleError)
     );
   }
+
+  deleteEngagement(id: string): Observable<any> {
+    return this.httpService.delete(`${API_ENDPOINT.engagements}/${id}`).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
 }

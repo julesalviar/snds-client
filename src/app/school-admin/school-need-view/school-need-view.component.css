@@ -361,3 +361,36 @@ mat-card-title {
     padding: 4px 12px;
   }
 }
+
+/* Delete Button Styles */
+.delete-engagement-button {
+  color: #d32f2f !important;
+}
+
+.delete-engagement-button:hover:not([disabled]) {
+  background-color: rgba(211, 47, 47, 0.1) !important;
+  color: #c62828 !important;
+}
+
+.delete-engagement-button:active:not([disabled]) {
+  background-color: rgba(211, 47, 47, 0.2) !important;
+}
+
+.delete-engagement-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delete-engagement-button mat-icon {
+  color: #d32f2f !important;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-engagement-button:hover:not([disabled]) mat-icon {
+  color: #c62828 !important;
+  transform: scale(1.1);
+}
+
+.delete-engagement-button mat-spinner {
+  --mdc-circular-progress-active-indicator-color: #d32f2f;
+}

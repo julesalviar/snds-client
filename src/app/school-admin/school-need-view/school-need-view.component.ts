@@ -5,11 +5,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {Subject, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../../common/services/school-need.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {SchoolNeed} from "../../common/model/school-need.model";
 import {CurrencyPipe, DatePipe, DecimalPipe, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
+import {MatDialog} from "@angular/material/dialog";
+import {ConfirmDialogComponent, ConfirmDialogData} from "../../common/components/confirm-dialog/confirm-dialog.component";
+import {EngagementService} from "../../common/services/engagement.service";
 
 interface ImplementationStatus {
   progress: number;
@@ -25,6 +30,8 @@ interface ImplementationStatus {
     MatButtonModule,
     MatTableModule,
     MatProgressBarModule,
+    MatTooltipModule,
+    MatProgressSpinnerModule,
     DecimalPipe,
     NgForOf,
     NgIf,
@@ -52,11 +59,16 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   showImagePreview: boolean = false;
   currentPreviewIndex: number = 0;
 
+  // Track which engagement is being deleted
+  deletingEngagementId: string | null = null;
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
+    private readonly dialog: MatDialog,
+    private readonly engagementService: EngagementService,
   ) {}
 
   ngOnInit(): void {
@@ -109,8 +121,46 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteStakeholder() {
+  deleteStakeholder(engagement: any): void {
+    if (!engagement || !engagement._id) {
+      this.showErrorNotification('Invalid engagement data');
+      return;
+    }
 
+    const dialogData: ConfirmDialogData = {
+      title: 'Delete Engagement',
+      message: `Are you sure you want to delete the engagement from ${engagement.stakeholderUserId?.name || 'this contributor'}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    };
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.deletingEngagementId = engagement._id;
+        this.engagementService.deleteEngagement(engagement._id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.deletingEngagementId = null;
+              this.showSuccessNotification('Engagement deleted successfully');
+              // Reload the school need to refresh the engagements list
+              if (this.code) {
+                this.loadSchoolNeed(this.code);
+              }
+            },
+            error: (err) => {
+              this.deletingEngagementId = null;
+              console.error('Error deleting engagement:', err);
+              this.showErrorNotification('Failed to delete engagement. Please try again.');
+            }
+          });
+      }
+    });
   }
 
   openImagePreview(index: number): void {

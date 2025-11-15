@@ -56,7 +56,18 @@
             <ng-container matColumnDef="action">
               <th mat-header-cell *matHeaderCellDef> Action</th>
               <td mat-cell *matCellDef="let element">
-                <button mat-button (click)="deleteStakeholder()" hidden="hidden" disabled="disabled">Delete</button>
+                <button mat-icon-button 
+                        class="delete-engagement-button"
+                        color="warn" 
+                        (click)="deleteStakeholder(element)" 
+                        [disabled]="deletingEngagementId === element._id"
+                        [matTooltip]="deletingEngagementId === element._id ? 'Deleting...' : 'Delete engagement'">
+                  <mat-icon *ngIf="deletingEngagementId !== element._id">delete</mat-icon>
+                  <mat-spinner *ngIf="deletingEngagementId === element._id" 
+                               diameter="20" 
+                               style="display: inline-block;">
+                  </mat-spinner>
+                </button>
               </td>
             </ng-container>
 
