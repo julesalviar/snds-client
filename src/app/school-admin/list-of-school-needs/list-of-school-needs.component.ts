@@ -46,6 +46,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     'year',
     'specificContribution',
     'quantity',
+    'unit',
     'amount',
     'beneficiaryStudents',
     'beneficiaryPersonnel',

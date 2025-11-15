@@ -36,6 +36,7 @@ export class StakeholdersComponent implements OnInit {
     'school',
     'specificContribution',
     'quantity',
+    'unit',
     'amount',
     'beneficiaryStudents',
     'beneficiaryPersonnel',
@@ -77,6 +78,7 @@ export class StakeholdersComponent implements OnInit {
       this.displayedColumns = [
         'specificContribution',
         'quantity',
+        'unit',
         'amount',
         'beneficiaryStudents',
         'beneficiaryPersonnel',
@@ -88,6 +90,7 @@ export class StakeholdersComponent implements OnInit {
         'school',
         'specificContribution',
         'quantity',
+        'unit',
         'amount',
         'beneficiaryStudents',
         'beneficiaryPersonnel',
