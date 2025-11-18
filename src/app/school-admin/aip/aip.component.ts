@@ -245,7 +245,7 @@ export class AipComponent implements OnInit {
   }
 
   get userRole(): string {
-    return this.authService.getRole();
+    return this.authService.getActiveRole();
   }
 
   private showErrorNotification(message: string): void {

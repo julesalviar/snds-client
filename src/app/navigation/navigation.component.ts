@@ -79,7 +79,7 @@ export class NavigationComponent implements OnInit {
   }
 
   get userRole(): string {
-    return this.authService.getRole();
+    return this.authService.getActiveRole();
   }
 
   isLoggedIn(): boolean {

@@ -160,7 +160,7 @@ export class AllSchoolComponent implements OnInit {
   }
 
   viewNeeds(school: any): void {
-    const userRole = this.authService.getRole();
+    const userRole = this.authService.getActiveRole();
     const schoolId = school._id || school.id;
 
     if (userRole === 'stakeholder') {

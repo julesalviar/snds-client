@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.name = this.authService.getName();
-    this.userRole = this.authService.getRole();
+    this.userRole = this.authService.getActiveRole();
 
     if (!this.name || !this.userRole) {
       console.warn('User information is incomplete.');

@@ -39,7 +39,7 @@ import {AuthService} from "../../auth/auth.service";
   styleUrls: ['./clusters.component.css']
 })
 export class ClustersComponent implements OnInit {
-  displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'ppasEncoded', 'ppasAccomplished', 'needsEncoded', 'needsAccomplished', 'generalResources', 'actions'];
+  displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'ppasEncoded', 'ppasAccomplished', 'needsEncoded', 'needsAccomplished', 'generatedResources', 'actions'];
   schoolList: any[] = [];
   filteredSchoolList: any[] = [];
   dataSource = new MatTableDataSource<any>();
@@ -171,7 +171,7 @@ export class ClustersComponent implements OnInit {
   }
 
   viewNeeds(school: any): void {
-    const userRole = this.authService.getRole();
+    const userRole = this.authService.getActiveRole();
     const schoolId = school._id ?? school.id;
 
     if (userRole === 'stakeholder') {

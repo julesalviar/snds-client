@@ -61,9 +61,9 @@ export class AipEditComponent implements OnInit {
 
   ngOnInit(): void {
     // Security check: Only School Admins can access edit page
-    if (this.authService.getRole() !== UserType.SchoolAdmin) {
+    if (this.authService.getActiveRole() !== UserType.SchoolAdmin) {
       this.showErrorNotification('Unauthorized: Only School Admins can edit projects.');
-      console.warn('Unauthorized access to edit page by user role:', this.authService.getRole());
+      console.warn('Unauthorized access to edit page by user role:', this.authService.getActiveRole());
       this.router.navigate(['/school-admin', 'aip']);
       return;
     }
@@ -104,9 +104,9 @@ export class AipEditComponent implements OnInit {
 
   onSubmit(): void {
     // Security check: Only School Admins can update
-    if (this.authService.getRole() !== UserType.SchoolAdmin) {
+    if (this.authService.getActiveRole() !== UserType.SchoolAdmin) {
       this.showErrorNotification('Unauthorized: Only School Admins can update projects.');
-      console.warn('Unauthorized update attempt by user role:', this.authService.getRole());
+      console.warn('Unauthorized update attempt by user role:', this.authService.getActiveRole());
       return;
     }
 
