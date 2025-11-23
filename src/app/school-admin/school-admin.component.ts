@@ -73,7 +73,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'unit', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars: string[] = [];
-  schoolYears: string[] = ['2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021', '2019-2020', '2018-2019'];
+  schoolYears: string[] = ['2025-2026'];
   units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;

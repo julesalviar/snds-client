@@ -38,6 +38,42 @@ mat-card-title {
   font-weight: 600;
 }
 
+.download-button {
+  background: whitesmoke;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: none; 
+  font-size: 15px;
+  transition: 0.3s ease;
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.4);
+}
+
+.download-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(46, 204, 113, 0.5);
+}
+
+.download-button:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.4);
+}
+
+.download-button[disabled] {
+  background: #b8e6c6 !important;
+  color: #f8f8f8 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+/* Icon styling */
+.download-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+
 /* Disabled button styling */
 button[mat-icon-button][disabled] {
   opacity: 0.4;
