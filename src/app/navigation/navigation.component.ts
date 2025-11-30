@@ -5,11 +5,13 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from "../auth/auth.service";
 import {UserType} from "../registration/user-type.enum";
 import {filter} from "rxjs";
 import {TenantService} from "../config/tenant.service";
 import {Tenant} from "../config/tenants.enum";
+import {SwitchRoleDialogComponent, SwitchRoleDialogData} from "./switch-role-dialog/switch-role-dialog.component";
 
 @Component({
   standalone: true,
@@ -38,7 +40,8 @@ export class NavigationComponent implements OnInit {
   constructor(
     private readonly authService: AuthService,
     private readonly tenantService: TenantService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly dialog: MatDialog
   ) {
   }
 
@@ -78,8 +81,12 @@ export class NavigationComponent implements OnInit {
     this.submenuVisible = false;
   }
 
-  get userRole(): string {
+  get userActiveRole(): string {
     return this.authService.getActiveRole();
+  }
+
+  get userRoles(): string[] {
+    return this.authService.getUserRoles();
   }
 
   isLoggedIn(): boolean {
@@ -104,6 +111,30 @@ export class NavigationComponent implements OnInit {
 
   shouldShowLoginButton(): boolean {
     return this.currentRoute !== '/sign-in';
+  }
+
+  openSwitchRoleDialog(): void {
+    const roles = this.userRoles;
+    const currentRole = this.userActiveRole;
+
+    if (roles.length === 0) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(SwitchRoleDialogComponent, {
+      width: '400px',
+      data: {
+        roles: roles,
+        currentRole: currentRole
+      } as SwitchRoleDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Role switch was successful, page will reload automatically
+        console.log('Role switched successfully');
+      }
+    });
   }
 
 }

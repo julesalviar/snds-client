@@ -55,6 +55,11 @@ export class AuthService {
     return this.isTokenValid(payload) ? payload?.activeRole ?? (payload?.role ?? '') : '';
   }
 
+  getUserRoles(): string[] {
+    const payload = this.getTokenPayload();
+    return this.isTokenValid(payload) ? payload?.roles ?? [] : [];
+  }
+
   getUserId(): string {
     const payload = this.getTokenPayload();
     return this.isTokenValid(payload) ? payload?.['sub'] ?? payload?.['userId'] ?? '' : '';

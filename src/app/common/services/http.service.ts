@@ -46,7 +46,6 @@ export class HttpService {
   }
 
   post<T>(url: string, data: any): Observable<T> {
-    console.log(`posting url: ${url} data: ${JSON.stringify(data)}`);
     return this.http.post<T>(url, data, { headers: this.getHeaders() });
   }
 
@@ -55,28 +54,24 @@ export class HttpService {
   }
 
   put<T>(url: string, data: any): Observable<T> {
-    console.log(`putting url: ${url} data: ${JSON.stringify(data)}`);
     return this.http.put<T>(url, data, { headers: this.getHeaders() });
   }
 
   patch<T>(url: string, data: any): Observable<T> {
-    console.log(`patching url: ${url} data: ${JSON.stringify(data)}`);
     return this.http.patch<T>(url, data, { headers: this.getHeaders() });
   }
 
   delete<T>(url: string): Observable<T> {
-    console.log(`deleting url: ${url}`);
     return this.http.delete<T>(url, { headers: this.getHeaders() });
   }
 
   uploadFile<T>(url: string, formData: FormData): Observable<T> {
-    console.log(`uploading file to url: ${url}`);
     return this.http.post<T>(url, formData, { headers: this.getUploadHeaders() });
   }
 
   public handleError(error: any): Observable<never> {
     console.error('HTTP Error:', error);
-    
+
     // Preserve the original error structure so components can extract the actual error response
     if (error.error instanceof ErrorEvent) {
       // Client-side error
@@ -88,7 +83,7 @@ export class HttpService {
         console.error('Error response body:', error.error);
       }
     }
-    
+
     // Return the original error to preserve the response body
     return throwError(() => error);
   }

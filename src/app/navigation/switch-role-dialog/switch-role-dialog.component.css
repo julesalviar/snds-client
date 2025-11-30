@@ -1,0 +1,43 @@
+.dialog-title {
+  color: #4caf50;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+mat-dialog-content {
+  min-width: 400px;
+  padding: 20px 24px;
+}
+
+.dialog-message {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.role-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.role-option {
+  display: block;
+  padding: 8px 0;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  color: #666;
+}
+
+mat-dialog-actions {
+  padding: 8px 24px 16px;
+  gap: 8px;
+}
+

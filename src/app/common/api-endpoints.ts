@@ -4,6 +4,7 @@ export const API_ENDPOINT = {
   auth: {
     login: `${environment.API_URL}/auth/login`,
     register: `${environment.API_URL}/auth/signup`,
+    switchRole: `${environment.API_URL}/auth/switch-role`,
   },
   referenceData: `${environment.API_URL}/reference-data`,
   internalReferenceData: `${environment.API_URL}/internal-reference-data`,

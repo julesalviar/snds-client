@@ -8,7 +8,7 @@
     <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
 
     <!-- Stakeholder Menus -->
-    <ng-container *ngIf="userRole === userType.StakeHolder">
+    <ng-container *ngIf="userActiveRole === userType.StakeHolder">
       <li class="dropdown">
         <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
         <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
@@ -42,7 +42,7 @@
     </ng-container>
 
     <!-- School Admin Menus -->
-    <ng-container *ngIf="userRole === userType.SchoolAdmin">
+    <ng-container *ngIf="userActiveRole === userType.SchoolAdmin">
       <li class="dropdown">
         <span tabindex="0" (click)="toggleDropdown()">School Needs</span>
         <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
@@ -72,7 +72,7 @@
     </ng-container>
 
     <!-- Division Admin Menus -->
-    <ng-container *ngIf="userRole === 'divisionAdmin'">
+    <ng-container *ngIf="userActiveRole === 'divisionAdmin'">
       <li class="dropdown">
         <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
         <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
@@ -149,7 +149,8 @@
       <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
       <mat-menu #profileMenu="matMenu">
         <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
-        <button mat-menu-item [routerLink]="['/profile']" *ngIf="userRole === UserType.SchoolAdmin">Edit Profile</button>
+        <button mat-menu-item [routerLink]="['/profile']" *ngIf="userActiveRole === UserType.SchoolAdmin">Edit Profile</button>
+        <button mat-menu-item *ngIf="userRoles.length > 1" (click)="openSwitchRoleDialog()">Switch Role</button>
       </mat-menu>
       <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">
         Logout

@@ -1,0 +1,20 @@
+<h2 mat-dialog-title class="dialog-title">Switch Role</h2>
+<mat-dialog-content>
+  <p class="dialog-message">Select a role to switch to:</p>
+  <div class="role-selection">
+    <mat-radio-group [(ngModel)]="selectedRole">
+      <mat-radio-button *ngFor="let role of data.roles" [value]="role" class="role-option">
+        {{ getRoleDisplayName(role) }}
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="30"></mat-spinner>
+    <span>Switching role...</span>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSwitch()" [disabled]="isLoading || selectedRole === data.currentRole" cdkFocusInitial>Switch</button>
+</mat-dialog-actions>
+
