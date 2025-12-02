@@ -2,15 +2,15 @@
   <mat-card class="engage-card">
     <mat-card-title>Engagement Details</mat-card-title>
     <mat-card-content>
-      <p *ngIf="needCode">Engaging with need code: <strong>{{ this.schoolNeed?.code }}</strong></p>
-      <p *ngIf="schoolNeed?.description"><strong>Description:</strong> {{ this.schoolNeed?.description }}</p>
-      <p *ngIf="schoolNeed?.contributionType"><strong>Contribution Type:</strong> {{ this.schoolNeed?.contributionType }}</p>
-      <p *ngIf="schoolNeed?.specificContribution"><strong>Specific Contribution:</strong> {{ this.schoolNeed?.specificContribution }}</p>
-      <p *ngIf="schoolNeed?.quantity"><strong>Required Quantity:</strong> {{ this.schoolNeed?.quantity }} {{ this.schoolNeed?.unit }}</p>
-      <p *ngIf="schoolNeed?.estimatedCost"><strong>Estimated Cost:</strong> ₱{{ this.schoolNeed?.estimatedCost | number:'1.2-2' }}</p>
-      <p *ngIf="schoolNeed?.studentBeneficiaries"><strong>Student Beneficiaries:</strong> {{ this.schoolNeed?.studentBeneficiaries }}</p>
-      <p *ngIf="schoolNeed?.personnelBeneficiaries"><strong>Personnel Beneficiaries:</strong> {{ this.schoolNeed?.personnelBeneficiaries }}</p>
-      <p *ngIf="schoolNeed?.targetDate"><strong>Target Date:</strong> {{ this.schoolNeed?.targetDate | date:'mediumDate' }}</p>
+      <p *ngIf="needCode">Engaging with need code: <strong>{{ schoolNeed?.code }}</strong></p>
+      <p *ngIf="schoolNeed?.description"><strong>Description:</strong> {{ schoolNeed?.description }}</p>
+      <p *ngIf="schoolNeed?.contributionType"><strong>Contribution Type:</strong> {{ schoolNeed?.contributionType }}</p>
+      <p *ngIf="schoolNeed?.specificContribution"><strong>Specific Contribution:</strong> {{ schoolNeed?.specificContribution }}</p>
+      <p *ngIf="schoolNeed?.quantity"><strong>Required Quantity:</strong> {{ schoolNeed?.quantity }} {{ schoolNeed?.unit }}</p>
+      <p *ngIf="schoolNeed?.estimatedCost"><strong>Estimated Cost:</strong> ₱{{ schoolNeed?.estimatedCost | number:'1.2-2' }}</p>
+      <p *ngIf="schoolNeed?.studentBeneficiaries"><strong>Student Beneficiaries:</strong> {{ schoolNeed?.studentBeneficiaries }}</p>
+      <p *ngIf="schoolNeed?.personnelBeneficiaries"><strong>Personnel Beneficiaries:</strong> {{ schoolNeed?.personnelBeneficiaries }}</p>
+      <p *ngIf="schoolNeed?.targetDate"><strong>Target Date:</strong> {{ schoolNeed?.targetDate | date:'mediumDate' }}</p>
       <form>
         <mat-form-field appearance="fill">
           <mat-label>Type the name of the stakeholder to engage</mat-label>
@@ -70,7 +70,97 @@
           <mat-datepicker #endPicker></mat-datepicker>
         </mat-form-field>
 
-        <button mat-raised-button color="primary" (click)="saveEngagement()">Engage</button>
+        <hr>
+       <h3>
+  Clicking applicable will render other boxes below active(
+  <span style="color: red; font-style: italic;">this is intended for stakeholder-funded PPAs</span>)
+</h3>
+
+<div class="radio-group">
+<mat-radio-group [(ngModel)]="isApplicable" (change)="onToggleChange($event)" name="applicableToggle">
+    <mat-radio-button value="true">
+      Applicable
+    </mat-radio-button>
+    <mat-radio-button value="false" (change)="onToggleChange($event)" name="notApplicableToggle">
+      Not Applicable
+    </mat-radio-button>
+</mat-radio-group>
+</div>
+
+<hr>
+
+<div *ngIf="isApplicable">
+  <mat-form-field appearance="fill">
+    <mat-label>Number of Stakeholder Representatives</mat-label>
+    <input matInput [(ngModel)]="stakeholderCount"  name="stakeholderCount" type="number" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Agreements</mat-label>
+    <mat-select [(ngModel)]="selectedAgreement" name="selectedAgreement" required>
+      <mat-option value="memorandum_of_agreement">Memorandum of Agreement</mat-option>
+      <mat-option value="memorandum_of_understanding">Memorandum of Understanding</mat-option>
+      <mat-option value="deed_of_donation">Deed of Donation</mat-option>
+      <mat-option value="usufruct">Usufruct</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Signatory Name</mat-label>
+    <input matInput [(ngModel)]="signatoryName" name="signatoryName" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Signatory Designation</mat-label>
+    <mat-select [(ngModel)]="signatoryDesignation" name="signatoryDesignation" required>
+      <mat-option value="CEO">CEO</mat-option>
+      <mat-option value="Executive Director">Executive Director</mat-option>
+      <mat-option value="President">President</mat-option>
+      <mat-option value="Manager">Manager</mat-option>
+      <mat-option value="Project Officer">Project Officer</mat-option>
+      <mat-option value="Donor">Donor</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Project Category</mat-label>
+    <mat-select [(ngModel)]="projectCategory" name="projectCategory" required>
+      <mat-option value="adopt_a_school">Adopt-a-School</mat-option>
+      <mat-option value="brigada_eskwela">Brigada Eskwela</mat-option>
+      <mat-option value="grant">Grant</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Project Name (if applicable)</mat-label>
+    <input matInput [(ngModel)]="projectName" name="projectName" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Status of Agreement</mat-label>
+    <mat-select [(ngModel)]="agreementStatus" name="agreementStatus" required>
+      <mat-option value="completed">Completed</mat-option>
+      <mat-option value="ongoing">On-going</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Initiated By</mat-label>
+    <mat-select [(ngModel)]="initiatedBy" name="initiatedBy" required>
+      <mat-option value="central_office">Central Office</mat-option>
+      <mat-option value="regional_office">Regional Office</mat-option>
+      <mat-option value="school_division_office">School Division Office</mat-option>
+      <mat-option value="school">School</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Error message -->
+  <div *ngIf="isApplicable && !formIsValid" style="color: red;">
+    Please fill out all required fields before engaging.
+  </div>
+</div>
+
+<button mat-raised-button color="primary" (click)="onEngage()">Engage</button>
       </form>
     </mat-card-content>
   </mat-card>

@@ -2,22 +2,24 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
-import { MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
+import { MatCard, MatCardTitle, MatCardContent, MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatDatepickerModule, MatDatepickerToggle } from '@angular/material/datepicker';
+import { MatFormField, MatLabel, MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule, MatOption } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { SharedDataService } from '../../common/services/shared-data.service';
-import { UserService } from '../../common/services/user.service';
-import { ReferenceDataService } from '../../common/services/reference-data.service';
-import { SchoolNeedService } from '../../common/services/school-need.service';
-import { FormsModule } from '@angular/forms';
+import { MatDatepickerModule, MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton } from "@angular/material/button";
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import {SchoolNeed} from "../../common/model/school-need.model";
+import { SchoolNeed } from "../../common/model/school-need.model";
+import { UserService } from '../../common/services/user.service';
+import { SharedDataService } from '../../common/services/shared-data.service';
+import { ReferenceDataService } from '../../common/services/reference-data.service';
+import { SchoolNeedService } from '../../common/services/school-need.service';
+import { FormsModule } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
+import { MatRadioModule, MatRadioChange } from '@angular/material/radio';
 
 @Component({
   selector: 'app-school-needs-engage',
@@ -26,7 +28,6 @@ import {SchoolNeed} from "../../common/model/school-need.model";
     CommonModule,
     MatOption,
     MatInputModule,
-    MatDatepickerModule,
     MatAutocompleteModule,
     FormsModule,
     MatNativeDateModule,
@@ -35,10 +36,15 @@ import {SchoolNeed} from "../../common/model/school-need.model";
     MatCardTitle,
     MatTooltipModule,
     MatCardContent,
+    MatCardModule,
     MatFormField,
     MatLabel,
+    MatButton,
+    MatRadioModule,
+    MatDatepickerModule,
     MatDatepickerToggle,
-    MatButton
+    MatFormFieldModule,
+    MatSelectModule
   ],
   templateUrl: './school-needs-engage.component.html',
   styleUrls: ['./school-needs-engage.component.css']
@@ -53,14 +59,32 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   amount: number | null = null;
   startDate: Date | null = null;
   endDate: Date | null = null;
-
+  // Additional fields
+  isApplicable: boolean = false;
+  stakeholderCount: number | null = null;
+  selectedAgreement: string = '';
+  signatoryName: string = '';
+  signatoryDesignation: string = '';
+  projectCategory: string = '';
+  projectName: string = '';
+  agreementStatus: string = '';
+  initiatedBy: string = '';
   stakeholders: any[] = [];
   filteredStakeholders: any[] = [];
-  readonly STAKEHOLDER_LIMIT = 50; // Limit the number of stakeholders loaded
-
+  readonly STAKEHOLDER_LIMIT = 50;
+  
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
+    get formIsValid(): boolean {
+    return this.stakeholderCount !== null &&  
+           this.selectedAgreement !== '' &&
+           this.signatoryName !== '' &&
+           this.signatoryDesignation !== '' &&
+           this.projectCategory !== '' &&
+           this.agreementStatus !== '' &&
+           this.initiatedBy !== '';
+  }
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -97,6 +121,20 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  onToggleChange(event: MatRadioChange): void {
+    this.isApplicable = event.value == 'true';
+  }
+
+   onEngage() {
+    if (this.isApplicable && !this.formIsValid) {
+      // Do not proceed, show error
+       console.log("Please fill out all required fields before engaging.");
+      return;
+    }
+    console.log("Data saved successfully!"); 
+  }
+
 
   loadSchoolNeed(code: string): void {
     this.schoolNeedService.getSchoolNeedByCode(code).pipe(takeUntil(this.destroy$)).subscribe({
@@ -175,10 +213,33 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     });
   }
 
+  validateForm(): boolean {
+    return this.stakeholderCount !== null &&
+           this.selectedAgreement !== '' &&
+           this.signatoryName.trim() !== '' &&
+           this.signatoryDesignation !== '' &&
+           this.projectCategory !== '' &&
+           this.agreementStatus !== '' &&
+           this.initiatedBy !== '';
+  }
+
   saveEngagement(): void {
+    if (this.isApplicable && !this.validateForm()) {
+      this.showErrorNotification('Please fill out all required fields before engaging.');
+      return;
+    }
+
     if (this.needCode) {
       const engagementData = {
         stakeholderUserId: this.stakeholder._id,
+        stakeholderCount: this.stakeholderCount,
+        selectedAgreement: this.selectedAgreement,
+        signatoryName: this.signatoryName,
+        signatoryDesignation: this.signatoryDesignation,
+        projectCategory: this.projectCategory,
+        projectName: this.projectName,
+        agreementStatus: this.agreementStatus,
+        initiatedBy: this.initiatedBy,
         signingDate: this.moaDate,
         unit: this.unit,
         amount: this.amount,
@@ -217,5 +278,14 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.amount = null;
     this.startDate = null;
     this.endDate = null;
+    this.isApplicable = false; 
+    this.stakeholderCount = null;
+    this.selectedAgreement = '';
+    this.signatoryName = '';
+    this.signatoryDesignation = '';
+    this.projectCategory = '';
+    this.projectName = '';
+    this.agreementStatus = '';
+    this.initiatedBy = '';
   }
 }
