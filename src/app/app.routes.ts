@@ -25,6 +25,7 @@ import {AboutUsComponent} from './navigation/about-us/about-us.component';
 import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-need-view.component";
 import { QuickCountComponent } from './school-admin/quick-count/quick-count.component';
 import {ProfileComponent} from "./navigation/profile/profile.component";
+import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/generated-resources.component";
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -58,6 +59,7 @@ export const routes: Routes = [
       {path: 'my-contribution', component: MyContributionComponent},
       {path: 'districts', component: ClustersComponent},
       {path: 'school-needs', component: StakeholdersComponent},
+      {path: 'generated-resources', component: GeneratedResourcesComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: QuickCountComponent},
       {path: 'aip/:schoolId', component: AipComponent},

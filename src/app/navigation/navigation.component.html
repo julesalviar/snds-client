@@ -30,8 +30,7 @@
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About  Us </a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
-      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()" class="disabled"
-             style="pointer-events: none; color: #ccc; cursor: not-allowed;">Generated Resources</a></li>
+      <li><a routerLink="/stakeholder/generated-resources" (click)="closeMenu()">Generated Resources</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="stakeholderSupportMenu" class="menu-trigger">Support</button>
         <mat-menu #stakeholderSupportMenu="matMenu">
