@@ -1,0 +1,52 @@
+<mat-card>
+  <mat-card-title>Generated Resources</mat-card-title>
+  <mat-card-content>
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="dateEngage">
+          <th mat-header-cell *matHeaderCellDef> Date Engage </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.dateEngage | date:'MMM. dd, y'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="stakeholder">
+          <th mat-header-cell *matHeaderCellDef> Name of Stakeholder </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.stakeholderName}} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="numberOfRepresentatives">
+          <th mat-header-cell *matHeaderCellDef> No. of Stakeholder/Representative </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.numberOfRepresentatives}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="specificContribution">
+          <th mat-header-cell *matHeaderCellDef> Specific Contribution </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.specificContribution}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef> Quantity </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.quantity}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="unit">
+          <th mat-header-cell *matHeaderCellDef> Unit </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.unit}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef> Amount </th>
+          <td mat-cell *matCellDef="let entry"> {{entry.amount | currency:'PHP':'symbol':'1.2-2'}} </td>
+        </ng-container>
+ 
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [ngClass]="{ 'total-row': row.stakeholderName === 'Total' }"></tr>
+    </table>
+
+      <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons>
+      </mat-paginator>
+
+    </div>
+    </mat-card-content>
+</mat-card>

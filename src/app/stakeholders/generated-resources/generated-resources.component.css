@@ -1,0 +1,71 @@
+mat-card {
+  margin: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 20px green;
+  border-radius: 8px;
+  border: 1px solid green;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.table-container {
+  overflow-x: auto; 
+}
+
+table {
+  width: 100%; 
+}
+mat-card-title {
+  margin-bottom: 20px;
+  margin-top: 10px;
+  margin-left: 10px;
+  font-size: 20px;
+  color: #45a049;
+}
+
+.mat-cell, .mat-header-cell {
+  text-align: center;
+}
+tr:hover {
+  background-color: #28941589;
+  color: white;
+}
+table th{
+    background-color: #075b10;
+    color: white;
+}
+
+.total-row {
+  font-weight: bold;
+  background-color: whitesmoke;
+  color: red;
+}
+
+@media (max-width: 600px) {
+  th.mat-header-cell, 
+  td.mat-cell {
+    font-size: 0.9rem; 
+  }
+}
+
+@media (max-width: 1024px) {
+  mat-card {
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+  }
+
+  .table-container {
+    margin: 5px 0;
+    padding: 0;
+  }
+
+  .mat-header-cell, .mat-cell {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
