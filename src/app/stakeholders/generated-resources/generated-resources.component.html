@@ -1,22 +1,32 @@
 <mat-card>
   <mat-card-title>Generated Resources</mat-card-title>
-  <mat-card-content>
+  <div class="table-scroll">
     <div class="table-container">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading engagements...</p>
+      </div>
+
+      <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
         <ng-container matColumnDef="dateEngage">
           <th mat-header-cell *matHeaderCellDef> Date Engage </th>
-          <td mat-cell *matCellDef="let entry"> {{entry.dateEngage | date:'MMM. dd, y'}} </td>
+          <td mat-cell *matCellDef="let entry">
+            <span *ngIf="entry.signingDate">{{entry.signingDate | date:'MMM. dd, y'}}</span>
+            <span *ngIf="!entry.signingDate">-</span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="stakeholder">
           <th mat-header-cell *matHeaderCellDef> Name of Stakeholder </th>
-          <td mat-cell *matCellDef="let entry"> {{entry.stakeholderName}} </td>
+          <td mat-cell *matCellDef="let entry">
+            {{entry.stakeholderUserId?.name || '-'}}
+          </td>
         </ng-container>
-        
+
         <ng-container matColumnDef="numberOfRepresentatives">
           <th mat-header-cell *matHeaderCellDef> No. of Stakeholder/Representative </th>
-          <td mat-cell *matCellDef="let entry"> {{entry.numberOfRepresentatives}} </td>
+          <td mat-cell *matCellDef="let entry"> - </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">
@@ -26,7 +36,10 @@
 
         <ng-container matColumnDef="quantity">
           <th mat-header-cell *matHeaderCellDef> Quantity </th>
-          <td mat-cell *matCellDef="let entry"> {{entry.quantity}} </td>
+          <td mat-cell *matCellDef="let entry">
+            <span *ngIf="entry.quantity !== null">{{entry.quantity}}</span>
+            <span *ngIf="entry.quantity === null">-</span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="unit">
@@ -36,17 +49,32 @@
 
         <ng-container matColumnDef="amount">
           <th mat-header-cell *matHeaderCellDef> Amount </th>
-          <td mat-cell *matCellDef="let entry"> {{entry.amount | currency:'PHP':'symbol':'1.2-2'}} </td>
+          <td mat-cell *matCellDef="let entry">
+            <span *ngIf="entry.amount !== null">{{entry.amount | number:'1.2-2'}}</span>
+            <span *ngIf="entry.amount === null">-</span>
+          </td>
         </ng-container>
- 
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            [ngClass]="{ 'total-row': row.stakeholderName === 'Total' }"></tr>
-    </table>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-      <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons>
+        <!-- Total Row -->
+        <tr class="total-row" *ngIf="!isLoading && dataSource.data.length > 0">
+          <td [attr.colspan]="displayedColumns.length" style="text-align: right; padding: 16px; font-weight: bold;">
+            Total Amount: {{totalAmount | number:'1.2-2'}}
+          </td>
+        </tr>
+      </table>
+
+      <mat-paginator
+        *ngIf="!isLoading"
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        showFirstLastButtons
+        (page)="onPageChange($event)">
       </mat-paginator>
-
     </div>
-    </mat-card-content>
+  </div>
 </mat-card>

@@ -1,29 +1,21 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-
-// Interface for resource entries for sample data
-interface ResourceEntry {
-  dateEngage?: Date | null;  
-  stakeholderName: string;
-  numberOfRepresentatives: number | null;  
-  specificContribution: string;
-  quantity: number | null;  
-  unit: string;
-  amount: number | null;  
-}
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { EngagementService } from '../../common/services/engagement.service';
+import { Engagement, PopulatedStakeholderUser } from '../../common/model/engagement.model';
 
 @Component({
   selector: 'app-generated-resources',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatCardModule, MatPaginatorModule],
+  imports: [CommonModule, MatTableModule, MatCardModule, MatPaginatorModule, MatProgressBarModule],
   templateUrl: './generated-resources.component.html',
   styleUrls: ['./generated-resources.component.css'] 
 })
-export class GeneratedResourcesComponent implements AfterViewInit {
+export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
   
   displayedColumns: string[] = [
     'dateEngage',
@@ -35,66 +27,63 @@ export class GeneratedResourcesComponent implements AfterViewInit {
     'amount'
   ];
 
-  // Sample data
-  dataSource = new MatTableDataSource<ResourceEntry>([
-    {
-      dateEngage: new Date(),
-      stakeholderName: 'Gensan Foundation',
-      numberOfRepresentatives: 3,
-      specificContribution: 'Cement',
-      quantity: 50,
-      unit: 'Bags',
-      amount: 10000.00,
-    },
-    {
-      dateEngage: new Date(),
-      stakeholderName: 'Ardian Macascas',
-      numberOfRepresentatives: 2,
-      specificContribution: 'Cement',
-      quantity: 20,
-      unit: 'Bags',
-      amount: 5000.00,
-    },
-    {
-      dateEngage: new Date(),
-      stakeholderName: 'Gerome Sample',
-      numberOfRepresentatives: 2,
-      specificContribution: 'Cement',
-      quantity: 15,
-      unit: 'Bags',
-      amount: 15000.00,
-    },
-  ]);
+  dataSource = new MatTableDataSource<Engagement>([]);
+  isLoading: boolean = false;
+  pageIndex: number = 0;
+  pageSize: number = 10;
+  totalItems: number = 0;
+  totalAmount: number = 0;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor() {
-    this.addTotalRow();
+  constructor(
+    private readonly engagementService: EngagementService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadEngagements();
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator; 
   }
 
-  addTotalRow() {
-    const totalRepresentatives = this.dataSource.data.reduce((total, entry) => {
-      return total + (entry.numberOfRepresentatives || 0);
-    }, 0);
+  loadEngagements(): void {
+    this.isLoading = true;
+    const page = this.pageIndex + 1;
 
-    const totalAmount = this.dataSource.data.reduce((total, entry) => {
-      return total + (entry.amount || 0);
-    }, 0);
-
-    this.dataSource.data.push({
-      dateEngage: null,
-      stakeholderName: 'Total',
-      numberOfRepresentatives: totalRepresentatives,
-      specificContribution: '',
-      quantity: null,
-      unit: '',
-      amount: totalAmount,
+    this.engagementService.getAllEngagement(page, this.pageSize).subscribe({
+      next: (response) => {
+        this.dataSource.data = response.data;
+        this.totalItems = response.meta.totalItems;
+        this.calculateTotal();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading engagements:', error);
+        this.dataSource.data = [];
+        this.isLoading = false;
+      }
     });
+  }
 
-    this.dataSource._updateChangeSubscription();
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadEngagements();
+  }
+
+  calculateTotal(): void {
+    this.totalAmount = this.dataSource.data.reduce((total, engagement) => {
+      return total + (engagement.amount || 0);
+    }, 0);
+  }
+
+  getStakeholderName(engagement: Engagement): string {
+    if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
+      const stakeholder = engagement.stakeholderUserId as PopulatedStakeholderUser;
+      return stakeholder.name || stakeholder.email || '-';
+    }
+    return '-';
   }
 }
