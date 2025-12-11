@@ -77,7 +77,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   private async initializeData(): Promise<void> {
     await this.referenceDataService.initialize();
     await this.internalReferenceDataService.initialize();
-    
+
     this.loadRegions();
     this.loadDivisions();
     this.loadClusters();
@@ -145,7 +145,8 @@ export class SchoolAdminRegistrationComponent implements OnInit {
     this.passwordMismatch = false; // Reset password mismatch flag
     if (this.registrationForm.valid) {
       const schoolData = {
-        role: UserType.SchoolAdmin,
+        roles: [UserType.SchoolAdmin],
+        activeRole: UserType.SchoolAdmin,
         userName: this.registrationForm.get('officialEmail')?.value,
         schoolName: this.registrationForm.get('schoolName')?.value,
         schoolId: this.registrationForm.get('schoolId')?.value,

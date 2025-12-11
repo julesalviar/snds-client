@@ -144,7 +144,8 @@ export class RegistrationComponent {
     const userData = { ...this.registrationForm.value };
     const registrationData: User = {
       ...userData,
-      role: UserType.StakeHolder,
+      activeRole: UserType.StakeHolder,
+      roles: [UserType.StakeHolder],
       userName: userData.email // TODO: we use email as username
     };
     console.log(registrationData);
