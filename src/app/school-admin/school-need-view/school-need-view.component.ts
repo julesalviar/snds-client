@@ -15,6 +15,8 @@ import {CurrencyPipe, DatePipe, DecimalPipe, NgForOf, NgIf, UpperCasePipe} from 
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmDialogComponent, ConfirmDialogData} from "../../common/components/confirm-dialog/confirm-dialog.component";
 import {EngagementService} from "../../common/services/engagement.service";
+import {AuthService} from "../../auth/auth.service";
+import {UserType} from "../../registration/user-type.enum";
 
 interface ImplementationStatus {
   progress: number;
@@ -53,7 +55,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   progressValue = 0; // Example progress value (from 10% to 100%)
 
   // Columns for the stakeholder table
-  displayedColumns: string[] = ['contributor', 'quantity', 'amount', 'action'];
+  displayedColumns: string[] = ['contributor', 'quantity', 'amount'];
 
   // Image preview properties
   showImagePreview: boolean = false;
@@ -69,11 +71,16 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly dialog: MatDialog,
     private readonly engagementService: EngagementService,
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
     this.code = this.route.snapshot.paramMap.get('code');
     console.log('View component code:', this.code);
+
+    if (this.isSchoolAdmin()) {
+      this.displayedColumns.push('action');
+    }
 
     if (this.code) {
       this.loadSchoolNeed(this.code);
@@ -122,6 +129,11 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   }
 
   deleteStakeholder(engagement: any): void {
+    if (!this.isSchoolAdmin()) {
+      this.showErrorNotification('Unauthorized: Only school administrators can delete engagements');
+      return;
+    }
+
     if (!engagement || !engagement._id) {
       this.showErrorNotification('Invalid engagement data');
       return;
@@ -211,5 +223,9 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
 
     const percentage = Math.round((totalQuantity / targetQuantity) * 100);
     return { progress: percentage, status: `${percentage}% complete` };
+  }
+
+  isSchoolAdmin(): boolean {
+    return this.authService.getActiveRole() === UserType.SchoolAdmin;
   }
 }

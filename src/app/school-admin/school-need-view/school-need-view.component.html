@@ -60,8 +60,9 @@
                         class="delete-engagement-button"
                         color="warn" 
                         (click)="deleteStakeholder(element)" 
-                        [disabled]="deletingEngagementId === element._id"
-                        [matTooltip]="deletingEngagementId === element._id ? 'Deleting...' : 'Delete engagement'">
+                        [disabled]="deletingEngagementId === element._id || !isSchoolAdmin()"
+                        [matTooltip]="deletingEngagementId === element._id ? 'Deleting...' : 'Delete engagement'"
+                        *ngIf="isSchoolAdmin()">
                   <mat-icon *ngIf="deletingEngagementId !== element._id">delete</mat-icon>
                   <mat-spinner *ngIf="deletingEngagementId === element._id" 
                                diameter="20" 
