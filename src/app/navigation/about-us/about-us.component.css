@@ -23,11 +23,46 @@ ul {
   margin-top: 20px;
 }
 
+.address-text {
+  margin: 15px 0;
+  font-size: 16px;
+}
+
+.contacts-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+  margin-top: 20px;
+  justify-items: center;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+  .contacts-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+  .contacts-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Large Desktop: 4 columns */
+@media (min-width: 1440px) {
+  .contacts-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .contact-image {
   width: 300px;
   height: auto;
   border-radius: 20%;
   margin: 0;
+  max-width: 100%;
 }
 
 .contact-details {
@@ -35,6 +70,11 @@ ul {
   color: #333;
   font-size: small;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 350px;
 }
 
 .contact-person-info {

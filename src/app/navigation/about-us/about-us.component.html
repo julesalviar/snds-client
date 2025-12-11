@@ -44,17 +44,18 @@
   </p>
 
   <div class="contact-info">
-    <div class="contact-details">
-      <p><strong>For more information, please don't hesitate to contact our Division Partnership Focal Person:</strong>
-      </p>
-      <img [src]="image" [alt]="contactName" class="contact-image" />
-      <div class="contact-person-info">
-        <h3 *ngIf="contactName">{{ contactName }}</h3>
-        <p *ngIf="contactTitle">{{ contactTitle }}</p>
-        <p *ngIf="contactAddress">{{ contactAddress }}</p>
-        <p *ngIf="email"><a [href]="'mailto:' + email">{{ email }}</a></p>
-        <p *ngIf="landline">Telephone Number: {{ landline }}</p>
-        <p *ngIf="mobile">Mobile Number: {{ mobile }}</p>
+    <p><strong>For more information, please don't hesitate to contact our Division Partnership Focal Person:</strong></p>
+    <p *ngIf="address" class="address-text"><strong>Address:</strong> {{ address }}</p>
+    <div class="contacts-container">
+      <div class="contact-details" *ngFor="let contact of contacts">
+        <img [src]="contact.image" [alt]="contact.name" class="contact-image" />
+        <div class="contact-person-info">
+          <h3 *ngIf="contact.name">{{ contact.name }}</h3>
+          <p *ngIf="contact.title">{{ contact.title }}</p>
+          <p *ngIf="contact.email"><a [href]="'mailto:' + contact.email">{{ contact.email }}</a></p>
+          <p *ngIf="contact.landline">Telephone Number: {{ contact.landline }}</p>
+          <p *ngIf="contact.mobile">Mobile Number: {{ contact.mobile }}</p>
+        </div>
       </div>
     </div>
   </div>

@@ -4,6 +4,22 @@ import { CommonModule } from '@angular/common';
 import { InternalReferenceDataService } from "../../common/services/internal-reference-data.service";
 import { SafeUrlPipe } from "../../common/pipes/safe-url.pipe";
 
+interface Contact {
+  image: string;
+  name: string;
+  title: string;
+  mobile: string;
+  landline: string;
+  email: string;
+}
+
+interface AboutContent {
+  contacts: Contact[];
+  address: string;
+  aboutUs: string;
+  mapUrl: string;
+}
+
 @Component({
   selector: 'app-about-us',
   standalone: true,
@@ -12,13 +28,8 @@ import { SafeUrlPipe } from "../../common/pipes/safe-url.pipe";
   styleUrl: './about-us.component.css'
 })
 export class AboutUsComponent implements OnInit {
-  email: string = '';
-  landline: string = '';
-  mobile: string = '';
-  image: string = '';
-  contactName: string = '';
-  contactTitle: string = '';
-  contactAddress: string = '';
+  contacts: Contact[] = [];
+  address: string = '';
   aboutUs: string = '';
   mapUrl: string = '';
 
@@ -32,18 +43,23 @@ export class AboutUsComponent implements OnInit {
 
   private async loadAboutContent(): Promise<void> {
     await this.internalReferenceDataService.initialize();
-    const aboutContent = this.internalReferenceDataService.get('about_content');
+    const aboutContent = this.internalReferenceDataService.get('about_content') as AboutContent | null;
 
     if (aboutContent) {
       this.aboutUs = aboutContent.aboutUs ?? '';
-      this.email = aboutContent.email ?? '';
-      this.landline = aboutContent.landline ?? '';
-      this.mobile = this.formatMobileNumber(aboutContent.mobile ?? '');
-      this.image = aboutContent.image ?? '';
-      this.contactName = aboutContent.contactName ?? '';
-      this.contactTitle = aboutContent.contactTitle ?? '';
-      this.contactAddress = aboutContent.contactAddress ?? '';
+      this.address = aboutContent.address ?? '';
       this.mapUrl = aboutContent.mapUrl ?? '';
+
+      if (aboutContent.contacts && Array.isArray(aboutContent.contacts)) {
+        this.contacts = aboutContent.contacts.map(contact => ({
+          image: contact.image ?? '',
+          name: contact.name ?? '',
+          title: contact.title ?? '',
+          mobile: this.formatMobileNumber(contact.mobile ?? ''),
+          landline: contact.landline ?? '',
+          email: contact.email ?? ''
+        }));
+      }
     }
   }
 
