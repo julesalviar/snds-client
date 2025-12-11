@@ -72,12 +72,12 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   stakeholders: any[] = [];
   filteredStakeholders: any[] = [];
   readonly STAKEHOLDER_LIMIT = 50;
-  
+
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
     get formIsValid(): boolean {
-    return this.stakeholderCount !== null &&  
+    return this.stakeholderCount !== null &&
            this.selectedAgreement !== '' &&
            this.signatoryName !== '' &&
            this.signatoryDesignation !== '' &&
@@ -124,15 +124,6 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
 
   onToggleChange(event: MatRadioChange): void {
     this.isApplicable = event.value == 'true';
-  }
-
-   onEngage() {
-    if (this.isApplicable && !this.formIsValid) {
-      // Do not proceed, show error
-       console.log("Please fill out all required fields before engaging.");
-      return;
-    }
-    console.log("Data saved successfully!"); 
   }
 
 
@@ -232,14 +223,14 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     if (this.needCode) {
       const engagementData = {
         stakeholderUserId: this.stakeholder._id,
-        stakeholderCount: this.stakeholderCount,
-        selectedAgreement: this.selectedAgreement,
-        signatoryName: this.signatoryName,
-        signatoryDesignation: this.signatoryDesignation,
-        projectCategory: this.projectCategory,
-        projectName: this.projectName,
-        agreementStatus: this.agreementStatus,
-        initiatedBy: this.initiatedBy,
+        // stakeholderCount: this.stakeholderCount,
+        // selectedAgreement: this.selectedAgreement,
+        // signatoryName: this.signatoryName,
+        // signatoryDesignation: this.signatoryDesignation,
+        // projectCategory: this.projectCategory,
+        // projectName: this.projectName,
+        // agreementStatus: this.agreementStatus,
+        // initiatedBy: this.initiatedBy,
         signingDate: this.moaDate,
         unit: this.unit,
         amount: this.amount,
@@ -278,7 +269,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.amount = null;
     this.startDate = null;
     this.endDate = null;
-    this.isApplicable = false; 
+    this.isApplicable = false;
     this.stakeholderCount = null;
     this.selectedAgreement = '';
     this.signatoryName = '';
