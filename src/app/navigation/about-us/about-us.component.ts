@@ -52,12 +52,11 @@ export class AboutUsComponent implements OnInit {
 
       if (aboutContent.contacts && Array.isArray(aboutContent.contacts)) {
         this.contacts = aboutContent.contacts.map(contact => ({
-          image: contact.image ?? '',
-          name: contact.name ?? '',
-          title: contact.title ?? '',
-          mobile: this.formatMobileNumber(contact.mobile ?? ''),
-          landline: contact.landline ?? '',
-          email: contact.email ?? ''
+          ...contact,
+          image: contact.image && contact.image.trim()
+            ? contact.image
+            : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+',
+          mobile: this.formatMobileNumber(contact.mobile ?? '')
         }));
       }
     }
