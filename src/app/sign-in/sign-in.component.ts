@@ -64,16 +64,17 @@ export class SignInComponent implements OnInit {
 
   onForgotPassword() {
     const dialogRef = this.dialog.open(ForgotPasswordDialogComponent, {
-      disableClose: true,
+      disableClose: false,
       autoFocus: false,
       restoreFocus: false,
+      width: '400px',
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      // The dialog now handles success/error messages internally
+      // No need to show an additional alert
       if (result) {
-        alert(`A reset link has been sent to ${result}.`);
-      } else {
-        console.log('Dialog closed without action.');
+        console.log('Password reset email sent to:', result);
       }
     });
   }
