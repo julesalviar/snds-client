@@ -26,11 +26,13 @@ import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-ne
 import { QuickCountComponent } from './school-admin/quick-count/quick-count.component';
 import {ProfileComponent} from "./navigation/profile/profile.component";
 import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/generated-resources.component";
+import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: 'sign-in', component: SignInComponent},
   {path: 'register', component: RegistrationComponent},
+  {path: 'reset-password', component: ResetPasswordComponent},
   {path: 'school-admin-registration', component: SchoolAdminRegistrationComponent},
   {
     path: 'home',
