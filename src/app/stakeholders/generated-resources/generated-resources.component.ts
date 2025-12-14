@@ -13,12 +13,13 @@ import { Engagement, PopulatedStakeholderUser } from '../../common/model/engagem
   standalone: true,
   imports: [CommonModule, MatTableModule, MatCardModule, MatPaginatorModule, MatProgressBarModule],
   templateUrl: './generated-resources.component.html',
-  styleUrls: ['./generated-resources.component.css'] 
+  styleUrls: ['./generated-resources.component.css']
 })
 export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
-  
+
   displayedColumns: string[] = [
     'dateEngage',
+    'recipientSchool',
     'stakeholder',
     'numberOfRepresentatives',
     'specificContribution',
@@ -45,7 +46,7 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator; 
+    this.dataSource.paginator = this.paginator;
   }
 
   loadEngagements(): void {

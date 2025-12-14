@@ -17,6 +17,14 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="recipientSchool">
+          <th mat-header-cell *matHeaderCellDef> Recipient School </th>
+          <td mat-cell *matCellDef="let entry">
+            <span *ngIf="entry.signingDate">{{entry.schoolId?.schoolName }}</span>
+            <span *ngIf="!entry.signingDate">-</span>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="stakeholder">
           <th mat-header-cell *matHeaderCellDef> Name of Stakeholder </th>
           <td mat-cell *matCellDef="let entry">
