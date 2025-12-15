@@ -39,7 +39,9 @@ export class EngagementService {
     stakeholderUserId?: string,
     schoolYear?: string,
     specificContribution?: string,
-    schoolId?: string
+    schoolId?: string,
+    startDate?: string,
+    endDate?: string
   ): Observable<EngagementsResponse> {
     let url = API_ENDPOINT.engagements;
     const params: string[] = [];
@@ -66,6 +68,14 @@ export class EngagementService {
 
     if (schoolId) {
       params.push(`schoolId=${encodeURIComponent(schoolId)}`);
+    }
+
+    if (startDate) {
+      params.push(`startDate=${encodeURIComponent(startDate)}`);
+    }
+
+    if (endDate) {
+      params.push(`endDate=${encodeURIComponent(endDate)}`);
     }
 
     url += `?${params.join('&')}`;

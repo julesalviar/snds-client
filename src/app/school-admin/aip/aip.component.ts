@@ -39,7 +39,7 @@ export class AipComponent implements OnInit {
   pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
   pageIndex: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 25;
   dataSource = new MatTableDataSource<Aip>();
   totalItems: number = 0;
   isLoading: boolean = true;

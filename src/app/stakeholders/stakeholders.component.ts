@@ -47,7 +47,7 @@ export class StakeholdersComponent implements OnInit {
   schoolNeeds: SchoolNeed[] = [];
   schoolName: string = '';
   pageIndex: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 25;
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   totalQuantity: number = 0;

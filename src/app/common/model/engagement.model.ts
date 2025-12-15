@@ -41,6 +41,7 @@ export interface EngagementMeta {
   currentPage: number;
   totalPages: number;
   timestamp: string;
+  totalAmount?: number; // Total amount from backend
 }
 
 export interface EngagementsResponse {

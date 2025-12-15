@@ -44,7 +44,7 @@ export class ClustersComponent implements OnInit {
   filteredSchoolList: any[] = [];
   dataSource = new MatTableDataSource<any>();
   pageIndex: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 25;
   totalItems: number = 0;
   schoolsWithNeeds: number = 0;
   selectedCluster: string = '';

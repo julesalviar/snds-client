@@ -66,7 +66,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   // Pagination properties
   pageIndex: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 25;
   totalItems: number = 0;
   isLoading: boolean = true;
 
@@ -85,7 +85,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   filteredSpecificContributions: string[] = [];
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
-  
+
   selectedProjectIds: string[] = [];
 
   constructor(

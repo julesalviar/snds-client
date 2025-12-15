@@ -55,7 +55,7 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   ];
   schoolName: string = '';
   pageIndex: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 25;
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   isLoading: boolean = true;
