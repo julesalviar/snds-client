@@ -56,6 +56,15 @@ mat-card-title {
   margin-left: auto;
 }
 
+.select-all-option {
+  font-weight: bold;
+  background-color: #f5f5f5;
+}
+
+.select-all-option:hover {
+  background-color: #e0e0e0;
+}
+
 .mat-elevation-z8 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }

@@ -41,7 +41,8 @@ export class EngagementService {
     specificContribution?: string,
     schoolId?: string,
     startDate?: string,
-    endDate?: string
+    endDate?: string,
+    sector?: string
   ): Observable<EngagementsResponse> {
     let url = API_ENDPOINT.engagements;
     const params: string[] = [];
@@ -76,6 +77,10 @@ export class EngagementService {
 
     if (endDate) {
       params.push(`endDate=${encodeURIComponent(endDate)}`);
+    }
+
+    if (sector) {
+      params.push(`sector=${encodeURIComponent(sector)}`);
     }
 
     url += `?${params.join('&')}`;

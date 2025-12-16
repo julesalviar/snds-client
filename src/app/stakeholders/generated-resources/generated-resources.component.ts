@@ -11,6 +11,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser } from '../../common/model/engagement.model';
@@ -31,7 +32,8 @@ import { getSchoolYear } from '../../common/date-utils';
     MatDatepickerModule,
     MatNativeDateModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatDividerModule
   ],
   templateUrl: './generated-resources.component.html',
   styleUrls: ['./generated-resources.component.css']
@@ -42,6 +44,7 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     'dateEngage',
     'recipientSchool',
     'stakeholder',
+    'sector',
     'numberOfRepresentatives',
     'specificContribution',
     'quantity',
@@ -67,6 +70,15 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
   selectedPeriod: string | null = null;
   customStartDate: Date | null = null;
   customEndDate: Date | null = null;
+  selectedSector: string[] = [];
+
+  // Sector options
+  sectorOptions = [
+    { value: 'Private Sector', label: 'Private Sector' },
+    { value: 'Public Sector', label: 'Public Sector' },
+    { value: 'Civil Society Organization', label: 'Civil Society Organization' },
+    { value: 'International', label: 'International' }
+  ];
 
   // Period options
   periodOptions = [
@@ -129,8 +141,11 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
       endDate = dateRange.endDate;
     }
 
+    // Get sector filter - convert array to comma-separated string for API
+    const sector = this.selectedSector.length > 0 ? this.selectedSector.join(',') : undefined;
+
     // Load data with filters applied on backend
-    this.engagementService.getAllEngagement(1, 1000, undefined, schoolYear, undefined, undefined, startDate, endDate).subscribe({
+    this.engagementService.getAllEngagement(1, 1000, undefined, schoolYear, undefined, undefined, startDate, endDate, sector).subscribe({
       next: (response) => {
         this.allEngagements = response.data;
         this.filteredEngagements = response.data;
@@ -333,6 +348,14 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onSectorChange(sectors: string[]): void {
+    // Filter out the "Select All" marker if present
+    const filteredSectors = sectors.filter(s => s !== '__SELECT_ALL__');
+    this.selectedSector = filteredSectors;
+    this.pageIndex = 0;
+    this.loadEngagements();
+  }
+
   clearFilters(): void {
     // Reset to default school year filter (always requires a filter)
     this.filterType = 'schoolYear';
@@ -341,6 +364,7 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     this.customStartDate = null;
     this.customEndDate = null;
     this.dateRangeType = 'period';
+    this.selectedSector = [];
     this.pageIndex = 0;
     this.dataSource.paginator = null; // Disable MatPaginator for client-side pagination
     this.loadEngagements();
@@ -350,26 +374,53 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
    * Returns a descriptive label for what the total amount represents
    */
   getTotalAmountLabel(): string {
+    let baseLabel = '';
+    let sectorLabel = '';
+
+    // Build base label based on filter type
     if (this.filterType === 'schoolYear' && this.selectedSchoolYear) {
-      return `Total for School Year ${this.selectedSchoolYear}`;
+      baseLabel = `Total for School Year ${this.selectedSchoolYear}`;
     } else if (this.filterType === 'dateRange') {
       if (this.dateRangeType === 'custom' && this.customStartDate && this.customEndDate) {
         const startDate = this.customStartDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' });
         const endDate = this.customEndDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', day: 'numeric' });
-        return `Total for Period: ${startDate} - ${endDate}`;
+        baseLabel = `Total for Period: ${startDate} - ${endDate}`;
       } else if (this.dateRangeType === 'period' && this.selectedPeriod) {
         const periodLabel = this.periodOptions.find(p => p.value === this.selectedPeriod)?.label || '';
-        return `Total for ${periodLabel}`;
+        baseLabel = `Total for ${periodLabel}`;
+      } else {
+        baseLabel = 'Total for Selected Date Range';
       }
-      return 'Total for Selected Date Range';
+    } else {
+      baseLabel = 'Overall Total Amount';
     }
-    return 'Overall Total Amount';
+
+    // Add sector information if sectors are selected
+    if (this.selectedSector && this.selectedSector.length > 0) {
+      if (this.selectedSector.length === 1) {
+        sectorLabel = ` (Sector: ${this.selectedSector[0]})`;
+      } else if (this.selectedSector.length === this.sectorOptions.length) {
+        sectorLabel = ' (All Sectors)';
+      } else {
+        sectorLabel = ` (Sectors: ${this.selectedSector.join(', ')})`;
+      }
+    }
+
+    return baseLabel + sectorLabel;
   }
 
   getStakeholderName(engagement: Engagement): string {
     if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
       const stakeholder = engagement.stakeholderUserId as PopulatedStakeholderUser;
       return stakeholder.name || stakeholder.email || '-';
+    }
+    return '-';
+  }
+
+  getSector(engagement: Engagement): string {
+    if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
+      const stakeholder = engagement.stakeholderUserId as PopulatedStakeholderUser;
+      return stakeholder['sector'] || '-';
     }
     return '-';
   }

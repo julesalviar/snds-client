@@ -72,24 +72,6 @@
 
     <!-- Division Admin Menus -->
     <ng-container *ngIf="userActiveRole === 'divisionAdmin'">
-      <li class="dropdown">
-        <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
-        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-          <li class="submenu">
-        <span tabindex="0" (click)="toggleSubmenu()">
-        School<i class="fas fa-chevron-down"></i>
-      </span>
-            <ul class="nested-dropdown" [class.show]="submenuVisible">
-              <li><a class="custom-link" routerLink="/division-admin/all-school" (click)="closeMenu()">All</a></li>
-              <li><a class="custom-link" routerLink="/division-admin/districts" (click)="closeMenu()">By District</a>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <a routerLink="/division-admin/offices" (click)="closeMenu()">Office</a>
-          </li>
-        </ul>
-      </li>
       <li><a routerLink="/division-admin/about-us" (click)="closeMenu()">About Us</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>

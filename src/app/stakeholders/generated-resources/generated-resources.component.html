@@ -59,6 +59,16 @@
       </div>
     </div>
 
+    <!-- Sector Filter -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Sector</mat-label>
+      <mat-select [(value)]="selectedSector" (selectionChange)="onSectorChange($event.value)" multiple>
+        <mat-option *ngFor="let sector of sectorOptions" [value]="sector.value">
+          {{ sector.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <!-- Clear Filters Button -->
     <button *ngIf="filterType" mat-button color="warn" (click)="clearFilters()" class="clear-button">
       Clear Filters
@@ -94,6 +104,13 @@
           <th mat-header-cell *matHeaderCellDef> Name of Stakeholder </th>
           <td mat-cell *matCellDef="let entry">
             {{entry.stakeholderUserId?.name || '-'}}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sector">
+          <th mat-header-cell *matHeaderCellDef> Sector </th>
+          <td mat-cell *matCellDef="let entry">
+            {{getSector(entry)}}
           </td>
         </ng-container>
 
