@@ -6,6 +6,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   sector?: string;
+  subsector?: string;
   selectedOption?: string;
   contactNumber?: string;
   address?: string;

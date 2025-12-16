@@ -12,20 +12,23 @@
               Name is required.
             </mat-error>
           </mat-form-field>
-          <mat-label>Choose a Sector Classification:</mat-label>
+          <mat-label>Choose a Sector:</mat-label>
           <br>
-          <mat-radio-group (change)="onCategoryChange($event.value)">
+          <mat-radio-group formControlName="sector" (change)="onCategoryChange($event.value)">
             <mat-radio-button *ngFor="let sector of sectors" [value]="sector.category">
               {{ sector.category }}
             </mat-radio-button>
           </mat-radio-group>
+          <mat-error *ngIf="controlHasErrorAndTouched('sector', ErrorName.REQUIRED)">
+            Sector is required.
+          </mat-error>
           <mat-form-field appearance="fill" *ngIf="availableOptions.length > 0">
-            <mat-label>Select an Option</mat-label>
-            <mat-select formControlName="sector">
+            <mat-label>Select a Subsector</mat-label>
+            <mat-select formControlName="subsector">
               <mat-option *ngFor="let option of availableOptions" [value]="option">{{ option }}</mat-option>
             </mat-select>
-            <mat-error *ngIf="controlHasErrorAndTouched('sector', ErrorName.REQUIRED)">
-              An option is required.
+            <mat-error *ngIf="controlHasErrorAndTouched('subsector', ErrorName.REQUIRED)">
+              A subsector is required.
             </mat-error>
           </mat-form-field>
           <mat-form-field appearance="fill">

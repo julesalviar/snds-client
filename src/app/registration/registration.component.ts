@@ -114,6 +114,7 @@ export class RegistrationComponent {
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
       sector: ['', Validators.required],
+      subsector: [''],
       contactNumber: ['', Validators.required],
       address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -126,11 +127,18 @@ export class RegistrationComponent {
     return controlHasErrorAndTouched(this.registrationForm, controlName, errorName);
   }
 
-  // For selection from category
   onCategoryChange(category: string) {
     const selectedSector = this.sectors.find(sector => sector.category === category);
     this.availableOptions = selectedSector ? selectedSector.options : [];
-    this.registrationForm.get('sector')?.setValue(''); // Reset the selected option
+    const subsectorControl = this.registrationForm.get('subsector');
+    subsectorControl?.setValue(''); // Reset the selected subsector
+
+    if (this.availableOptions.length > 0) {
+      subsectorControl?.setValidators(Validators.required);
+    } else {
+      subsectorControl?.clearValidators();
+    }
+    subsectorControl?.updateValueAndValidity();
   }
 
   onSubmit() {
@@ -142,6 +150,7 @@ export class RegistrationComponent {
     }
 
     const userData = { ...this.registrationForm.value };
+    console.log(userData);
     const registrationData: User = {
       ...userData,
       activeRole: UserType.StakeHolder,
