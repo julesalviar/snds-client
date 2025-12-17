@@ -72,7 +72,7 @@
 
     <!-- Division Admin Menus -->
     <ng-container *ngIf="userActiveRole === 'divisionAdmin'">
-      <li><a routerLink="/division-admin/about-us" (click)="closeMenu()">About Us</a></li>
+      <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <span tabindex="0">Support</span>
         <ul>
@@ -80,6 +80,7 @@
         </ul>
       </li>
       <li><a routerLink="/division-admin/reports" (click)="closeMenu()">Reports</a></li>
+      <li><a routerLink="/division-admin/generated-resources" (click)="closeMenu()">Generated Resources</a></li>
       <li>
         <span tabindex="0">Administration</span>
         <ul>

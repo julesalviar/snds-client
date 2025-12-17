@@ -104,6 +104,7 @@ export const routes: Routes = [
       {path: 'open-registration', component: DivisionAdminComponent},
       {path: 'close-registration', component: DivisionAdminComponent},
       {path: 'create-partnership-link', component: DivisionAdminComponent},
+      {path: 'generated-resources', component: GeneratedResourcesComponent},
     ]
   },
 
