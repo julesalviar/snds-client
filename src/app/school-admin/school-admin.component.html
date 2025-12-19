@@ -1,5 +1,5 @@
 <div class="container">
-  <div class="header" *ngIf="schoolName">
+  <div class="header" *ngIf="schoolName && isSchoolAdmin">
     <mat-icon class="school-icon">school</mat-icon>
     <span class="school-name">{{ schoolName | uppercase }}</span>
   </div>

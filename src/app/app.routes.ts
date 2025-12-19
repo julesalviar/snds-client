@@ -63,7 +63,6 @@ export const routes: Routes = [
       {path: 'school-needs', component: StakeholdersComponent},
       {path: 'generated-resources', component: GeneratedResourcesComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
-      {path: 'quick-count', component: QuickCountComponent},
       {path: 'aip/:schoolId', component: AipComponent},
     ]
   },
@@ -85,6 +84,7 @@ export const routes: Routes = [
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
       {path: 'school-need/:code', component: SchoolNeedComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
+      {path: 'quick-count', component: GeneratedResourcesComponent},
 
     ]
   },

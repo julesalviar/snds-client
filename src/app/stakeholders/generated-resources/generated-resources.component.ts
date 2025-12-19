@@ -16,6 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser } from '../../common/model/engagement.model';
 import { getSchoolYear } from '../../common/date-utils';
+import {UserType} from "../../registration/user-type.enum";
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
   selector: 'app-generated-resources',
@@ -40,7 +42,7 @@ import { getSchoolYear } from '../../common/date-utils';
 })
 export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
 
-  displayedColumns: string[] = [
+  private readonly allColumns: string[] = [
     'dateEngage',
     'recipientSchool',
     'stakeholder',
@@ -51,6 +53,14 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     'unit',
     'amount'
   ];
+
+  get displayedColumns(): string[] {
+    // Hide recipientSchool column for school admins
+    if (this.isSchoolAdmin()) {
+      return this.allColumns.filter(col => col !== 'recipientSchool');
+    }
+    return this.allColumns;
+  }
 
   dataSource = new MatTableDataSource<Engagement>([]);
   allEngagements: Engagement[] = [];
@@ -95,7 +105,8 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
-    private readonly engagementService: EngagementService
+    private readonly engagementService: EngagementService,
+    private readonly authService: AuthService
   ) {
     this.schoolYears = this.generateSchoolYears();
     // Set default filter to current school year
@@ -143,9 +154,10 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
 
     // Get sector filter - convert array to comma-separated string for API
     const sector = this.selectedSector.length > 0 ? this.selectedSector.join(',') : undefined;
+    const schoolId = this.isSchoolAdmin() ? this.getSchoolId() : undefined;
 
     // Load data with filters applied on backend
-    this.engagementService.getAllEngagement(1, 1000, undefined, schoolYear, undefined, undefined, startDate, endDate, sector).subscribe({
+    this.engagementService.getAllEngagement(1, 1000, undefined, schoolYear, undefined, schoolId, startDate, endDate, sector).subscribe({
       next: (response) => {
         this.allEngagements = response.data;
         this.filteredEngagements = response.data;
@@ -409,19 +421,19 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     return baseLabel + sectorLabel;
   }
 
-  getStakeholderName(engagement: Engagement): string {
-    if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
-      const stakeholder = engagement.stakeholderUserId as PopulatedStakeholderUser;
-      return stakeholder.name || stakeholder.email || '-';
-    }
-    return '-';
-  }
-
   getSector(engagement: Engagement): string {
     if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
       const stakeholder = engagement.stakeholderUserId as PopulatedStakeholderUser;
       return stakeholder['sector'] || '-';
     }
     return '-';
+  }
+
+  isSchoolAdmin(): boolean {
+    return this.authService.getActiveRole() === UserType.SchoolAdmin;
+  }
+
+  getSchoolId(): string {
+    return this.authService.getSchoolId();
   }
 }

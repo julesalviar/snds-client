@@ -31,6 +31,7 @@ import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-typ
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
 import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
 import {MatChipsModule} from '@angular/material/chips';
+import {UserType} from "../registration/user-type.enum";
 
 @Component({
   selector: 'app-school-admin',
@@ -522,5 +523,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   protected getProjectTitle(projectId: string): string {
     const project = this.projectsData.find(p => p._id === projectId);
     return project ? `${project.apn} - ${project.title}` : projectId;
+  }
+
+  isSchoolAdmin(): boolean {
+    return this.authService.getActiveRole() === UserType.SchoolAdmin;
   }
 }
