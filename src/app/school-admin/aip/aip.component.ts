@@ -22,6 +22,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "../../auth/auth.service";
 import {UserType} from "../../registration/user-type.enum";
 import {ActivatedRoute, Router} from "@angular/router";
+import {ReferenceDataService} from "../../common/services/reference-data.service";
 
 @Component({
   selector: 'app-aip',
@@ -36,7 +37,7 @@ export class AipComponent implements OnInit {
   aipForm: FormGroup;
   displayedColumns: string[] = [ 'apn', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
   projects: AIPProject[] = [];
-  pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
+  pillars: string[] = [];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
   pageIndex: number = 0;
   pageSize: number = 25;
@@ -54,6 +55,7 @@ export class AipComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly referenceDataService: ReferenceDataService,
   ) {
     this.aipForm = this.fb.group({
       schoolYear: [getSchoolYear(), Validators.required],
@@ -70,6 +72,7 @@ export class AipComponent implements OnInit {
 
   ngOnInit() {
     this.schoolId = this.route.snapshot.params['schoolId'];
+    this.loadPillars();
     this.loadAips(this.schoolId);
   }
 
@@ -266,5 +269,12 @@ export class AipComponent implements OnInit {
       verticalPosition: 'top',
       panelClass: ['success-snackbar']
     });
+  }
+
+  private loadPillars(): void {
+    const pillarsData = this.referenceDataService.get<string[]>('pillars');
+    if (pillarsData) {
+      this.pillars = pillarsData;
+    }
   }
 }

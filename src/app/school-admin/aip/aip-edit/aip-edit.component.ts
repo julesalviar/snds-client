@@ -13,6 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Aip } from '../../../common/model/aip.model';
 import { AuthService } from '../../../auth/auth.service';
 import { UserType } from '../../../registration/user-type.enum';
+import { ReferenceDataService } from '../../../common/services/reference-data.service';
 
 @Component({
   selector: 'app-aip-edit',
@@ -34,7 +35,7 @@ export class AipEditComponent implements OnInit {
   aipForm: FormGroup;
   projectId: string = '';
   isLoading: boolean = true;
-  pillars: string[] = ['Access', 'Equity', 'Quality', 'Learners Resiliency & Well-Being'];
+  pillars: string[] = [];
   statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
 
   constructor(
@@ -43,7 +44,8 @@ export class AipEditComponent implements OnInit {
     private readonly router: Router,
     private readonly aipService: AipService,
     private readonly snackBar: MatSnackBar,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly referenceDataService: ReferenceDataService
   ) {
     this.aipForm = this.fb.group({
       apn: [''],
@@ -68,6 +70,7 @@ export class AipEditComponent implements OnInit {
       return;
     }
 
+    this.loadPillars();
     this.projectId = this.route.snapshot.params['id'];
     if (this.projectId) {
       this.loadProjectData();
@@ -178,6 +181,13 @@ export class AipEditComponent implements OnInit {
       verticalPosition: 'top',
       panelClass: ['success-snackbar']
     });
+  }
+
+  private loadPillars(): void {
+    const pillarsData = this.referenceDataService.get<string[]>('pillars');
+    if (pillarsData) {
+      this.pillars = pillarsData;
+    }
   }
 }
 
