@@ -1,25 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { MatCard, MatCardTitle, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatFormField, MatLabel, MatFormFieldModule } from '@angular/material/form-field';
-import { MatNativeDateModule, MatOption } from '@angular/material/core';
-import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatDatepickerModule, MatDatepickerToggle } from '@angular/material/datepicker';
-import { MatButton } from "@angular/material/button";
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { SchoolNeed } from "../../common/model/school-need.model";
-import { UserService } from '../../common/services/user.service';
-import { SharedDataService } from '../../common/services/shared-data.service';
-import { ReferenceDataService } from '../../common/services/reference-data.service';
-import { SchoolNeedService } from '../../common/services/school-need.service';
-import { FormsModule } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
-import { MatRadioModule, MatRadioChange } from '@angular/material/radio';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {MatTableModule} from '@angular/material/table';
+import {MatCard, MatCardContent, MatCardModule, MatCardTitle} from '@angular/material/card';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatFormField, MatFormFieldModule, MatLabel} from '@angular/material/form-field';
+import {MatNativeDateModule, MatOption} from '@angular/material/core';
+import {MatInputModule} from '@angular/material/input';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatDatepickerModule, MatDatepickerToggle} from '@angular/material/datepicker';
+import {MatButton} from "@angular/material/button";
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {debounceTime, distinctUntilChanged, Subject, takeUntil} from 'rxjs';
+import {SchoolNeed} from "../../common/model/school-need.model";
+import {UserService} from '../../common/services/user.service';
+import {SharedDataService} from '../../common/services/shared-data.service';
+import {ReferenceDataService} from '../../common/services/reference-data.service';
+import {SchoolNeedService} from '../../common/services/school-need.service';
+import {FormsModule, NgModel} from '@angular/forms';
+import {MatSelectModule} from '@angular/material/select';
+import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 
 @Component({
   selector: 'app-school-needs-engage',
@@ -61,8 +61,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   endDate: Date | null = null;
   // Additional fields
   isApplicable: boolean = false;
-  stakeholderCount: number | null = null;
-  selectedAgreement: string = '';
+  stakeholderRepCount: number | null = null;
+  agreementType: string = '';
   signatoryName: string = '';
   signatoryDesignation: string = '';
   projectCategory: string = '';
@@ -72,13 +72,17 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   stakeholders: any[] = [];
   filteredStakeholders: any[] = [];
   readonly STAKEHOLDER_LIMIT = 50;
+  agreementTypes: string[] = [];
+  projectCategories: string[] = [];
+
+  @ViewChild('stakeholderInput') stakeholderInputModel!: NgModel;
 
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
     get formIsValid(): boolean {
-    return this.stakeholderCount !== null &&
-           this.selectedAgreement !== '' &&
+    return this.stakeholderRepCount !== null &&
+           this.agreementType !== '' &&
            this.signatoryName !== '' &&
            this.signatoryDesignation !== '' &&
            this.projectCategory !== '' &&
@@ -96,14 +100,37 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.initializeData().catch(error => {
+      console.error('Initialization failed', error);
+    });
+  }
+
+  private async initializeData() {
+    await this.referenceDataService.initialize();
+
     this.needCode = this.route.snapshot.paramMap.get('code');
     if (this.needCode) {
-      console.log('Engaging with need code:', this.needCode);
       this.loadSchoolNeed(this.needCode);
     }
 
     this.loadStakeholders();
     this.setupDebouncedSearch();
+    this.loadAgreementTypes();
+    this.loadProjectCategory();
+  }
+
+  loadAgreementTypes(): void {
+      const result = this.referenceDataService.get<string>('agreementType');
+      if (result && Array.isArray(result)) {
+        this.agreementTypes = result;
+      }
+  }
+
+  loadProjectCategory(): void {
+      const result = this.referenceDataService.get<string>('projectCategory');
+      if (result && Array.isArray(result)) {
+        this.projectCategories = result;
+      }
   }
 
   loadStakeholders(): void {
@@ -111,11 +138,9 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       next: (stakeholders) => {
         this.stakeholders = stakeholders;
         this.filteredStakeholders = stakeholders;
-        console.log(`Loaded ${stakeholders.length} stakeholders (limited to ${this.STAKEHOLDER_LIMIT}):`, stakeholders);
       },
       error: (error) => {
         console.error('Error loading stakeholders:', error);
-        // Fallback to empty array if API fails
         this.stakeholders = [];
         this.filteredStakeholders = [];
       }
@@ -123,7 +148,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   onToggleChange(event: MatRadioChange): void {
-    this.isApplicable = event.value == 'true';
+    // Ensure value is always a boolean
+    this.isApplicable = event.value === true;
   }
 
 
@@ -131,7 +157,6 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.schoolNeedService.getSchoolNeedByCode(code).pipe(takeUntil(this.destroy$)).subscribe({
       next: (need) => {
         if (need) {
-          console.log('Loaded school need:', need);
           this.unit = need.unit ?? '';
           this.schoolNeed = need;
         }
@@ -161,15 +186,36 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   onStakeholderInput(event: any): void {
     const value = event.target.value;
     this.searchSubject.next(value);
+
+    this.updateStakeholderValidity();
+  }
+
+  updateStakeholderValidity(): void {
+    setTimeout(() => {
+      if (this.stakeholderInputModel && this.stakeholderInputModel.control) {
+        const isValid = this.isStakeholderValid();
+        if (!isValid && this.stakeholderInputModel.touched) {
+          // Mark control as invalid
+          this.stakeholderInputModel.control.setErrors({ invalidStakeholder: true });
+        } else if (isValid && this.stakeholderInputModel.control.hasError('invalidStakeholder')) {
+          // Clear the custom error if valid
+          const errors = { ...this.stakeholderInputModel.control.errors };
+          delete errors['invalidStakeholder'];
+          this.stakeholderInputModel.control.setErrors(Object.keys(errors).length > 0 ? errors : null);
+        }
+      }
+    });
+  }
+
+  onStakeholderSelectionChange(): void {
+    this.updateStakeholderValidity();
   }
 
   performSearch(searchTerm: string): void {
     if (searchTerm && searchTerm.length > 0) {
-      // Use server-side search with limit
       this.userService.getUsersByRole('stakeholder', searchTerm, this.STAKEHOLDER_LIMIT).subscribe({
         next: (stakeholders) => {
           this.filteredStakeholders = stakeholders;
-          console.log(`Found ${stakeholders.length} stakeholders matching "${searchTerm}" (limited to ${this.STAKEHOLDER_LIMIT})`);
         },
         error: (error) => {
           console.error('Error searching stakeholders:', error);
@@ -184,6 +230,20 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
 
   displayFn(stakeholder: any): string {
     return stakeholder?.name ?? '';
+  }
+
+  isStakeholderValid(): boolean {
+    return typeof this.stakeholder === 'object' && this.stakeholder !== null && this.stakeholder._id;
+  }
+
+  getStakeholderErrorMessage(): string {
+    if (!this.stakeholder) {
+      return 'Stakeholder is required';
+    }
+    if (!this.isStakeholderValid()) {
+      return 'Please select a stakeholder from the list';
+    }
+    return '';
   }
 
   private showSuccessNotification(message: string): void {
@@ -205,8 +265,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   validateForm(): boolean {
-    return this.stakeholderCount !== null &&
-           this.selectedAgreement !== '' &&
+    return this.stakeholderRepCount !== null &&
+           this.agreementType !== '' &&
            this.signatoryName.trim() !== '' &&
            this.signatoryDesignation !== '' &&
            this.projectCategory !== '' &&
@@ -215,6 +275,13 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   saveEngagement(): void {
+    const isValid = this.isStakeholderValid();
+
+    if (!this.stakeholder || !isValid) {
+      this.showErrorNotification('Please select a stakeholder from the list.');
+      return;
+    }
+
     if (this.isApplicable && !this.validateForm()) {
       this.showErrorNotification('Please fill out all required fields before engaging.');
       return;
@@ -223,14 +290,14 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     if (this.needCode) {
       const engagementData = {
         stakeholderUserId: this.stakeholder._id,
-        // stakeholderCount: this.stakeholderCount,
-        // selectedAgreement: this.selectedAgreement,
-        // signatoryName: this.signatoryName,
-        // signatoryDesignation: this.signatoryDesignation,
-        // projectCategory: this.projectCategory,
-        // projectName: this.projectName,
-        // agreementStatus: this.agreementStatus,
-        // initiatedBy: this.initiatedBy,
+        stakeholderRepCount: this.stakeholderRepCount,
+        agreementType: this.agreementType,
+        signatoryName: this.signatoryName,
+        signatoryDesignation: this.signatoryDesignation,
+        projectCategory: this.projectCategory,
+        projectName: this.projectName,
+        agreementStatus: this.agreementStatus,
+        initiatedBy: this.initiatedBy,
         signingDate: this.moaDate,
         unit: this.unit,
         amount: this.amount,
@@ -244,7 +311,6 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {
-            console.log('Engagement saved successfully:', response);
             this.sharedDataService.updateEngagementStatus(this.needCode!, true);
             this.clearForm();
             this.showSuccessNotification('Engagement saved successfully!');
@@ -270,8 +336,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.startDate = null;
     this.endDate = null;
     this.isApplicable = false;
-    this.stakeholderCount = null;
-    this.selectedAgreement = '';
+    this.stakeholderRepCount = null;
+    this.agreementType = '';
     this.signatoryName = '';
     this.signatoryDesignation = '';
     this.projectCategory = '';

@@ -116,7 +116,7 @@
 
         <ng-container matColumnDef="numberOfRepresentatives">
           <th mat-header-cell *matHeaderCellDef> No. of Stakeholder/Representative </th>
-          <td mat-cell *matCellDef="let entry"> - </td>
+          <td mat-cell *matCellDef="let entry"> {{  entry.stakeholderRepCount ?? "-" }} </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">

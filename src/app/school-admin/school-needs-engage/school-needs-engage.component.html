@@ -11,20 +11,26 @@
       <p *ngIf="schoolNeed?.studentBeneficiaries"><strong>Student Beneficiaries:</strong> {{ schoolNeed?.studentBeneficiaries }}</p>
       <p *ngIf="schoolNeed?.personnelBeneficiaries"><strong>Personnel Beneficiaries:</strong> {{ schoolNeed?.personnelBeneficiaries }}</p>
       <p *ngIf="schoolNeed?.targetDate"><strong>Target Date:</strong> {{ schoolNeed?.targetDate | date:'mediumDate' }}</p>
-      <form>
-        <mat-form-field appearance="fill">
+      <form #engagementForm="ngForm">
+        <mat-form-field appearance="fill" [class.mat-form-field-invalid]="!isStakeholderValid() && stakeholderInput.touched">
           <mat-label>Type the name of the stakeholder to engage</mat-label>
           <input matInput
                  [(ngModel)]="stakeholder"
                  name="stakeholderName"
                  [matAutocomplete]="auto"
                  (input)="onStakeholderInput($event)"
-                 required>
-          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                 (blur)="onStakeholderInput($event)"
+                 [class.ng-invalid]="!isStakeholderValid() && stakeholderInput.touched"
+                 required
+                 #stakeholderInput="ngModel">
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onStakeholderSelectionChange()">
             <mat-option *ngFor="let stakeholder of filteredStakeholders" [value]="stakeholder">
               {{ stakeholder.name }}
             </mat-option>
           </mat-autocomplete>
+          <mat-error *ngIf="(stakeholderInput.invalid || !isStakeholderValid()) && (stakeholderInput.touched || stakeholderInput.dirty)">
+            {{ getStakeholderErrorMessage() }}
+          </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
@@ -78,10 +84,10 @@
 
 <div class="radio-group">
 <mat-radio-group [(ngModel)]="isApplicable" (change)="onToggleChange($event)" name="applicableToggle">
-    <mat-radio-button value="true">
+    <mat-radio-button [value]="true">
       Applicable
     </mat-radio-button>
-    <mat-radio-button value="false" (change)="onToggleChange($event)" name="notApplicableToggle">
+    <mat-radio-button [value]="false">
       Not Applicable
     </mat-radio-button>
 </mat-radio-group>
@@ -92,16 +98,13 @@
 <div *ngIf="isApplicable">
   <mat-form-field appearance="fill">
     <mat-label>Number of Stakeholder Representatives</mat-label>
-    <input matInput [(ngModel)]="stakeholderCount"  name="stakeholderCount" type="number" required />
+    <input matInput [(ngModel)]="stakeholderRepCount" name="stakeholderRepCount" type="number" required />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Agreements</mat-label>
-    <mat-select [(ngModel)]="selectedAgreement" name="selectedAgreement" required>
-      <mat-option value="memorandum_of_agreement">Memorandum of Agreement</mat-option>
-      <mat-option value="memorandum_of_understanding">Memorandum of Understanding</mat-option>
-      <mat-option value="deed_of_donation">Deed of Donation</mat-option>
-      <mat-option value="usufruct">Usufruct</mat-option>
+    <mat-select [(ngModel)]="agreementType" name="agreementType" required>
+      <mat-option *ngFor="let at of agreementTypes" [value]="at">{{ at }}</mat-option>
     </mat-select>
   </mat-form-field>
 
@@ -125,9 +128,7 @@
   <mat-form-field appearance="fill">
     <mat-label>Project Category</mat-label>
     <mat-select [(ngModel)]="projectCategory" name="projectCategory" required>
-      <mat-option value="adopt_a_school">Adopt-a-School</mat-option>
-      <mat-option value="brigada_eskwela">Brigada Eskwela</mat-option>
-      <mat-option value="grant">Grant</mat-option>
+      <mat-option *ngFor="let pc of projectCategories" [value]="pc">{{ pc }}</mat-option>
     </mat-select>
   </mat-form-field>
 
@@ -139,8 +140,8 @@
   <mat-form-field appearance="fill">
     <mat-label>Status of Agreement</mat-label>
     <mat-select [(ngModel)]="agreementStatus" name="agreementStatus" required>
-      <mat-option value="completed">Completed</mat-option>
-      <mat-option value="ongoing">On-going</mat-option>
+      <mat-option value="Completed">Completed</mat-option>
+      <mat-option value="Ongoing">Ongoing</mat-option>
     </mat-select>
   </mat-form-field>
 
