@@ -70,67 +70,22 @@ nav {
   position: relative;
 }
 
-.nav-list ul {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: #556677;
-  padding: 0;
-  margin: 0;
-  border-radius: 5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  min-width: 150px;
-  width: auto;
+/* Material menu trigger button styling in navigation */
+.nav-list .menu-trigger {
+  color: #ecf0f1 !important;
+  --mdc-text-button-label-text-color: #ecf0f1;
+  padding: 0.5rem 1rem !important;
+  line-height: normal !important;
+  min-width: auto !important;
 }
 
-.nav-list ul.show {
-  display: block;
+.nav-list .menu-trigger:hover {
+  background-color: #225c29 !important;
 }
 
-.nav-list li {
-  position: relative;
-}
-.nav-list ul li {
-  margin: 0;
-  position: relative;
+/* Ensure Material menu items work with router links */
+.nav-list button[mat-menu-item][routerLink] {
   width: 100%;
-}
-.nav-list ul li a {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  color: #ecf0f1;
-  text-decoration: none;
-  border-radius: 3px;
-  transition: background-color 0.3s;
-  box-sizing: border-box;
-}
-.nav-list ul li a:hover {
-  background-color: #225c29;
-}
-
-/* Styles for the submenu */
-.nested-dropdown {
-  display: none;
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background: #556677;
-  border-radius: 5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  min-width: 150px;
-  z-index: 1000;
-}
-.nested-dropdown.show {
-  display: block;
-}
-.custom-link {
-  font-weight: bold;
-}
-.dropdown span i {
-  margin-left: 5px;
 }
 
 /* Profile Section Styles */
