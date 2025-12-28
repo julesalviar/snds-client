@@ -14,6 +14,7 @@ import { Aip } from '../../../common/model/aip.model';
 import { AuthService } from '../../../auth/auth.service';
 import { UserType } from '../../../registration/user-type.enum';
 import { ReferenceDataService } from '../../../common/services/reference-data.service';
+import { AIP_STATUSES } from '../../../common/enums/aip-status.enum';
 
 @Component({
   selector: 'app-aip-edit',
@@ -36,7 +37,7 @@ export class AipEditComponent implements OnInit {
   projectId: string = '';
   isLoading: boolean = true;
   pillars: string[] = [];
-  statuses: string[] = ['For Implementation', 'Ongoing', 'Completed', 'Incomplete', 'Unimplemented'];
+  statuses: readonly string[] = AIP_STATUSES;
 
   constructor(
     private readonly fb: FormBuilder,

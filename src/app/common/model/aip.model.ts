@@ -1,3 +1,5 @@
+import { AipStatus } from '../enums/aip-status.enum';
+
 export interface Aip {
   apn: string;
   schoolYear: number;
@@ -8,7 +10,7 @@ export interface Aip {
   materialsNeeded: string;
   totalBudget: string;
   budgetSource: string;
-  status: 'Ongoing' | 'For Implementation' | 'Completed';
+  status: AipStatus;
 
   _id: string;
 }
