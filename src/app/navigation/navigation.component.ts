@@ -5,6 +5,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatDividerModule} from '@angular/material/divider';
 import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from "../auth/auth.service";
 import {UserType} from "../registration/user-type.enum";
@@ -24,7 +25,8 @@ import {SwitchRoleDialogComponent, SwitchRoleDialogData} from "./switch-role-dia
     RouterModule,
     MatIconModule,
     MatButtonModule,
-    MatMenuModule
+    MatMenuModule,
+    MatDividerModule
   ]
 })
 export class NavigationComponent implements OnInit {
@@ -36,6 +38,7 @@ export class NavigationComponent implements OnInit {
   tenant = Tenant;
   currentRoute = '';
   protected readonly UserType = UserType;
+  profileImageError = false;
 
   constructor(
     private readonly authService: AuthService,
@@ -111,6 +114,39 @@ export class NavigationComponent implements OnInit {
 
   shouldShowLoginButton(): boolean {
     return this.currentRoute !== '/sign-in';
+  }
+
+  getUserInitials(): string {
+    const name = this.authService.getName();
+    const username = this.authService.getUsername();
+    
+    if (name && name.trim()) {
+      const parts = name.trim().split(' ');
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+    
+    if (username && username.trim()) {
+      return username.substring(0, 2).toUpperCase();
+    }
+    
+    return 'U';
+  }
+
+  getProfileImageUrl(): string | null {
+    // Placeholder for future image URL retrieval
+    // For now, return null to show initials
+    return null;
+  }
+
+  hasProfileImage(): boolean {
+    return this.getProfileImageUrl() !== null && !this.profileImageError;
+  }
+
+  onImageError(event: Event): void {
+    this.profileImageError = true;
   }
 
   openSwitchRoleDialog(): void {
