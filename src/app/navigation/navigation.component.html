@@ -9,24 +9,16 @@
 
     <!-- Stakeholder Menus -->
     <ng-container *ngIf="userActiveRole === userType.StakeHolder">
-      <li class="dropdown">
-        <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
-        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-          <li class="submenu">
-            <span tabindex="0" (click)="toggleSubmenu()">
-              School
-              <i class="fas fa-chevron-down" ></i>
-            </span>
-            <ul class="nested-dropdown" [class.show]="submenuVisible">
-              <li><a class="custom-link" routerLink="/stakeholder/all-school" (click)="closeMenu()">All</a></li>
-              <li><a class="custom-link" routerLink="/stakeholder/districts" (click)="closeMenu()">By District</a></li>
-            </ul>
-          </li>
-          <li>
-            <a routerLink="/stakeholder/offices" (click)="closeMenu()" class="disabled"
-               style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
-          </li>
-        </ul>
+      <li>
+        <button mat-button [matMenuTriggerFor]="stakeholderFindMenu" class="menu-trigger">Find School/Office</button>
+        <mat-menu #stakeholderFindMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="stakeholderSchoolSubmenu">School</button>
+          <mat-menu #stakeholderSchoolSubmenu="matMenu">
+            <button mat-menu-item [routerLink]="['/stakeholder/all-school']" (click)="closeMenu()">All</button>
+            <button mat-menu-item [routerLink]="['/stakeholder/districts']" (click)="closeMenu()">By District</button>
+          </mat-menu>
+          <button mat-menu-item [routerLink]="['/stakeholder/offices']" (click)="closeMenu()" disabled>Office</button>
+        </mat-menu>
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About  Us </a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
@@ -42,14 +34,12 @@
 
     <!-- School Admin Menus -->
     <ng-container *ngIf="userActiveRole === userType.SchoolAdmin">
-      <li class="dropdown">
-        <span tabindex="0" (click)="toggleDropdown()">School Needs</span>
-        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-          <li class="submenu">
-          <li><a routerLink="/school-admin/list-of-school-needs" (click)="closeMenu()">List of School Needs</a></li>
-          <li><a routerLink="/school-admin/senior-high-school" (click)="closeMenu()" class="disabled"
-                 style="pointer-events: none; color: #ccc; cursor: not-allowed;">Senior High School</a></li>
-        </ul>
+      <li>
+        <button mat-button [matMenuTriggerFor]="schoolAdminSchoolNeedsMenu" class="menu-trigger">School Needs</button>
+        <mat-menu #schoolAdminSchoolNeedsMenu="matMenu">
+          <button mat-menu-item [routerLink]="['/school-admin/list-of-school-needs']" (click)="closeMenu()">List of School Needs</button>
+          <button mat-menu-item disabled>Senior High School</button>
+        </mat-menu>
       </li>
 
       <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
@@ -73,51 +63,44 @@
     <ng-container *ngIf="userActiveRole === 'divisionAdmin'">
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
-        <span tabindex="0">Support</span>
-        <ul>
-          <li><a routerLink="/division-admin/partners-support" (click)="closeMenu()">Partner Support</a></li>
-        </ul>
+        <button mat-button [matMenuTriggerFor]="divisionAdminSupportMenu" class="menu-trigger">Support</button>
+        <mat-menu #divisionAdminSupportMenu="matMenu">
+          <button mat-menu-item [routerLink]="['/division-admin/partners-support']" (click)="closeMenu()">Partner Support</button>
+        </mat-menu>
       </li>
       <li><a routerLink="/division-admin/reports" (click)="closeMenu()">Reports</a></li>
       <li><a routerLink="/division-admin/generated-resources" (click)="closeMenu()">Generated Resources</a></li>
       <li>
-        <span tabindex="0">Administration</span>
-        <ul>
-          <li><a routerLink="/division-admin/add-district" (click)="closeMenu()">Add District</a></li>
-          <li><a routerLink="/division-admin/manage-users" (click)="closeMenu()">Manage Users</a></li>
-          <li><a routerLink="/division-admin/permission-levels" (click)="closeMenu()">Permission Levels</a></li>
-          <li><a routerLink="/division-admin/open-registration" (click)="closeMenu()">Open Registration</a></li>
-          <li><a routerLink="/division-admin/close-registration" (click)="closeMenu()">Close Registration</a></li>
-        </ul>
+        <button mat-button [matMenuTriggerFor]="divisionAdminAdministrationMenu" class="menu-trigger">Administration</button>
+        <mat-menu #divisionAdminAdministrationMenu="matMenu">
+          <button mat-menu-item [routerLink]="['/division-admin/add-district']" (click)="closeMenu()">Add District</button>
+          <button mat-menu-item [routerLink]="['/division-admin/manage-users']" (click)="closeMenu()">Manage Users</button>
+          <button mat-menu-item [routerLink]="['/division-admin/permission-levels']" (click)="closeMenu()">Permission Levels</button>
+          <button mat-menu-item [routerLink]="['/division-admin/open-registration']" (click)="closeMenu()">Open Registration</button>
+          <button mat-menu-item [routerLink]="['/division-admin/close-registration']" (click)="closeMenu()">Close Registration</button>
+        </mat-menu>
       </li>
     </ng-container>
 
     <!-- Guest Menus - for users who are not logged in -->
     <ng-container *ngIf="!isLoggedIn()">
-      <li class="dropdown">
-        <span tabindex="0" (click)="toggleDropdown()">Find School/Office</span>
-        <ul class="dropdown-menu nav-list" [class.show]="dropdownVisible">
-          <li class="submenu">
-        <span tabindex="0" (click)="toggleSubmenu()">
-        School <i class="fas fa-chevron-down"></i>
-        </span>
-            <ul class="nested-dropdown" [class.show]="submenuVisible">
-              <li><a class="custom-link" routerLink="/guest/all-school" (click)="closeMenu()">All</a></li>
-              <li><a class="custom-link" routerLink="/guest/districts" (click)="closeMenu()">By District</a></li>
-            </ul>
-          </li>
-          <li>
-            <a routerLink="/guest/offices" (click)="closeMenu()" class="disabled"
-               style="pointer-events: none; color: #ccc; cursor: not-allowed;">Office</a>
-          </li>
-        </ul>
+      <li>
+        <button mat-button [matMenuTriggerFor]="guestFindMenu" class="menu-trigger">Find School/Office</button>
+        <mat-menu #guestFindMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="guestSchoolSubmenu">School</button>
+          <mat-menu #guestSchoolSubmenu="matMenu">
+            <button mat-menu-item [routerLink]="['/guest/all-school']" (click)="closeMenu()">All</button>
+            <button mat-menu-item [routerLink]="['/guest/districts']" (click)="closeMenu()">By District</button>
+          </mat-menu>
+          <button mat-menu-item [routerLink]="['/guest/offices']" (click)="closeMenu()" disabled>Office</button>
+        </mat-menu>
       </li>
       <li *ngIf="currentTenant === tenant.GENSAN">
-        <span tabindex="0">Support</span>
-        <ul>
-          <li><a href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
-                 target="_blank" rel="noopener noreferrer">Partners Support</a></li>
-        </ul>
+        <button mat-button [matMenuTriggerFor]="guestSupportMenu" class="menu-trigger">Support</button>
+        <mat-menu #guestSupportMenu="matMenu">
+          <a mat-menu-item href="https://sites.google.com/deped.gov.ph/depedgensansmn/home"
+             target="_blank" rel="noopener noreferrer">Partners Support</a>
+        </mat-menu>
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
     </ng-container>
@@ -126,16 +109,22 @@
   <!-- Profile section -->
   <div class="profile">
     <ng-container *ngIf="isLoggedIn(); else loginButton">
-      <mat-icon aria-label="User profile">account_circle</mat-icon>
-      <a mat-button [matMenuTriggerFor]="profileMenu">Profile</a>
+      <button mat-icon-button [matMenuTriggerFor]="profileMenu" class="avatar-button">
+        <div class="avatar">
+          <img *ngIf="getProfileImageUrl() && !profileImageError"
+               [src]="getProfileImageUrl()"
+               alt="Profile"
+               class="avatar-image"
+               (error)="onImageError($event)">
+          <span class="avatar-initials" [style.display]="hasProfileImage() ? 'none' : 'flex'">{{ getUserInitials() }}</span>
+        </div>
+      </button>
       <mat-menu #profileMenu="matMenu">
         <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
         <button mat-menu-item [routerLink]="['/profile']" *ngIf="userActiveRole === UserType.SchoolAdmin">Edit Profile</button>
         <button mat-menu-item *ngIf="userRoles.length > 1" (click)="openSwitchRoleDialog()">Switch Role</button>
+        <button mat-menu-item class="logout-menu-item" (click)="logout()" routerLink="/sign-in">Logout</button>
       </mat-menu>
-      <button mat-raised-button color="warn" class="logout-button" routerLink="/sign-in" (click)="logout()">
-        Logout
-      </button>
     </ng-container>
     <ng-template #loginButton>
       <button mat-raised-button color="primary" class="login-button" routerLink="/sign-in"

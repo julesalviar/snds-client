@@ -70,67 +70,22 @@ nav {
   position: relative;
 }
 
-.nav-list ul {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: #556677;
-  padding: 0;
-  margin: 0;
-  border-radius: 5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  min-width: 150px;
-  width: auto;
+/* Material menu trigger button styling in navigation */
+.nav-list .menu-trigger {
+  color: #ecf0f1 !important;
+  --mdc-text-button-label-text-color: #ecf0f1;
+  padding: 0.5rem 1rem !important;
+  line-height: normal !important;
+  min-width: auto !important;
 }
 
-.nav-list ul.show {
-  display: block;
+.nav-list .menu-trigger:hover {
+  background-color: #225c29 !important;
 }
 
-.nav-list li {
-  position: relative;
-}
-.nav-list ul li {
-  margin: 0;
-  position: relative;
+/* Ensure Material menu items work with router links */
+.nav-list button[mat-menu-item][routerLink] {
   width: 100%;
-}
-.nav-list ul li a {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  color: #ecf0f1;
-  text-decoration: none;
-  border-radius: 3px;
-  transition: background-color 0.3s;
-  box-sizing: border-box;
-}
-.nav-list ul li a:hover {
-  background-color: #225c29;
-}
-
-/* Styles for the submenu */
-.nested-dropdown {
-  display: none;
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background: #556677;
-  border-radius: 5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  min-width: 150px;
-  z-index: 1000;
-}
-.nested-dropdown.show {
-  display: block;
-}
-.custom-link {
-  font-weight: bold;
-}
-.dropdown span i {
-  margin-left: 5px;
 }
 
 /* Profile Section Styles */
@@ -148,21 +103,99 @@ nav {
   color: red;
 }
 
-.profile mat-icon {
-  color:blue;
-  font-size: 1.3rem;
+.avatar-button {
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s ease;
 }
 
-.logout-button {
-  margin-left: .8rem;
-  color: white !important;
-  background-color: #dc3545 !important;
-  border: 1px solid #dc3545 !important;
+.avatar-button:hover {
+  transform: scale(1.05);
 }
-.logout-button:hover{
-  color: white !important;
-  background-color: #c82333 !important;
-  border: 1px solid #bd2130 !important;
+
+.avatar-button:focus-visible {
+  outline: 2px solid var(--mdc-theme-primary, #0066CC);
+  outline-offset: 2px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Material 3 Primary Container color - Azure palette primary container */
+  background-color: var(--mdc-theme-primary-container, #C4E7FF);
+  color: var(--mdc-theme-on-primary-container, #001F2E);
+  font-weight: 500; /* Material 3 Medium weight */
+  font-size: 14px; /* Material 3 body-medium size for 40px avatar */
+  line-height: 20px;
+  overflow: hidden;
+  /* Material 3 elevation level 1 */
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 
+              0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  letter-spacing: 0.15px;
+  position: relative;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 500; /* Material 3 Medium weight */
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.15px;
+}
+
+/* Material divider styling - make it thinner */
+mat-menu mat-divider,
+.mat-mdc-menu-panel mat-divider {
+  margin: 8px 0 !important;
+  border-top-width: 1px !important;
+  border-top-style: solid !important;
+  border-top-color: rgba(0, 0, 0, 0.12) !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+
+mat-menu mat-divider::before,
+.mat-mdc-menu-panel mat-divider::before {
+  border-top-width: 1px !important;
+  height: 0 !important;
+}
+
+/* Logout menu item with Material 3 error color styling */
+.logout-menu-item {
+  color: var(--mdc-theme-error, #BA1A1A) !important;
+  font-weight: 500 !important;
+}
+
+.logout-menu-item:hover {
+  background-color: rgba(186, 26, 26, 0.08) !important; /* Material 3 hover state with red tint */
+  color: var(--mdc-theme-error, #BA1A1A) !important;
+}
+
+.logout-menu-item:focus,
+.logout-menu-item.mdc-list-item--activated {
+  background-color: rgba(186, 26, 26, 0.12) !important; /* Material 3 focus/pressed state with red tint */
+  color: var(--mdc-theme-error, #BA1A1A) !important;
 }
 
 /* Mobile Toggle Button Styles */
@@ -304,14 +337,21 @@ nav {
       margin-left: 0.5rem;
     }
 
-    .profile mat-icon {
-      font-size: 1.1rem;
+    .avatar {
+      width: 32px;
+      height: 32px;
+      font-size: 12px;
+      line-height: 16px;
     }
 
-    .logout-button {
-      margin-left: 0.5rem;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
+    .avatar-button {
+      width: 32px;
+      height: 32px;
+    }
+
+    .avatar-initials {
+      font-size: 12px;
+      line-height: 16px;
     }
   }
 
