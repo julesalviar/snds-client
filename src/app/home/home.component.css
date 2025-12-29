@@ -1,7 +1,20 @@
 .container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 20px;
+}
+
+.container > .welcome-section {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+
+.sections-wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
 }
 
 .expanded-node {
@@ -34,25 +47,43 @@ h2 {
   margin-left: 15px;
 }
 
+h2.welcome-title {
+  margin-left: 0;
+}
+
+.welcome-section {
+  margin-bottom: 16px;
+}
+
+.welcome-title {
+  color: #28a745;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  padding: 0;
+  text-align: left;
+}
+
 .welcome-header {
   background: #f8f9fa;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-left: 4px solid #28a745;
+  padding: 12px;
+  margin-bottom: 0;
+  /*border-left: 4px solid #28a745;*/
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  opacity: 0.8;
 }
 
 .welcome-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.welcome-title {
-  color: #28a745;
-  font-size: 20px;
-  font-weight: 500;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
 }
 
 .school-info {
@@ -66,9 +97,9 @@ h2 {
 
 .school-icon {
   color: #28a745;
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .school-name {
@@ -77,6 +108,84 @@ h2 {
   font-weight: 500;
   margin: 0;
   letter-spacing: 0.5px;
+}
+
+/* Detailed School Information for School Admin */
+.school-info-detailed {
+  flex: 1;
+  min-width: 240px;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.school-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  /*border-bottom: 2px solid rgba(40, 167, 69, 0.2);*/
+}
+
+.school-title-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.school-name-title {
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.school-title-subtext {
+  color: #28a745;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.school-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.school-detail-item {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.detail-label {
+  color: #666;
+  font-weight: 600;
+  min-width: 110px;
+}
+
+.detail-value {
+  color: #333;
+  font-weight: 400;
+  flex: 1;
+}
+
+.detail-designation {
+  color: #888;
+  font-size: 11px;
+  font-style: italic;
 }
 
 ul {
@@ -108,16 +217,96 @@ span {
 @media (max-width: 1024px) {
   /* Tablet */
   .container {
-    flex-direction: column;
     padding: 10px;
+  }
+
+  .sections-wrapper {
+    flex-direction: column;
   }
 
   .welcome-header {
     padding: 18px;
+    flex-direction: column;
   }
 
   .welcome-title {
     font-size: 22px;
+  }
+
+  .welcome-section {
+    margin-bottom: 14px;
+  }
+
+  .welcome-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .welcome-header {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .welcome-content {
+    gap: 6px;
+    min-width: 180px;
+  }
+
+  .school-info-detailed {
+    padding: 8px;
+    border-radius: 5px;
+  }
+
+  .school-header {
+    gap: 6px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .school-name-title {
+    font-size: 12px;
+  }
+
+  .school-title-subtext {
+    font-size: 10px;
+  }
+
+  .school-details {
+    gap: 5px;
+  }
+
+  .school-detail-item {
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .detail-label {
+    min-width: 100px;
+  }
+
+  .aip-stats-inline {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .school-info-detailed {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .aip-stats-cards-inline {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 10px;
+  }
+
+  .aip-status-card-inline {
+    border-radius: 12px;
+    min-height: 88px;
+  }
+
+  .aip-status-card-inline mat-card-content {
+    padding: 14px 10px;
+    gap: 5px;
   }
 
   .text-section {
@@ -153,11 +342,24 @@ span {
 
   .welcome-header {
     padding: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 0;
   }
 
   .welcome-title {
     font-size: 20px;
+  }
+
+  .welcome-section {
+    margin-bottom: 16px;
+  }
+
+  .second-message {
+    margin: 16px 0;
+    padding: 10px 0;
+  }
+
+  .second-message p {
+    font-size: 14px;
   }
 
   .school-info {
@@ -166,6 +368,31 @@ span {
 
   .school-name {
     font-size: 14px;
+  }
+
+  .school-info-detailed {
+    padding: 12px;
+  }
+
+  .school-name-title {
+    font-size: 16px;
+  }
+
+  .school-title-subtext {
+    font-size: 12px;
+  }
+
+  .school-detail-item {
+    font-size: 13px;
+  }
+
+  .detail-label {
+    min-width: 120px;
+    font-size: 12px;
+  }
+
+  .detail-value {
+    font-size: 12px;
   }
 
   .text-section {
@@ -187,6 +414,34 @@ span {
     font-size: 18px;
     font-weight: bold;
   }
+
+  .aip-stats-cards-inline {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .aip-status-card-inline {
+    border-radius: 12px;
+    min-height: 84px;
+  }
+
+  .aip-status-card-inline mat-card-content {
+    padding: 12px 8px;
+    gap: 4px;
+  }
+
+  .status-percentage-inline {
+    font-size: 22px;
+  }
+
+  .status-title-inline {
+    font-size: 9px;
+    letter-spacing: 0.6px;
+  }
+
+  .status-count-inline {
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -196,6 +451,33 @@ span {
     font-weight: bold;
   }
 
+  .aip-stats-cards-inline {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .aip-status-card-inline {
+    border-radius: 12px;
+    min-height: 80px;
+  }
+
+  .aip-status-card-inline mat-card-content {
+    padding: 12px 8px;
+    gap: 4px;
+  }
+
+  .status-percentage-inline {
+    font-size: 20px;
+  }
+
+  .status-title-inline {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .status-count-inline {
+    font-size: 9px;
+  }
 }
 
 @media (min-width: 769px) {
@@ -213,4 +495,112 @@ span {
 .loading-container p {
   margin-top: 16px;
   color: #666;
+}
+
+/* AIP Status Statistics Section - Inline with Welcome */
+.aip-stats-inline {
+  flex: 1;
+  min-width: 240px;
+  max-width: 480px;
+}
+
+.aip-stats-title {
+  color: #28a745;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.aip-stats-loading {
+  width: 100%;
+}
+
+.aip-stats-cards-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.aip-status-card-inline {
+  background: #ffffff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  min-height: 72px;
+  overflow: hidden;
+  position: relative;
+}
+
+.aip-status-card-inline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  /*background: #28a745;*/
+  opacity: 0.8;
+}
+
+.aip-status-card-inline:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.aip-status-card-inline:active {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.aip-status-card-inline mat-card-content {
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: center;
+}
+
+.status-title-inline {
+  color: #28a745;
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: center;
+  line-height: 1.3;
+  opacity: 0.9;
+}
+
+.status-percentage-inline {
+  font-size: 20px;
+  font-weight: 600;
+  color: #28a745;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.status-count-inline {
+  font-size: 9px;
+  color: #666;
+  text-align: center;
+  font-weight: 400;
+  opacity: 0.8;
+  margin-top: 1px;
+}
+
+.second-message {
+  margin: 20px 0;
+  padding: 12px 0;
+}
+
+.second-message p {
+  margin: 0;
+  color: #333;
+  font-size: 15px;
+  line-height: 1.6;
 }
