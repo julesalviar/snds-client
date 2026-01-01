@@ -111,7 +111,7 @@ h2.welcome-title {
 }
 
 /* Detailed School Information for School Admin */
-.school-info-detailed {
+.aip-info-detailed {
   flex: 1;
   min-width: 240px;
   max-width: 480px;
@@ -123,7 +123,7 @@ h2.welcome-title {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.school-header {
+.aip-status-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -155,7 +155,7 @@ h2.welcome-title {
   letter-spacing: 0.3px;
 }
 
-.school-details {
+.aip-status-details {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -252,12 +252,12 @@ span {
     min-width: 180px;
   }
 
-  .school-info-detailed {
+  .aip-info-detailed {
     padding: 8px;
     border-radius: 5px;
   }
 
-  .school-header {
+  .aip-status-header {
     gap: 6px;
     margin-bottom: 8px;
     padding-bottom: 6px;
@@ -271,7 +271,7 @@ span {
     font-size: 10px;
   }
 
-  .school-details {
+  .aip-status-details {
     gap: 5px;
   }
 
@@ -289,7 +289,7 @@ span {
     max-width: 100%;
   }
 
-  .school-info-detailed {
+  .aip-info-detailed {
     width: 100%;
     max-width: 100%;
   }
@@ -370,7 +370,7 @@ span {
     font-size: 14px;
   }
 
-  .school-info-detailed {
+  .aip-info-detailed {
     padding: 12px;
   }
 

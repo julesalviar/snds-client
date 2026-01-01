@@ -270,4 +270,8 @@ export class HomeComponent implements OnInit {
           return '-';
       }
     }
+
+    navigateToAip(): void {
+      this.router.navigate(['/school-admin/aip']);
+    }
   }

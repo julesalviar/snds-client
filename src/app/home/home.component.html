@@ -9,15 +9,15 @@
         <h2 class="welcome-title">Welcome {{ name?.trim() ? name : 'Partners' }}</h2>
         <div class="welcome-header" *ngIf="shouldShowAipStats()" >
           <!-- School Information Section - Enhanced for School Admin -->
-          <div class="school-info-detailed">
-            <div class="school-header">
+          <div class="aip-info-detailed">
+            <div class="aip-status-header">
               <mat-icon *ngIf="isSchoolAdmin()" class="school-icon">school</mat-icon>
               <div class="school-title-wrapper">
                 <h3 class="school-name-title">{{ getWelcomeHeaderName() | uppercase }}</h3>
                 <div class="school-title-subtext">AIP Project Status</div>
               </div>
             </div>
-            <div class="school-details">
+            <div class="aip-status-details" (click)="navigateToAip()" style="cursor: pointer;">
               <div *ngIf="isLoadingAipStats" class="aip-stats-loading">
                 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
               </div>

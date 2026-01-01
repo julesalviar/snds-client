@@ -244,12 +244,12 @@ export class AipComponent implements OnInit {
     this.loadAips(this.schoolId);
   }
 
-  get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
-  }
-
   get userRole(): string {
     return this.authService.getActiveRole();
+  }
+
+  get showCreateForm(): boolean {
+    return this.userRole === UserType.SchoolAdmin;
   }
 
   private showErrorNotification(message: string): void {
