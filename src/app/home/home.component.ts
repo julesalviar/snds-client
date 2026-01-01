@@ -15,6 +15,7 @@ import {AIP_STATUSES, AipStatus} from "../common/enums/aip-status.enum";
 import {UserType} from "../registration/user-type.enum";
 import {MatCardModule} from "@angular/material/card";
 import {SchoolInfo} from "../common/model/school-need.model";
+import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 
 interface TreeNode {
     name: string;
@@ -36,6 +37,7 @@ export class HomeComponent implements OnInit {
   userRole: string | undefined;
   schoolName: string = '';
   schoolInfo: SchoolInfo | null = null;
+  divisionName: string = '';
 
   treeData: TreeNode[] = [];
   schoolNeedData: any[] = [];
@@ -52,6 +54,7 @@ export class HomeComponent implements OnInit {
       private readonly userService: UserService,
       private readonly router: Router,
       private readonly referenceDataService: ReferenceDataService,
+      private readonly internalReferenceDataService: InternalReferenceDataService,
       private readonly schoolNeedService: SchoolNeedService,
       private readonly authService: AuthService,
       private readonly aipService: AipService,
@@ -72,6 +75,14 @@ export class HomeComponent implements OnInit {
     if (this.userRole === UserType.SchoolAdmin || this.userRole === UserType.DivisionAdmin) {
       this.loadAipStatusStatistics();
     }
+    this.loadInternalReferenceData().then(r => {
+      // console.log('Division Name: ', this.divisionName);
+    });
+  }
+
+  async loadInternalReferenceData() {
+      await this.internalReferenceDataService.initialize();
+      this.divisionName = this.internalReferenceDataService.get('division');
   }
 
     toggleChildren(node: TreeNode): void {
@@ -232,20 +243,31 @@ export class HomeComponent implements OnInit {
       return Math.round((count / this.totalAips) * 100);
     }
 
-    getStatusCount(status: AipStatus): number {
-      return this.aipStatusStats.get(status) || 0;
-    }
-
     getStatusCountFormatted(status: AipStatus): string {
       const count = this.aipStatusStats.get(status) || 0;
       return `${count}/${this.totalAips}`;
     }
 
-    shouldShowAipStats(): boolean {
+    isSchoolAdmin(): boolean {
+      return this.userRole === UserType.SchoolAdmin;
+    }
+
+    isDivisionAdmin(): boolean {
       return this.userRole === UserType.DivisionAdmin;
     }
 
-    isSchoolAdmin(): boolean {
-      return this.userRole === UserType.SchoolAdmin;
+    shouldShowAipStats(): boolean {
+      return this.isSchoolAdmin() || this.isDivisionAdmin();
+    }
+
+    getWelcomeHeaderName(): string {
+      switch (this.userRole) {
+        case UserType.SchoolAdmin:
+          return this.schoolInfo?.schoolName ?? '';
+        case UserType.DivisionAdmin:
+          return this.divisionName;
+        default:
+          return '-';
+      }
     }
   }
