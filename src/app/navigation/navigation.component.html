@@ -17,8 +17,48 @@
             <button mat-menu-item [routerLink]="['/stakeholder/all-school']" (click)="closeMenu()">All</button>
             <button mat-menu-item [routerLink]="['/stakeholder/districts']" (click)="closeMenu()">By District</button>
           </mat-menu>
-          <button mat-menu-item [routerLink]="['/stakeholder/offices']" (click)="closeMenu()" disabled>Office</button>
-        </mat-menu>
+           <!-- Office Menu for Stakeholders Account-->
+          <button mat-menu-item [matMenuTriggerFor]="guestOfficeSubmenu">Office</button>
+      <mat-menu #guestOfficeSubmenu="matMenu">
+         <button mat-menu-item [matMenuTriggerFor]="guestCurriculumImplementationDivisionSubmenu">Curriculum Implementation Division</button>
+      <mat-menu #guestCurriculumImplementationDivisionSubmenu="matMenu">
+        <button mat-menu-item (click)="closeMenu()">Araling Panlipunan</button>
+        <button mat-menu-item (click)="closeMenu()">English</button>
+        <button mat-menu-item (click)="closeMenu()">Math</button>
+        <button mat-menu-item (click)="closeMenu()">MAPEH</button>
+        <button mat-menu-item (click)="closeMenu()">Pilipino</button>
+        <button mat-menu-item (click)="closeMenu()">Science</button>
+        <button mat-menu-item (click)="closeMenu()">Learning Resource Management Section</button>
+        <button mat-menu-item (click)="closeMenu()">District Instructional Supervision</button>
+      </mat-menu> 
+
+         <button mat-menu-item [matMenuTriggerFor]="guestOfficeOfTheSchoolDivisionSuperintendentSubmenu">Office of the School Division Superintendent</button>
+      <mat-menu #guestOfficeOfTheSchoolDivisionSuperintendentSubmenu="matMenu">
+        <button mat-menu-item (click)="closeMenu()">Accounting</button>
+        <button mat-menu-item (click)="closeMenu()">Budget</button>
+        <button mat-menu-item (click)="closeMenu()">Cash</button>
+        <button mat-menu-item (click)="closeMenu()">General Services</button>
+        <button mat-menu-item (click)="closeMenu()">ICT</button>
+        <button mat-menu-item (click)="closeMenu()">Legal</button>
+        <button mat-menu-item (click)="closeMenu()">Personnel</button>
+        <button mat-menu-item (click)="closeMenu()">Property & Supply</button>
+        <button mat-menu-item (click)="closeMenu()">Records</button>
+      </mat-menu>
+      
+        <button mat-menu-item [matMenuTriggerFor]="guestSchoolGovernanceAndOperationsDivisionSubmenu">School Governance & Operations Division</button>
+      <mat-menu #guestSchoolGovernanceAndOperationsDivisionSubmenu="matMenu">
+        <button mat-menu-item (click)="closeMenu()">Disasters Risk Reduction Management</button>
+        <button mat-menu-item (click)="closeMenu()">Education Facilities Section</button>
+        <button mat-menu-item (click)="closeMenu()">Human Resource Development Section</button>
+        <button mat-menu-item (click)="closeMenu()">Planning & Research Section</button>
+        <button mat-menu-item (click)="closeMenu()">Programs & Projects</button>
+        <button mat-menu-item (click)="closeMenu()">School Health Section</button>
+        <button mat-menu-item (click)="closeMenu()">School Management Monitoring & Evaluation Section</button>
+        <button mat-menu-item (click)="closeMenu()">Social Mobilization & Networking</button>
+        <button mat-menu-item (click)="closeMenu()">Youth Formation Development</button>
+      </mat-menu> 
+      </mat-menu>
+      </mat-menu>
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About  Us </a></li>
       <li><a routerLink="stakeholder/my-contribution" (click)="closeMenu()">My Contribution</a></li>
@@ -92,8 +132,48 @@
             <button mat-menu-item [routerLink]="['/guest/all-school']" (click)="closeMenu()">All</button>
             <button mat-menu-item [routerLink]="['/guest/districts']" (click)="closeMenu()">By District</button>
           </mat-menu>
-          <button mat-menu-item [routerLink]="['/guest/offices']" (click)="closeMenu()" disabled>Office</button>
-        </mat-menu>
+           <!-- Office Menu for guest-->
+          <button mat-menu-item [matMenuTriggerFor]="guestOfficeSubmenu">Office</button>
+      <mat-menu #guestOfficeSubmenu="matMenu">
+         <button mat-menu-item [matMenuTriggerFor]="guestCurriculumImplementationDivisionSubmenu">Curriculum Implementation Division</button>
+      <mat-menu #guestCurriculumImplementationDivisionSubmenu="matMenu">
+        <button mat-menu-item (click)="closeMenu()">Araling Panlipunan</button>
+        <button mat-menu-item (click)="closeMenu()">English</button>
+        <button mat-menu-item (click)="closeMenu()">Math</button>
+        <button mat-menu-item (click)="closeMenu()">MAPEH</button>
+        <button mat-menu-item (click)="closeMenu()">Pilipino</button>
+        <button mat-menu-item (click)="closeMenu()">Science</button>
+        <button mat-menu-item (click)="closeMenu()">Learning Resource Management Section</button>
+        <button mat-menu-item (click)="closeMenu()">District Instructional Supervision</button>
+      </mat-menu> 
+
+         <button mat-menu-item [matMenuTriggerFor]="guestOfficeOfTheSchoolDivisionSuperintendentSubmenu">Office of the School Division Superintendent</button>
+      <mat-menu #guestOfficeOfTheSchoolDivisionSuperintendentSubmenu="matMenu">
+        <button mat-menu-item (click)="closeMenu()">Accounting</button>
+        <button mat-menu-item (click)="closeMenu()">Budget</button>
+        <button mat-menu-item (click)="closeMenu()">Cash</button>
+        <button mat-menu-item (click)="closeMenu()">General Services</button>
+        <button mat-menu-item (click)="closeMenu()">ICT</button>
+        <button mat-menu-item (click)="closeMenu()">Legal</button>
+        <button mat-menu-item (click)="closeMenu()">Personnel</button>
+        <button mat-menu-item (click)="closeMenu()">Property & Supply</button>
+        <button mat-menu-item (click)="closeMenu()">Records</button>
+      </mat-menu>
+      
+        <button mat-menu-item [matMenuTriggerFor]="guestSchoolGovernanceAndOperationsDivisionSubmenu">School Governance & Operations Division</button>
+      <mat-menu #guestSchoolGovernanceAndOperationsDivisionSubmenu="matMenu">
+        <button mat-menu-item (click)="closeMenu()">Disasters Risk Reduction Management</button>
+        <button mat-menu-item (click)="closeMenu()">Education Facilities Section</button>
+        <button mat-menu-item (click)="closeMenu()">Human Resource Development Section</button>
+        <button mat-menu-item (click)="closeMenu()">Planning & Research Section</button>
+        <button mat-menu-item (click)="closeMenu()">Programs & Projects</button>
+        <button mat-menu-item (click)="closeMenu()">School Health Section</button>
+        <button mat-menu-item (click)="closeMenu()">School Management Monitoring & Evaluation Section</button>
+        <button mat-menu-item (click)="closeMenu()">Social Mobilization & Networking</button>
+        <button mat-menu-item (click)="closeMenu()">Youth Formation Development</button>
+      </mat-menu> 
+      </mat-menu>
+      </mat-menu>
       </li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="guestSupportMenu" class="menu-trigger">Support</button>
