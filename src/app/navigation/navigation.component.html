@@ -14,7 +14,7 @@
         <mat-menu #stakeholderFindMenu="matMenu">
           <button mat-menu-item [matMenuTriggerFor]="stakeholderSchoolSubmenu">School</button>
           <mat-menu #stakeholderSchoolSubmenu="matMenu">
-            <button mat-menu-item [routerLink]="['/stakeholder/all-school']" (click)="closeMenu()">All</button>
+            <button mat-menu-item [routerLink]="['/stakeholder/all-schools']" (click)="closeMenu()">All</button>
             <button mat-menu-item [routerLink]="['/stakeholder/districts']" (click)="closeMenu()">By District</button>
           </mat-menu>
            <!-- Office Menu for Stakeholders Account-->
@@ -101,6 +101,13 @@
 
     <!-- Division Admin Menus -->
     <ng-container *ngIf="userActiveRole === 'divisionAdmin'">
+      <li>
+          <button mat-button [matMenuTriggerFor]="stakeholderSchoolMenu" class="menu-trigger">Schools</button>
+          <mat-menu #stakeholderSchoolMenu="matMenu">
+            <button mat-menu-item [routerLink]="['/division-admin/all-schools']" (click)="closeMenu()">All</button>
+            <button mat-menu-item [routerLink]="['/division-admin/districts']" (click)="closeMenu()">By District</button>
+          </mat-menu>
+      </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="divisionAdminSupportMenu" class="menu-trigger">Support</button>
