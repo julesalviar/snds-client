@@ -56,7 +56,7 @@ export const routes: Routes = [
     path: 'stakeholder',
     canActivateChild: [AuthGuard],
     children: [
-      {path: 'all-school', component: AllSchoolComponent},
+      {path: 'all-schools', component: AllSchoolComponent},
       {path: 'partners-support', component: StakeholdersComponent},
       {path: 'my-contribution', component: MyContributionComponent},
       {path: 'districts', component: ClustersComponent},
@@ -94,7 +94,8 @@ export const routes: Routes = [
     // canActivateChild: [AuthGuard],
     children: [
       {path: 'school-needs', component: DivisionAdminComponent},
-      {path: 'all-schools', component: DivisionAdminComponent},
+      {path: 'all-schools', component: AllSchoolComponent},
+      {path: 'districts', component: ClustersComponent},
       {path: 'schools-by-district', component: DivisionAdminComponent},
       {path: 'partners-support', component: DivisionAdminComponent},
       {path: 'reports', component: ReportsComponent}, //  Reports component

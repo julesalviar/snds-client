@@ -175,6 +175,15 @@ export class AllSchoolComponent implements OnInit {
   }
 
   maskContactNumber(contactNumber: string): string {
-    return maskContactNumber(contactNumber);
+    switch (this.userActiveRole) {
+      case 'divisionAdmin':
+        return contactNumber;
+      default:
+        return maskContactNumber(contactNumber);
+    }
+  }
+
+  get userActiveRole(): string {
+    return this.authService.getActiveRole();
   }
 }

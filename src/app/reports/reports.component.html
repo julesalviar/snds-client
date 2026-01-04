@@ -1,1 +1,39 @@
-<p>reports works!</p>
+<div class="report-wrapper" *ngIf="template" [ngClass]="[template.orientation, template.paperSize]">
+  <aside class="params-panel">
+    <h2>Report Generator</h2>
+    
+    <form [formGroup]="reportSelectForm">
+      <mat-form-field appearance="outline" class="report-selector">
+        <mat-label>Select Report Type</mat-label>
+        <mat-select formControlName="reportType">
+          <mat-option *ngFor="let report of availableTemplates" [value]="report.id">
+            {{ report.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+
+    <h3>{{ template.title || 'Report Parameters' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="loadReport()">
+      <div *ngFor="let param of template.parameters">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ param.label }}</mat-label>
+          <input matInput [type]="param.type" [formControlName]="param.name" />
+        </mat-form-field>
+      </div>
+      <button mat-flat-button color="primary" type="submit" [disabled]="!form.valid">Generate Report</button>
+    </form>
+  </aside>
+
+  <section class="report-panel">
+    <ng-container *ngIf="getComponentType() as comp">
+      <ng-container *ngComponentOutlet="comp; injector: customInjector"></ng-container>
+    </ng-container>
+    <div *ngIf="!getComponentType()" class="no-report-message">
+      <p>Please select a report type to view the report.</p>
+    </div>
+  </section>
+</div>
+<div *ngIf="!template" class="no-template-message">
+  <p>No template available. Loading sample template...</p>
+</div>
