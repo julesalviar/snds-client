@@ -48,12 +48,17 @@
   </aside>
 
   <section class="report-panel">
-    <div class="report-panel-content">
+    <div class="report-panel-content" #reportPanel>
+      <div class="export-button-container" *ngIf="reportData && reportData.length > 0 && !isLoading">
+        <button mat-flat-button color="accent" (click)="exportToPDF()" [disabled]="!canExportToPDF" [matTooltip]="!canExportToPDF ? 'Report is too large to export to PDF. It exceeds A4 page size.' : ''">
+          <span>Export to PDF</span>
+        </button>
+      </div>
       <div *ngIf="isLoading" class="loading-container">
         <mat-spinner diameter="50" strokeWidth="4" color="primary"></mat-spinner>
         <p class="loading-text">Generating report...</p>
       </div>
-      <ng-container *ngIf="!isLoading">
+      <div *ngIf="!isLoading" #reportContent>
         <ng-container *ngIf="getComponentType() as comp">
           <ng-container *ngIf="componentKey !== null">
             <ng-container *ngComponentOutlet="comp; injector: customInjector"></ng-container>
@@ -62,7 +67,7 @@
         <div *ngIf="!getComponentType()" class="no-report-message">
           <p>Please select a report to view the report.</p>
         </div>
-      </ng-container>
+      </div>
     </div>
   </section>
 </div>
