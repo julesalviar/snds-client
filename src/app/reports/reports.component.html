@@ -53,6 +53,9 @@
         <button mat-flat-button color="accent" (click)="exportToPDF()" [disabled]="!canExportToPDF" [matTooltip]="!canExportToPDF ? 'Report is too large to export to PDF. It exceeds A4 page size.' : ''">
           <span>Export to PDF</span>
         </button>
+        <button mat-flat-button color="accent" (click)="exportToPDF()" [disabled]="!canExportToPDF" [matTooltip]="!canExportToPDF ? 'Report is too large to export to PDF. It exceeds A4 page size.' : ''">
+          <span>Export to Excel</span>
+        </button>
       </div>
       <div *ngIf="isLoading" class="loading-container">
         <mat-spinner diameter="50" strokeWidth="4" color="primary"></mat-spinner>
