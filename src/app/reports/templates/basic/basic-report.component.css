@@ -1,0 +1,131 @@
+.basic-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px #000000;
+  margin: 5px 0 !important;
+  font-size: 11pt;
+}
+
+/* Table header cells - override Material styles */
+.basic-table th,
+.basic-table .mat-mdc-header-cell,
+.basic-table [mat-header-cell] {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  padding: 3px 5px !important;
+  text-align: left;
+  font-weight: bold;
+  font-size: 11pt !important;
+  color: #000000 !important;
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* Table body cells - override Material styles */
+.basic-table td,
+.basic-table .mat-mdc-cell,
+.basic-table [mat-cell] {
+  border: 1px solid #000000 !important;
+  padding: 3px 5px !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-size: 11pt !important;
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* Table rows - alternating row colors */
+.basic-table tbody tr:nth-child(even),
+.basic-table .mat-mdc-row:nth-child(even) {
+  background-color: #ffffff !important;
+}
+
+.basic-table tbody tr:nth-child(odd),
+.basic-table .mat-mdc-row:nth-child(odd) {
+  background-color: #ffffff !important;
+}
+
+/* Hover effect on rows */
+.basic-table tbody tr:hover,
+.basic-table .mat-mdc-row:hover {
+  background-color: #f0f0f0 !important;
+}
+
+/* Ensure consistent cell spacing - override Material */
+.basic-table th,
+.basic-table td,
+.basic-table .mat-mdc-header-cell,
+.basic-table .mat-mdc-cell,
+.basic-table [mat-header-cell],
+.basic-table [mat-cell] {
+  vertical-align: top !important;
+  min-height: 15px !important;
+  height: auto !important;
+}
+
+/* Allow width styles to be applied - ensure box-sizing */
+.basic-table th,
+.basic-table td,
+.basic-table .mat-mdc-header-cell,
+.basic-table .mat-mdc-cell,
+.basic-table [mat-header-cell],
+.basic-table [mat-cell] {
+  box-sizing: border-box !important;
+}
+
+/* Ensure table respects column widths */
+.basic-table {
+  table-layout: auto !important;
+}
+
+/* Override Material table row padding */
+.basic-table .mat-mdc-header-row,
+.basic-table .mat-mdc-row,
+.basic-table [mat-header-row],
+.basic-table [mat-row] {
+  height: auto !important;
+  min-height: auto !important;
+}
+
+/* Paper-like container styling */
+h1 {
+  font-size: 14pt;
+  font-weight: bold;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  color: #000000;
+}
+
+.no-data-message {
+  font-size: 11pt;
+  color: #000000;
+  padding: 10px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  margin: 5px 0;
+}
+
+:host {
+  display: block;
+  background-color: #ffffff;
+  padding: 5px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  min-height: 300px;
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 14pt;
+  color: #666;
+  text-align: center;
+}
+

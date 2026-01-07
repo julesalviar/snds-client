@@ -23,10 +23,10 @@ import {ChangePasswordComponent} from './navigation/change-password/change-passw
 import {FooterComponent} from './footer/footer.component';
 import {AboutUsComponent} from './navigation/about-us/about-us.component';
 import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-need-view.component";
-import { QuickCountComponent } from './school-admin/quick-count/quick-count.component';
 import {ProfileComponent} from "./navigation/profile/profile.component";
 import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/generated-resources.component";
 import {ResetPasswordComponent} from "./reset-password/reset-password.component";
+import {UserType} from './registration/user-type.enum';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -55,6 +55,7 @@ export const routes: Routes = [
   { // Stakeholder routes
     path: 'stakeholder',
     canActivateChild: [AuthGuard],
+    data: { roleType: UserType.StakeHolder },
     children: [
       {path: 'all-schools', component: AllSchoolComponent},
       {path: 'partners-support', component: StakeholdersComponent},
@@ -68,30 +69,32 @@ export const routes: Routes = [
   },
 
   // School Admin routes
-  {path: 'school-admin/reports', component: ReportsComponent},
   {
     path: 'school-admin',
     canActivateChild: [AuthGuard],
+    data: { roleType: UserType.SchoolAdmin },
     children: [
       {path: 'school-needs', component: SchoolAdminComponent},
       {path: 'list-of-school-needs', component: ListOfSchoolNeedsComponent},
       {path: 'senior-high-school', component: SchoolAdminComponent},
       {path: 'aip', component: AipComponent},
       {path: 'aip/edit/:id', component: AipEditComponent},
-      {path: 'dpds', component: SchoolAdminComponent},
+      {path: 'basic', component: SchoolAdminComponent},
       {path: 'spfp', component: SchoolAdminComponent},
       {path: 'school-needs-engage/:code', component: SchoolNeedsEngageComponent},
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
       {path: 'school-need/:code', component: SchoolNeedComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: GeneratedResourcesComponent},
+      {path: 'reports', component: ReportsComponent},
 
     ]
   },
 
   { // Division Admin routes
     path: 'division-admin',
-    // canActivateChild: [AuthGuard],
+    canActivateChild: [AuthGuard],
+    data: { roleType: UserType.DivisionAdmin },
     children: [
       {path: 'school-needs', component: DivisionAdminComponent},
       {path: 'all-schools', component: AllSchoolComponent},

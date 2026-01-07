@@ -30,7 +30,7 @@
         <button mat-menu-item (click)="closeMenu()">Science</button>
         <button mat-menu-item (click)="closeMenu()">Learning Resource Management Section</button>
         <button mat-menu-item (click)="closeMenu()">District Instructional Supervision</button>
-      </mat-menu> 
+      </mat-menu>
 
          <button mat-menu-item [matMenuTriggerFor]="guestOfficeOfTheSchoolDivisionSuperintendentSubmenu">Office of the School Division Superintendent</button>
       <mat-menu #guestOfficeOfTheSchoolDivisionSuperintendentSubmenu="matMenu">
@@ -44,7 +44,7 @@
         <button mat-menu-item (click)="closeMenu()">Property & Supply</button>
         <button mat-menu-item (click)="closeMenu()">Records</button>
       </mat-menu>
-      
+
         <button mat-menu-item [matMenuTriggerFor]="guestSchoolGovernanceAndOperationsDivisionSubmenu">School Governance & Operations Division</button>
       <mat-menu #guestSchoolGovernanceAndOperationsDivisionSubmenu="matMenu">
         <button mat-menu-item (click)="closeMenu()">Disasters Risk Reduction Management</button>
@@ -56,7 +56,7 @@
         <button mat-menu-item (click)="closeMenu()">School Management Monitoring & Evaluation Section</button>
         <button mat-menu-item (click)="closeMenu()">Social Mobilization & Networking</button>
         <button mat-menu-item (click)="closeMenu()">Youth Formation Development</button>
-      </mat-menu> 
+      </mat-menu>
       </mat-menu>
       </mat-menu>
       </li>
@@ -86,8 +86,7 @@
       <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
              (click)="closeMenu()">DPDS</a></li>
       <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" >Quick Count</a></li>
-      <li><a routerLink="/school-admin/reports" (click)="closeMenu()" class="disabled"
-             style="pointer-events: none; color: #ccc; cursor: not-allowed;">Reports</a></li>
+      <li><a routerLink="/school-admin/reports" (click)="closeMenu()">Reports</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="schoolAdminSupportMenu" class="menu-trigger">Support</button>
         <mat-menu #schoolAdminSupportMenu="matMenu">
@@ -152,7 +151,7 @@
         <button mat-menu-item (click)="closeMenu()">Science</button>
         <button mat-menu-item (click)="closeMenu()">Learning Resource Management Section</button>
         <button mat-menu-item (click)="closeMenu()">District Instructional Supervision</button>
-      </mat-menu> 
+      </mat-menu>
 
          <button mat-menu-item [matMenuTriggerFor]="guestOfficeOfTheSchoolDivisionSuperintendentSubmenu">Office of the School Division Superintendent</button>
       <mat-menu #guestOfficeOfTheSchoolDivisionSuperintendentSubmenu="matMenu">
@@ -166,7 +165,7 @@
         <button mat-menu-item (click)="closeMenu()">Property & Supply</button>
         <button mat-menu-item (click)="closeMenu()">Records</button>
       </mat-menu>
-      
+
         <button mat-menu-item [matMenuTriggerFor]="guestSchoolGovernanceAndOperationsDivisionSubmenu">School Governance & Operations Division</button>
       <mat-menu #guestSchoolGovernanceAndOperationsDivisionSubmenu="matMenu">
         <button mat-menu-item (click)="closeMenu()">Disasters Risk Reduction Management</button>
@@ -178,7 +177,7 @@
         <button mat-menu-item (click)="closeMenu()">School Management Monitoring & Evaluation Section</button>
         <button mat-menu-item (click)="closeMenu()">Social Mobilization & Networking</button>
         <button mat-menu-item (click)="closeMenu()">Youth Formation Development</button>
-      </mat-menu> 
+      </mat-menu>
       </mat-menu>
       </mat-menu>
       </li>

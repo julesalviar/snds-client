@@ -21,4 +21,5 @@ export const API_ENDPOINT = {
     resetPassword: `${environment.API_URL}/mail/reset-password`,
     resetPasswordVerify: `${environment.API_URL}/mail/reset-password/verify`,
   },
+  reports: `${environment.API_URL}/reports`
 }
