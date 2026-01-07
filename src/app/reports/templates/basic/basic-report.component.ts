@@ -8,7 +8,6 @@ import {
   MatRowDef,
   MatTable
 } from "@angular/material/table";
-import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {NgForOf, NgIf} from "@angular/common";
 import {DecimalPipe, DatePipe, CurrencyPipe, PercentPipe, LowerCasePipe, UpperCasePipe} from "@angular/common";
 import {Report, ReportTemplate, ReportTemplateParameter} from "../../../common/model/report.model";
@@ -29,8 +28,7 @@ import {Report, ReportTemplate, ReportTemplateParameter} from "../../../common/m
     MatHeaderCellDef,
     MatCellDef,
     NgForOf,
-    NgIf,
-    MatProgressSpinnerModule
+    NgIf
   ],
   styleUrls: ['./basic-report.component.css', '../../reports.component.css']
 })

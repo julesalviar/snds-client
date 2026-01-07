@@ -1,15 +1,17 @@
 import {ChangeDetectorRef, Component, HostListener, Injector, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {NgClass, NgComponentOutlet, NgForOf, NgIf} from "@angular/common";
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatInput} from "@angular/material/input";
 import {MatButton} from "@angular/material/button";
 import {MatSelect, MatSelectModule} from "@angular/material/select";
 import {MatOption} from "@angular/material/core";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {BasicReportComponent} from "./templates/basic/basic-report.component";
 import {ReportService} from "../common/services/report.service";
 import {Report, ReportTemplate} from "../common/model/report.model";
-import {getSchoolYear} from "../common/date-utils";
+import {SchoolYearSelectComponent} from "./filters/school-year-select/school-year-select.component";
+import {SchoolsSelectComponent} from "./filters/schools-select/schools-select.component";
 
 @Component({
   selector: 'app-reports',
@@ -26,7 +28,10 @@ import {getSchoolYear} from "../common/date-utils";
     MatSelectModule,
     MatOption,
     NgComponentOutlet,
-    NgIf
+    NgIf,
+    SchoolYearSelectComponent,
+    SchoolsSelectComponent,
+    MatProgressSpinnerModule
   ],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css'
@@ -93,6 +98,10 @@ export class ReportsComponent implements OnInit, OnChanges {
     }
   }
 
+  ngAfterViewInit() {
+    // Component initialization complete
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['selectedReport'] && !changes['selectedReport'].firstChange) {
       this.buildForm();
@@ -117,26 +126,12 @@ export class ReportsComponent implements OnInit, OnChanges {
 
     if (reportTemplate?.parameters) {
       reportTemplate.parameters.forEach((param: any) => {
-        const initialValue = (param.type === 'select' || param.type === 'schoolYear') ? '' : (param.value || '');
+        const initialValue = (param.type === 'select' || param.type === 'schoolYear' || param.type === 'schools') ? '' : (param.value || '');
         formControls[param.name] = [initialValue, Validators.required];
       });
     }
 
     this.form = this.fb.group(formControls);
-  }
-
-  getSchoolYearOptions(): string[] {
-    const options: string[] = [];
-    const startYear = 2025; // Fixed start year
-    const currentSchoolYear = getSchoolYear();
-    const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
-    const endYear = currentStartYear + 3; // Current school year + 3 years
-
-    for (let year = startYear; year <= endYear; year++) {
-      options.push(`${year}-${year + 1}`);
-    }
-
-    return options;
   }
 
   private createCustomInjector() {
@@ -224,12 +219,17 @@ export class ReportsComponent implements OnInit, OnChanges {
     }
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
-    this.checkMobile();
-  }
 
   private checkMobile() {
     this.isMobile = window.innerWidth <= 768;
+  }
+
+  getControl(controlName: string): FormControl {
+    return this.form.get(controlName) as FormControl;
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkMobile();
   }
 }

@@ -23,33 +23,46 @@
     <h3>{{ selectedReport?.reportTemplateId?.parameters?.length ? 'Report Filters' : '' }}</h3>
     <form [formGroup]="form" (ngSubmit)="loadReport()">
       <div *ngFor="let param of selectedReport?.reportTemplateId?.parameters ?? []">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ param.label }}</mat-label>
-          <mat-select [formControlName]="param.name" *ngIf="param.type === 'select'">
-            <mat-option *ngFor="let option of param.value" [value]="option">
-              {{ option }}
-            </mat-option>
-          </mat-select>
-          <mat-select [formControlName]="param.name" *ngIf="param.type === 'schoolYear'">
-            <mat-option *ngFor="let option of getSchoolYearOptions()" [value]="option">
-              {{ option }}
-            </mat-option>
-          </mat-select>
-          <input matInput [type]="param.type" [formControlName]="param.name" *ngIf="param.type !== 'select' && param.type !== 'schoolYear'" />
-        </mat-form-field>
+        <ng-container *ngIf="param.type === 'schools'; else notSchools">
+          <app-schools-select [control]="getControl(param.name)" [label]="param.label"></app-schools-select>
+        </ng-container>
+        <ng-template #notSchools>
+          <ng-container *ngIf="param.type === 'schoolYear'; else defaultParam">
+            <app-school-year-select [control]="getControl(param.name)" [label]="param.label"></app-school-year-select>
+          </ng-container>
+          <ng-template #defaultParam>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ param.label }}</mat-label>
+              <mat-select [formControlName]="param.name" *ngIf="param.type === 'select'">
+                <mat-option *ngFor="let option of param.value" [value]="option">
+                  {{ option }}
+                </mat-option>
+              </mat-select>
+              <input matInput [type]="param.type" [formControlName]="param.name" *ngIf="param.type !== 'select' && param.type !== 'schoolYear' && param.type !== 'schools'" />
+            </mat-form-field>
+          </ng-template>
+        </ng-template>
       </div>
       <button mat-flat-button color="primary" type="submit" [disabled]="!form.valid || !reportSelectForm.valid">Generate Report</button>
     </form>
   </aside>
 
   <section class="report-panel">
-    <ng-container *ngIf="getComponentType() as comp">
-      <ng-container *ngIf="componentKey !== null">
-        <ng-container *ngComponentOutlet="comp; injector: customInjector"></ng-container>
+    <div class="report-panel-content">
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50" strokeWidth="4" color="primary"></mat-spinner>
+        <p class="loading-text">Generating report...</p>
+      </div>
+      <ng-container *ngIf="!isLoading">
+        <ng-container *ngIf="getComponentType() as comp">
+          <ng-container *ngIf="componentKey !== null">
+            <ng-container *ngComponentOutlet="comp; injector: customInjector"></ng-container>
+          </ng-container>
+        </ng-container>
+        <div *ngIf="!getComponentType()" class="no-report-message">
+          <p>Please select a report to view the report.</p>
+        </div>
       </ng-container>
-    </ng-container>
-    <div *ngIf="!getComponentType()" class="no-report-message">
-      <p>Please select a report to view the report.</p>
     </div>
   </section>
 </div>

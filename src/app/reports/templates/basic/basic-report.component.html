@@ -1,12 +1,8 @@
 <h1>{{ title }}</h1>
-<div *ngIf="isLoading" class="loading-container">
-  <mat-spinner color="primary"></mat-spinner>
-  <p class="loading-text">Generating report...</p>
-</div>
-<div *ngIf="!isLoading && (!data || data.length === 0)" class="no-data-message">
+<div *ngIf="!data || data.length === 0" class="no-data-message">
   <p>No data available. Please fill in the report filters and click "Generate Report" to view the data.</p>
 </div>
-<table *ngIf="!isLoading && data && data.length > 0" mat-table [dataSource]="data" class="basic-table">
+<table *ngIf="data && data.length > 0" mat-table [dataSource]="data" class="basic-table">
   <ng-container *ngFor="let column of template?.table?.columns" [matColumnDef]="column.field">
     <th mat-header-cell *matHeaderCellDef
         [style.min-width]="getMinWidth(column)"
