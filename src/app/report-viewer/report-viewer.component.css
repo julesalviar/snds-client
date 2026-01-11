@@ -1,0 +1,92 @@
+.report-viewer-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.report-parameter-panel {
+  text-align: center;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.report-parameter-panel h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 2rem;
+}
+
+.report-parameter-panel p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.report-wrapper {
+  flex: 1;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Ensure PDF viewer takes full width */
+::ng-deep ngx-extended-pdf-viewer {
+  width: 100%;
+}
+
+.error-message {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  border: 1px solid #ef5350;
+}
+
+/* Desktop layout: panel on the right */
+@media (min-width: 769px) {
+  .report-viewer-container {
+    flex-direction: row;
+  }
+
+  .report-parameter-panel {
+    width: 300px;
+    flex-shrink: 0;
+  }
+
+  .report-wrapper {
+    flex: 1;
+  }
+}
+
+/* Mobile layout: panel on top */
+@media (max-width: 768px) {
+  .report-viewer-container {
+    padding: 10px;
+    flex-direction: column;
+  }
+
+  .report-parameter-panel {
+    width: 100%;
+  }
+
+  .report-parameter-panel h1 {
+    font-size: 1.5rem;
+  }
+
+  .report-parameter-panel p {
+    font-size: 0.9rem;
+  }
+}
+

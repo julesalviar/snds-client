@@ -30,6 +30,7 @@
     "@ngrx/store": "^18.1.1",
     "@types/angular-material": "^1.1.78",
     "express": "^4.18.2",
+    "ngx-extended-pdf-viewer": "^25.6.4",
     "pdfmake": "^0.2.22",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

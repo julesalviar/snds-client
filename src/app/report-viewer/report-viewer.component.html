@@ -1,0 +1,26 @@
+<div class="report-viewer-container">
+  <div class="report-parameter-panel">
+    <h1>Reports</h1>
+    <p>parameters here!</p>
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <mat-form-field appearance="outline">
+      <mat-label>Select Report</mat-label>
+      <mat-select>
+        <mat-option >
+          Report 1
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="report-wrapper">
+    <ngx-extended-pdf-viewer
+      [src]="pdfSrc"
+      height="800px"
+      [zoom]="'auto'"
+      [filenameForDownload]="'sample.pdf'"
+      (error)="onError($event)">
+    </ngx-extended-pdf-viewer>
+  </div>
+</div>
+

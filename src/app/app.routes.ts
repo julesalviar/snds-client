@@ -27,6 +27,7 @@ import {ProfileComponent} from "./navigation/profile/profile.component";
 import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/generated-resources.component";
 import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 import {UserType} from './registration/user-type.enum';
+import {ReportViewerComponent} from './report-viewer/report-viewer.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -42,6 +43,7 @@ export const routes: Routes = [
   {path: 'footer', component: FooterComponent},
   {path: 'about-us', component: AboutUsComponent},
   {path: 'profile', component: ProfileComponent},
+  {path: 'report-viewer', component: ReportViewerComponent},
 
   {
     path: 'guest',
