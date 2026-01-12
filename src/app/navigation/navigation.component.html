@@ -83,8 +83,15 @@
       </li>
 
       <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
-      <li><a href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"
-             (click)="closeMenu()">DPDS</a></li>
+      
+      <li>
+        <button mat-button [matMenuTriggerFor]="schoolAdminDpdsMenu" class="menu-trigger">DPDS</button>
+        <mat-menu #schoolAdminDpdsMenu="matMenu">
+            <a mat-menu-item href="https://partnershipsdatabase.deped.gov.ph/" target="_blank" rel="noopener noreferrer"(click)="closeMenu()">DPDS Link</a>
+            <button mat-menu-item [routerLink]="['/school-admin/DpdsData']" (click)="closeMenu()">DPDS Data</button>
+        </mat-menu>
+      </li>
+
       <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" >Quick Count</a></li>
       <li><a routerLink="/school-admin/reports" (click)="closeMenu()">Reports</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
