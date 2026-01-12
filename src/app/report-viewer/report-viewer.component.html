@@ -1,16 +1,36 @@
 <div class="report-viewer-container">
-  <div class="report-parameter-panel">
-    <h1>Reports</h1>
-    <p>parameters here!</p>
-    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-    <mat-form-field appearance="outline">
-      <mat-label>Select Report</mat-label>
-      <mat-select>
-        <mat-option >
-          Report 1
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+  <div class="report-parameter-panel" [class.collapsed]="isCollapsed">
+    <div class="panel-header">
+      <button mat-icon-button class="toggle-button toggle-button-desktop" (click)="togglePanel()" aria-label="Toggle panel">
+        <mat-icon>{{ getChevronIcon() }}</mat-icon>
+      </button>
+      <div class="header-content">
+        <h1 *ngIf="!isCollapsed">Reports</h1>
+        <mat-icon *ngIf="isCollapsed" class="panel-icon">assessment</mat-icon>
+      </div>
+      <button mat-icon-button class="toggle-button toggle-button-mobile" (click)="togglePanel()" aria-label="Toggle panel">
+        <mat-icon>{{ getChevronIcon() }}</mat-icon>
+      </button>
+    </div>
+    
+    <div class="panel-content">
+      <div *ngIf="!isCollapsed" class="expanded-content">
+        <p>parameters here!</p>
+        <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Select Report</mat-label>
+          <mat-select>
+            <mat-option >
+              Report 1
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div *ngIf="isCollapsed" class="collapsed-icons">
+        <mat-icon class="collapsed-icon">assessment</mat-icon>
+        <mat-icon class="collapsed-icon">description</mat-icon>
+      </div>
+    </div>
   </div>
 
   <div class="report-wrapper">
