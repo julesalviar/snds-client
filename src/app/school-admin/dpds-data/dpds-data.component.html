@@ -1,5 +1,10 @@
 <div class="table-section">
 
+    <div *ngIf="isLoading" class="loading-container" style="padding: 20px; text-align: center;">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading data...</p>
+    </div>
+
     <div class="filter-container">
         <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Filter By</mat-label>
@@ -39,14 +44,14 @@
             <div *ngIf="dateRangeType === 'custom'" class="custom-date-range">
                 <mat-form-field appearance="outline" class="filter-field">
                     <mat-label>Start Date</mat-label>
-                    <input matInput [matDatepicker]="startPicker" (dateChange)="customStartDate = $event.value; onCustomDateChange()">
+                    <input matInput [matDatepicker]="startPicker" [value]="customStartDate" (dateChange)="customStartDate = $event.value; onCustomDateChange()">
                     <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
                     <mat-datepicker #startPicker></mat-datepicker>
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="filter-field">
                     <mat-label>End Date</mat-label>
-                    <input matInput [matDatepicker]="endPicker" (dateChange)="customEndDate = $event.value; onCustomDateChange()">
+                    <input matInput [matDatepicker]="endPicker" [value]="customEndDate" (dateChange)="customEndDate = $event.value; onCustomDateChange()">
                     <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
                     <mat-datepicker #endPicker></mat-datepicker>
                 </mat-form-field>
@@ -68,18 +73,16 @@
 
     <hr>
 
-    <mat-paginator class="custom-paginator" [pageSize]="4" [pageSizeOptions]="[4, 8, 16]" showFirstLastButtons></mat-paginator>
-
     <!--SCHOOL / LEARNING CENTER PARTNERS-->
-    <h2 class="table-title title-school">SCHOOL / LEARNING CENTER PARTNERS</h2>
-    <div class="column-toggle">
+    <h2 *ngIf="!isLoading" class="table-title title-school">SCHOOL / LEARNING CENTER PARTNERS</h2>
+    <div *ngIf="!isLoading" class="column-toggle">
         <label *ngFor="let col of schoolPartnersDisplayedColumns">
             <input type="checkbox" [checked]="columnsVisible.school[col]" (change)="toggleSingleColumn('school', col)" />
             {{ col }}
         </label>
     </div>
 
-    <div class="table-scroll">
+    <div *ngIf="!isLoading" class="table-scroll">
         <table mat-table [dataSource]="schoolPartnersData" class="mat-elevation-z8">
             <ng-container matColumnDef="generalPartnerType" *ngIf="columnsVisible.school['generalPartnerType']">
                 <th mat-header-cell *matHeaderCellDef>General Partner Type</th>
@@ -112,15 +115,15 @@
     </div>
 
     <!--PARTNERS' CONTRIBUTION-->
-    <h2 class="table-title title-contribution">PARTNERS' CONTRIBUTION</h2>
-    <div class="column-toggle">
+    <h2 *ngIf="!isLoading" class="table-title title-contribution">PARTNERS' CONTRIBUTION</h2>
+    <div *ngIf="!isLoading" class="column-toggle">
         <label *ngFor="let col of partnersContributionDisplayedColumns">
             <input type="checkbox" [checked]="columnsVisible.contribution[col]" (change)="toggleSingleColumn('contribution', col)" />
             {{ col }}
         </label>
     </div>
 
-    <div class="table-scroll">
+    <div *ngIf="!isLoading" class="table-scroll">
         <table mat-table [dataSource]="partnersContributionData" class="mat-elevation-z8">
             <ng-container matColumnDef="contributionType" *ngIf="columnsVisible.contribution['contributionType']">
                 <th mat-header-cell *matHeaderCellDef>Contribution Type</th>
@@ -163,15 +166,15 @@
     </div>
 
     <!--PARTNERSHIP AGREEMENTS-->
-    <h2 class="table-title title-partnership">PARTNERSHIP AGREEMENTS</h2>
-    <div class="column-toggle">
+    <h2 *ngIf="!isLoading" class="table-title title-partnership">PARTNERSHIP AGREEMENTS</h2>
+    <div *ngIf="!isLoading" class="column-toggle">
         <label *ngFor="let col of partnershipAgreementsDisplayedColumns">
             <input type="checkbox" [checked]="columnsVisible.partnership[col]" (change)="toggleSingleColumn('partnership', col)" />
             {{ col }}
         </label>
     </div>
 
-    <div class="table-scroll">
+    <div *ngIf="!isLoading" class="table-scroll">
         <table mat-table [dataSource]="partnershipAgreementsData" class="mat-elevation-z8">
             <ng-container matColumnDef="formOfAgreement" *ngIf="columnsVisible.partnership['formOfAgreement']">
                 <th mat-header-cell *matHeaderCellDef>Form of Agreement</th>
