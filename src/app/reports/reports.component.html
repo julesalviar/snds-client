@@ -50,10 +50,10 @@
   <section class="report-panel">
     <div class="report-panel-content" #reportPanel>
       <div class="export-button-container" *ngIf="reportData && reportData.length > 0 && !isLoading">
-        <button mat-flat-button color="accent" (click)="exportToPDF()" [disabled]="!canExportToPDF" [matTooltip]="!canExportToPDF ? 'Report is too large to export to PDF. It exceeds A4 page size.' : ''">
+        <button mat-flat-button color="accent" [disabled]="true" >
           <span>Export to PDF</span>
         </button>
-        <button mat-flat-button color="accent" (click)="exportToPDF()" [disabled]="!canExportToPDF" [matTooltip]="!canExportToPDF ? 'Report is too large to export to PDF. It exceeds A4 page size.' : ''">
+        <button mat-flat-button color="accent" [disabled]="true">
           <span>Export to Excel</span>
         </button>
       </div>
