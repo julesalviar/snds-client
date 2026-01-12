@@ -27,6 +27,7 @@ import {ProfileComponent} from "./navigation/profile/profile.component";
 import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/generated-resources.component";
 import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 import {UserType} from './registration/user-type.enum';
+import { DpdsDataComponent } from './school-admin/dpds-data/dpds-data.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -77,6 +78,7 @@ export const routes: Routes = [
       {path: 'school-needs', component: SchoolAdminComponent},
       {path: 'list-of-school-needs', component: ListOfSchoolNeedsComponent},
       {path: 'senior-high-school', component: SchoolAdminComponent},
+      {path: 'DpdsData', component: DpdsDataComponent},
       {path: 'aip', component: AipComponent},
       {path: 'aip/edit/:id', component: AipEditComponent},
       {path: 'basic', component: SchoolAdminComponent},
