@@ -60,7 +60,7 @@ export class ClustersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClusterOptions();
-    this.loadSchools();
+    this.loadSchoolsWithPagination();
   }
 
   async loadClusterOptions(): Promise<void> {
@@ -85,49 +85,9 @@ export class ClustersComponent implements OnInit {
     }
   }
 
-  loadSchools(): void {
-    this.isLoading = true;
-    this.schoolService.getAllSchools(this.selectedCluster).subscribe({
-      next: (response) => {
-        this.schoolList = response.data ?? response ?? [];
-        this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
-        this.filteredSchoolList = [...this.schoolList];
-        this.updateDataSource();
-        this.calculateSummaryStats();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading schools:', error);
-        // Fallback to empty array if API fails
-        this.schoolList = [];
-        this.filteredSchoolList = [];
-        this.updateDataSource();
-        this.calculateSummaryStats();
-        this.isLoading = false;
-      }
-    });
-  }
-
-  applyFilter(): void {
-    if (!this.selectedCluster) {
-      this.filteredSchoolList = [...this.schoolList];
-    } else {
-      this.filteredSchoolList = this.schoolList.filter(school =>
-        school.district === this.selectedCluster
-      );
-    }
-
-    this.pageIndex = 0; // Reset to first page when filtering
-    this.updateDataSource();
-    this.calculateSummaryStats();
-  }
-
   onClusterChange(): void {
-    this.loadSchools(); // Reload schools with new district filter
-  }
-
-  refreshSchools(): void {
-    this.loadSchools(); // Manual refresh button
+    this.pageIndex = 0; // Reset to first page when filtering
+    this.loadSchoolsWithPagination(); // Reload schools with new district filter
   }
 
   updateDataSource(): void {
