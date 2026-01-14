@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
 import {InternalReferenceDataService} from "../../common/services/internal-reference-data.service";
 import {AuthService} from "../../auth/auth.service";
+import { ZeroReplacePipe } from '../../common/pipes/zero-replace.pipe';
 
 @Component({
   selector: 'app-clusters',
@@ -33,7 +34,8 @@ import {AuthService} from "../../auth/auth.service";
     MatInputModule,
     MatSelectModule,
     FormsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    ZeroReplacePipe
   ],
   templateUrl: './clusters.component.html',
   styleUrls: ['./clusters.component.css']

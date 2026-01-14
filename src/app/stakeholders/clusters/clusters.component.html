@@ -41,27 +41,27 @@
 
         <ng-container matColumnDef="ppasEncoded">
           <th mat-header-cell *matHeaderCellDef> # of PPAs Encoded </th>
-          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.totalAip}}</td>
+          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.totalAip | number: '1.0-2' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="ppasAccomplished">
           <th mat-header-cell *matHeaderCellDef> Accomplished </th>
-          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.completedAip }}</td>
+          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.completedAip | number: '1.0-2' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="needsEncoded">
           <th mat-header-cell *matHeaderCellDef> # of Needs Encoded </th>
-          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.totalNeed }} </td>
+          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.totalNeed | number: '1.0-2' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="needsAccomplished">
           <th mat-header-cell *matHeaderCellDef> Accomplished needs </th>
-          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.completedNeed }}</td>
+          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.completedNeed | number: '1.0-2' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="generatedResources">
           <th mat-header-cell *matHeaderCellDef> Generated Resources </th>
-          <td mat-cell *matCellDef="let school"> </td>
+          <td mat-cell *matCellDef="let school"> {{ school.additionalInfo?.totalGeneratedResources | number: '1.2-2' | zeroReplace }} </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
