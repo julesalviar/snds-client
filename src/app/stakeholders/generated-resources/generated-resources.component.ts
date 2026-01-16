@@ -436,4 +436,11 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
   getSchoolId(): string {
     return this.authService.getSchoolId();
   }
+
+  getTotalStakeholderCount(): number {
+    return this.filteredEngagements.reduce((total, engagement) => {
+      const count = engagement.stakeholderRepCount ?? 0;
+      return total + count;
+    }, 0);
+  }
 }

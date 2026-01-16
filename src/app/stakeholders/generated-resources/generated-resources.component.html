@@ -150,8 +150,16 @@
       </table>
 
       <!-- Total Row - Display outside table for better visibility -->
-      <div *ngIf="!isLoading" class="total-amount-container">
-        <div class="total-amount">
+      <div *ngIf="!isLoading" class="total-containers">
+        <div class="total-item">
+          <div class="total-info">
+            <span class="total-description">{{getTotalAmountLabel()}}</span>
+            <span class="total-label">Total No. of Stakeholder/Representative:</span>
+          </div>
+          <span class="total-value">{{getTotalStakeholderCount() | number}}</span>
+        </div>
+
+        <div class="total-item">
           <div class="total-info">
             <span class="total-description">{{getTotalAmountLabel()}}</span>
             <span class="total-label">Total Amount:</span>

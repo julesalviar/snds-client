@@ -256,7 +256,7 @@ export class HomeComponent implements OnInit {
       return this.userRole === UserType.DivisionAdmin;
     }
 
-    shouldShowAipStats(): boolean {
+    shouldShowStats(): boolean {
       return this.isSchoolAdmin() || this.isDivisionAdmin();
     }
 

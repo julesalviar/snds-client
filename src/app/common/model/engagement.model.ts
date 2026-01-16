@@ -31,6 +31,7 @@ export interface Engagement {
   schoolId: string | SchoolInfo;
   schoolYear: string;
   specificContribution: string;
+  stakeholderRepCount?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }
