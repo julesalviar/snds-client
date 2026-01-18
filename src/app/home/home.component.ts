@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {UserService} from '../common/services/user.service';
-import {CommonModule} from '@angular/common';
+import {CommonModule, DecimalPipe} from '@angular/common';
 import {MatBadgeModule} from '@angular/material/badge';
 import {Router} from '@angular/router';
 import {ReferenceDataService} from "../common/services/reference-data.service";
@@ -29,8 +29,8 @@ interface TreeNode {
   standalone: true,
   imports: [CommonModule, MatBadgeModule, MatIcon, MatProgressBarModule, MatCardModule],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
-
+  styleUrls: ['./home.component.css'],
+  providers: [DecimalPipe]
 })
 export class HomeComponent implements OnInit {
   name: string | undefined;
@@ -58,6 +58,7 @@ export class HomeComponent implements OnInit {
       private readonly schoolNeedService: SchoolNeedService,
       private readonly authService: AuthService,
       private readonly aipService: AipService,
+      private decimalPipe: DecimalPipe,
     ) {
     }
 
@@ -245,7 +246,10 @@ export class HomeComponent implements OnInit {
 
     getStatusCountFormatted(status: AipStatus): string {
       const count = this.aipStatusStats.get(status) || 0;
-      return `${count}/${this.totalAips}`;
+      const formattedCount = this.decimalPipe.transform(count, '1.0-2');
+      const formattedTotal = this.decimalPipe.transform(this.totalAips, '1.0-2');
+
+      return `${formattedCount}/${formattedTotal}`;
     }
 
     isSchoolAdmin(): boolean {
