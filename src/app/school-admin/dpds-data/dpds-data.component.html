@@ -78,7 +78,7 @@
     <div *ngIf="!isLoading" class="column-toggle">
         <label *ngFor="let col of schoolPartnersDisplayedColumns">
             <input type="checkbox" [checked]="columnsVisible.school[col]" (change)="toggleSingleColumn('school', col)" />
-            {{ col }}
+            {{ formatColumnName(col) }}
         </label>
     </div>
 
@@ -119,7 +119,7 @@
     <div *ngIf="!isLoading" class="column-toggle">
         <label *ngFor="let col of partnersContributionDisplayedColumns">
             <input type="checkbox" [checked]="columnsVisible.contribution[col]" (change)="toggleSingleColumn('contribution', col)" />
-            {{ col }}
+            {{ formatColumnName(col) }}
         </label>
     </div>
 
@@ -170,7 +170,7 @@
     <div *ngIf="!isLoading" class="column-toggle">
         <label *ngFor="let col of partnershipAgreementsDisplayedColumns">
             <input type="checkbox" [checked]="columnsVisible.partnership[col]" (change)="toggleSingleColumn('partnership', col)" />
-            {{ col }}
+            {{ formatColumnName(col) }}
         </label>
     </div>
 
