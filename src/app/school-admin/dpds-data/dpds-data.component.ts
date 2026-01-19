@@ -488,6 +488,12 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
       .filter(col => this.columnsVisible[section][col]);
   }
 
+  formatColumnName(column: string): string {
+    if (!column) return ''; 
+    const formatted = column.replace(/([a-z])([A-Z])/g, '$1 $2'); 
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
   private resetDateFilters(): void {
     this.dateRangeType = null;
     this.selectedPeriod = null;
