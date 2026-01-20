@@ -46,6 +46,7 @@ export class StakeholdersComponent implements OnInit {
 
   schoolNeeds: SchoolNeed[] = [];
   schoolName: string = '';
+  schoolLocation: string = '';
   pageIndex: number = 0;
   pageSize: number = 25;
   dataSource = new MatTableDataSource<SchoolNeed>();
@@ -113,6 +114,7 @@ export class StakeholdersComponent implements OnInit {
     this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, this.selectedContribution ?? undefined, this.schoolId ?? undefined).subscribe({
       next: (response) => {
         this.schoolName = response.school?.schoolName;
+        this.schoolLocation = response.school?.location;
         this.dataSource.data = response.data;
         this.totalItems = response.meta.totalItems;
         this.totalQuantity = response.meta.totalQuantity;
@@ -150,5 +152,11 @@ export class StakeholdersComponent implements OnInit {
 
   getEngagementStatus(schoolNeed: SchoolNeed): string {
     return schoolNeed.implementationStatus ?? 'Looking for partner';
+  }
+
+  seeSchoolLocation(): void {
+    const encodedLocation = encodeURIComponent(this.schoolLocation);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+    window.open(googleMapsUrl, '_blank'); 
   }
 }
