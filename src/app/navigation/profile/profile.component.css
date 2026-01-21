@@ -110,6 +110,13 @@ button {
   color: black;
 }
 
+.comment {
+  display: block;
+  margin-top: 0; 
+  font-size: 0.9em; 
+  color: #666; 
+}
+
 @media (max-width: 600px) {
   .upload-section {
     padding: 10px;

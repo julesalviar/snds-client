@@ -60,6 +60,7 @@ export class ProfileComponent implements OnInit {
       designation: ['', Validators.required],
       contactNumber: ['', Validators.required],
       officialEmailAddress: ['', [Validators.required, Validators.email]],
+      location: ['', Validators.required] 
     });
   }
 
@@ -143,6 +144,7 @@ export class ProfileComponent implements OnInit {
             designation: data.designation,
             contactNumber: data.contactNumber,
             officialEmailAddress: data.officialEmailAddress,
+            location: data.location || ''
           });
         }
       })

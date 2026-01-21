@@ -71,11 +71,20 @@
           </mat-form-field>
         </div>
 
+          <div class="form-row">
+          <mat-form-field appearance="fill">
+            <mat-label>Location (Input The Coordinates)</mat-label>
+            <input formControlName="location" matInput required>
+          </mat-form-field>
+          <small class="comment">"Note: Please provide the coordinates (e.g., 6.089640, 125.099024) instead of the address.
+             This information will be visible to stakeholders, allowing them to see the school's actual location on Google Maps."</small>
+        </div>
+
         <div class="button-group">
           <button color="primary" mat-raised-button type="submit">Update Profile</button>
           <button (click)="toggleUploadSection()" color="green" disabled mat-raised-button>
             <mat-icon>cloud_download</mat-icon>
-            Download School Profile
+            Upload School Profile
           </button>
         </div>
       </form>
