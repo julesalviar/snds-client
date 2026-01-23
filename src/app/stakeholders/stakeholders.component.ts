@@ -156,7 +156,7 @@ export class StakeholdersComponent implements OnInit {
 
   seeSchoolLocation(): void {
     const encodedLocation = encodeURIComponent(this.schoolLocation);
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
-    window.open(googleMapsUrl, '_blank'); 
+    const googleMapsUrl = `https://www.google.com/maps?q=${encodedLocation}`;
+    window.open(googleMapsUrl, '_blank');
   }
 }
