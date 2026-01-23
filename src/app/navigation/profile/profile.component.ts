@@ -13,6 +13,7 @@ import {AuthService} from "../../auth/auth.service";
 import {SchoolService} from "../../common/services/school.service";
 import {InternalReferenceDataService} from "../../common/services/internal-reference-data.service";
 import {ReferenceDataService} from "../../common/services/reference-data.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-profile',
@@ -48,6 +49,7 @@ export class ProfileComponent implements OnInit {
     private readonly schoolService: SchoolService,
     private readonly internalReferenceDataService: InternalReferenceDataService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly snackBar: MatSnackBar,
   ) {
     this.profileForm = this.fb.group({
       region: [''],
@@ -101,10 +103,31 @@ export class ProfileComponent implements OnInit {
     if (this.profileForm.valid) {
       this.schoolService.updateSchool(this.schoolId, this.profileForm.value).subscribe({
         next: () => {
-          console.log('Profile updated successfully');
+          this.showSuccessNotification('Profile updated successfully!');
         },
         error: (err) => {
           console.error('Update failed', err);
+
+          let errorMessage = 'Failed to update profile. Please try again.';
+
+          if (err?.error?.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMessage = err.error.message.join('\n• ');
+              if (err.error.message.length > 1) {
+                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+              }
+            } else if (typeof err.error.message === 'string') {
+              errorMessage = err.error.message;
+            }
+          } else if (err?.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
+          }
+
+          this.showErrorNotification(errorMessage);
         }
       });
     }
@@ -149,5 +172,25 @@ export class ProfileComponent implements OnInit {
         }
       })
     }
+  }
+
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+  }
+
+  private showErrorNotification(message: string): void {
+    const duration = message.includes('\n') ? 8000 : 5000;
+
+    this.snackBar.open(message, 'Close', {
+      duration: duration,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
   }
 }
