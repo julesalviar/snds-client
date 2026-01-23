@@ -3,6 +3,7 @@ export interface SchoolInfo {
   division: string;
   districtOrCluster: string;
   schoolName: string;
+  profileDocUrl?: string;
 }
 
 export interface MyContribution {

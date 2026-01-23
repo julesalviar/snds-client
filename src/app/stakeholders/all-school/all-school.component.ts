@@ -167,6 +167,10 @@ export class AllSchoolComponent implements OnInit {
       this.router.navigate(['/stakeholder/school-needs'], {
         queryParams: {schoolId: schoolId}
       });
+    } else if (userRole === 'divisionAdmin') {
+      this.router.navigate(['/division-admin/school-needs'], {
+        queryParams: {schoolId: schoolId}
+      });
     } else {
       this.router.navigate(['/guest/school-needs'], {
         queryParams: {schoolId: schoolId}

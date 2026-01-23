@@ -23,6 +23,7 @@ export interface SchoolInfo {
   accountablePerson: string;
   contactNumber: string;
   designation: string;
+  profileDocUrl?: string;
 }
 
 export interface SchoolNeed {

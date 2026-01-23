@@ -47,6 +47,7 @@ export class StakeholdersComponent implements OnInit {
   schoolNeeds: SchoolNeed[] = [];
   schoolName: string = '';
   schoolLocation: string = '';
+  profileDocUrl: string | null = null;
   pageIndex: number = 0;
   pageSize: number = 25;
   dataSource = new MatTableDataSource<SchoolNeed>();
@@ -115,6 +116,7 @@ export class StakeholdersComponent implements OnInit {
       next: (response) => {
         this.schoolName = response.school?.schoolName;
         this.schoolLocation = response.school?.location;
+        this.profileDocUrl = response.school?.profileDocUrl || null;
         this.dataSource.data = response.data;
         this.totalItems = response.meta.totalItems;
         this.totalQuantity = response.meta.totalQuantity;
@@ -158,5 +160,11 @@ export class StakeholdersComponent implements OnInit {
     const encodedLocation = encodeURIComponent(this.schoolLocation);
     const googleMapsUrl = `https://www.google.com/maps?q=${encodedLocation}`;
     window.open(googleMapsUrl, '_blank');
+  }
+
+  downloadSchoolProfile(): void {
+    if (this.profileDocUrl) {
+      window.open(this.profileDocUrl, '_blank');
+    }
   }
 }

@@ -98,7 +98,7 @@ export const routes: Routes = [
     canActivateChild: [AuthGuard],
     data: { roleType: UserType.DivisionAdmin },
     children: [
-      {path: 'school-needs', component: DivisionAdminComponent},
+      {path: 'school-needs', component: StakeholdersComponent},
       {path: 'all-schools', component: AllSchoolComponent},
       {path: 'districts', component: ClustersComponent},
       {path: 'schools-by-district', component: DivisionAdminComponent},

@@ -80,30 +80,95 @@
              This information will be visible to stakeholders, allowing them to see the school's actual location on Google Maps."</small>
         </div>
 
-        <div class="button-group">
-          <button color="primary" mat-raised-button type="submit">Update Profile</button>
-          <button (click)="toggleUploadSection()" color="green" disabled mat-raised-button>
-            <mat-icon>cloud_download</mat-icon>
-            Upload School Profile
-          </button>
-        </div>
       </form>
 
       <!--upload school profile section-->
-      <div *ngIf="showUploadSection" class="upload-section">
+      <div class="upload-section">
         <h3>Upload School Profile</h3>
-        <div class="school-id-display">
-          <mat-label>School ID:</mat-label>
-          <span>{{ schoolId }}</span>
-        </div>
-        <div class="file-upload">
-          <label class="custom-file-upload" for="file-upload">
-            Select school profile in MSWord or PDF format (doc, docx, pdf):
-          </label>
-          <input (change)="onFileSelected($event)" id="file-upload" type="file"/>
+
+        <!-- Uploaded Document Indicator -->
+        <div *ngIf="profileDocUrl" class="uploaded-doc-indicator">
+          <div class="indicator-content">
+            <mat-icon class="check-icon">check_circle</mat-icon>
+            <div class="indicator-text">
+              <span class="indicator-title">School Profile Document Uploaded</span>
+              <span class="indicator-subtitle">Document is available for download</span>
+            </div>
+            <div class="indicator-actions">
+              <button mat-icon-button (click)="onDownloadProfileDoc()" class="download-btn" title="Download document">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button (click)="onRemoveProfileDoc()" class="remove-doc-btn" title="Remove document">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button (click)="onUpload()" color="primary" mat-raised-button>Upload School Profile</button>
+        <!-- Drag and Drop Zone -->
+        <div
+          *ngIf="!profileDocUrl"
+          class="drop-zone"
+          [class.drag-over]="isDragging"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="onFileInputClick()">
+          <input
+            #fileInput
+            type="file"
+            accept=".pdf,.doc,.docx"
+            (change)="onFileSelected($event)"
+            hidden />
+
+          <div class="drop-zone-content">
+            <mat-icon class="upload-icon">cloud_upload</mat-icon>
+            <p class="drop-zone-text">
+              <strong>Drag and drop your file here</strong>
+            </p>
+            <p class="drop-zone-subtext">or click to browse</p>
+            <p class="drop-zone-hint">Supported formats: PDF, DOC, DOCX (Max 10MB)</p>
+          </div>
+        </div>
+
+        <!-- File Preview -->
+        <div *ngIf="selectedFile" class="file-preview">
+          <div class="file-info">
+            <mat-icon class="file-icon">description</mat-icon>
+            <div class="file-details">
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <span class="file-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+            </div>
+            <button mat-icon-button (click)="removeFile()" class="remove-file-btn">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <mat-progress-bar
+          *ngIf="isUploading"
+          mode="determinate"
+          [value]="uploadProgress"
+          class="upload-progress">
+        </mat-progress-bar>
+
+        <p *ngIf="selectedFile" class="upload-hint">
+          <mat-icon>info</mat-icon>
+          <span>A file is selected and will be uploaded when you save the profile.</span>
+        </p>
+      </div>
+
+      <!-- Update Profile Button -->
+      <div class="button-group-bottom">
+        <button mat-raised-button (click)="onCancel()" [disabled]="isUploading" class="cancel-btn">
+          <mat-icon>cancel</mat-icon>
+          <span>Cancel</span>
+        </button>
+        <button color="primary" mat-raised-button (click)="onUpdate()" [disabled]="!profileForm.valid || isUploading">
+          <mat-icon *ngIf="!isUploading">save</mat-icon>
+          <span>{{ isUploading ? 'Uploading and Saving...' : 'Update Profile' }}</span>
+        </button>
       </div>
     </mat-card-content>
   </mat-card>

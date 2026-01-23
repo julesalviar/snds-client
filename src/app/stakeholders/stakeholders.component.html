@@ -24,7 +24,7 @@
       <button mat-menu-item (click)="seeSchoolLocation()">
         <mat-icon>location_on</mat-icon> See School Location
       </button>
-      <button mat-menu-item [disabled]="false">
+      <button mat-menu-item (click)="downloadSchoolProfile()" [disabled]="!profileDocUrl">
         <mat-icon>download</mat-icon> Download School Profile
       </button>
     </mat-menu>
