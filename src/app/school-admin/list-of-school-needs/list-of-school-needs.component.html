@@ -1,5 +1,5 @@
 <div class="header">
-  <div class="school-logo-container">
+  <div class="school-logo-container logo-preview-wrapper">
     <img 
       *ngIf="schoolLogoUrl && !logoError" 
       [src]="schoolLogoUrl" 
@@ -7,6 +7,14 @@
       class="school-logo"
       (error)="onLogoError()" />
     <mat-icon *ngIf="!schoolLogoUrl || logoError" class="school-icon">school</mat-icon>
+    
+    <!-- Logo Preview on Hover (Desktop Only) -->
+    <div *ngIf="schoolLogoUrl && !logoError" class="logo-preview">
+      <img 
+        [src]="schoolLogoUrl" 
+        alt="Logo Preview" 
+        class="logo-preview-image" />
+    </div>
   </div>
   <span class="school-name">{{ this.schoolName | uppercase }}</span>
  </div>

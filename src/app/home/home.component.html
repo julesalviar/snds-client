@@ -4,7 +4,6 @@
 
   <div class="sections-wrapper">
     <div class="tree-section">
-
       <div class="welcome-section" >
         <h2 class="welcome-title">Welcome {{ name?.trim() ? name : 'Partners' }}</h2>
       </div>
@@ -54,7 +53,23 @@
         <!-- School Information Section - Enhanced for School Admin -->
         <div class="aip-info-detailed">
           <div class="aip-status-header">
-            <mat-icon *ngIf="isSchoolAdmin()" class="school-icon">school</mat-icon>
+            <div *ngIf="isSchoolAdmin() || isDivisionAdmin()" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
+              <img 
+                *ngIf="((isSchoolAdmin() && schoolLogoUrl) || (isDivisionAdmin() && divisionLogoUrl)) && !logoError" 
+                [src]="isSchoolAdmin() ? schoolLogoUrl : divisionLogoUrl" 
+                alt="Logo" 
+                class="school-logo"
+                (error)="onLogoError()" />
+              <mat-icon *ngIf="(isSchoolAdmin() && (!schoolLogoUrl || logoError)) || (isDivisionAdmin() && (!divisionLogoUrl || logoError))" class="school-icon">school</mat-icon>
+              
+              <!-- Logo Preview on Hover (Desktop Only) -->
+              <div *ngIf="((isSchoolAdmin() && schoolLogoUrl) || (isDivisionAdmin() && divisionLogoUrl)) && !logoError" #logoPreview class="logo-preview">
+                <img 
+                  [src]="isSchoolAdmin() ? schoolLogoUrl : divisionLogoUrl" 
+                  alt="Logo Preview" 
+                  class="logo-preview-image" />
+              </div>
+            </div>
             <div class="school-title-wrapper">
               <h3 class="school-name-title">{{ getWelcomeHeaderName() | uppercase }}</h3>
 

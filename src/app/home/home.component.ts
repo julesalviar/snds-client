@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild, ElementRef} from '@angular/core';
 import {UserService} from '../common/services/user.service';
 import {CommonModule, DecimalPipe} from '@angular/common';
 import {MatBadgeModule} from '@angular/material/badge';
@@ -38,6 +38,11 @@ export class HomeComponent implements OnInit {
   schoolName: string = '';
   schoolInfo: SchoolInfo | null = null;
   divisionName: string = '';
+  schoolLogoUrl: string | null = null;
+  divisionLogoUrl: string | null = null;
+  logoError: boolean = false;
+  @ViewChild('logoContainer') logoContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('logoPreview') logoPreview!: ElementRef<HTMLDivElement>;
 
   treeData: TreeNode[] = [];
   schoolNeedData: any[] = [];
@@ -83,7 +88,10 @@ export class HomeComponent implements OnInit {
 
   async loadInternalReferenceData() {
       await this.internalReferenceDataService.initialize();
-      this.divisionName = this.internalReferenceDataService.get('division');
+      const division = this.internalReferenceDataService.get('division');
+      this.divisionName = division?.divisionName;
+      this.divisionLogoUrl = division?.logoUrl || null;
+      this.logoError = false;
   }
 
     toggleChildren(node: TreeNode): void {
@@ -133,6 +141,8 @@ export class HomeComponent implements OnInit {
           if (page === 1 && res?.school) {
             this.schoolName = res.school.schoolName || '';
             this.schoolInfo = res.school;
+            this.schoolLogoUrl = res.school.logoUrl || null;
+            this.logoError = false;
           }
 
           if(currentData.length < size) {
@@ -154,6 +164,8 @@ export class HomeComponent implements OnInit {
           this.treeData = tree;
           this.schoolNeedData = needs.data;
           this.schoolInfo = needs.schoolInfo;
+          this.schoolLogoUrl = needs.schoolInfo?.logoUrl || null;
+          this.logoError = false;
 
           this.mapCountsToTree(needs.data);
           this.isLoading = false;
@@ -277,5 +289,21 @@ export class HomeComponent implements OnInit {
 
     navigateToAip(): void {
       this.router.navigate(['/school-admin/aip']);
+    }
+
+    onLogoError(): void {
+      this.logoError = true;
+    }
+
+    onLogoHover(event: MouseEvent): void {
+      if (this.logoContainer && this.logoPreview) {
+        const rect = this.logoContainer.nativeElement.getBoundingClientRect();
+        const preview = this.logoPreview.nativeElement;
+        const top = rect.top + rect.height / 2;
+        const left = rect.right + 16;
+        preview.style.top = `${top}px`;
+        preview.style.left = `${left}px`;
+        preview.style.transform = 'translateY(-50%)';
+      }
     }
   }

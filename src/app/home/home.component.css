@@ -95,11 +95,116 @@ h2.welcome-title {
   border: 1px solid rgba(40, 167, 69, 0.2);
 }
 
+.school-logo-container {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border: 2px solid #28a745;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.logo-preview-wrapper {
+  cursor: pointer;
+}
+
+.school-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .school-icon {
+  font-size: 20px;
+  margin: 0;
+  padding: 0;
+  align-items: center;
   color: #28a745;
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Logo Preview on Hover (Desktop Only) */
+.logo-preview {
+  position: fixed;
+  width: 200px;
+  height: 200px;
+  background-color: #ffffff !important;
+  border: 3px solid #28a745;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 10001 !important;
+  display: block;
+  isolation: isolate;
+}
+
+.logo-preview::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 12px 12px 12px 0;
+  border-color: transparent #28a745 transparent transparent;
+}
+
+.logo-preview::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 10px 10px 0;
+  border-color: transparent white transparent transparent;
+}
+
+.logo-preview-wrapper:hover .logo-preview {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+.logo-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Show preview only on desktop screens */
+@media (min-width: 769px) {
+  .logo-preview {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-preview {
+    display: none !important;
+  }
+  
+  .school-logo-container {
+    overflow: hidden;
+  }
 }
 
 .school-name {

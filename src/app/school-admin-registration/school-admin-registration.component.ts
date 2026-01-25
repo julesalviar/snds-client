@@ -102,10 +102,10 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   }
 
   private loadDivisions(): void {
-    const divisionData: string = this.internalReferenceDataService.get('division');
+    const divisionData = this.internalReferenceDataService.get('division');
 
-    if (divisionData) {
-      this.divisions = [{ 'value': divisionData, 'label': divisionData }];
+    if (divisionData && divisionData.divisionName) {
+      this.divisions = [{ 'value': divisionData.divisionName, 'label': divisionData.divisionName }];
       this.registrationForm.get('division')?.setValue(this.divisions[0].value);
     }
   }
