@@ -10,7 +10,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatDialog } from '@angular/material/dialog';
 import { SharedDataService } from '../../common/services/shared-data.service';
 import {Router, RouterModule} from "@angular/router";
-import {MatButton, MatIconButton} from "@angular/material/button";
+import {MatIconButton} from "@angular/material/button";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {SchoolNeed} from "../../common/model/school-need.model"
@@ -30,7 +30,6 @@ import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/c
     MatMenu,
     MatMenuModule,
     RouterModule,
-    MatButton,
     MatIconButton,
     MatPaginator,
     MatProgressBarModule,
@@ -54,6 +53,8 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     'actions'
   ];
   schoolName: string = '';
+  schoolLogoUrl: string | null = null;
+  logoError: boolean = false;
   pageIndex: number = 0;
   pageSize: number = 25;
   dataSource = new MatTableDataSource<SchoolNeed>();
@@ -170,6 +171,8 @@ export class ListOfSchoolNeedsComponent implements OnInit {
     this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, undefined, undefined, true).subscribe({
       next: (response) => {
         this.schoolName = response.school?.schoolName;
+        this.schoolLogoUrl = response.school?.logoUrl || null;
+        this.logoError = false;
         this.dataSource.data = response.data;
         this.totalItems = response.meta.totalItems;
         this.isLoading = false;
@@ -183,5 +186,9 @@ export class ListOfSchoolNeedsComponent implements OnInit {
 
   getEngagementStatus(schoolNeed: SchoolNeed): string {
     return schoolNeed.implementationStatus ?? 'Looking for partner';
+  }
+
+  onLogoError(): void {
+    this.logoError = true;
   }
 }

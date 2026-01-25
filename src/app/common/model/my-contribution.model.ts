@@ -4,6 +4,7 @@ export interface SchoolInfo {
   districtOrCluster: string;
   schoolName: string;
   profileDocUrl?: string;
+  logoUrl?: string;
 }
 
 export interface MyContribution {

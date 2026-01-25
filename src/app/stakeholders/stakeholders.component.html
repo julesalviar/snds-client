@@ -8,10 +8,18 @@
     </ng-container>
     <ng-template #schoolSpecificView>
       <div style="display: flex; align-items: center; gap: 16px;">
-        <p *ngIf="schoolName">
-          <mat-icon>school</mat-icon>
-          <span>{{ schoolName | uppercase }}</span>
-        </p>
+        <div *ngIf="schoolName" class="school-header">
+          <div class="school-logo-container">
+            <img 
+              *ngIf="schoolLogoUrl && !logoError" 
+              [src]="schoolLogoUrl" 
+              alt="School Logo" 
+              class="school-logo"
+              (error)="onLogoError()" />
+            <mat-icon *ngIf="!schoolLogoUrl || logoError" class="school-icon">school</mat-icon>
+          </div>
+          <span class="school-name">{{ schoolName | uppercase }}</span>
+        </div>
 
         <button mat-button [matMenuTriggerFor]="menu">
       See More <mat-icon>arrow_drop_down</mat-icon>

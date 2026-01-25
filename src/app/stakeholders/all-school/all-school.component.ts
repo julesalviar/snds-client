@@ -39,7 +39,7 @@ import { maskContactNumber } from '../../common/string-utils';
   styleUrls: ['./all-school.component.css']
 })
 export class AllSchoolComponent implements OnInit {
-  displayedColumns: string[] = ['needsIndicator', 'schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
+  displayedColumns: string[] = ['needsIndicator', 'logo', 'schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];
   schoolList: any[] = [];
   filteredSchoolList: any[] = [];
   dataSource = new MatTableDataSource<any>();
@@ -189,5 +189,9 @@ export class AllSchoolComponent implements OnInit {
 
   get userActiveRole(): string {
     return this.authService.getActiveRole();
+  }
+
+  onLogoError(school: any): void {
+    school.logoError = true;
   }
 }

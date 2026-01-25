@@ -48,6 +48,8 @@ export class StakeholdersComponent implements OnInit {
   schoolName: string = '';
   schoolLocation: string = '';
   profileDocUrl: string | null = null;
+  schoolLogoUrl: string | null = null;
+  logoError: boolean = false;
   pageIndex: number = 0;
   pageSize: number = 25;
   dataSource = new MatTableDataSource<SchoolNeed>();
@@ -117,6 +119,8 @@ export class StakeholdersComponent implements OnInit {
         this.schoolName = response.school?.schoolName;
         this.schoolLocation = response.school?.location;
         this.profileDocUrl = response.school?.profileDocUrl || null;
+        this.schoolLogoUrl = response.school?.logoUrl || null;
+        this.logoError = false;
         this.dataSource.data = response.data;
         this.totalItems = response.meta.totalItems;
         this.totalQuantity = response.meta.totalQuantity;
@@ -166,5 +170,9 @@ export class StakeholdersComponent implements OnInit {
     if (this.profileDocUrl) {
       window.open(this.profileDocUrl, '_blank');
     }
+  }
+
+  onLogoError(): void {
+    this.logoError = true;
   }
 }

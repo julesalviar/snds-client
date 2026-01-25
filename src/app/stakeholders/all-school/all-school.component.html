@@ -36,6 +36,20 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="logo">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let school">
+            <div class="school-logo-cell">
+              <img 
+                *ngIf="school.logoUrl && !school.logoError" 
+                [src]="school.logoUrl" 
+                alt="School Logo" 
+                class="school-logo-table"
+                (error)="onLogoError(school)" />
+            </div>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="schoolName">
           <th mat-header-cell *matHeaderCellDef> School Name </th>
           <td mat-cell *matCellDef="let school"> {{ school.schoolName | uppercase }} </td>

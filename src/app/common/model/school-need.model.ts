@@ -24,6 +24,7 @@ export interface SchoolInfo {
   contactNumber: string;
   designation: string;
   profileDocUrl?: string;
+  logoUrl?: string;
 }
 
 export interface SchoolNeed {

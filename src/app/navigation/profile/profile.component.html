@@ -1,30 +1,96 @@
-<div class="form-card">
+<div class="form-card" #formCard>
   <mat-card>
     <mat-card-title class="title">Edit Profile Information</mat-card-title>
     <mat-card-content>
+      <!-- Save Progress Bar -->
+      <div *ngIf="isSaving" class="saving-status-container">
+        <mat-progress-bar
+          mode="indeterminate"
+          class="save-progress-bar">
+        </mat-progress-bar>
+        <p class="saving-status-message">
+          <mat-icon>info</mat-icon>
+          <span>{{ savingStatusMessage }}</span>
+        </p>
+      </div>
+      
       <form (ngSubmit)="onUpdate()" [formGroup]="profileForm">
-        <div class="form-row">
-          <mat-form-field appearance="fill">
-            <mat-label>Region</mat-label>
-            <input formControlName="region" matInput readonly>
-          </mat-form-field>
+        <div class="form-row form-row-logo">
+          <!-- Logo Upload -->
+          <div class="logo-upload-container">
+            <label class="logo-upload-label">School Logo</label>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Division</mat-label>
-            <input formControlName="division" matInput readonly>
-          </mat-form-field>
+            <!-- Uploaded Logo Indicator -->
+            <div *ngIf="logoUrl && !selectedLogoFile" class="logo-uploaded-indicator">
+              <img [src]="logoUrl" alt="School Logo" class="logo-uploaded-image" />
+              <button mat-icon-button (click)="onRemoveLogo()" class="logo-remove-btn" title="Remove logo">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <!-- Logo Preview (replaces drop zone when file is selected) -->
+            <div *ngIf="selectedLogoFile && logoPreviewUrl" class="logo-preview-small">
+              <img [src]="logoPreviewUrl" alt="Logo preview" class="logo-preview-img-small" />
+              <button mat-icon-button (click)="removeLogoFile()" class="logo-preview-remove-btn">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <!-- Drag and Drop Zone for Logo (only shown when no logo and no selected file) -->
+            <div
+              *ngIf="!logoUrl && !selectedLogoFile"
+              class="logo-drop-zone"
+              [class.drag-over]="isDraggingLogo"
+              (dragover)="onLogoDragOver($event)"
+              (dragleave)="onLogoDragLeave($event)"
+              (drop)="onLogoDrop($event)"
+              (click)="onLogoInputClick()">
+              <input
+                #logoInput
+                type="file"
+                accept="image/*"
+                (change)="onLogoSelected($event)"
+                hidden />
+
+              <div class="logo-drop-zone-content">
+                <mat-icon class="logo-upload-icon">image</mat-icon>
+                <span class="logo-drop-text">Drop or click to upload school logo</span>
+              </div>
+            </div>
+
+            <!-- Logo Upload Progress -->
+            <mat-progress-bar
+              *ngIf="isUploadingLogo"
+              mode="determinate"
+              [value]="logoUploadProgress"
+              class="logo-upload-progress">
+            </mat-progress-bar>
+          </div>
+
+          <!-- Region, Division, and District/Cluster Column -->
+          <div class="region-division-column">
+            <mat-form-field appearance="fill">
+              <mat-label>Region</mat-label>
+              <input formControlName="region" matInput readonly>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Division</mat-label>
+              <input formControlName="division" matInput readonly>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>District / Cluster</mat-label>
+              <mat-select formControlName="districtOrCluster" required>
+                <mat-option *ngFor="let cluster of clusters" [value]="cluster">
+                  {{ cluster }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
         </div>
 
         <div class="form-row">
-          <mat-form-field appearance="fill">
-            <mat-label>District / Cluster</mat-label>
-            <mat-select formControlName="districtOrCluster" required>
-              <mat-option *ngFor="let cluster of clusters" [value]="cluster">
-                {{ cluster }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
           <mat-form-field appearance="fill">
             <mat-label>School / Learning Center Name</mat-label>
             <input formControlName="schoolName" matInput required>
@@ -84,7 +150,7 @@
 
       <!--upload school profile section-->
       <div class="upload-section">
-        <h3>Upload School Profile</h3>
+        <h3>{{ profileDocUrl ? 'School Profile Document Uploaded' : 'Upload School Profile Document' }}</h3>
 
         <!-- Uploaded Document Indicator -->
         <div *ngIf="profileDocUrl" class="uploaded-doc-indicator">
@@ -161,13 +227,13 @@
 
       <!-- Update Profile Button -->
       <div class="button-group-bottom">
-        <button mat-raised-button (click)="onCancel()" [disabled]="isUploading" class="cancel-btn">
+        <button mat-raised-button (click)="onCancel()" [disabled]="isSaving" class="cancel-btn">
           <mat-icon>cancel</mat-icon>
           <span>Cancel</span>
         </button>
-        <button color="primary" mat-raised-button (click)="onUpdate()" [disabled]="!profileForm.valid || isUploading">
-          <mat-icon *ngIf="!isUploading">save</mat-icon>
-          <span>{{ isUploading ? 'Uploading and Saving...' : 'Update Profile' }}</span>
+        <button color="primary" mat-raised-button (click)="onUpdate()" [disabled]="!profileForm.valid || isSaving">
+          <mat-icon *ngIf="!isSaving">save</mat-icon>
+          <span>{{ isSaving ? 'Saving...' : 'Update Profile' }}</span>
         </button>
       </div>
     </mat-card-content>

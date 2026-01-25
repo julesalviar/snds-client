@@ -54,7 +54,18 @@ export class ProfileComponent implements OnInit {
   uploadProgress: number = 0;
   profileDocUrl: string | null = null;
   profileDocUrlRemoved: boolean = false;
+  logoUrl: string | null = null;
+  logoUrlRemoved: boolean = false;
+  selectedLogoFile: File | null = null;
+  logoPreviewUrl: string | null = null;
+  isDraggingLogo: boolean = false;
+  isUploadingLogo: boolean = false;
+  logoUploadProgress: number = 0;
+  isSaving: boolean = false;
+  savingStatusMessage: string = '';
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('logoInput') logoInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('formCard') formCard!: ElementRef<HTMLDivElement>;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -92,14 +103,6 @@ export class ProfileComponent implements OnInit {
     await this.loadClusters();
     await this.loadSchoolOfferings();
     this.loadProfileData();
-  }
-
-  toggleUploadSection(): void {
-    this.showUploadSection = !this.showUploadSection;
-    if (!this.showUploadSection) {
-      this.selectedFile = null;
-      this.isDragging = false;
-    }
   }
 
   onFileSelected(event: Event): void {
@@ -161,39 +164,80 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  onDownload(): void {
-    console.log('Downloading school profile...');
-  }
-
   onUpdate(): void {
     if (this.profileForm.valid) {
-      const hasFile = !!this.selectedFile;
+      // Scroll to the very top of the page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Small delay to ensure scroll completes before starting save
+      setTimeout(() => {
+        this.isSaving = true;
+        const hasFile = !!this.selectedFile;
+        const hasLogoFile = !!this.selectedLogoFile;
 
-      // If a file is selected, upload it first, then update the profile
-      const uploadObservable = hasFile
-        ? this.uploadFileAndGetUrl()
-        : of(null);
+        // Set initial status message
+        if (hasFile && hasLogoFile) {
+          this.savingStatusMessage = 'Uploading document and logo...';
+        } else if (hasFile) {
+          this.savingStatusMessage = 'Uploading document...';
+        } else if (hasLogoFile) {
+          this.savingStatusMessage = 'Uploading logo...';
+        } else {
+          this.savingStatusMessage = 'Saving profile...';
+        }
 
-      uploadObservable.pipe(
-        switchMap((documentUrl) => {
-          // Prepare update payload
-          const updatePayload = { ...this.profileForm.value };
+        const documentUploadObservable = hasFile
+          ? this.uploadFileAndGetUrl()
+          : of(null);
 
-          // If we have a document URL from upload, include it in the update
-          if (documentUrl) {
-            updatePayload.profileDocUrl = documentUrl;
-            this.profileDocUrlRemoved = false; // Reset removal flag if new file uploaded
-          } else if (this.profileDocUrlRemoved) {
-            // If document was removed, set profileDocUrl to null
-            updatePayload.profileDocUrl = null;
-          }
+        const logoUploadObservable = hasLogoFile
+          ? this.uploadLogoAndGetUrl()
+          : of(null);
 
-          // Update the school profile
-          return this.schoolService.updateSchool(this.schoolId, updatePayload);
-        })
-      ).subscribe({
+        documentUploadObservable.pipe(
+          switchMap((documentUrl) => {
+            // Update status after document upload
+            if (documentUrl && hasLogoFile) {
+              this.savingStatusMessage = 'Document uploaded. Uploading logo...';
+            } else if (documentUrl) {
+              this.savingStatusMessage = 'Document uploaded. Saving profile...';
+            } else if (hasLogoFile) {
+              this.savingStatusMessage = 'Uploading logo...';
+            }
+            return logoUploadObservable.pipe(
+              switchMap((logoUrl) => {
+                // Update status after logo upload
+                if (logoUrl) {
+                  this.savingStatusMessage = 'Logo uploaded. Saving profile...';
+                } else if (documentUrl) {
+                  this.savingStatusMessage = 'Saving profile...';
+                } else {
+                  this.savingStatusMessage = 'Saving profile...';
+                }
+                const updatePayload = { ...this.profileForm.value };
+
+                if (documentUrl) {
+                  updatePayload.profileDocUrl = documentUrl;
+                  this.profileDocUrlRemoved = false;
+                } else if (this.profileDocUrlRemoved) {
+                  updatePayload.profileDocUrl = null;
+                }
+
+                if (logoUrl) {
+                  updatePayload.logoUrl = logoUrl;
+                  this.logoUrlRemoved = false;
+                } else if (this.logoUrlRemoved) {
+                  updatePayload.logoUrl = null;
+                }
+
+                return this.schoolService.updateSchool(this.schoolId, updatePayload);
+              })
+            );
+          })
+        ).subscribe({
         next: () => {
-          // Clear selected file after successful update
           if (hasFile) {
             this.selectedFile = null;
             if (this.fileInput) {
@@ -201,23 +245,51 @@ export class ProfileComponent implements OnInit {
             }
           }
 
-          // If document was removed, clear the profileDocUrl
+          if (hasLogoFile) {
+            this.selectedLogoFile = null;
+            this.logoPreviewUrl = null;
+            if (this.logoInput) {
+              this.logoInput.nativeElement.value = '';
+            }
+          }
+
           if (this.profileDocUrlRemoved) {
             this.profileDocUrl = null;
             this.profileDocUrlRemoved = false;
           }
 
-          const message = hasFile
-            ? 'Profile and document updated successfully!'
-            : this.profileDocUrlRemoved
-            ? 'Profile updated and document removed successfully!'
-            : 'Profile updated successfully!';
+          if (this.logoUrlRemoved) {
+            this.logoUrl = null;
+            this.logoUrlRemoved = false;
+          }
+
+          let message = 'Profile updated successfully!';
+          if (hasFile && hasLogoFile) {
+            message = 'Profile, document, and logo updated successfully!';
+          } else if (hasFile) {
+            message = 'Profile and document updated successfully!';
+          } else if (hasLogoFile) {
+            message = 'Profile and logo updated successfully!';
+          } else if (this.profileDocUrlRemoved && this.logoUrlRemoved) {
+            message = 'Profile updated and document and logo removed successfully!';
+          } else if (this.profileDocUrlRemoved) {
+            message = 'Profile updated and document removed successfully!';
+          } else if (this.logoUrlRemoved) {
+            message = 'Profile updated and logo removed successfully!';
+          }
+
+          this.isSaving = false;
+          this.savingStatusMessage = '';
           this.showSuccessNotification(message);
         },
         error: (err: any) => {
           console.error('Update failed', err);
           this.isUploading = false;
           this.uploadProgress = 0;
+          this.isUploadingLogo = false;
+          this.logoUploadProgress = 0;
+          this.isSaving = false;
+          this.savingStatusMessage = '';
 
           let errorMessage = 'Failed to update profile. Please try again.';
 
@@ -241,6 +313,7 @@ export class ProfileComponent implements OnInit {
           this.showErrorNotification(errorMessage);
         }
       });
+      }, 300); // 300ms delay to allow scroll animation to start
     }
   }
 
@@ -262,15 +335,42 @@ export class ProfileComponent implements OnInit {
         this.isUploading = false;
         this.uploadProgress = 100;
 
-        // Extract the document URL from the response
         const documentUrl = response?.url || response?.data?.url || response?.originalUrl || response?.data?.originalUrl;
 
         if (documentUrl) {
-          // Update local profileDocUrl immediately
           this.profileDocUrl = documentUrl;
           return of(documentUrl);
         } else {
-          // If no URL in response, return null and continue with profile update
+          return of(null);
+        }
+      })
+    );
+  }
+
+  private uploadLogoAndGetUrl(): any {
+    if (!this.selectedLogoFile) {
+      return of(null);
+    }
+
+    this.isUploadingLogo = true;
+    this.logoUploadProgress = 0;
+
+    const formData = new FormData();
+    formData.append('file', this.selectedLogoFile);
+    formData.append('category', 'school-logo');
+    formData.append('schoolId', this.schoolId);
+
+    return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
+      switchMap((response: any) => {
+        this.isUploadingLogo = false;
+        this.logoUploadProgress = 100;
+
+        const imageUrl = response?.url || response?.data?.url || response?.originalUrl || response?.data?.originalUrl;
+
+        if (imageUrl) {
+          this.logoUrl = imageUrl;
+          return of(imageUrl);
+        } else {
           return of(null);
         }
       })
@@ -314,8 +414,8 @@ export class ProfileComponent implements OnInit {
             location: data.location || ''
           });
 
-          // Load profile document URL if it exists
           this.profileDocUrl = data.profileDocUrl || null;
+          this.logoUrl = data.logoUrl || null;
         }
       })
     }
@@ -349,10 +449,8 @@ export class ProfileComponent implements OnInit {
   }
 
   onRemoveProfileDoc(): void {
-    // Mark as removed (will be cleared when profile is saved)
     this.profileDocUrlRemoved = true;
     this.profileDocUrl = null;
-    // Clear any selected file as well
     this.selectedFile = null;
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
@@ -360,14 +458,84 @@ export class ProfileComponent implements OnInit {
   }
 
   onCancel(): void {
-    // Check if there's a previous URL to go back to
     const previousUrl = this.navigationService.getPreviousUrl();
-    
+
     if (previousUrl && previousUrl.trim() !== '' && previousUrl !== '/profile') {
       this.location.back();
     } else {
-      // If no previous screen or previous screen is the same, navigate to home
       this.router.navigate(['/home']);
+    }
+  }
+
+  onLogoDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingLogo = true;
+  }
+
+  onLogoDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingLogo = false;
+  }
+
+  onLogoDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingLogo = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.handleLogoSelection(files[0]);
+    }
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.handleLogoSelection(input.files[0]);
+    }
+  }
+
+  private handleLogoSelection(file: File): void {
+    if (!file.type.startsWith('image/')) {
+      this.showErrorNotification('Invalid file type. Please select an image file.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.showErrorNotification('Image size exceeds 5MB limit. Please select a smaller image.');
+      return;
+    }
+
+    this.selectedLogoFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.logoPreviewUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  onLogoInputClick(): void {
+    this.logoInput.nativeElement.click();
+  }
+
+  removeLogoFile(): void {
+    this.selectedLogoFile = null;
+    this.logoPreviewUrl = null;
+    if (this.logoInput) {
+      this.logoInput.nativeElement.value = '';
+    }
+  }
+
+  onRemoveLogo(): void {
+    this.logoUrlRemoved = true;
+    this.logoUrl = null;
+    this.selectedLogoFile = null;
+    this.logoPreviewUrl = null;
+    if (this.logoInput) {
+      this.logoInput.nativeElement.value = '';
     }
   }
 }

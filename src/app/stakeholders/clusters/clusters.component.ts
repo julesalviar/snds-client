@@ -41,7 +41,7 @@ import { ZeroReplacePipe } from '../../common/pipes/zero-replace.pipe';
   styleUrls: ['./clusters.component.css']
 })
 export class ClustersComponent implements OnInit {
-  displayedColumns: string[] = ['schoolName', 'schoolId', 'accountableName', 'designation', 'ppasEncoded', 'ppasAccomplished', 'needsEncoded', 'needsAccomplished', 'generatedResources', 'actions'];
+  displayedColumns: string[] = ['logo', 'schoolName', 'schoolId', 'accountableName', 'designation', 'ppasEncoded', 'ppasAccomplished', 'needsEncoded', 'needsAccomplished', 'generatedResources', 'actions'];
   schoolList: any[] = [];
   filteredSchoolList: any[] = [];
   dataSource = new MatTableDataSource<any>();
@@ -153,5 +153,9 @@ export class ClustersComponent implements OnInit {
 
   noEncodedNeeds(school: any): void {
     console.log('No encoded needs for:', school);
+  }
+
+  onLogoError(school: any): void {
+    school.logoError = true;
   }
 }

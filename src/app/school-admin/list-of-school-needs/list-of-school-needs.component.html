@@ -1,5 +1,13 @@
 <div class="header">
-  <mat-icon class="school-icon">school</mat-icon>
+  <div class="school-logo-container">
+    <img 
+      *ngIf="schoolLogoUrl && !logoError" 
+      [src]="schoolLogoUrl" 
+      alt="School Logo" 
+      class="school-logo"
+      (error)="onLogoError()" />
+    <mat-icon *ngIf="!schoolLogoUrl || logoError" class="school-icon">school</mat-icon>
+  </div>
   <span class="school-name">{{ this.schoolName | uppercase }}</span>
  </div>
 
