@@ -6,7 +6,7 @@ import {Router} from '@angular/router';
 import {ReferenceDataService} from "../common/services/reference-data.service";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {AuthService} from "../auth/auth.service";
-import {forkJoin, Observable, of, switchMap} from "rxjs";
+import {BehaviorSubject, catchError, defer, forkJoin, from, map, Observable, of, shareReplay, switchMap, tap} from "rxjs";
 import {MatIcon} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {getSchoolYear} from "../common/date-utils";
@@ -18,10 +18,32 @@ import {SchoolInfo} from "../common/model/school-need.model";
 import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 
 interface TreeNode {
-    name: string;
-    children?: TreeNode[];
-    expanded?: boolean;
-    count?: number;
+  name: string;
+  children?: TreeNode[];
+  expanded?: boolean;
+  count?: number;
+}
+
+interface HomeLoadingState {
+  internalRefData: boolean;
+  schoolNeeds: boolean;
+  aipStats: boolean;
+}
+
+/** Full home view state – single source for template; use with async pipe. */
+export interface HomeState {
+  loading: HomeLoadingState;
+  name: string | undefined;
+  userRole: string | undefined;
+  treeData: TreeNode[];
+  schoolNeedData: any[];
+  schoolInfo: SchoolInfo | null;
+  divisionName: string;
+  divisionLogoUrl: string | null;
+  schoolLogoUrl: string | null;
+  logoError: boolean;
+  aipStatusStats: Map<AipStatus, number>;
+  totalAips: number;
 }
 
 @Component({
@@ -33,189 +55,240 @@ interface TreeNode {
   providers: [DecimalPipe]
 })
 export class HomeComponent implements OnInit {
-  name: string | undefined;
-  userRole: string | undefined;
-  schoolName: string = '';
-  schoolInfo: SchoolInfo | null = null;
-  divisionName: string = '';
-  schoolLogoUrl: string | null = null;
-  divisionLogoUrl: string | null = null;
-  logoError: boolean = false;
   @ViewChild('logoContainer') logoContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('logoPreview') logoPreview!: ElementRef<HTMLDivElement>;
 
-  treeData: TreeNode[] = [];
-  schoolNeedData: any[] = [];
-  isLoading: boolean = true;
-
-  // AIP Status Statistics
-  aipStatusStats: Map<AipStatus, number> = new Map();
-  totalAips: number = 0;
-  isLoadingAipStats: boolean = false;
   protected readonly UserType = UserType;
   protected readonly AIP_STATUSES = AIP_STATUSES;
 
-    constructor(
-      private readonly userService: UserService,
-      private readonly router: Router,
-      private readonly referenceDataService: ReferenceDataService,
-      private readonly internalReferenceDataService: InternalReferenceDataService,
-      private readonly schoolNeedService: SchoolNeedService,
-      private readonly authService: AuthService,
-      private readonly aipService: AipService,
-      private decimalPipe: DecimalPipe,
-    ) {
-    }
+  /** Single stream for template – use with async pipe. No manual subscriptions. */
+  readonly homeState$: Observable<HomeState>;
+
+  private readonly homeStateSubject: BehaviorSubject<HomeState>;
+
+  constructor(
+    private readonly userService: UserService,
+    private readonly router: Router,
+    private readonly referenceDataService: ReferenceDataService,
+    private readonly internalReferenceDataService: InternalReferenceDataService,
+    private readonly schoolNeedService: SchoolNeedService,
+    private readonly authService: AuthService,
+    private readonly aipService: AipService,
+    private decimalPipe: DecimalPipe,
+  ) {
+    const initial = this.getInitialState();
+    this.homeStateSubject = new BehaviorSubject(initial);
+    this.homeState$ = this.homeStateSubject.asObservable().pipe(shareReplay(1));
+  }
 
   ngOnInit(): void {
-    this.name = this.authService.getName();
-    this.userRole = this.authService.getActiveRole();
-
-    if (!this.name || !this.userRole) {
-      console.warn('User information is incomplete.');
-    }
-
-    this.loadSchoolNeeds();
-
-    // Load AIP statistics if user is schoolAdmin or divisionAdmin
-    if (this.userRole === UserType.SchoolAdmin || this.userRole === UserType.DivisionAdmin) {
-      this.loadAipStatusStatistics();
-    }
-    this.loadInternalReferenceData().then(r => {
-      // console.log('Division Name: ', this.divisionName);
+    // Pipeline pushes after each step via tap() so UI updates progressively (tree, then AIP, etc.).
+    this.buildLoadPipeline().subscribe({
+      error: (err) => console.error('Home load error:', err),
     });
   }
 
-  async loadInternalReferenceData() {
-      await this.internalReferenceDataService.initialize();
-      const division = this.internalReferenceDataService.get('division');
-      this.divisionName = division?.divisionName;
-      this.divisionLogoUrl = division?.logoUrl || null;
-      this.logoError = false;
+  private getInitialState(): HomeState {
+    const name = this.authService.getName();
+    const userRole = this.authService.getActiveRole();
+    if (!name || !userRole) console.warn('User information is incomplete.');
+    const aipStatusStats = new Map<AipStatus, number>();
+    AIP_STATUSES.forEach((s) => aipStatusStats.set(s, 0));
+    return {
+      loading: { internalRefData: true, schoolNeeds: true, aipStats: true },
+      name,
+      userRole,
+      treeData: [],
+      schoolNeedData: [],
+      schoolInfo: null,
+      divisionName: '',
+      divisionLogoUrl: null,
+      schoolLogoUrl: null,
+      logoError: false,
+      aipStatusStats,
+      totalAips: 0,
+    };
   }
 
-    toggleChildren(node: TreeNode): void {
-      if (node.children && Array.isArray(node.children)) {
-        node.expanded = !node.expanded;
-      }
+  private buildLoadPipeline(): Observable<HomeState> {
+    return defer(() => {
+      const initial = this.getInitialState();
+      return of(initial).pipe(
+        switchMap((s) =>
+          this.loadInternalRefData$(s).pipe(
+            tap((result) => this.homeStateSubject.next(result)),
+          ),
+        ),
+        switchMap((s) =>
+          this.loadSchoolNeeds$(s).pipe(
+            tap((result) => this.homeStateSubject.next(result)),
+          ),
+        ),
+        switchMap((s) =>
+          this.loadAipStatsIfNeeded$(s).pipe(
+            tap((result) => this.homeStateSubject.next(result)),
+          ),
+        ),
+      );
+    });
+  }
+
+  private loadInternalRefData$(state: HomeState): Observable<HomeState> {
+    return from(this.internalReferenceDataService.initialize()).pipe(
+      map(() => {
+        const division = this.internalReferenceDataService.get('division');
+        return {
+          ...state,
+          loading: { ...state.loading, internalRefData: false },
+          divisionName: division?.divisionName ?? '',
+          divisionLogoUrl: division?.logoUrl ?? null,
+          logoError: false,
+        };
+      }),
+      catchError((err) => {
+        console.error('Error loading internal ref:', err);
+        return of({ ...state, loading: { ...state.loading, internalRefData: false } });
+      }),
+    );
+  }
+
+  toggleChildren(state: HomeState, node: TreeNode): void {
+    if (!node.children?.length) return;
+    const next = this.toggleNodeExpanded(state.treeData, node);
+    this.homeStateSubject.next({ ...state, treeData: next });
+  }
+
+  private toggleNodeExpanded(tree: TreeNode[], target: TreeNode): TreeNode[] {
+    return tree.map((n) =>
+      n === target
+        ? { ...n, expanded: !n.expanded }
+        : n.children
+          ? { ...n, children: this.toggleNodeExpanded(n.children, target) }
+          : n,
+    );
+  }
+
+  onChildClick(child: TreeNode, state: HomeState): void {
+    const parentName = state.treeData.find((node) => node.children?.includes(child))?.name;
+    this.userService.setContribution({ name: parentName, specificContribution: child.name });
+    let path: string;
+    const queryParams: Record<string, string> = {};
+    const role = state.userRole;
+    switch (role) {
+      case 'schoolAdmin':
+        path = '/school-admin/school-needs';
+        break;
+      case 'divisionAdmin':
+        path = '/division-admin/school-needs';
+        break;
+      case 'stakeholder':
+        path = '/stakeholder/school-needs';
+        queryParams['selectedContribution'] = child.name;
+        break;
+      default:
+        path = '/guest/school-needs';
+        queryParams['selectedContribution'] = child.name;
+        if (role) console.warn(`Unknown or undefined role: ${role}`);
+        break;
     }
-
-    onChildClick(child: TreeNode): void {
-      const selectedContribution = {
-          name: this.treeData.find(node => node.children?.includes(child))?.name,
-          specificContribution: child.name
-      };
-
-      this.userService.setContribution(selectedContribution);
-      let path: string;
-      let queryParams: any = {};
-
-      switch (this.userRole) {
-        case 'schoolAdmin':
-          path = '/school-admin/school-needs';
-          break;
-        case 'divisionAdmin':
-          path = '/division-admin/school-needs';
-          break;
-        case 'stakeholder':
-          path = '/stakeholder/school-needs';
-          queryParams = { selectedContribution: child.name };
-          break;
-        default:
-          path = '/guest/school-needs';
-          queryParams = { selectedContribution: child.name };
-          console.warn(`Unknown or undefined role: ${this.userRole}`);
-          break;
-      }
-
-      this.router.navigate([path], { queryParams });
+    this.router.navigate([path], { queryParams });
   }
 
-    private fetchAllSchoolNeeds(page= 1, size = 10000, acc: any[] = []): Observable<{data: any[], schoolName: string, schoolInfo: SchoolInfo | null}> {
-      return this.schoolNeedService.getSchoolNeeds(page, size, getSchoolYear(), undefined, undefined, true).pipe(
-        switchMap(res => {
+  private loadSchoolNeeds$(state: HomeState): Observable<HomeState> {
+    return forkJoin({
+      tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
+      needs: this.fetchAllSchoolNeedsData(),
+    }).pipe(
+      map(({ tree, needs }) => {
+        const treeWithCounts = this.mapCountsToTreeData(tree, needs.data);
+        return {
+          ...state,
+          loading: { ...state.loading, schoolNeeds: false },
+          treeData: treeWithCounts,
+          schoolNeedData: needs.data,
+          schoolInfo: needs.schoolInfo,
+          schoolLogoUrl: needs.schoolInfo?.logoUrl ?? null,
+          logoError: false,
+        };
+      }),
+      catchError((err) => {
+        console.error('Error fetching school needs:', err);
+        return of({ ...state, loading: { ...state.loading, schoolNeeds: false } });
+      }),
+    );
+  }
+
+  private fetchAllSchoolNeedsData(
+    page = 1,
+    size = 10000,
+    acc: any[] = [],
+    schoolName = '',
+    schoolInfo: SchoolInfo | null = null,
+  ): Observable<{ data: any[]; schoolName: string; schoolInfo: SchoolInfo | null }> {
+    return this.schoolNeedService
+      .getSchoolNeeds(page, size, getSchoolYear(), undefined, undefined, true)
+      .pipe(
+        switchMap((res) => {
           const currentData = res?.data ?? [];
           const allData = [...acc, ...currentData];
-
-          // Capture school information from the first response
-          if (page === 1 && res?.school) {
-            this.schoolName = res.school.schoolName || '';
-            this.schoolInfo = res.school;
-            this.schoolLogoUrl = res.school.logoUrl || null;
-            this.logoError = false;
+          const sn = page === 1 && res?.school ? res.school.schoolName || '' : schoolName;
+          const si = page === 1 && res?.school ? res.school : schoolInfo;
+          if (currentData.length < size) {
+            return of({ data: allData, schoolName: sn, schoolInfo: si });
           }
+          return this.fetchAllSchoolNeedsData(page + 1, size, allData, sn, si);
+        }),
+      );
+  }
 
-          if(currentData.length < size) {
-            return of({data: allData, schoolName: this.schoolName, schoolInfo: this.schoolInfo});
-          }
-
-          return this.fetchAllSchoolNeeds(page + 1, size, allData);
-        })
-      )
-    }
-
-    private loadSchoolNeeds(): void {
-      this.isLoading = true;
-      forkJoin({
-        tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
-        needs: this.fetchAllSchoolNeeds()
-      }).subscribe({
-        next: ({ tree, needs }) => {
-          this.treeData = tree;
-          this.schoolNeedData = needs.data;
-          this.schoolInfo = needs.schoolInfo;
-          this.schoolLogoUrl = needs.schoolInfo?.logoUrl || null;
-          this.logoError = false;
-
-          this.mapCountsToTree(needs.data);
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error fetching school needs:', err);
-          this.isLoading = false;
-        }
-      })
-    }
-
-
-    private mapCountsToTree(needs: any[]): void {
-      for (const node of this.treeData) {
-
-        if(node.children) {
-          for (const child of node.children) {
-            const specificNeeds = needs.filter(
-              need => need.specificContribution === child.name
+  private mapCountsToTreeData(tree: TreeNode[], needs: any[]): TreeNode[] {
+    const out = JSON.parse(JSON.stringify(tree)) as TreeNode[];
+    for (const node of out) {
+      if (node.children) {
+        for (const child of node.children) {
+          const specificNeeds = needs.filter((n: any) => n.specificContribution === child.name);
+          let count = specificNeeds.reduce((sum: number, n: any) => {
+            const totalEngaged = (n.engagements ?? []).reduce(
+              (engAcc: number, eng: any) => engAcc + (eng.quantity ?? 0),
+              0,
             );
-
-            child.count = specificNeeds.reduce((acc, child) => {
-              const totalEngaged = (child.engagements ?? []).reduce((engAcc: number, eng: any) => engAcc + (eng.quantity ?? 0), 0);
-              return acc + (child.quantity ?? 0) - totalEngaged;
-            }, 0);
-
-            if ((child?.count ?? 0) <= 0) {
-              child.count = undefined;
-            }
-          }
+            return sum + (n.quantity ?? 0) - totalEngaged;
+          }, 0);
+          child.count = count <= 0 ? undefined : count;
         }
       }
     }
+    return out;
+  }
 
-    private loadAipStatusStatistics(): void {
-      this.isLoadingAipStats = true;
-      const schoolId = this.userRole === UserType.SchoolAdmin ? this.authService.getSchoolId() : undefined;
-
-      // Fetch all AIPs (with pagination if needed)
-      this.fetchAllAips(1, 1000, [], schoolId).subscribe({
-        next: (aips) => {
-          this.calculateAipStatusPercentages(aips);
-          this.isLoadingAipStats = false;
-        },
-        error: (err) => {
-          console.error('Error loading AIP statistics:', err);
-          this.isLoadingAipStats = false;
-        }
-      });
+  private loadAipStatsIfNeeded$(state: HomeState): Observable<HomeState> {
+    const role = state.userRole;
+    if (role !== UserType.SchoolAdmin && role !== UserType.DivisionAdmin) {
+      return of({ ...state, loading: { ...state.loading, aipStats: false } });
     }
+    const schoolId = role === UserType.SchoolAdmin ? this.authService.getSchoolId() : undefined;
+    return this.fetchAllAips(1, 1000, [], schoolId).pipe(
+      map((aips) => {
+        const stats = new Map<AipStatus, number>();
+        AIP_STATUSES.forEach((s) => stats.set(s, 0));
+        aips.forEach((aip: any) => {
+          if (aip.status && stats.has(aip.status)) {
+            stats.set(aip.status, (stats.get(aip.status) ?? 0) + 1);
+          }
+        });
+        return {
+          ...state,
+          loading: { ...state.loading, aipStats: false },
+          aipStatusStats: stats,
+          totalAips: aips.length,
+        };
+      }),
+      catchError((err) => {
+        console.error('Error loading AIP statistics:', err);
+        return of({ ...state, loading: { ...state.loading, aipStats: false } });
+      }),
+    );
+  }
 
     private fetchAllAips(page: number, size: number, acc: any[] = [], schoolId?: string): Observable<any[]> {
       return this.aipService.getAips(page, size, schoolId).pipe(
@@ -232,68 +305,55 @@ export class HomeComponent implements OnInit {
       );
     }
 
-    private calculateAipStatusPercentages(aips: any[]): void {
-      this.totalAips = aips.length;
-      this.aipStatusStats.clear();
+  getStatusPercentage(state: HomeState, status: AipStatus): number {
+    if (state.totalAips === 0) return 0;
+    const count = state.aipStatusStats.get(status) || 0;
+    return Math.round((count / state.totalAips) * 100);
+  }
 
-      // Initialize all statuses with 0
-      AIP_STATUSES.forEach(status => {
-        this.aipStatusStats.set(status, 0);
-      });
+  getStatusCountFormatted(state: HomeState, status: AipStatus): string {
+    const count = state.aipStatusStats.get(status) || 0;
+    const formattedCount = this.decimalPipe.transform(count, '1.0-2');
+    const formattedTotal = this.decimalPipe.transform(state.totalAips, '1.0-2');
+    return `${formattedCount}/${formattedTotal}`;
+  }
 
-      // Count AIPs by status
-      aips.forEach(aip => {
-        if (aip.status && this.aipStatusStats.has(aip.status)) {
-          const currentCount = this.aipStatusStats.get(aip.status) || 0;
-          this.aipStatusStats.set(aip.status, currentCount + 1);
-        }
-      });
+  isSchoolAdmin(state: HomeState): boolean {
+    return state.userRole === UserType.SchoolAdmin;
+  }
+
+  isDivisionAdmin(state: HomeState): boolean {
+    return state.userRole === UserType.DivisionAdmin;
+  }
+
+  shouldShowStats(state: HomeState): boolean {
+    return this.isSchoolAdmin(state) || this.isDivisionAdmin(state);
+  }
+
+  isHeaderLoading(state: HomeState): boolean {
+    if (this.isDivisionAdmin(state)) return state.loading.internalRefData;
+    if (this.isSchoolAdmin(state)) return state.loading.schoolNeeds;
+    return false;
+  }
+
+  getWelcomeHeaderName(state: HomeState): string {
+    switch (state.userRole) {
+      case UserType.SchoolAdmin:
+        return state.schoolInfo?.schoolName ?? '';
+      case UserType.DivisionAdmin:
+        return state.divisionName;
+      default:
+        return '-';
     }
+  }
 
-    getStatusPercentage(status: AipStatus): number {
-      if (this.totalAips === 0) return 0;
-      const count = this.aipStatusStats.get(status) || 0;
-      return Math.round((count / this.totalAips) * 100);
-    }
+  navigateToAip(): void {
+    this.router.navigate(['/school-admin/aip']);
+  }
 
-    getStatusCountFormatted(status: AipStatus): string {
-      const count = this.aipStatusStats.get(status) || 0;
-      const formattedCount = this.decimalPipe.transform(count, '1.0-2');
-      const formattedTotal = this.decimalPipe.transform(this.totalAips, '1.0-2');
-
-      return `${formattedCount}/${formattedTotal}`;
-    }
-
-    isSchoolAdmin(): boolean {
-      return this.userRole === UserType.SchoolAdmin;
-    }
-
-    isDivisionAdmin(): boolean {
-      return this.userRole === UserType.DivisionAdmin;
-    }
-
-    shouldShowStats(): boolean {
-      return this.isSchoolAdmin() || this.isDivisionAdmin();
-    }
-
-    getWelcomeHeaderName(): string {
-      switch (this.userRole) {
-        case UserType.SchoolAdmin:
-          return this.schoolInfo?.schoolName ?? '';
-        case UserType.DivisionAdmin:
-          return this.divisionName;
-        default:
-          return '-';
-      }
-    }
-
-    navigateToAip(): void {
-      this.router.navigate(['/school-admin/aip']);
-    }
-
-    onLogoError(): void {
-      this.logoError = true;
-    }
+  onLogoError(state: HomeState): void {
+    this.homeStateSubject.next({ ...state, logoError: true });
+  }
 
     onLogoHover(event: MouseEvent): void {
       if (this.logoContainer && this.logoPreview) {

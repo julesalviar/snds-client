@@ -10,19 +10,19 @@
       <div style="display: flex; align-items: center; gap: 16px;">
         <div *ngIf="schoolName" class="school-header">
           <div class="school-logo-container logo-preview-wrapper">
-            <img 
-              *ngIf="schoolLogoUrl && !logoError" 
-              [src]="schoolLogoUrl" 
-              alt="School Logo" 
+            <img
+              *ngIf="schoolLogoUrl && !logoError"
+              [src]="schoolLogoUrl"
+              alt="School Logo"
               class="school-logo"
               (error)="onLogoError()" />
             <mat-icon *ngIf="!schoolLogoUrl || logoError" class="school-icon">school</mat-icon>
-            
+
             <!-- Logo Preview on Hover (Desktop Only) -->
             <div *ngIf="schoolLogoUrl && !logoError" class="logo-preview">
-              <img 
-                [src]="schoolLogoUrl" 
-                alt="Logo Preview" 
+              <img
+                [src]="schoolLogoUrl"
+                alt="Logo Preview"
                 class="logo-preview-image" />
             </div>
           </div>
@@ -32,12 +32,12 @@
         <button mat-button [matMenuTriggerFor]="menu">
       See More <mat-icon>arrow_drop_down</mat-icon>
     </button>
-    
+
     <mat-menu #menu="matMenu">
       <button mat-menu-item (click)="viewAnnualImplementationPlan()">
         <mat-icon>visibility</mat-icon> View Annual Implementation Plan
       </button>
-      <button mat-menu-item (click)="seeSchoolLocation()">
+      <button mat-menu-item (click)="seeSchoolLocation()" [disabled]="!schoolLocation">
         <mat-icon>location_on</mat-icon> See School Location
       </button>
       <button mat-menu-item (click)="downloadSchoolProfile()" [disabled]="!profileDocUrl">

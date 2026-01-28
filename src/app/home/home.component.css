@@ -241,6 +241,13 @@ h2.welcome-title {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-loading {
+  width: 100%;
+  min-width: 120px;
 }
 
 .school-name-title {
@@ -621,6 +628,20 @@ span {
   width: 100%;
 }
 
+.aip-card-loading {
+  width: 100%;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.aip-card-values {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .aip-stats-cards-inline {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -708,4 +729,87 @@ span {
   color: #333;
   font-size: 15px;
   line-height: 1.6;
+}
+
+/* ----- Skeleton loading ----- */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-tree {
+  padding: 0;
+  margin: 16px 0 0 20px;
+  list-style: none;
+}
+
+.skeleton-tree li {
+  height: 20px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-tree li.indent {
+  margin-left: 24px;
+  max-width: calc(100% - 24px);
+}
+
+.skeleton-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.skeleton-logo {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+}
+
+.skeleton-title-bar {
+  height: 18px;
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.skeleton-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.skeleton-card-bar-sm {
+  height: 10px;
+  width: 60%;
+  border-radius: 4px;
+}
+
+.skeleton-card-bar-lg {
+  height: 20px;
+  width: 45%;
+  border-radius: 4px;
+}
+
+.skeleton-card-bar-xs {
+  height: 8px;
+  width: 55%;
+  border-radius: 4px;
 }

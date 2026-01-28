@@ -1,107 +1,120 @@
 
-<div class="container">
+<ng-container *ngIf="homeState$ | async as state">
+  <div class="container">
+    <div class="sections-wrapper">
+      <div class="tree-section">
+        <div class="welcome-section">
+          <h2 class="welcome-title">Welcome {{ state.name?.trim() ? state.name : 'Partners' }}</h2>
+        </div>
 
+        <div class="second-message">
+          <p>All the needs of our schools are given in the menu categories below.</p>
+        </div>
+        <h2>Menu of Education Investment</h2>
 
-  <div class="sections-wrapper">
-    <div class="tree-section">
-      <div class="welcome-section" >
-        <h2 class="welcome-title">Welcome {{ name?.trim() ? name : 'Partners' }}</h2>
-      </div>
+        <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
+          <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
+          <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>
+          <li class="skeleton skeleton-tree-line indent" style="width: 50%;"></li>
+          <li class="skeleton skeleton-tree-line indent" style="width: 55%;"></li>
+          <li class="skeleton skeleton-tree-line" style="width: 70%;"></li>
+          <li class="skeleton skeleton-tree-line indent" style="width: 45%;"></li>
+          <li class="skeleton skeleton-tree-line" style="width: 65%;"></li>
+          <li class="skeleton skeleton-tree-line indent" style="width: 52%;"></li>
+        </ul>
 
-      <div class="second-message">
-        <p>All the needs of our schools are given in the menu categories below.</p>
-      </div>
-      <h2>Menu of Education Investment</h2>
-
-      <div *ngIf="isLoading" class="loading-container">
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        <p>Loading school needs...</p>
-      </div>
-
-      <ul *ngIf="!isLoading">
-        <li *ngFor="let node of treeData">
-          <div (click)="toggleChildren(node)" style="cursor: pointer;">
-            <span
-              class="node-name"
-              [ngClass]="{ 'expanded-node': node.expanded }"
-              matBadgeColor="primary"
-              matBadgeOverlap="false"
-            >
-              {{ node.name }}
-            </span>
-            <span *ngIf="(node?.count ?? 0) > 0">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-            <span *ngIf="node.children && node.children.length > 0">
-              [{{ node.expanded ? '−' : '+' }}]
-            </span>
-          </div>
-          <ul *ngIf="node.expanded">
-            <li *ngFor="let child of node.children" style="list-style-type: none;">
-              <span (click)="onChildClick(child)" style="cursor: pointer;">
-                {{ child.name }}
-                <span *ngIf="child.count">
-                  <span matBadge="{{ child.count }}" matBadgeColor="primary" matBadgeOverlap="false"></span>
-                </span>
+        <ul *ngIf="!state.loading.schoolNeeds">
+          <li *ngFor="let node of state.treeData">
+            <div (click)="toggleChildren(state, node)" style="cursor: pointer;">
+              <span
+                class="node-name"
+                [ngClass]="{ 'expanded-node': node.expanded }"
+                matBadgeColor="primary"
+                matBadgeOverlap="false"
+              >
+                {{ node.name }}
               </span>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+              <span *ngIf="(node?.count ?? 0) > 0">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span *ngIf="node.children && node.children.length > 0">
+                [{{ node.expanded ? '−' : '+' }}]
+              </span>
+            </div>
+            <ul *ngIf="node.expanded">
+              <li *ngFor="let child of node.children" style="list-style-type: none;">
+                <span (click)="onChildClick(child, state)" style="cursor: pointer;">
+                  {{ child.name }}
+                  <span *ngIf="child.count">
+                    <span matBadge="{{ child.count }}" matBadgeColor="primary" matBadgeOverlap="false"></span>
+                  </span>
+                </span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
 
-    <div class="text-section">
-      <div class="welcome-header" *ngIf="shouldShowStats()" >
-        <!-- School Information Section - Enhanced for School Admin -->
-        <div class="aip-info-detailed">
-          <div class="aip-status-header">
-            <div *ngIf="isSchoolAdmin() || isDivisionAdmin()" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
-              <img 
-                *ngIf="((isSchoolAdmin() && schoolLogoUrl) || (isDivisionAdmin() && divisionLogoUrl)) && !logoError" 
-                [src]="isSchoolAdmin() ? schoolLogoUrl : divisionLogoUrl" 
-                alt="Logo" 
-                class="school-logo"
-                (error)="onLogoError()" />
-              <mat-icon *ngIf="(isSchoolAdmin() && (!schoolLogoUrl || logoError)) || (isDivisionAdmin() && (!divisionLogoUrl || logoError))" class="school-icon">school</mat-icon>
-              
-              <!-- Logo Preview on Hover (Desktop Only) -->
-              <div *ngIf="((isSchoolAdmin() && schoolLogoUrl) || (isDivisionAdmin() && divisionLogoUrl)) && !logoError" #logoPreview class="logo-preview">
-                <img 
-                  [src]="isSchoolAdmin() ? schoolLogoUrl : divisionLogoUrl" 
-                  alt="Logo Preview" 
-                  class="logo-preview-image" />
+      <div class="text-section">
+        <div class="welcome-header" *ngIf="shouldShowStats(state)">
+          <div class="aip-info-detailed">
+            <div class="aip-status-header">
+              <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
+                <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
+                <img
+                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
+                  [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                  alt="Logo"
+                  class="school-logo"
+                  (error)="onLogoError(state)" />
+                <mat-icon
+                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && (!state.schoolLogoUrl || state.logoError)) || (isDivisionAdmin(state) && (!state.divisionLogoUrl || state.logoError)))"
+                  class="school-icon">school</mat-icon>
+
+                <div
+                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
+                  #logoPreview class="logo-preview">
+                  <img
+                    [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                    alt="Logo Preview"
+                    class="logo-preview-image" />
+                </div>
+              </div>
+              <div class="school-title-wrapper">
+                <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-title-bar" aria-hidden="true"></div>
+                <h3 *ngIf="!isHeaderLoading(state)" class="school-name-title">{{ getWelcomeHeaderName(state) | uppercase }}</h3>
               </div>
             </div>
-            <div class="school-title-wrapper">
-              <h3 class="school-name-title">{{ getWelcomeHeaderName() | uppercase }}</h3>
-
-            </div>
-          </div>
-          <div class="aip-status-details" (click)="navigateToAip()" style="cursor: pointer;">
-            <div *ngIf="isLoadingAipStats" class="aip-stats-loading">
-              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-            </div>
-            <div class="school-title-subtext">AIP Project Status</div>
-            <div *ngIf="!isLoadingAipStats" class="aip-stats-cards-inline">
-              <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
-                <mat-card-content>
-                  <div class="status-title-inline">{{ status }}</div>
-                  <div class="status-percentage-inline">{{ getStatusPercentage(status) }}%</div>
-                  <div class="status-count-inline">{{ getStatusCountFormatted(status) }}</div>
-                </mat-card-content>
-              </mat-card>
+            <div class="aip-status-details" (click)="navigateToAip()" style="cursor: pointer;">
+              <div class="school-title-subtext">AIP Project Status</div>
+              <div class="aip-stats-cards-inline">
+                <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
+                  <mat-card-content>
+                    <div class="status-title-inline">{{ status }}</div>
+                    <div *ngIf="state.loading.aipStats" class="skeleton-card-content" aria-hidden="true">
+                      <div class="skeleton skeleton-card-bar-sm"></div>
+                      <div class="skeleton skeleton-card-bar-lg"></div>
+                      <div class="skeleton skeleton-card-bar-xs"></div>
+                    </div>
+                    <div *ngIf="!state.loading.aipStats" class="aip-card-values">
+                      <div class="status-percentage-inline">{{ getStatusPercentage(state, status) }}%</div>
+                      <div class="status-count-inline">{{ getStatusCountFormatted(state, status) }}</div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div *ngIf="false">
-        <h2 class="responsive-title">SENIOR HIGH SCHOOL LOOKING FOR WORK IMMERSION VENUE & WORK</h2>
-        <p>We are looking for industry partners who can provide our graduating students and Senior High School graduates with:</p>
-        <ul class="icon-list">
-          <li><span class="icon">📍</span> Work immersion venue</li>
-          <li><span class="icon">🔧</span> Work</li>
-        </ul>
-        <p>We have numerous skilled Senior High School graduates and graduating students waiting for your call.</p>
+        <div *ngIf="false">
+          <h2 class="responsive-title">SENIOR HIGH SCHOOL LOOKING FOR WORK IMMERSION VENUE & WORK</h2>
+          <p>We are looking for industry partners who can provide our graduating students and Senior High School graduates with:</p>
+          <ul class="icon-list">
+            <li><span class="icon">📍</span> Work immersion venue</li>
+            <li><span class="icon">🔧</span> Work</li>
+          </ul>
+          <p>We have numerous skilled Senior High School graduates and graduating students waiting for your call.</p>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</ng-container>
