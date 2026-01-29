@@ -115,6 +115,14 @@ export const routes: Routes = [
       {path: 'generated-resources', component: GeneratedResourcesComponent},
     ]
   },
+  { // System Admin routes
+    path: 'system-admin',
+    canActivateChild: [AuthGuard],
+    data: { roleType: UserType.SystemAdmin },
+    children: [
+      {path: 'manage-users', component: ManageUsersComponent},
+    ]
+  },
 
   // Wildcard redirect
   {path: '**', redirectTo: '/home'}

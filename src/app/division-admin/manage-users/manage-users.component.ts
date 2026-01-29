@@ -15,6 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../auth/auth.service';
 import { UserService } from '../../common/services/user.service';
 import { UserListItem } from '../../registration/user.model';
 import { UserType, getRoleLabel } from '../../registration/user-type.enum';
@@ -62,22 +63,39 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     'roles',
     'createdAt',
   ];
+
+  /** True when current user is system or systemAdmin – then system/systemAdmin role icons are shown in Roles column. */
+  get canSeeSystemRoleIcons(): boolean {
+    const role = this.authService.getActiveRole();
+    return role === UserType.System || role === UserType.SystemAdmin;
+  }
+
+  getVisibleRoles(roles: string[] | undefined): string[] {
+    if (!roles?.length) return [];
+    if (this.canSeeSystemRoleIcons) return roles;
+    const visible = [UserType.StakeHolder, UserType.SchoolAdmin, UserType.DivisionAdmin];
+    return roles.filter((r) => visible.includes(r as UserType));
+  }
+
   dataSource = new MatTableDataSource<UserListItem>([]);
   isLoading = true;
   readonly UserType = UserType;
   pageIndex = 0;
   pageSize = 25;
   pageSizeOptions = [5, 10, 25, 50, 100];
-  /** Total count from backend (for paginator). */
   totalItems = 0;
 
-  /** Filter: search (sent to backend). */
   searchTerm = '';
-  /** Filter: roles (sent to backend as roles=...). */
   selectedRoles: string[] = [];
 
-  /** Stable array so mat-select does not re-emit on every CD. */
-  readonly roleOptions: { value: string; label: string }[] = [
+  private readonly roleOptionsBase: { value: string; label: string }[] = [
+    { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
+    { value: UserType.SchoolAdmin, label: getRoleLabel(UserType.SchoolAdmin) },
+    { value: UserType.DivisionAdmin, label: getRoleLabel(UserType.DivisionAdmin) },
+  ];
+
+  /** Role filter options including system/systemAdmin (stable reference). */
+  private readonly roleOptionsWithSystem: { value: string; label: string }[] = [
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
     { value: UserType.SchoolAdmin, label: getRoleLabel(UserType.SchoolAdmin) },
     { value: UserType.DivisionAdmin, label: getRoleLabel(UserType.DivisionAdmin) },
@@ -85,11 +103,16 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     { value: UserType.System, label: getRoleLabel(UserType.System) },
   ];
 
+  get roleOptions(): { value: string; label: string }[] {
+    return this.canSeeSystemRoleIcons ? this.roleOptionsWithSystem : this.roleOptionsBase;
+  }
+
   get hasActiveFilters(): boolean {
     return this.searchTerm.trim() !== '' || this.selectedRoles.length > 0;
   }
 
   constructor(
+    private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly snackBar: MatSnackBar
   ) {}
@@ -156,15 +179,12 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** Icon for a role string (e.g. from UserType). Falls back to 'person' if unknown. */
   getRoleIcon(role: string): string {
     return ROLE_ICONS[role as UserType] ?? 'person';
   }
 
-  /** Display label for a role (e.g. "System Admin"); used as tooltip on role icons. */
   getRoleLabel = getRoleLabel;
 
-  /** Human-readable created date. */
   formatDate(value: UserListItem['createdAt']): string {
     if (value == null) return '—';
     const str = typeof value === 'string' ? value : (value as { $date?: string })?.$date;

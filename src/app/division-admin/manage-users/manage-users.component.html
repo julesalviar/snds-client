@@ -74,9 +74,9 @@
         <ng-container matColumnDef="roles">
           <th mat-header-cell *matHeaderCellDef> Roles </th>
           <td mat-cell *matCellDef="let row" class="roles-cell">
-            <ng-container *ngIf="row.roles?.length; else noRoles">
+            <ng-container *ngIf="getVisibleRoles(row.roles).length; else noRoles">
               <mat-icon
-                *ngFor="let role of row.roles"
+                *ngFor="let role of getVisibleRoles(row.roles)"
                 [matTooltip]="getRoleLabel(role)"
                 class="role-icon"
                 [attr.aria-label]="getRoleLabel(role)">{{ getRoleIcon(role) }}</mat-icon>
