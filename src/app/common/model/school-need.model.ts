@@ -13,19 +13,9 @@ export interface ProjectInfo {
   pillars: string;
 }
 
-export interface SchoolInfo {
-  _id: string;
-  division: string;
-  districtOrCluster: string;
-  schoolName: string;
-  schoolOffering: string;
-  officialEmailAddress: string;
-  accountablePerson: string;
-  contactNumber: string;
-  designation: string;
-  profileDocUrl?: string;
-  logoUrl?: string;
-}
+import { SchoolInfo } from './school.model';
+
+export { SchoolInfo } from './school.model';
 
 export interface SchoolNeed {
   _id?: string;

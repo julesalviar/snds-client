@@ -1,11 +1,4 @@
-export interface SchoolInfo {
-  _id: string;
-  division: string;
-  districtOrCluster: string;
-  schoolName: string;
-  profileDocUrl?: string;
-  logoUrl?: string;
-}
+import { SchoolInfo } from './school.model';
 
 export interface MyContribution {
   amount: number;

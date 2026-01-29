@@ -30,6 +30,7 @@ import {UserType} from './registration/user-type.enum';
 import { DpdsDataComponent } from './school-admin/dpds-data/dpds-data.component';
 import { ManageDistrictComponent } from './division-admin/manage-district/manage-district.component';
 import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
+import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -108,6 +109,7 @@ export const routes: Routes = [
       {path: 'reports', component: ReportsComponent}, //  Reports component
       {path: 'manage-district', component: ManageDistrictComponent},
       {path: 'manage-users', component: ManageUsersComponent},
+      {path: 'manage-schools', component: ManageSchoolsComponent},
       {path: 'permission-levels', component: DivisionAdminComponent},
       {path: 'open-registration', component: DivisionAdminComponent},
       {path: 'close-registration', component: DivisionAdminComponent},

@@ -1,0 +1,99 @@
+<mat-card>
+  <mat-card-title>Manage Schools</mat-card-title>
+
+  <!-- Filter Section: search + district/cluster -->
+  <div class="filter-container">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Search</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchInput()"
+        placeholder="School name, email, school ID, or accountable person">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>District / Cluster</mat-label>
+      <mat-select
+        [(value)]="selectedDistricts"
+        (selectionChange)="onDistrictChange($event.value)"
+        multiple
+        placeholder="All districts">
+        <mat-option *ngFor="let opt of districtOptions" [value]="opt">{{ opt }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button *ngIf="hasActiveFilters" mat-button color="warn" (click)="clearFilters()" class="clear-button">
+      Clear Filters
+    </button>
+  </div>
+
+  <div class="table-wrapper">
+    <div *ngIf="isLoading" class="loading" aria-hidden="true">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Loading schools…</p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+      <p class="empty-state-title">No schools found</p>
+      <p class="empty-state-message">
+        Schools in this division will appear here when the list is available.
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="manage-schools-table mat-elevation-z2">
+        <ng-container matColumnDef="logo">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row" class="logo-cell">
+            <img
+              *ngIf="row.logoUrl && !hasLogoError(row)"
+              [src]="row.logoUrl"
+              alt=""
+              class="school-logo"
+              (error)="onLogoError(row)">
+            <span *ngIf="!row.logoUrl || hasLogoError(row)" class="logo-placeholder">—</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="schoolName">
+          <th mat-header-cell *matHeaderCellDef> School Name </th>
+          <td mat-cell *matCellDef="let row">{{ row.schoolName ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="schoolId">
+          <th mat-header-cell *matHeaderCellDef> School ID </th>
+          <td mat-cell *matCellDef="let row">{{ row.schoolId ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="officialEmailAddress">
+          <th mat-header-cell *matHeaderCellDef> Email </th>
+          <td mat-cell *matCellDef="let row">{{ row.officialEmailAddress ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="accountablePerson">
+          <th mat-header-cell *matHeaderCellDef> Accountable Person </th>
+          <td mat-cell *matCellDef="let row">{{ row.accountablePerson ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="districtOrCluster">
+          <th mat-header-cell *matHeaderCellDef> District / Cluster </th>
+          <td mat-cell *matCellDef="let row">{{ row.districtOrCluster ?? '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef> Created </th>
+          <td mat-cell *matCellDef="let row">{{ formatDate(row.createdAt) }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</mat-card>

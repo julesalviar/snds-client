@@ -2,10 +2,45 @@ import {Injectable} from "@angular/core";
 import {HttpService} from "./http.service";
 import {catchError, map, Observable} from "rxjs";
 import {API_ENDPOINT} from "../api-endpoints";
+import {School} from "../model/school.model";
+
+function encodeQueryValue(value: string): string {
+  return encodeURIComponent(value).replace(/%20/g, '+');
+}
 
 @Injectable({ providedIn: 'root' })
 export class SchoolService {
   constructor(private readonly httpService: HttpService) {
+  }
+
+  listSchools(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    districtOrCluster?: string[];
+  }): Observable<{ data: School[]; totalItems: number }> {
+    const queryParams: string[] = [];
+    queryParams.push(`page=${params.page}`);
+    queryParams.push(`limit=${params.limit}`);
+    if (params.search?.trim()) {
+      queryParams.push(`search=${encodeQueryValue(params.search.trim())}`);
+    }
+    if (params.districtOrCluster?.length) {
+      params.districtOrCluster.forEach((d) => {
+        const trimmed = d?.trim();
+        if (trimmed) queryParams.push(`district=${encodeQueryValue(trimmed)}`);
+      });
+    }
+    const url = `${API_ENDPOINT.schools}?${queryParams.join('&')}`;
+    return this.httpService.get<any>(url).pipe(
+      map((res: any) => {
+        const data = Array.isArray(res) ? res : res?.data ?? [];
+        const totalItems =
+          res?.totalItems ?? res?.total ?? res?.meta?.totalItems ?? res?.meta?.total ?? data.length;
+        return { data, totalItems };
+      }),
+      catchError(this.httpService.handleError)
+    );
   }
 
   getSchools(page: number, limit: number, district?: string): Observable<any> {
