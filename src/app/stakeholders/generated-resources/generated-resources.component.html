@@ -75,14 +75,46 @@
     </button>
   </div>
 
-  <div class="table-scroll">
-    <div class="table-container">
-      <div *ngIf="isLoading" class="loading-container">
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        <p>Loading engagements...</p>
+  <div class="table-wrapper">
+    <!-- Skeleton loading: table-shaped placeholder -->
+    <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
+      <div class="skeleton-table">
+        <div class="skeleton-table-header">
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+        </div>
+        <div class="skeleton-table-row" *ngFor="let _ of [1,2,3,4,5]">
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+        </div>
       </div>
+    </div>
 
-      <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <!-- Empty state: no data -->
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+      <p class="empty-state-title">No data available</p>
+      <p class="empty-state-message">
+        There are no {{ isSchoolAdmin() ? 'quick count' : 'generated resources' }} records for the selected filters.
+        Try adjusting the school year, date range, or sector to see results.
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="generated-resources-table mat-elevation-z2">
 
         <ng-container matColumnDef="dateEngage">
           <th mat-header-cell *matHeaderCellDef> Date Engage </th>
@@ -148,35 +180,34 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
+    </div>
 
-      <!-- Total Row - Display outside table for better visibility -->
-      <div *ngIf="!isLoading" class="total-containers">
-        <div class="total-item">
-          <div class="total-info">
-            <span class="total-description">{{getTotalAmountLabel()}}</span>
-            <span class="total-label">Total No. of Stakeholder/Representative:</span>
-          </div>
-          <span class="total-value">{{getTotalStakeholderCount() | number}}</span>
+    <div *ngIf="!isLoading && totalItems > 0" class="total-containers">
+      <div class="total-item">
+        <div class="total-info">
+          <span class="total-description">{{getTotalAmountLabel()}}</span>
+          <span class="total-label">Total No. of Stakeholder/Representative:</span>
         </div>
-
-        <div class="total-item">
-          <div class="total-info">
-            <span class="total-description">{{getTotalAmountLabel()}}</span>
-            <span class="total-label">Total Amount:</span>
-          </div>
-          <span class="total-value">{{backendTotalAmount | number:'1.2-2'}}</span>
-        </div>
+        <span class="total-value">{{getTotalStakeholderCount() | number}}</span>
       </div>
 
-      <mat-paginator
-        *ngIf="!isLoading"
-        [length]="totalItems"
-        [pageSize]="pageSize"
-        [pageIndex]="pageIndex"
-        [pageSizeOptions]="[5, 10, 25, 50, 100]"
-        showFirstLastButtons
-        (page)="onPageChange($event)">
-      </mat-paginator>
+      <div class="total-item">
+        <div class="total-info">
+          <span class="total-description">{{getTotalAmountLabel()}}</span>
+          <span class="total-label">Total Amount:</span>
+        </div>
+        <span class="total-value">{{backendTotalAmount | number:'1.2-2'}}</span>
+      </div>
     </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="[5, 10, 25, 50, 100]"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
   </div>
 </mat-card>
