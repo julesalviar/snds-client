@@ -1,0 +1,82 @@
+<mat-card>
+  <mat-card-title>Manage Districts / Clusters</mat-card-title>
+
+  <div class="content-wrapper">
+    <div *ngIf="isLoading" class="loading" aria-hidden="true">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Loading districts…</p>
+    </div>
+
+    <div *ngIf="!isLoading && districts.length === 0" class="empty-state">
+      <p class="empty-state-title">No districts defined yet</p>
+      <p class="empty-state-message">
+        Add districts or clusters used across the division using the button below.
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && districts.length > 0" class="list-container">
+      <div class="list-header">
+        <p class="list-count">{{ districts.length }} {{ districts.length === 1 ? 'district' : 'districts' }}</p>
+        <div class="list-sort">
+          <button mat-icon-button
+                  (click)="sortAsc()"
+                  matTooltip="Sort A–Z"
+                  [disabled]="isSaving || districts.length < 2"
+                  aria-label="Sort A to Z">
+            <mat-icon>arrow_upward</mat-icon>
+          </button>
+          <button mat-icon-button
+                  (click)="sortDesc()"
+                  matTooltip="Sort Z–A"
+                  [disabled]="isSaving || districts.length < 2"
+                  aria-label="Sort Z to A">
+            <mat-icon>arrow_downward</mat-icon>
+          </button>
+          <button mat-icon-button
+                  (click)="resetToOriginalOrder()"
+                  matTooltip="Reset to original order"
+                  [disabled]="isSaving || districts.length < 2 || isOriginalOrder"
+                  aria-label="Reset to original order">
+            <mat-icon>restore</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="list-scroll">
+        <mat-list class="district-list">
+          <mat-list-item *ngFor="let district of districts; let i = index" class="district-item">
+            <span matListItemTitle class="district-name">{{ district }}</span>
+          <div matListItemMeta class="actions">
+            <button mat-icon-button
+                    class="action-edit"
+                    (click)="openEdit(i)"
+                    matTooltip="Edit district"
+                    [disabled]="isSaving"
+                    aria-label="Edit district">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button
+                    class="action-delete"
+                    (click)="openDelete(i)"
+                    matTooltip="Remove district"
+                    [disabled]="isSaving"
+                    aria-label="Remove district">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+
+    <div *ngIf="isSaving" class="saving-overlay">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+  </div>
+
+  <mat-card-actions>
+    <button mat-raised-button color="primary" (click)="openAdd()" [disabled]="isLoading || isSaving">
+      <mat-icon>add</mat-icon>
+      Add District / Cluster
+    </button>
+  </mat-card-actions>
+</mat-card>

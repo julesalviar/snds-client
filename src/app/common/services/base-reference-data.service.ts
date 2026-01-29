@@ -39,4 +39,9 @@ export abstract class BaseReferenceDataService {
   has(key: string): boolean {
     return Object.hasOwn(this.cache, key);
   }
+
+  /** Call after external updates so the next access refetches data. */
+  invalidate(): void {
+    this.initialized = false;
+  }
 }
