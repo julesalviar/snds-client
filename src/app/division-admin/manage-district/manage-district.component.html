@@ -1,22 +1,22 @@
 <mat-card>
   <mat-card-title>Manage Districts / Clusters</mat-card-title>
 
-  <div class="content-wrapper">
+  <div class="table-wrapper">
     <div *ngIf="isLoading" class="loading" aria-hidden="true">
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       <p>Loading districts…</p>
     </div>
 
-    <div *ngIf="!isLoading && districts.length === 0" class="empty-state">
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
       <p class="empty-state-title">No districts defined yet</p>
       <p class="empty-state-message">
         Add districts or clusters used across the division using the button below.
       </p>
     </div>
 
-    <div *ngIf="!isLoading && districts.length > 0" class="list-container">
+    <div *ngIf="!isLoading && totalItems > 0" class="list-container">
       <div class="list-header">
-        <p class="list-count">{{ districts.length }} {{ districts.length === 1 ? 'district' : 'districts' }}</p>
+        <p class="list-count">{{ totalItems }} {{ totalItems === 1 ? 'district' : 'districts' }}</p>
         <div class="list-sort">
           <button mat-icon-button
                   (click)="sortAsc()"
@@ -43,30 +43,40 @@
       </div>
       <div class="list-scroll">
         <mat-list class="district-list">
-          <mat-list-item *ngFor="let district of districts; let i = index" class="district-item">
+          <mat-list-item *ngFor="let district of paginatedDistricts; let i = index" class="district-item">
             <span matListItemTitle class="district-name">{{ district }}</span>
-          <div matListItemMeta class="actions">
-            <button mat-icon-button
-                    class="action-edit"
-                    (click)="openEdit(i)"
-                    matTooltip="Edit district"
-                    [disabled]="isSaving"
-                    aria-label="Edit district">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button
-                    class="action-delete"
-                    (click)="openDelete(i)"
-                    matTooltip="Remove district"
-                    [disabled]="isSaving"
-                    aria-label="Remove district">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
+            <div matListItemMeta class="actions">
+              <button mat-icon-button
+                      class="action-edit"
+                      (click)="openEdit(pageIndex * pageSize + i)"
+                      matTooltip="Edit district"
+                      [disabled]="isSaving"
+                      aria-label="Edit district">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button
+                      class="action-delete"
+                      (click)="openDelete(pageIndex * pageSize + i)"
+                      matTooltip="Remove district"
+                      [disabled]="isSaving"
+                      aria-label="Remove district">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
         </mat-list>
       </div>
     </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
 
     <div *ngIf="isSaving" class="saving-overlay">
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>

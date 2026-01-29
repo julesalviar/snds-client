@@ -29,6 +29,7 @@ import {ResetPasswordComponent} from "./reset-password/reset-password.component"
 import {UserType} from './registration/user-type.enum';
 import { DpdsDataComponent } from './school-admin/dpds-data/dpds-data.component';
 import { ManageDistrictComponent } from './division-admin/manage-district/manage-district.component';
+import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -106,7 +107,7 @@ export const routes: Routes = [
       {path: 'partners-support', component: DivisionAdminComponent},
       {path: 'reports', component: ReportsComponent}, //  Reports component
       {path: 'manage-district', component: ManageDistrictComponent},
-      {path: 'manage-users', component: DivisionAdminComponent},
+      {path: 'manage-users', component: ManageUsersComponent},
       {path: 'permission-levels', component: DivisionAdminComponent},
       {path: 'open-registration', component: DivisionAdminComponent},
       {path: 'close-registration', component: DivisionAdminComponent},

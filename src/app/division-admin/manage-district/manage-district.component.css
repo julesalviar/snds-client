@@ -15,7 +15,7 @@ mat-card-title {
   color: #45a049;
 }
 
-.content-wrapper {
+.table-wrapper {
   margin-top: 15px;
   width: 100%;
   max-width: 720px;
@@ -27,6 +27,16 @@ mat-card-title {
   overflow: hidden;
   position: relative;
   min-height: 120px;
+}
+
+.table-wrapper mat-paginator {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.table-wrapper mat-paginator ::ng-deep .mat-mdc-paginator-container {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 mat-card-actions {
@@ -244,7 +254,7 @@ mat-card-actions button mat-icon {
     font-size: 18px;
   }
 
-  .content-wrapper {
+  .table-wrapper {
     margin: 5px 0;
   }
 }
@@ -260,7 +270,7 @@ mat-card-actions button mat-icon {
     font-size: 16px;
   }
 
-  .content-wrapper {
+  .table-wrapper {
     margin: 5px 0;
   }
 
@@ -289,7 +299,7 @@ mat-card-actions button mat-icon {
 }
 
 @media (max-width: 435px) {
-  .content-wrapper {
+  .table-wrapper {
     margin: 5px 0;
   }
 }

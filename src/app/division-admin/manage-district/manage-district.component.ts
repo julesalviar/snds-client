@@ -8,6 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { ConfirmDeleteDialogComponent } from '../../table-button-dialog/confirm-delete-dialog/confirm-delete-dialog.component';
 import { DistrictFormDialogComponent, DistrictFormDialogData } from './district-form-dialog.component';
@@ -25,6 +26,7 @@ import { DistrictFormDialogComponent, DistrictFormDialogData } from './district-
     MatProgressBarModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatPaginatorModule,
   ],
   templateUrl: './manage-district.component.html',
   styleUrl: './manage-district.component.css',
@@ -35,6 +37,24 @@ export class ManageDistrictComponent implements OnInit {
   districtsOriginalOrder: string[] = [];
   isLoading = true;
   isSaving = false;
+  pageIndex = 0;
+  pageSize = 25;
+  pageSizeOptions = [5, 10, 25, 50, 100];
+
+  /** Districts for the current page (slice of districts). */
+  get paginatedDistricts(): string[] {
+    const start = this.pageIndex * this.pageSize;
+    return this.districts.slice(start, start + this.pageSize);
+  }
+
+  get totalItems(): number {
+    return this.districts.length;
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+  }
 
   constructor(
     @Inject(InternalReferenceDataService) private readonly internalReferenceDataService: InternalReferenceDataService,
@@ -75,8 +95,8 @@ export class ManageDistrictComponent implements OnInit {
     });
   }
 
-  openEdit(index: number): void {
-    const current = this.districts[index];
+  openEdit(globalIndex: number): void {
+    const current = this.districts[globalIndex];
     const data: DistrictFormDialogData = {
       mode: 'edit',
       name: current,
@@ -87,7 +107,7 @@ export class ManageDistrictComponent implements OnInit {
       data,
     });
     ref.afterClosed().subscribe((name: string | undefined) => {
-      if (name != null) this.updateDistrict(index, name);
+      if (name != null) this.updateDistrict(globalIndex, name);
     });
   }
 
@@ -115,8 +135,8 @@ export class ManageDistrictComponent implements OnInit {
     this.saveDistricts(next, 'List reset to original order.');
   }
 
-  openDelete(index: number): void {
-    const name = this.districts[index];
+  openDelete(globalIndex: number): void {
+    const name = this.districts[globalIndex];
     const ref = this.dialog.open(ConfirmDeleteDialogComponent, {
       width: '400px',
       data: {
@@ -125,7 +145,7 @@ export class ManageDistrictComponent implements OnInit {
       },
     });
     ref.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) this.deleteDistrict(index);
+      if (confirmed) this.deleteDistrict(globalIndex);
     });
   }
 
@@ -171,6 +191,7 @@ export class ManageDistrictComponent implements OnInit {
     try {
       await this.internalReferenceDataService.updateClusters(next);
       this.districts = [...next];
+      this.pageIndex = 0;
       if (successMessage) {
         this.showSuccessNotification(successMessage);
       }
