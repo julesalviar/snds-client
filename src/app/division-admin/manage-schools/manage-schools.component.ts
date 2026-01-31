@@ -16,7 +16,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { SchoolService } from '../../common/services/school.service';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
-import { School } from '../../common/model/school.model';
+import {MongoDate, School} from '../../common/model/school.model';
+import {formatDateString} from "../../common/date-utils";
 
 @Component({
   selector: 'app-manage-schools',
@@ -155,15 +156,7 @@ export class ManageSchoolsComponent implements OnInit, OnDestroy {
   }
 
   formatDate(value: School['createdAt']): string {
-    if (value == null) return '—';
-    const str = typeof value === 'string' ? value : (value as { $date?: string })?.$date;
-    if (!str) return '—';
-    try {
-      const d = new Date(str);
-      return isNaN(d.getTime()) ? str : d.toLocaleDateString(undefined, { dateStyle: 'medium' });
-    } catch {
-      return str;
-    }
+    return formatDateString(value);
   }
 
   private showError(message: string): void {

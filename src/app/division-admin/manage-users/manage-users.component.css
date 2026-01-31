@@ -14,14 +14,17 @@ mat-card-title {
   color: #45a049;
 }
 
+.top-actions {
+  margin-bottom: 15px;
+}
+
 /* Filter section styling (same pattern as generated-resources) */
 .filter-container {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 15px;
+  margin-top: 15px;
   padding: 10px;
-  background-color: rgba(245, 245, 245, 0.7);
   border-radius: 6px;
   gap: 10px;
 }
@@ -108,7 +111,6 @@ mat-card-title {
   border-top-right-radius: 12px;
 }
 
-/* Table alignment: same pattern as generated-resources */
 .manage-users-table {
   width: 100%;
   min-width: 720px;
@@ -145,7 +147,8 @@ mat-card-title {
 .manage-users-table .mat-cell {
   font-size: 0.875rem;
   color: #212121;
-  padding: 16px;
+  padding: 10px;
+  border: none;
   border-bottom: 1px solid #e0e0e0;
   background: #fff !important;
 }
@@ -170,20 +173,10 @@ mat-card-title {
   background: #f5f5f5 !important;
 }
 
-.manage-users-table .mat-cell {
-  font-size: 0.875rem;
-  color: #212121;
-  padding: 16px;
-  border: none;
-  border-bottom: 1px solid #e0e0e0;
-  background: #fff !important;
-}
-
 .manage-users-table tr.mat-row:hover .mat-cell {
   background: #fafafa !important;
 }
 
-/* First column (createdBy): icon only – keep narrow */
 .manage-users-table .mat-header-cell:first-child,
 .manage-users-table .mat-cell:first-child,
 .manage-users-table .mat-mdc-header-cell:first-child,
@@ -209,17 +202,77 @@ mat-card-title {
 }
 
 .roles-cell {
-  display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
+  align-content: center;
+  min-height: 0;
 }
 
 .roles-cell .role-icon {
   font-size: 20px;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
+
+.actions-cell {
+  /*display: flex;*/
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  /*width: 24px;*/
+  /*height: 24px;*/
+}
+
+/* Keep action icons compact so row height matches text columns (Material table) */
+.actions-cell .mat-mdc-icon,
+.actions-cell .mat-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+}
+.actions-cell .mat-mdc-icon-button,
+.actions-cell .mat-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.actions button {
+  margin: 0 -12px 0 0; /* overlap into 48dp touch target */
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.actions button:hover:not([disabled]) {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.actions button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.action-edit:hover:not([disabled]) {
+  background-color: rgba(69, 160, 73, 0.12);
+  color: #2e7d32;
+}
+
+.action-delete .mat-icon {
+  color: #b3261e;
+}
+
+.action-delete:hover:not([disabled]) {
+   background-color: rgba(179, 38, 30, 0.12);
+   color: #b3261e;
+ }
+
+/*.actions-cell .mat-mdc-icon-button .mat-icon,*/
+/*.actions-cell .mat-icon-button .mat-icon {*/
+/*  font-size: 20px;*/
+/*  width: 20px;*/
+/*  height: 20px;*/
+/*}*/
 
 @media (max-width: 1024px) {
   mat-card {

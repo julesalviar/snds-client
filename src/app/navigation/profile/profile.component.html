@@ -13,7 +13,7 @@
           <span>{{ savingStatusMessage }}</span>
         </p>
       </div>
-      
+
       <form (ngSubmit)="onUpdate()" [formGroup]="profileForm">
         <div class="form-row form-row-logo">
           <!-- Logo Upload -->
@@ -106,7 +106,7 @@
           <mat-form-field appearance="fill">
             <mat-label>School Offering</mat-label>
             <mat-select formControlName="schoolOffering" required>
-              <mat-option *ngFor="let offering of schoolOfferings" [value]="offering">
+              <mat-option *ngFor="let offering of schoolOfferingsList" [value]="offering">
                 {{ offering }}
               </mat-option>
             </mat-select>

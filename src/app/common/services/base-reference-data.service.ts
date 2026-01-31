@@ -24,7 +24,13 @@ export abstract class BaseReferenceDataService {
       )
     );
 
-    this.cache = data ?? {};
+    const raw = data ?? {};
+    const unwrapped = typeof raw === 'object' && raw !== null && !Array.isArray(raw) && 'data' in raw
+      ? (raw as { data: Record<string, any> }).data
+      : raw;
+    this.cache = typeof unwrapped === 'object' && unwrapped !== null && !Array.isArray(unwrapped)
+      ? unwrapped
+      : {};
     this.initialized = true;
   }
 

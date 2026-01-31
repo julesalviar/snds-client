@@ -60,6 +60,7 @@ export class UserService {
     limit: number;
     search?: string;
     roles?: string[];
+    includeReferenceAccounts?: boolean;
   }): Observable<{ data: any[]; totalItems: number }> {
     const queryParams: string[] = [];
     queryParams.push(`page=${params.page}`);
@@ -69,6 +70,9 @@ export class UserService {
     }
     if (params.roles?.length) {
       queryParams.push(`roles=${params.roles.map((r) => encodeURIComponent(r)).join(',')}`);
+    }
+    if (params.includeReferenceAccounts === true) {
+      queryParams.push('includeReferenceAccounts=true');
     }
     const url = `${API_ENDPOINT.users.list}?${queryParams.join('&')}`;
     return this.httpService.get<any>(url).pipe(

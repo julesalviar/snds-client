@@ -14,11 +14,13 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../auth/auth.service';
 import { UserService } from '../../common/services/user.service';
 import { UserListItem } from '../../registration/user.model';
 import { UserType, getRoleLabel } from '../../registration/user-type.enum';
+import {formatDateString} from "../../common/date-utils";
 
 /** Material icon name per UserType for the roles column. */
 const ROLE_ICONS: Partial<Record<UserType, string>> = {
@@ -45,6 +47,7 @@ const ROLE_ICONS: Partial<Record<UserType, string>> = {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatCheckboxModule,
     MatButtonModule,
   ],
   templateUrl: './manage-users.component.html',
@@ -62,6 +65,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     'contactNumber',
     'roles',
     'createdAt',
+    'actions',
   ];
 
   /** True when current user is system or systemAdmin – then system/systemAdmin role icons are shown in Roles column. */
@@ -87,6 +91,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
 
   searchTerm = '';
   selectedRoles: string[] = [];
+  includeReferenceAccounts = false;
 
   private readonly roleOptionsBase: { value: string; label: string }[] = [
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
@@ -108,7 +113,11 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   }
 
   get hasActiveFilters(): boolean {
-    return this.searchTerm.trim() !== '' || this.selectedRoles.length > 0;
+    return (
+      this.searchTerm.trim() !== '' ||
+      this.selectedRoles.length > 0 ||
+      this.includeReferenceAccounts
+    );
   }
 
   constructor(
@@ -148,11 +157,25 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
+  onReferenceAccountsChange(): void {
+    this.pageIndex = 0;
+    this.loadUsers();
+  }
+
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedRoles = [];
+    this.includeReferenceAccounts = false;
     this.pageIndex = 0;
     this.loadUsers();
+  }
+
+  onEdit(row: UserListItem): void {
+    // TODO: implement edit
+  }
+
+  onDelete(row: UserListItem): void {
+    // TODO: implement delete
   }
 
   loadUsers(): void {
@@ -163,6 +186,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
         limit: this.pageSize,
         search: this.searchTerm.trim() || undefined,
         roles: this.selectedRoles.length ? this.selectedRoles : undefined,
+        includeReferenceAccounts: this.includeReferenceAccounts || undefined,
       })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
@@ -186,15 +210,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   getRoleLabel = getRoleLabel;
 
   formatDate(value: UserListItem['createdAt']): string {
-    if (value == null) return '—';
-    const str = typeof value === 'string' ? value : (value as { $date?: string })?.$date;
-    if (!str) return '—';
-    try {
-      const d = new Date(str);
-      return isNaN(d.getTime()) ? str : d.toLocaleDateString(undefined, { dateStyle: 'medium' });
-    } catch {
-      return str;
-    }
+    return formatDateString(value);
   }
 
   private showError(message: string): void {
