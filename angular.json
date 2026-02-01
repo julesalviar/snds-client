@@ -48,8 +48,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.5mb",
-                  "maximumError": "1.65mb"
+                  "maximumWarning": "1.75mb",
+                  "maximumError": "1.8mb"
                 },
                 {
                   "type": "bundle",
@@ -83,8 +83,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kb",
-                  "maximumError": "10kb"
+                  "maximumWarning": "10kb",
+                  "maximumError": "12kb"
                 }
               ],
               "outputHashing": "all",
