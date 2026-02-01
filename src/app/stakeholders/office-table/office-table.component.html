@@ -1,0 +1,238 @@
+<h3 *ngIf="!isLoading" class="table-title">
+    <mat-icon>assignment_turned_in</mat-icon>PPA PLAN and ACCOMPLISHMENT PORTAL
+</h3>
+<hr>
+<div class="table-section">
+
+    <h2 *ngIf="divisionTitle && subjectTitle" class="title">
+        <mat-icon>business</mat-icon> {{ divisionTitle }} - {{ subjectTitle }}
+    </h2>
+    <hr>
+    <!-- Filter section -->
+    <div class="filter-container">
+
+        <mat-form-field appearance="outline" class="filter-field">
+    <mat-label>Year Range</mat-label>
+    <mat-select [(ngModel)]="filters.yearRange" (selectionChange)="applyFilter()">
+        <mat-option value="">-- All --</mat-option>
+        <mat-option value="2026-2027">2026-2027</mat-option>
+        <mat-option value="2027-2028">2027-2028</mat-option>
+    </mat-select>
+    </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Date Range</mat-label>
+            <mat-select [(ngModel)]="filters.dateRangeOption" (selectionChange)="updateDateRangeOption()">
+                <mat-option value="custom">Custom Range</mat-option>
+                <mat-option value="thisMonth">This Month</mat-option>
+                <mat-option value="lastMonth">Last Month</mat-option>
+                <mat-option value="thisQuarter">This Quarter</mat-option>
+                <mat-option value="lastQuarter">Last Quarter</mat-option>
+                <mat-option value="thisYear">This Year</mat-option>
+                <mat-option value="lastYear">Last Year</mat-option>
+                <mat-option value="last3Months">Last 3 Months</mat-option>
+                <mat-option value="last6Months">Last 6 Months</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <div *ngIf="isCustomRangeVisible">
+            <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Start Date</mat-label>
+                <input matInput [matDatepicker]="pickerStart" [(ngModel)]="filters.startDate" />
+                <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                <mat-datepicker #pickerStart></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>End Date</mat-label>
+                <input matInput [matDatepicker]="pickerEnd" [(ngModel)]="filters.endDate" />
+                <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                <mat-datepicker #pickerEnd></mat-datepicker>
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>5-Point Reform Agenda</mat-label>
+            <mat-select [(ngModel)]="filters.fivePointReformAgenda" (selectionChange)="applyFilter()">
+                <mat-option value="">-- All --</mat-option>
+                <mat-option value="Enabling Learning Environment">Enabling Learning Environment</mat-option>
+                <mat-option value="Teacher Welfare">Teacher Welfare</mat-option>
+                <mat-option value="Learner Well-being">Learner Well-being</mat-option>
+                <mat-option value="Efficient Learning Delivery">Efficient Learning Delivery</mat-option>
+                <mat-option value="Future-ready Workforce">Future-ready Workforce</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Project Champ Classification</mat-label>
+            <mat-select [(ngModel)]="filters.projectChampClassification" (selectionChange)="applyFilter()">
+                <mat-option value="">-- All --</mat-option>
+                <mat-option value="COACH">COACH (Welfare of Teachers)</mat-option>
+                <mat-option value="SAFE">SAFE (Well-being of Learners)</mat-option>
+                <mat-option value="GOLD">GOLD (Enabling Environment)</mat-option>
+                <mat-option value="AGILE">AGILE (Efficient Delivery of Learnings)</mat-option>
+                <mat-option value="GILAS">GILAS (Future Ready Workforce)</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Fund Source</mat-label>
+            <mat-select [(ngModel)]="filters.fundSource" (selectionChange)="applyFilter()">
+                <mat-option value="">-- All --</mat-option>
+                <mat-option value="SDO">SDO</mat-option>
+                <mat-option value="CO">CO</mat-option>
+                <mat-option value="PSF">PSF</mat-option>
+                <mat-option value="SEF">SEF</mat-option>
+                <mat-option value="Partnership">Partnership</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status of Implementation</mat-label>
+            <mat-select [(ngModel)]="filters.implementationStatus" (selectionChange)="applyFilter()">
+                <mat-option value="">-- All --</mat-option>
+                <mat-option value="For Implementation">For Implementation</mat-option>
+                <mat-option value="Ongoing">Ongoing</mat-option>
+                <mat-option value="Completed">Completed</mat-option>
+                <mat-option value="Incomplete">Incomplete</mat-option>
+                <mat-option value="Unimplemented">Unimplemented</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Timeliness</mat-label>
+            <mat-select [(ngModel)]="filters.timeliness" (selectionChange)="applyFilter()">
+                <mat-option value="">-- All --</mat-option>
+                <mat-option value="On-time">On-time</mat-option>
+                <mat-option value="Delayed">Delayed</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Clear filters button -->
+        <button mat-stroked-button color="warn" (click)="clearFilters()" class="clear-button">Clear Filters</button>
+    </div>
+<!-- Tables -->
+    <div *ngIf="isLoading" class="loading-container" style="padding: 20px; text-align: center;">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading data...</p>
+    </div>
+    <div *ngIf="!isLoading" class="table-scroll">
+        <table mat-table [dataSource]="filteredOfficeTableData" class="mat-elevation-z8">
+            <!-- Green Columns -->
+            <ng-container matColumnDef="kra">
+                <th mat-header-cell *matHeaderCellDef class="green-column">KRA</th>
+                <td mat-cell *matCellDef="let element">{{ element.kra }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="programTitle">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Program Title</th>
+                <td mat-cell *matCellDef="let element">{{ element.programTitle }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="activity">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Activity</th>
+                <td mat-cell *matCellDef="let element">{{ element.activity }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="ppaObjective">
+                <th mat-header-cell *matHeaderCellDef class="green-column">PPA Objective</th>
+                <td mat-cell *matCellDef="let element">{{ element.ppaObjective }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="fivePointReformAgenda">
+                <th mat-header-cell *matHeaderCellDef class="green-column">5-Point Reform Agenda</th>
+                <td mat-cell *matCellDef="let element">{{ element.fivePointReformAgenda }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="projectChampClassification">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Project Champ Classification</th>
+                <td mat-cell *matCellDef="let element">{{ element.projectChampClassification }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="expectedOutput">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Expected Output</th>
+                <td mat-cell *matCellDef="let element">{{ element.expectedOutput }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="dateOfImplementation">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Date of Implementation</th>
+                <td mat-cell *matCellDef="let element">{{ element.dateOfImplementation | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="budgetaryRequirements">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Budgetary Requirements</th>
+                <td mat-cell *matCellDef="let element">{{ element.budgetaryRequirements }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="materialsSupplies">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Materials & Supplies</th>
+                <td mat-cell *matCellDef="let element">{{ element.materialsSupplies }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="fundSource">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Fund Source</th>
+                <td mat-cell *matCellDef="let element">{{ element.fundSource }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="participants">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Participants</th>
+                <td mat-cell *matCellDef="let element">{{ element.participants }}</td>
+            </ng-container>
+            
+            <!-- Red Columns -->
+            <ng-container matColumnDef="supportNeededFromStakeholders">
+                <th mat-header-cell *matHeaderCellDef class="red-column">Support Needed from Stakeholders</th>
+                <td mat-cell *matCellDef="let element">{{ element.supportNeededFromStakeholders }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="supportReceivedFromStakeholders">
+                <th mat-header-cell *matHeaderCellDef class="red-column">Support Received from Stakeholders</th>
+                <td mat-cell *matCellDef="let element">{{ element.supportReceivedFromStakeholders }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="stakeholdersName">
+                <th mat-header-cell *matHeaderCellDef class="red-column">Stakeholders Name</th>
+                <td mat-cell *matCellDef="let element">{{ element.stakeholdersName }}</td>
+            </ng-container>
+
+            <!-- Blue Columns -->
+            <ng-container matColumnDef="amountUtilized">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Amount Utilized</th>
+                <td mat-cell *matCellDef="let element">{{ element.amountUtilized }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="variance">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Variance</th>
+                <td mat-cell *matCellDef="let element">{{ element.variance }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="percentageUtilization">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">% of Utilization</th>
+                <td mat-cell *matCellDef="let element">{{ element.percentageUtilization }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="implementationStatus">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Implementation Status</th>
+                <td mat-cell *matCellDef="let element">{{ element.implementationStatus }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="remarks">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Remarks</th>
+                <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="hinderingFacilitatingFactors">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Hindering/Facilitating Factors</th>
+                <td mat-cell *matCellDef="let element">{{ element.hinderingFacilitatingFactors }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="accomplishmentReport">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Accomplishment Report</th>
+                <td mat-cell *matCellDef="let element">{{ element.accomplishmentReport }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['kra', 'programTitle', 'activity', 'ppaObjective', 'fivePointReformAgenda', 'projectChampClassification', 'expectedOutput', 'dateOfImplementation', 'budgetaryRequirements', 'materialsSupplies', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'amountUtilized', 'variance', 'percentageUtilization', 'implementationStatus', 'remarks', 'hinderingFacilitatingFactors', 'accomplishmentReport']"></tr>
+            <tr mat-row *matRowDef="let row; let i = index; columns: ['kra', 'programTitle', 'activity', 'ppaObjective', 'fivePointReformAgenda', 'projectChampClassification', 'expectedOutput', 'dateOfImplementation', 'budgetaryRequirements', 'materialsSupplies', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'amountUtilized', 'variance', 'percentageUtilization', 'implementationStatus', 'remarks', 'hinderingFacilitatingFactors', 'accomplishmentReport']" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
+        </table>
+    </div>
+</div>

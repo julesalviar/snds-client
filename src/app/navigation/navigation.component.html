@@ -17,49 +17,140 @@
             <button mat-menu-item [routerLink]="['/stakeholder/all-schools']" (click)="closeMenu()">All</button>
             <button mat-menu-item [routerLink]="['/stakeholder/districts']" (click)="closeMenu()">By District</button>
           </mat-menu>
-           <!-- Office Menu for Stakeholders Account-->
-          <button mat-menu-item [matMenuTriggerFor]="guestOfficeSubmenu">Office</button>
-      <mat-menu #guestOfficeSubmenu="matMenu">
-         <button mat-menu-item [matMenuTriggerFor]="guestCurriculumImplementationDivisionSubmenu">Curriculum Implementation Division</button>
-      <mat-menu #guestCurriculumImplementationDivisionSubmenu="matMenu">
-        <button mat-menu-item (click)="closeMenu()">Araling Panlipunan</button>
-        <button mat-menu-item (click)="closeMenu()">English</button>
-        <button mat-menu-item (click)="closeMenu()">Math</button>
-        <button mat-menu-item (click)="closeMenu()">MAPEH</button>
-        <button mat-menu-item (click)="closeMenu()">Filipino</button>
-        <button mat-menu-item (click)="closeMenu()">Science</button>
-        <button mat-menu-item (click)="closeMenu()">Learning Resource Management Section</button>
-        <button mat-menu-item (click)="closeMenu()">District Instructional Supervision</button>
-        <button mat-menu-item (click)="closeMenu()">Values Education </button>
-        <button mat-menu-item (click)="closeMenu()">EPP/TLE </button>
-      </mat-menu>
+           
+          <!-- Office Menu for Stakeholders Account-->
+    <button mat-menu-item [matMenuTriggerFor]="guestOfficeSubmenu">Office</button>
+<mat-menu #guestOfficeSubmenu="matMenu">
+  <button mat-menu-item [matMenuTriggerFor]="guestCurriculumImplementationDivisionSubmenu">
+    Curriculum Implementation Division
+  </button>
+    <mat-menu #guestCurriculumImplementationDivisionSubmenu="matMenu">
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'Araling Panlipunan' }"
+            (click)="closeMenu()">Araling Panlipunan</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'English' }"
+            (click)="closeMenu()">English</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'Math' }"
+            (click)="closeMenu()">Math</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'MAPEH' }"
+            (click)="closeMenu()">MAPEH</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'Filipino' }"
+            (click)="closeMenu()">Filipino</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'Science' }"
+            (click)="closeMenu()">Science</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'Learning Resource Management Section' }"
+            (click)="closeMenu()">Learning Resource Management Section</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'District Instructional Supervision' }"
+            (click)="closeMenu()">District Instructional Supervision</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'Values Education' }"
+            (click)="closeMenu()">Values Education</button>
+      <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Curriculum Implementation Division', subject: 'EPP/TLE' }"
+            (click)="closeMenu()">EPP/TLE</button>
+  </mat-menu>
 
-         <button mat-menu-item [matMenuTriggerFor]="guestOfficeOfTheSchoolDivisionSuperintendentSubmenu">Office of the School Division Superintendent</button>
-      <mat-menu #guestOfficeOfTheSchoolDivisionSuperintendentSubmenu="matMenu">
-        <button mat-menu-item (click)="closeMenu()">Accounting</button>
-        <button mat-menu-item (click)="closeMenu()">Budget</button>
-        <button mat-menu-item (click)="closeMenu()">Cash</button>
-        <button mat-menu-item (click)="closeMenu()">General Services</button>
-        <button mat-menu-item (click)="closeMenu()">ICT</button>
-        <button mat-menu-item (click)="closeMenu()">Legal</button>
-        <button mat-menu-item (click)="closeMenu()">Personnel</button>
-        <button mat-menu-item (click)="closeMenu()">Property & Supply</button>
-        <button mat-menu-item (click)="closeMenu()">Records</button>
-      </mat-menu>
+  <button mat-menu-item [matMenuTriggerFor]="guestOfficeOfTheSchoolDivisionSuperintendentSubmenu">
+    Office of the School Division Superintendent</button>
+  
+  <mat-menu #guestOfficeOfTheSchoolDivisionSuperintendentSubmenu="matMenu">
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Accounting' }"
+            (click)="closeMenu()">Accounting</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Budget' }"
+            (click)="closeMenu()">Budget</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Cash' }"
+            (click)="closeMenu()">Cash</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'General Services' }"
+            (click)="closeMenu()">General Services</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'ICT' }"
+            (click)="closeMenu()">ICT</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Legal' }"
+            (click)="closeMenu()">Legal</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Personnel' }"
+            (click)="closeMenu()">Personnel</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Property & Supply' }"
+            (click)="closeMenu()">Property & Supply</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'Office of the School Division Superintendent', subject: 'Records' }"
+            (click)="closeMenu()">Records</button>
+  </mat-menu>
 
-        <button mat-menu-item [matMenuTriggerFor]="guestSchoolGovernanceAndOperationsDivisionSubmenu">School Governance & Operations Division</button>
-      <mat-menu #guestSchoolGovernanceAndOperationsDivisionSubmenu="matMenu">
-        <button mat-menu-item (click)="closeMenu()">Disasters Risk Reduction Management</button>
-        <button mat-menu-item (click)="closeMenu()">Education Facilities Section</button>
-        <button mat-menu-item (click)="closeMenu()">Human Resource Development Section</button>
-        <button mat-menu-item (click)="closeMenu()">Planning & Research Section</button>
-        <button mat-menu-item (click)="closeMenu()">Programs & Projects</button>
-        <button mat-menu-item (click)="closeMenu()">School Health Section</button>
-        <button mat-menu-item (click)="closeMenu()">School Management Monitoring & Evaluation Section</button>
-        <button mat-menu-item (click)="closeMenu()">Social Mobilization & Networking</button>
-        <button mat-menu-item (click)="closeMenu()">Youth Formation Development</button>
-      </mat-menu>
-      </mat-menu>
+  <button mat-menu-item [matMenuTriggerFor]="guestSchoolGovernanceAndOperationsDivisionSubmenu">
+    School Governance & Operations Division</button>
+  
+  <mat-menu #guestSchoolGovernanceAndOperationsDivisionSubmenu="matMenu">
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Disasters Risk Reduction Management' }"
+            (click)="closeMenu()">Disasters Risk Reduction Management</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Education Facilities Section' }"
+            (click)="closeMenu()">Education Facilities Section</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Human Resource Development Section' }"
+            (click)="closeMenu()">Human Resource Development Section</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Planning & Research Section' }"
+            (click)="closeMenu()">Planning & Research Section</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Programs & Projects' }"
+            (click)="closeMenu()">Programs & Projects</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'School Health Section' }"
+            (click)="closeMenu()">School Health Section</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'School Management Monitoring & Evaluation Section' }"
+            (click)="closeMenu()">School Management Monitoring & Evaluation Section</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Social Mobilization & Networking' }"
+            (click)="closeMenu()">Social Mobilization & Networking</button>
+    <button mat-menu-item 
+            [routerLink]="['/stakeholder/office-table']"
+            [queryParams]="{ division: 'School Governance & Operations Division', subject: 'Youth Formation Development' }"
+            (click)="closeMenu()">Youth Formation Development</button>
+  </mat-menu>
+</mat-menu>
       </mat-menu>
       </li>
       <li><a routerLink="about-us" (click)="closeMenu()">About  Us </a></li>

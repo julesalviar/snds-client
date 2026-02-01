@@ -1,0 +1,153 @@
+.title {
+    font-size: 1.5rem; 
+    color: #4caf50; 
+    text-align: left; 
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: bold; 
+    transition: transform 0.3s ease, color 0.3s ease; 
+}
+.title {
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2); 
+}
+mat-icon{
+    color: green
+}
+.table-title{
+    font-size: .5rem;
+    margin-bottom: 0;
+    color: #f44336;
+    text-align: center;
+    font-weight: bold;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+.table-section {
+    padding: 20px;
+}
+
+.loading-container {
+    padding: 20px;
+    text-align: center;
+}
+.filter-container{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.clear-button {
+    margin-right: 16px; 
+}
+.filter-field{
+    margin-bottom: 5px;
+    Margin-left: 10px;
+}
+.table-title {
+    font-size: 1.8rem;
+    margin: 20px 0;
+    text-align: center;
+}
+.clear-button {
+    margin-left: 10px; 
+    margin-bottom: 10px;       
+    padding: 8px 16px;      
+    font-size: 14px; 
+    color: green;
+    border: 1px solid green;            
+    border-radius: 4px; 
+    cursor: pointer;    
+    transition: background-color 0.3s ease; 
+}
+.clear-button:hover {
+    background-color: rgba(83, 235, 8, 0.942);
+    color: white;
+}
+.clear-button:hover span {
+    color: #d32f2f; 
+}
+.table-scroll {
+    overflow-x: auto; 
+}
+table {
+    width: 100%;
+    border-collapse: collapse; 
+}
+th.mat-header-cell {
+    background-color: #f2f2f2; 
+    border: 1px solid black; 
+}
+td.mat-cell {
+    border: 1px solid black; 
+}
+tr.mat-row:hover {
+    background-color: #599d55; /* Test Highlighting row on hover */
+}
+.selected-row {
+    background-color: #0e0c0c; 
+    color: white;
+}
+
+.mat-elevation-z8 {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
+}
+
+/* Column Styles */
+.green-column {
+    background-color: #4caf50 !important; 
+    color: white; 
+}
+
+.red-column {
+    background-color: #f44336 !important; 
+    color: white; 
+}
+
+.blue-column {
+    background-color: #2196F3 !important;
+    color: white; 
+}
+
+.mat-header-cell, .mat-cell {
+    padding: 12px;
+    text-align: left;
+}
+
+.table-scroll tr:hover {
+    background-color: #e4f061; 
+    color: rgb(3, 21, 9);
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.title {
+    animation: fadeIn 1s ease-in; 
+}
+
+@media (max-width: 600px) { 
+    .title {
+        font-size: 1rem; 
+        margin: 0; 
+    }
+    .table-title{
+        font-size: .5rem; 
+        margin: 15px 0;
+    }
+    .filter-container {
+        flex-direction: column; 
+        align-items: flex-start;
+    }
+
+    .clear-button {
+        margin-right: 0; 
+        margin-bottom: 8px; 
+    }
+    .filter-field{
+        width: 100%;
+    }
+    .title{
+        font-size: 1rem;
+    }
+}
+
