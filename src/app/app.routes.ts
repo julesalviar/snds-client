@@ -28,6 +28,7 @@ import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/ge
 import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 import {UserType} from './registration/user-type.enum';
 import { DpdsDataComponent } from './school-admin/dpds-data/dpds-data.component';
+import { OfficeTableComponent } from './stakeholders/office-table/office-table.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -66,6 +67,7 @@ export const routes: Routes = [
       {path: 'generated-resources', component: GeneratedResourcesComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'aip/:schoolId', component: AipComponent},
+      {path: 'office-table', component: OfficeTableComponent}
     ]
   },
 
