@@ -14,8 +14,111 @@ mat-card-title {
   color: #45a049;
 }
 
-.top-actions {
-  margin-bottom: 15px;
+/* Tab group: same bordered box with fillet as table-wrapper */
+.manage-users-tabs {
+  margin-top: 15px;
+  border-radius: 12px;
+  border: 1px solid green;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab-header {
+  background: #f5f5f5;
+  border-bottom: none;
+  min-height: 56px;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab-header .mat-mdc-tab-header-pagination {
+  display: none;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab-header .mat-mdc-tab-labels {
+  padding: 0 16px;
+  min-height: 56px;
+  align-items: stretch;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab {
+  min-width: 120px;
+  padding: 0 24px;
+  height: 56px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab .mdc-tab__content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab .mdc-tab-indicator {
+  flex: none;
+  position: relative;
+  top: auto;
+  bottom: auto;
+  margin-top: auto;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab .mdc-tab__text-label {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab:first-child .mdc-tab__text-label {
+  border-top-left-radius: 12px;
+}
+
+/* Thin, soft indicator only under active tab (no thick dark bar) */
+.manage-users-tabs ::ng-deep .mat-mdc-tab-header .mdc-tab-indicator__content--underline,
+.manage-users-tabs ::ng-deep .mat-mdc-tab-header .mdc-tab-indicator .mdc-tab-indicator__content {
+  border-top-width: 3px !important;
+  border-top-color: #45a049 !important;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab-header .mdc-tab-indicator {
+  height: 3px;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab-body-wrapper {
+  background: #fff;
+  min-height: 200px;
+}
+
+.manage-users-tabs ::ng-deep .mat-mdc-tab-body-content {
+  box-sizing: border-box;
+}
+
+.tab-content {
+  margin-top: 0;
+}
+
+/* Single box: no inner border when table-wrapper is inside the tab panel */
+.manage-users-tabs .tab-content.table-wrapper {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+/* Invite tab: inner content only (outer box is the tab panel) */
+.invite-tab {
+  padding: 0;
+}
+
+.invite-tab .invite-intro {
+  margin: 0 0 16px 0;
+  color: #616161;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 /* Filter section styling (same pattern as generated-resources) */
@@ -266,6 +369,33 @@ mat-card-title {
    background-color: rgba(179, 38, 30, 0.12);
    color: #b3261e;
  }
+
+/* Invites table: override first-child 48px rule from manage-users-table */
+.invites-table .mat-header-cell:first-child,
+.invites-table .mat-cell:first-child,
+.invites-table .mat-mdc-header-cell:first-child,
+.invites-table .mat-mdc-cell:first-child {
+  min-width: 360px;
+  max-width: none;
+  width: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.invites-table .invites-email-cell {
+  min-width: 360px;
+  width: 50%;
+}
+
+.invites-table .invites-status-cell {
+  min-width: 90px;
+  max-width: 100px;
+  text-transform: uppercase;
+}
+
+.invites-email-filter {
+  max-width: 320px;
+}
 
 /*.actions-cell .mat-mdc-icon-button .mat-icon,*/
 /*.actions-cell .mat-icon-button .mat-icon {*/

@@ -1,0 +1,46 @@
+.full-width {
+  width: 100%;
+  min-width: 280px;
+}
+
+mat-dialog-content {
+  padding-top: 8px;
+  min-height: 80px;
+}
+
+mat-dialog-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emails-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.email-row:first-child {
+  margin-top: 8px;
+}
+
+.email-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.email-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.add-email-btn {
+  align-self: flex-start;
+}
+
+.inline-spinner {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}

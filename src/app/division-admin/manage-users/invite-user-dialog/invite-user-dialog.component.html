@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Invite User</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSend()">
+    <div formArrayName="emails" class="emails-list">
+      <div *ngFor="let control of emailsArray.controls; let i = index" class="email-row">
+        <mat-form-field appearance="outline" class="email-field">
+          <mat-label>{{ emailsArray.length > 1 ? 'Email address ' + (i + 1) : 'Email address' }}</mat-label>
+          <input matInput [formControlName]="i" type="email" placeholder="user@example.com" />
+          <mat-error *ngIf="getEmailControl(i).hasError('required')">Email is required</mat-error>
+          <mat-error *ngIf="getEmailControl(i).hasError('email')">Invalid email format</mat-error>
+        </mat-form-field>
+        <button
+          *ngIf="emailsArray.length > 1"
+          mat-icon-button
+          type="button"
+          (click)="removeEmail(i)"
+          matTooltip="Remove"
+          aria-label="Remove email">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+    <button mat-button type="button" class="add-email-btn" (click)="addEmail()">
+      <mat-icon>add</mat-icon>
+      Add another email
+    </button>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSend()"
+    [disabled]="!hasValidEmails() || isSubmitting">
+    <span *ngIf="!isSubmitting">Send</span>
+    <span *ngIf="isSubmitting">
+      <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+      Sending...
+    </span>
+  </button>
+</mat-dialog-actions>

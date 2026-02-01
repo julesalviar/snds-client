@@ -26,3 +26,17 @@ export function formatDateString(value: string | MongoDate | undefined) {
     return str;
   }
 }
+
+export function formatDateTimeString(value: string | MongoDate | undefined) {
+  if (value == null) return '—';
+  const str = typeof value === 'string' ? value : (value as { $date?: string })?.$date;
+  if (!str) return '—';
+  try {
+    const d = new Date(str);
+    return isNaN(d.getTime())
+      ? str
+      : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  } catch {
+    return str;
+  }
+}

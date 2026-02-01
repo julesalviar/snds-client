@@ -16,11 +16,17 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../auth/auth.service';
 import { UserService } from '../../common/services/user.service';
+import { UserInviteService } from '../../common/services/user-invite.service';
+import { UserInvite } from '../../common/model/user-invite.model';
 import { UserListItem } from '../../registration/user.model';
 import { UserType, getRoleLabel } from '../../registration/user-type.enum';
-import {formatDateString} from "../../common/date-utils";
+import { formatDateString, formatDateTimeString } from '../../common/date-utils';
+import { InviteUserDialogComponent } from './invite-user-dialog/invite-user-dialog.component';
+import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 
 /** Material icon name per UserType for the roles column. */
 const ROLE_ICONS: Partial<Record<UserType, string>> = {
@@ -49,6 +55,7 @@ const ROLE_ICONS: Partial<Record<UserType, string>> = {
     MatSelectModule,
     MatCheckboxModule,
     MatButtonModule,
+    MatTabsModule,
   ],
   templateUrl: './manage-users.component.html',
   styleUrl: './manage-users.component.css',
@@ -56,6 +63,7 @@ const ROLE_ICONS: Partial<Record<UserType, string>> = {
 export class ManageUsersComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchSubject = new Subject<string>();
+  private readonly invitesEmailSubject = new Subject<string>();
 
   displayedColumns: string[] = [
     'createdBy',
@@ -93,6 +101,14 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   selectedRoles: string[] = [];
   includeReferenceAccounts = false;
 
+  invitesDataSource = new MatTableDataSource<UserInvite>([]);
+  invitesLoading = false;
+  invitesDisplayedColumns: string[] = ['email', 'sentAt', 'status'];
+  invitesEmailFilter = '';
+  invitesPageIndex = 0;
+  invitesPageSize = 25;
+  invitesTotalItems = 0;
+
   private readonly roleOptionsBase: { value: string; label: string }[] = [
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
     { value: UserType.SchoolAdmin, label: getRoleLabel(UserType.SchoolAdmin) },
@@ -123,7 +139,9 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly snackBar: MatSnackBar
+    private readonly userInviteService: UserInviteService,
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -133,7 +151,14 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
         this.pageIndex = 0;
         this.loadUsers();
       });
+    this.invitesEmailSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.invitesPageIndex = 0;
+        this.loadInvites();
+      });
     this.loadUsers();
+    this.loadInvites();
   }
 
   ngOnDestroy(): void {
@@ -162,6 +187,29 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
+  onInvitesEmailInput(): void {
+    this.invitesEmailSubject.next(this.invitesEmailFilter);
+  }
+
+  onInvitesPageChange(event: PageEvent): void {
+    this.invitesPageIndex = event.pageIndex;
+    this.invitesPageSize = event.pageSize;
+    this.loadInvites();
+  }
+
+  onInviteUser(): void {
+    const dialogRef = this.dialog.open(InviteUserDialogComponent, {
+      width: '400px',
+      disableClose: false,
+    });
+    dialogRef.afterClosed().subscribe((success) => {
+      if (success) {
+        this.loadInvites();
+        this.showSuccess('Invitation sent successfully.');
+      }
+    });
+  }
+
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedRoles = [];
@@ -175,7 +223,41 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   }
 
   onDelete(row: UserListItem): void {
-    // TODO: implement delete
+    const displayName = row.name || row.userName || row.email || 'this user';
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete User',
+        message: `Are you sure you want to delete ${displayName}? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.performDelete(row);
+      }
+    });
+  }
+
+  private performDelete(row: UserListItem): void {
+    const id = row._id;
+    if (!id) {
+      this.showError('Cannot delete user: missing user ID.');
+      return;
+    }
+
+    this.userService.deleteUser(id).subscribe({
+      next: () => {
+        this.showSuccess('User deleted successfully.');
+        this.loadUsers();
+      },
+      error: (err) => {
+        console.error('Failed to delete user', err);
+        this.showError(this.getErrorMessage(err, 'Failed to delete user.'));
+      },
+    });
   }
 
   loadUsers(): void {
@@ -209,13 +291,54 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
 
   getRoleLabel = getRoleLabel;
 
+  loadInvites(): void {
+    this.invitesLoading = true;
+    this.userInviteService
+      .getInvites({
+        page: this.invitesPageIndex + 1,
+        limit: this.invitesPageSize,
+        email: this.invitesEmailFilter.trim() || undefined,
+      })
+      .pipe(finalize(() => (this.invitesLoading = false)))
+      .subscribe({
+        next: (res) => {
+          this.invitesDataSource.data = res.data ?? [];
+          this.invitesTotalItems = res.meta?.totalItems ?? res.data?.length ?? 0;
+        },
+        error: (err) => {
+          console.error('Failed to load invites', err);
+          this.invitesDataSource.data = [];
+          this.invitesTotalItems = 0;
+          this.showError(this.getErrorMessage(err, 'Failed to load invites.'));
+        },
+      });
+  }
+
+  formatInviteStatus(value: string | undefined): string {
+    return value ? value.toUpperCase() : '—';
+  }
+
+  formatInviteSentAt(value: string | undefined): string {
+    return formatDateTimeString(value);
+  }
+
   formatDate(value: UserListItem['createdAt']): string {
     return formatDateString(value);
   }
 
-  private showError(message: string): void {
+  private showSuccess(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 5000,
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar'],
+    });
+  }
+
+  private showError(message: string): void {
+    const duration = message.includes('\n') ? 8000 : 5000;
+    this.snackBar.open(message, 'Close', {
+      duration,
       horizontalPosition: 'end',
       verticalPosition: 'top',
       panelClass: ['error-snackbar'],

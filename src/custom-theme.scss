@@ -44,6 +44,8 @@ $sndsapp-theme: mat.define-theme((
   @include mat.tree-theme($sndsapp-theme);
   @include mat.badge-theme($sndsapp-theme);
   @include mat.radio-theme($sndsapp-theme);
+  @include mat.checkbox-theme($sndsapp-theme);
+  @include mat.tabs-theme($sndsapp-theme);
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
