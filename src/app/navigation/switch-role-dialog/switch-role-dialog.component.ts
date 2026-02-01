@@ -82,7 +82,8 @@ export class SwitchRoleDialogComponent implements OnInit {
     const roleMap: { [key: string]: string } = {
       'stakeholder': 'Stakeholder',
       'schoolAdmin': 'School Admin',
-      'divisionAdmin': 'Division Admin'
+      'divisionAdmin': 'Division Admin',
+      'systemAdmin': 'System Admin'
     };
     return roleMap[role] || role;
   }

@@ -1,0 +1,19 @@
+.district-form {
+  min-width: 320px;
+  padding-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-content {
+  padding: 0 24px 8px;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px 24px;
+  gap: 8px;
+  min-height: 52px;
+  box-sizing: border-box;
+}

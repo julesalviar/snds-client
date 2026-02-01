@@ -46,6 +46,11 @@ export class ProfileComponent implements OnInit {
   profileForm: FormGroup;
   clusters: string[] = [];
   schoolOfferings: string[] = [];
+  private readonly emptyOfferings: string[] = [];
+  /** Safe array for *ngFor; never an object. */
+  get schoolOfferingsList(): string[] {
+    return Array.isArray(this.schoolOfferings) ? this.schoolOfferings : this.emptyOfferings;
+  }
   showUploadSection: boolean = false;
   schoolId: string = '';
   selectedFile: File | null = null;
@@ -170,7 +175,7 @@ export class ProfileComponent implements OnInit {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
-      
+
       // Small delay to ensure scroll completes before starting save
       setTimeout(() => {
         this.isSaving = true;
@@ -379,18 +384,23 @@ export class ProfileComponent implements OnInit {
 
   private async loadClusters(): Promise<void> {
     await this.internalReferenceDataService.initialize();
-
-    const clusterData: string[] = this.internalReferenceDataService.get('clusters');
-    if (clusterData) {
-      this.clusters = clusterData;
-    }
+    this.clusters = this.internalReferenceDataService.getClusters();
   }
 
   private async loadSchoolOfferings(): Promise<void> {
     await this.internalReferenceDataService.initialize();
-    const schoolOfferingData = this.referenceDataService.get('schoolOffering');
-    if (schoolOfferingData && Array.isArray(schoolOfferingData)) {
-      this.schoolOfferings = schoolOfferingData;
+    await this.referenceDataService.initialize();
+    const raw = this.referenceDataService.get<any>('schoolOffering');
+    if (Array.isArray(raw)) {
+      this.schoolOfferings = raw;
+    } else if (raw && typeof raw === 'object' && Array.isArray((raw as { value?: string[] }).value)) {
+      this.schoolOfferings = (raw as { value: string[] }).value;
+    } else if (raw && typeof raw === 'object' && Array.isArray((raw as { data?: string[] }).data)) {
+      this.schoolOfferings = (raw as { data: string[] }).data;
+    } else if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+      this.schoolOfferings = Object.values(raw).filter((v): v is string => typeof v === 'string');
+    } else {
+      this.schoolOfferings = [];
     }
   }
 

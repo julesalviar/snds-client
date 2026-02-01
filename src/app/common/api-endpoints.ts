@@ -15,6 +15,7 @@ export const API_ENDPOINT = {
   users: {
     profile: `${environment.API_URL}/users/profile`,
     changePassword: `${environment.API_URL}/users/change-password`,
+    list: `${environment.API_URL}/users`,
   },
   engagements: `${environment.API_URL}/engagements`,
   mail: {

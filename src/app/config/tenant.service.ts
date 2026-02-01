@@ -40,6 +40,10 @@ export class TenantService {
       case 'tacurong.mysnds.com':
       case 'sdotacurong.mysnds.com':
         return Tenant.TACURONG;
+      case 'davaodelsur.local' :
+      case 'davaodelsur.mysnds.com':
+      case 'sdodavaodelsur.mysnds.com':
+        return Tenant.DAVAO_DEL_SUR;
       case 'dev.local':
       case 'dev.mysnds.com':
       default:

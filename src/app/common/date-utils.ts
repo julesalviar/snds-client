@@ -1,3 +1,5 @@
+import {MongoDate} from "./model/school.model";
+
 export function getSchoolYear(offset: number = 0): string {
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -11,4 +13,16 @@ export function getSchoolYear(offset: number = 0): string {
   const endYear = startYear + 1;
 
   return `${startYear}-${endYear}`;
+}
+
+export function formatDateString(value: string | MongoDate | undefined) {
+  if (value == null) return '—';
+  const str = typeof value === 'string' ? value : (value as { $date?: string })?.$date;
+  if (!str) return '—';
+  try {
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? str : d.toLocaleDateString(undefined, {dateStyle: 'medium'});
+  } catch {
+    return str;
+  }
 }

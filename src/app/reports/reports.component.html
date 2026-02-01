@@ -20,7 +20,7 @@
       </mat-form-field>
     </form>
 
-    <h3>{{ selectedReport?.reportTemplateId?.parameters?.length ? 'Report Filters' : '' }}</h3>
+    <h3>{{ selectedReport.reportTemplateId?.parameters?.length ? 'Report Filters' : '' }}</h3>
     <form [formGroup]="form" (ngSubmit)="loadReport()">
       <div *ngFor="let param of selectedReport?.reportTemplateId?.parameters ?? []">
         <ng-container *ngIf="param.type === 'schools'; else notSchools">

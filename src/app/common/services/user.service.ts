@@ -50,6 +50,48 @@ export class UserService {
     return this.httpService.get<any[]>(url);
   }
 
+  /**
+   * List users with server-side pagination and search.
+   * GET /users?page=1&limit=25&search=john
+   * Backend returns { data: UserListItem[], totalItems?: number } or { data: [], total?: number }.
+   */
+  getUsers(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    roles?: string[];
+    includeReferenceAccounts?: boolean;
+  }): Observable<{ data: any[]; totalItems: number }> {
+    const queryParams: string[] = [];
+    queryParams.push(`page=${params.page}`);
+    queryParams.push(`limit=${params.limit}`);
+    if (params.search?.trim()) {
+      queryParams.push(`search=${encodeURIComponent(params.search.trim())}`);
+    }
+    if (params.roles?.length) {
+      queryParams.push(`roles=${params.roles.map((r) => encodeURIComponent(r)).join(',')}`);
+    }
+    if (params.includeReferenceAccounts === true) {
+      queryParams.push('includeReferenceAccounts=true');
+    }
+    const url = `${API_ENDPOINT.users.list}?${queryParams.join('&')}`;
+    return this.httpService.get<any>(url).pipe(
+      map((res: any) => {
+        const data = Array.isArray(res) ? res : res?.data ?? [];
+        const totalItems =
+          res?.totalItems ?? res?.total ?? res?.meta?.totalItems ?? res?.meta?.total ?? data.length;
+        return { data, totalItems };
+      }),
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  deleteUser(id: string): Observable<any> {
+    return this.httpService.delete(`${API_ENDPOINT.users.list}/${id}`).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
    getSchoolProfile(): any {
     const user = this.httpService.get(API_ENDPOINT.schools).pipe(
       catchError(this.httpService.handleError)

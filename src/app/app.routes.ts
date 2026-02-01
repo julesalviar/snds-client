@@ -29,6 +29,9 @@ import {ResetPasswordComponent} from "./reset-password/reset-password.component"
 import {UserType} from './registration/user-type.enum';
 import { DpdsDataComponent } from './school-admin/dpds-data/dpds-data.component';
 import { OfficeTableComponent } from './stakeholders/office-table/office-table.component';
+import { ManageDistrictComponent } from './division-admin/manage-district/manage-district.component';
+import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
+import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -106,13 +109,22 @@ export const routes: Routes = [
       {path: 'schools-by-district', component: DivisionAdminComponent},
       {path: 'partners-support', component: DivisionAdminComponent},
       {path: 'reports', component: ReportsComponent}, //  Reports component
-      {path: 'add-district', component: DivisionAdminComponent},
-      {path: 'manage-users', component: DivisionAdminComponent},
+      {path: 'manage-district', component: ManageDistrictComponent},
+      {path: 'manage-users', component: ManageUsersComponent},
+      {path: 'manage-schools', component: ManageSchoolsComponent},
       {path: 'permission-levels', component: DivisionAdminComponent},
       {path: 'open-registration', component: DivisionAdminComponent},
       {path: 'close-registration', component: DivisionAdminComponent},
       {path: 'create-partnership-link', component: DivisionAdminComponent},
       {path: 'generated-resources', component: GeneratedResourcesComponent},
+    ]
+  },
+  { // System Admin routes
+    path: 'system-admin',
+    canActivateChild: [AuthGuard],
+    data: { roleType: UserType.SystemAdmin },
+    children: [
+      {path: 'manage-users', component: ManageUsersComponent},
     ]
   },
 

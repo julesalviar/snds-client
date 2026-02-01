@@ -8,4 +8,5 @@ export enum Tenant {
   SOUTH_COTABATO = 'southcotabato',
   SULTAN_KUDARAT = 'sultankudarat',
   TACURONG = 'tacurong',
+  DAVAO_DEL_SUR = 'davaodelsur'
 }
