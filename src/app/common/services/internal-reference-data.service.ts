@@ -5,6 +5,7 @@ import { HttpService } from "./http.service";
 import { BaseReferenceDataService } from "./base-reference-data.service";
 
 const CLUSTERS_KEY = 'clusters';
+const OPEN_REGISTRATION_KEY = 'openRegistration';
 
 @Injectable({ providedIn: 'root' })
 export class InternalReferenceDataService extends BaseReferenceDataService {
@@ -39,6 +40,13 @@ export class InternalReferenceDataService extends BaseReferenceDataService {
   /** Update clusters (districts) and invalidate cache so next get refetches. */
   async updateClusters(value: string[]): Promise<void> {
     const url = `${this.getEndpoint()}/${CLUSTERS_KEY}`;
+    await firstValueFrom(this.http.put(url, { value }));
+    this.invalidate();
+  }
+
+  /** Update openRegistration and invalidate cache so next get refetches. */
+  async updateOpenRegistration(value: boolean): Promise<void> {
+    const url = `${this.getEndpoint()}/${OPEN_REGISTRATION_KEY}`;
     await firstValueFrom(this.http.put(url, { value }));
     this.invalidate();
   }

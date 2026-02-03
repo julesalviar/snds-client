@@ -1,0 +1,20 @@
+@if (isLoading) {
+  <div class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Verifying invitation token...</p>
+  </div>
+} @else if (tokenValid === true) {
+  <app-school-admin-registration></app-school-admin-registration>
+} @else {
+  <div class="invalid-container">
+    <mat-card>
+      <mat-card-title class="title">Invitation Registration</mat-card-title>
+      <mat-card-content>
+        <p class="invalid-message">
+          This invitation link is invalid or has expired. Please request a new invitation from your administrator.
+        </p>
+        <button mat-raised-button routerLink="/home">Go to Home</button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}

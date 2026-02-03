@@ -1,0 +1,21 @@
+@if (isLoading) {
+  <div class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Checking registration availability...</p>
+  </div>
+} @else if (isOpen) {
+  <app-school-admin-registration></app-school-admin-registration>
+} @else {
+  <div class="closed-container">
+    <mat-card>
+      <mat-card-title class="title">Open Registration</mat-card-title>
+      <mat-card-content>
+        <p class="closed-message">
+          Open registration has been closed. If you have any questions or need assistance,
+          please contact your administrator.
+        </p>
+        <button mat-raised-button routerLink="/home">Go to Home</button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}

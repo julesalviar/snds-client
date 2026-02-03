@@ -1,6 +1,7 @@
 export interface UserInvite {
   _id: string;
   email: string;
+  token?: string;
   sentAt: string;
   status: string;
   createdAt: string;

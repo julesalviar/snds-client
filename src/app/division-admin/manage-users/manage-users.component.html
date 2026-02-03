@@ -181,6 +181,23 @@
               <th mat-header-cell *matHeaderCellDef class="invites-status-cell">Status</th>
               <td mat-cell *matCellDef="let row" class="invites-status-cell">{{ formatInviteStatus(row.status) }}</td>
             </ng-container>
+            <ng-container matColumnDef="registrationLink">
+              <th mat-header-cell *matHeaderCellDef>Registration link</th>
+              <td mat-cell *matCellDef="let row" class="registration-link-cell">
+                <ng-container *ngIf="getInviteRegistrationLink(row); else noLink">
+                  <code class="registration-link-url">{{ getInviteRegistrationLink(row) }}</code>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    matTooltip="Copy link"
+                    aria-label="Copy registration link"
+                    (click)="copyInviteRegistrationLink(row)">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                </ng-container>
+                <ng-template #noLink>—</ng-template>
+              </td>
+            </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="invitesDisplayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: invitesDisplayedColumns;"></tr>
@@ -196,6 +213,40 @@
           showFirstLastButtons
           (page)="onInvitesPageChange($event)">
         </mat-paginator>
+      </div>
+    </mat-tab>
+    <mat-tab label="Registration Settings">
+      <div class="tab-content registration-settings">
+        <div class="registration-settings-info">
+          <mat-icon class="info-icon">info</mat-icon>
+          <p class="info-text">
+            When open registration is enabled, school administrators can self-register using the link below.
+            Share this link with schools so they can create their accounts. Turn it off to stop new registrations.
+          </p>
+        </div>
+        <div class="registration-setting-row">
+          <span class="setting-label">Open registration</span>
+          <mat-slide-toggle
+            [checked]="openRegistration"
+            [disabled]="openRegistrationUpdating"
+            (change)="onOpenRegistrationChange($event.checked)">
+            {{ openRegistration ? 'On' : 'Off' }}
+          </mat-slide-toggle>
+        </div>
+        <div class="registration-link-row">
+          <span class="link-label">Registration link</span>
+          <div class="link-value-wrap">
+            <code class="link-value">{{ openRegistrationUrl }}</code>
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Copy link"
+              aria-label="Copy registration link"
+              (click)="copyOpenRegistrationLink()">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </div>
+        </div>
       </div>
     </mat-tab>
   </mat-tab-group>

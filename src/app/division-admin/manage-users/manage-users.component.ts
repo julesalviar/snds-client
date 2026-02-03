@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -17,7 +17,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
+import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { AuthService } from '../../auth/auth.service';
 import { UserService } from '../../common/services/user.service';
 import { UserInviteService } from '../../common/services/user-invite.service';
@@ -56,6 +58,7 @@ const ROLE_ICONS: Partial<Record<UserType, string>> = {
     MatCheckboxModule,
     MatButtonModule,
     MatTabsModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './manage-users.component.html',
   styleUrl: './manage-users.component.css',
@@ -103,11 +106,14 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
 
   invitesDataSource = new MatTableDataSource<UserInvite>([]);
   invitesLoading = false;
-  invitesDisplayedColumns: string[] = ['email', 'sentAt', 'status'];
+  invitesDisplayedColumns: string[] = ['email', 'sentAt', 'status', 'registrationLink'];
   invitesEmailFilter = '';
   invitesPageIndex = 0;
   invitesPageSize = 25;
   invitesTotalItems = 0;
+
+  openRegistration = false;
+  openRegistrationUpdating = false;
 
   private readonly roleOptionsBase: { value: string; label: string }[] = [
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
@@ -137,12 +143,36 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   }
 
   constructor(
+    @Inject(DOCUMENT) private readonly document: Document,
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly userInviteService: UserInviteService,
+    private readonly internalReferenceDataService: InternalReferenceDataService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog
   ) {}
+
+  /** Full URL for the public open registration page. */
+  get openRegistrationUrl(): string {
+    const origin = this.document?.defaultView?.location?.origin;
+    return origin ? `${origin}/open-registration` : '';
+  }
+
+  /** Registration link for an invite (close-registration with token). */
+  getInviteRegistrationLink(invite: UserInvite): string {
+    if (!invite?.token) return '';
+    const origin = this.document?.defaultView?.location?.origin;
+    return origin ? `${origin}/close-registration?token=${encodeURIComponent(invite.token)}` : '';
+  }
+
+  copyInviteRegistrationLink(invite: UserInvite): void {
+    const url = this.getInviteRegistrationLink(invite);
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(
+      () => this.snackBar.open('Registration link copied', 'Close', { duration: 3000 }),
+      () => this.snackBar.open('Failed to copy link', 'Close', { duration: 3000 })
+    );
+  }
 
   ngOnInit(): void {
     this.searchSubject
@@ -159,6 +189,83 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
       });
     this.loadUsers();
     this.loadInvites();
+    this.internalReferenceDataService.initialize().then(() => {
+      this.openRegistration = this.parseOpenRegistration(
+        this.internalReferenceDataService.get<unknown>('openRegistration')
+      );
+    });
+  }
+
+  private parseOpenRegistration(raw: unknown): boolean {
+    if (raw === true || raw === 'true') return true;
+    if (raw === false || raw === 'false') return false;
+    if (raw && typeof raw === 'object' && 'value' in raw) {
+      const val = (raw as { value: unknown }).value;
+      return val === true || val === 'true';
+    }
+    return false;
+  }
+
+  onOpenRegistrationChange(checked: boolean): void {
+    this.openRegistrationUpdating = true;
+    this.internalReferenceDataService
+      .updateOpenRegistration(checked)
+      .then(() => {
+        this.openRegistration = checked;
+        this.showSuccess(
+          checked ? 'Open registration enabled.' : 'Open registration disabled.'
+        );
+      })
+      .catch((err) => {
+        console.error('Failed to update open registration', err);
+        this.showError(
+          this.getErrorMessage(err, 'Failed to update open registration.')
+        );
+      })
+      .finally(() => {
+        this.openRegistrationUpdating = false;
+      });
+  }
+
+  copyOpenRegistrationLink(): void {
+    const url = this.openRegistrationUrl;
+    if (!url) {
+      this.showError('Registration link is not available.');
+      return;
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(
+        () => this.showSuccess('Registration link copied to clipboard.'),
+        () => this.fallbackCopyToClipboard(url)
+      );
+    } else {
+      this.fallbackCopyToClipboard(url);
+    }
+  }
+
+  /** Fallback for non-secure contexts (e.g. HTTP) where navigator.clipboard is not available. */
+  private fallbackCopyToClipboard(text: string): void {
+    const doc = this.document;
+    const textarea = doc.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    doc.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      const ok = doc.execCommand('copy');
+      if (ok) {
+        this.showSuccess('Registration link copied to clipboard.');
+      } else {
+        this.showError('Failed to copy link.');
+      }
+    } catch {
+      this.showError('Failed to copy link.');
+    } finally {
+      doc.body.removeChild(textarea);
+    }
   }
 
   ngOnDestroy(): void {

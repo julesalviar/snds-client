@@ -111,10 +111,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
   }
 
   private loadClusters(): void {
-    const clusterData: string[] = this.internalReferenceDataService.get('clusters');
-    if (clusterData) {
-      this.clusters = clusterData;
-    }
+    this.clusters = this.internalReferenceDataService.getClusters();
   }
 
   passwordMatchValidator(form: FormGroup): ValidationErrors | null {

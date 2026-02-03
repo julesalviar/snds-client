@@ -100,6 +100,78 @@ mat-card-title {
   margin-top: 0;
 }
 
+.registration-settings {
+  padding: 24px 16px;
+}
+
+.registration-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.registration-setting-row .setting-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #424242;
+}
+
+.registration-settings-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+}
+
+.registration-settings-info .info-icon {
+  flex-shrink: 0;
+  color: #2e7d32;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.registration-settings-info .info-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1b5e20;
+}
+
+.registration-link-row {
+  margin-top: 20px;
+}
+
+.registration-link-row .link-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #616161;
+  margin-bottom: 8px;
+}
+
+.registration-link-row .link-value-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+}
+
+.registration-link-row .link-value {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  word-break: break-all;
+  color: #212121;
+}
+
 /* Single box: no inner border when table-wrapper is inside the tab panel */
 .manage-users-tabs .tab-content.table-wrapper {
   border: none;
@@ -391,6 +463,24 @@ mat-card-title {
   min-width: 90px;
   max-width: 100px;
   text-transform: uppercase;
+}
+
+.registration-link-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /*max-width: 320px;*/
+}
+
+.registration-link-cell .registration-link-url {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.registration-link-cell .mat-icon-button {
+  flex-shrink: 0;
 }
 
 .invites-email-filter {

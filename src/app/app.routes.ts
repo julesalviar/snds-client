@@ -1,7 +1,6 @@
 import {Routes} from '@angular/router';
 import {SignInComponent} from './sign-in/sign-in.component';
 import {RegistrationComponent} from './registration/registration.component';
-import {SchoolAdminRegistrationComponent} from './school-admin-registration/school-admin-registration.component';
 import {HomeComponent} from './home/home.component';
 import {StakeholdersComponent} from './stakeholders/stakeholders.component';
 import {SchoolAdminComponent} from './school-admin/school-admin.component';
@@ -32,13 +31,16 @@ import { OfficeTableComponent } from './stakeholders/office-table/office-table.c
 import { ManageDistrictComponent } from './division-admin/manage-district/manage-district.component';
 import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
+import { OpenRegistrationComponent } from './open-registration/open-registration.component';
+import { CloseRegistrationComponent } from './close-registration/close-registration.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
   {path: 'sign-in', component: SignInComponent},
   {path: 'register', component: RegistrationComponent},
+  {path: 'open-registration', component: OpenRegistrationComponent},
+  {path: 'close-registration', component: CloseRegistrationComponent},
   {path: 'reset-password', component: ResetPasswordComponent},
-  {path: 'school-admin-registration', component: SchoolAdminRegistrationComponent},
   {
     path: 'home',
     component: HomeComponent,

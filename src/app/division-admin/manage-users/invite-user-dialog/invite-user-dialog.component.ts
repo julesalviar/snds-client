@@ -21,6 +21,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserInviteService } from '../../../common/services/user-invite.service';
 
+const MAX_EMAILS = 10;
+
 @Component({
   selector: 'app-invite-user-dialog',
   standalone: true,
@@ -42,6 +44,7 @@ import { UserInviteService } from '../../../common/services/user-invite.service'
 export class InviteUserDialogComponent {
   form: FormGroup;
   isSubmitting = false;
+  readonly maxEmails = MAX_EMAILS;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -75,9 +78,14 @@ export class InviteUserDialogComponent {
   }
 
   addEmail(): void {
+    if (this.emailsArray.length >= this.maxEmails) return;
     this.emailsArray.push(
       this.fb.control('', [this.emailValidator()]) // optional for additional fields
     );
+  }
+
+  get canAddMoreEmails(): boolean {
+    return this.emailsArray.length < this.maxEmails;
   }
 
   removeEmail(index: number): void {

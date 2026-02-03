@@ -20,10 +20,19 @@
         </button>
       </div>
     </div>
-    <button mat-button type="button" class="add-email-btn" (click)="addEmail()">
-      <mat-icon>add</mat-icon>
-      Add another email
-    </button>
+    <div class="add-email-wrapper">
+      <button
+        mat-button
+        type="button"
+        class="add-email-btn"
+        (click)="addEmail()"
+        [disabled]="!canAddMoreEmails">
+        <mat-icon>add</mat-icon>
+        Add another email
+      </button>
+      <span *ngIf="!canAddMoreEmails" class="inline-error">Maximum of 10 emails per invite reached.</span>
+      <span class="invite-hint">You can invite up to 10 people per invite. You may send another invite after this to invite more.</span>
+    </div>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

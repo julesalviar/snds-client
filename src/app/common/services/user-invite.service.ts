@@ -5,6 +5,10 @@ import { HttpService } from './http.service';
 import { API_ENDPOINT } from '../api-endpoints';
 import { UserInvitesResponse } from '../model/user-invite.model';
 
+export interface VerifyTokenResponse {
+  valid: boolean;
+}
+
 export interface GetInvitesParams {
   page?: number;
   limit?: number;
@@ -37,6 +41,13 @@ export class UserInviteService {
         : API_ENDPOINT.userInvites;
     return this.httpService
       .get<UserInvitesResponse>(url)
+      .pipe(catchError(this.httpService.handleError));
+  }
+
+  verifyToken(token: string): Observable<VerifyTokenResponse> {
+    const url = `${API_ENDPOINT.userInvites}/verify?token=${encodeURIComponent(token)}`;
+    return this.httpService
+      .get<VerifyTokenResponse>(url)
       .pipe(catchError(this.httpService.handleError));
   }
 }
