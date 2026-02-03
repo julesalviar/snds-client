@@ -40,7 +40,7 @@ export class InternalReferenceDataService extends BaseReferenceDataService {
   /** Update clusters (districts) and invalidate cache so next get refetches. */
   async updateClusters(value: string[]): Promise<void> {
     const url = `${this.getEndpoint()}/${CLUSTERS_KEY}`;
-    await firstValueFrom(this.http.put(url, { value }));
+    await firstValueFrom(this.http.put(url, value));
     this.invalidate();
   }
 
