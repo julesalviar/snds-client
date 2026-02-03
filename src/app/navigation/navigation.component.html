@@ -201,7 +201,7 @@
     <!-- Division Admin Menus -->
     <ng-container *ngIf="userActiveRole === 'divisionAdmin'">
       <li>
-          <button mat-button [matMenuTriggerFor]="divisionAdminSchoolsMenu" class="menu-trigger">Schools</button>
+          <button mat-button [matMenuTriggerFor]="divisionAdminSchoolsMenu" class="menu-trigger">Find School/Office</button>
           <mat-menu #divisionAdminSchoolsMenu="matMenu">
             <button mat-menu-item [routerLink]="['/division-admin/all-schools']" (click)="closeMenu()">All</button>
             <button mat-menu-item [routerLink]="['/division-admin/districts']" (click)="closeMenu()">By District</button>
