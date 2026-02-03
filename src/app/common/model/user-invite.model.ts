@@ -3,6 +3,7 @@ export interface UserInvite {
   email: string;
   token?: string;
   sentAt: string;
+  expiresAt?: string;
   status: string;
   createdAt: string;
   updatedAt: string;

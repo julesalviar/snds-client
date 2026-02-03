@@ -106,7 +106,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
 
   invitesDataSource = new MatTableDataSource<UserInvite>([]);
   invitesLoading = false;
-  invitesDisplayedColumns: string[] = ['email', 'sentAt', 'status', 'registrationLink'];
+  invitesDisplayedColumns: string[] = ['email', 'sentAt', 'expiration', 'status', 'registrationLink'];
   invitesEmailFilter = '';
   invitesPageIndex = 0;
   invitesPageSize = 25;
@@ -427,6 +427,10 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
 
   formatInviteSentAt(value: string | undefined): string {
     return formatDateTimeString(value);
+  }
+
+  formatInviteExpiresAt(value: string | undefined): string {
+    return formatDateTimeString(value) || '—';
   }
 
   formatDate(value: UserListItem['createdAt']): string {
