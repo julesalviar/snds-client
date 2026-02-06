@@ -20,6 +20,7 @@ export interface ReportTemplateParameter {
   type: string;
   label: string;
   value: string[];
+  group?: string;
 }
 
 export interface ReportTemplateTable {

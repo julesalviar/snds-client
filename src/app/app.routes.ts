@@ -33,6 +33,7 @@ import { ManageUsersComponent } from './division-admin/manage-users/manage-users
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 import { OpenRegistrationComponent } from './open-registration/open-registration.component';
 import { CloseRegistrationComponent } from './close-registration/close-registration.component';
+import {ReportViewerComponent} from './report-viewer/report-viewer.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -49,6 +50,7 @@ export const routes: Routes = [
   {path: 'footer', component: FooterComponent},
   {path: 'about-us', component: AboutUsComponent},
   {path: 'profile', component: ProfileComponent},
+  {path: 'report-viewer', component: ReportViewerComponent},
 
   {
     path: 'guest',
@@ -96,6 +98,7 @@ export const routes: Routes = [
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: GeneratedResourcesComponent},
       {path: 'reports', component: ReportsComponent},
+      {path: 'reports2', component: ReportViewerComponent},
 
     ]
   },
@@ -119,6 +122,7 @@ export const routes: Routes = [
       {path: 'close-registration', component: DivisionAdminComponent},
       {path: 'create-partnership-link', component: DivisionAdminComponent},
       {path: 'generated-resources', component: GeneratedResourcesComponent},
+      {path: 'reports2', component: ReportViewerComponent},
     ]
   },
   { // System Admin routes

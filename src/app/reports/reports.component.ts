@@ -48,6 +48,7 @@ export class ReportsComponent implements OnInit, OnChanges {
   isMobile: boolean = false;
   componentKey: number | null = null; // Used to force component recreation when data changes
   isLoading: boolean = false;
+  selectedParamGroups: { [groupName: string]: string } = {}; // Track selected values for each paramGroup
   @ViewChild('reportPanel', { static: false }) reportPanel!: ElementRef;
   @ViewChild('reportContent', { static: false }) reportContent!: ElementRef;
 
@@ -130,12 +131,205 @@ export class ReportsComponent implements OnInit, OnChanges {
 
     if (reportTemplate?.parameters) {
       reportTemplate.parameters.forEach((param: any) => {
-        const initialValue = (param.type === 'select' || param.type === 'schoolYear' || param.type === 'schools') ? '' : (param.value || '');
-        formControls[param.name] = [initialValue, Validators.required];
+        const initialValue = (param.type === 'select' || param.type === 'schoolYear' || param.type === 'schools' || param.type === 'paramGroup') ? '' : (param.value || '');
+        // Grouped parameters should not be required initially (only when their group is selected)
+        if (param.group && param.type !== 'paramGroup') {
+          formControls[param.name] = [initialValue]; // No validators for grouped parameters initially
+        } else {
+          formControls[param.name] = [initialValue, Validators.required];
+        }
       });
     }
 
     this.form = this.fb.group(formControls);
+
+    // Reset selected param groups when form is rebuilt
+    this.selectedParamGroups = {};
+    
+    // Clear all grouped parameters initially (since no groups are selected yet)
+    this.clearParametersFromUnselectedGroups();
+
+    // Subscribe to paramGroup changes
+    if (reportTemplate?.parameters) {
+      reportTemplate.parameters.forEach((param: any) => {
+        if (param.type === 'paramGroup') {
+          const groupName = param.group || param.name;
+          this.form.get(param.name)?.valueChanges.subscribe(value => {
+            this.selectedParamGroups[groupName] = value;
+            
+            // Clear parameters from groups that are not currently selected
+            this.clearParametersFromUnselectedGroups();
+            
+            // Update validation for all selected groups
+            this.updateValidationForAllSelectedGroups();
+          });
+        }
+      });
+    }
+  }
+
+  private updateGroupedParametersValidation(groupName: string, isSelected: boolean) {
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (reportTemplate?.parameters) {
+      reportTemplate.parameters.forEach((param: any) => {
+        if (param.group === groupName && param.type !== 'paramGroup') {
+          const control = this.form.get(param.name);
+          if (control) {
+            if (isSelected) {
+              // Add required validator when group is selected
+              control.setValidators([Validators.required]);
+            } else {
+              // Remove validators when group is not selected
+              control.clearValidators();
+            }
+            control.updateValueAndValidity();
+          }
+        }
+      });
+    }
+  }
+
+  private clearParametersFromUnselectedGroups() {
+    // Clear all grouped parameters that don't belong to any currently selected group
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (!reportTemplate?.parameters) return;
+    
+    // Get all currently selected group names
+    const selectedGroupNames = new Set<string>();
+    reportTemplate.parameters.forEach((param: any) => {
+      if (param.type === 'paramGroup') {
+        const controlValue = this.form.get(param.name)?.value;
+        if (controlValue) {
+          selectedGroupNames.add(controlValue);
+        }
+      }
+    });
+    
+    // Clear parameters from groups that are not selected
+    reportTemplate.parameters.forEach((param: any) => {
+      if (param.group && param.type !== 'paramGroup') {
+        if (!selectedGroupNames.has(param.group)) {
+          const control = this.form.get(param.name);
+          if (control) {
+            control.setValue('');
+            control.markAsPristine();
+            control.markAsUntouched();
+            control.clearValidators();
+            control.updateValueAndValidity();
+          }
+        }
+      }
+    });
+  }
+
+  private updateValidationForAllSelectedGroups() {
+    // Update validation for all parameters in currently selected groups
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (!reportTemplate?.parameters) return;
+    
+    // Get all currently selected group names
+    const selectedGroupNames = new Set<string>();
+    reportTemplate.parameters.forEach((param: any) => {
+      if (param.type === 'paramGroup') {
+        const controlValue = this.form.get(param.name)?.value;
+        if (controlValue) {
+          selectedGroupNames.add(controlValue);
+        }
+      }
+    });
+    
+    // Update validation for parameters in selected groups
+    reportTemplate.parameters.forEach((param: any) => {
+      if (param.group && param.type !== 'paramGroup') {
+        const control = this.form.get(param.name);
+        if (control) {
+          if (selectedGroupNames.has(param.group)) {
+            // Group is selected, make parameter required
+            control.setValidators([Validators.required]);
+          } else {
+            // Group is not selected, remove validators
+            control.clearValidators();
+          }
+          control.updateValueAndValidity();
+        }
+      }
+    });
+  }
+
+  getParamGroupParameters(): any[] {
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (!reportTemplate?.parameters) return [];
+    return reportTemplate.parameters.filter((param: any) => param.type === 'paramGroup');
+  }
+
+  getRegularParameters(): any[] {
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (!reportTemplate?.parameters) return [];
+    return reportTemplate.parameters.filter((param: any) => param.type !== 'paramGroup' && !param.group);
+  }
+
+  getGroupedParameters(groupName: string): any[] {
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (!reportTemplate?.parameters) return [];
+    return reportTemplate.parameters.filter((param: any) => param.group === groupName && param.type !== 'paramGroup');
+  }
+
+  getAllGroupNames(): string[] {
+    // Get all unique groupNames from paramGroup options
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (!reportTemplate?.parameters) return [];
+
+    const groupNames = new Set<string>();
+    const paramGroups = reportTemplate.parameters.filter((param: any) => param.type === 'paramGroup');
+
+    paramGroups.forEach((paramGroup: any) => {
+      if (paramGroup.value && Array.isArray(paramGroup.value)) {
+        paramGroup.value.forEach((option: any) => {
+          if (option && typeof option === 'object' && 'groupName' in option) {
+            groupNames.add(option.groupName);
+          }
+        });
+      }
+    });
+
+    return Array.from(groupNames);
+  }
+
+  isGroupSelected(groupName: string): boolean {
+    // Check if any paramGroup has a selected value (groupName) that matches the provided groupName
+    // The groupName parameter is the 'group' field from regular parameters (e.g., "schoolYearGroup")
+    // The form control stores the groupName string directly (e.g., "periodGroup")
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (reportTemplate?.parameters) {
+      // Find all paramGroup parameters
+      const paramGroups = reportTemplate.parameters.filter((param: any) => param.type === 'paramGroup');
+
+      // Check if any paramGroup has the groupName selected
+      for (const paramGroup of paramGroups) {
+        const controlValue = this.form.get(paramGroup.name)?.value;
+        if (controlValue !== null && controlValue !== undefined && controlValue !== '') {
+          // The selected value is the groupName string, so compare directly
+          if (controlValue === groupName) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  getSelectedGroupValue(groupName: string): string {
+    const reportTemplate = this.selectedReport?.reportTemplateId;
+    if (reportTemplate?.parameters) {
+      const paramGroup = reportTemplate.parameters.find((param: any) =>
+        param.type === 'paramGroup' && (param.group || param.name) === groupName
+      );
+      if (paramGroup) {
+        const controlValue = this.form.get(paramGroup.name)?.value;
+        return controlValue || this.selectedParamGroups[groupName] || '';
+      }
+    }
+    return this.selectedParamGroups[groupName] || '';
   }
 
   private createCustomInjector() {
