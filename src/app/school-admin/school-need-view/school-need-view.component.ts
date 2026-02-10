@@ -55,7 +55,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   progressValue = 0; // Example progress value (from 10% to 100%)
 
   // Columns for the stakeholder table
-  displayedColumns: string[] = ['contributor', 'quantity', 'amount'];
+  displayedColumns: string[] = ['contributor', 'quantity', 'unit', 'amount'];
 
   // Image preview properties
   showImagePreview: boolean = false;
