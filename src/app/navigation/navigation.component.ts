@@ -140,6 +140,7 @@ export class NavigationComponent implements OnInit {
 
     const dialogRef = this.dialog.open(SwitchRoleDialogComponent, {
       width: '400px',
+      maxWidth: 'calc(100vw - 32px)',
       data: {
         roles: roles,
         currentRole: currentRole

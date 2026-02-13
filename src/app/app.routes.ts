@@ -33,6 +33,9 @@ import { ManageUsersComponent } from './division-admin/manage-users/manage-users
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 import { OpenRegistrationComponent } from './open-registration/open-registration.component';
 import { CloseRegistrationComponent } from './close-registration/close-registration.component';
+import { CalendarComponent } from './calendar/calendar.component';
+import { PpaPlanListComponent } from './division-admin/ppa-plan/ppa-plan-list.component';
+import { PpaPlanFormComponent } from './division-admin/ppa-plan/ppa-plan-form.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -127,6 +130,18 @@ export const routes: Routes = [
     data: { roleType: UserType.SystemAdmin },
     children: [
       {path: 'manage-users', component: ManageUsersComponent},
+    ]
+  },
+  { // Program Holder routes
+    path: 'program-holder',
+    canActivateChild: [AuthGuard],
+    data: { roleType: UserType.ProgramHolder },
+    children: [
+      { path: 'ppa-plans', component: PpaPlanListComponent },
+      { path: 'ppa-plans', component: PpaPlanListComponent },
+      { path: 'ppa-plans/create', component: PpaPlanFormComponent },
+      { path: 'ppa-plans/edit/:id', component: PpaPlanFormComponent },
+      { path: 'calendar', component: CalendarComponent },
     ]
   },
 

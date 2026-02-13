@@ -1,0 +1,603 @@
+
+.ppa-form-wrapper.dialog-mode {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* Safe area for notched devices */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.ppa-form-wrapper.dialog-mode .dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  min-height: 56px;
+  background: #fff;
+  /* Sticky on mobile for long forms */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ppa-form-wrapper.dialog-mode .dialog-header .dialog-title,
+.ppa-form-wrapper.dialog-mode .dialog-header h2[mat-dialog-title] {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  line-height: 32px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ppa-form-wrapper.dialog-mode .dialog-close-btn {
+  margin: -8px -8px -8px 8px;
+  flex-shrink: 0;
+  /* Material: 48dp touch target */
+  width: 48px;
+  height: 48px;
+}
+
+.ppa-form-wrapper.dialog-mode .dialog-close-btn:hover:not([disabled]) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.ppa-form-wrapper.dialog-mode .dialog-close-btn:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.38);
+  outline-offset: 2px;
+}
+
+.ppa-form-wrapper.dialog-mode .container.dialog-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding: 8px 24px 24px;
+  min-height: 0;
+}
+
+.ppa-form-wrapper.dialog-mode .form-card.dialog-card {
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.ppa-form-wrapper.dialog-mode .form-card.dialog-card mat-card-content {
+  padding: 0;
+}
+
+.ppa-form-wrapper.dialog-mode .form-card.dialog-card .form-section {
+  margin-bottom: 24px;
+}
+
+/* Keep row fields compact in modal - don't stretch to fill (desktop/tablet only) */
+@media (min-width: 600px) {
+  .ppa-form-wrapper.dialog-mode .row .half-width {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+}
+
+.ppa-form-wrapper.dialog-mode .button-group.dialog-actions {
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 0 0;
+  margin-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.ppa-form-wrapper.dialog-mode .button-group .submit-btn,
+.ppa-form-wrapper.dialog-mode .button-group .cancel-btn {
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.container {
+  padding: 20px;
+}
+
+/* ========== Mobile: Material Design breakpoint (600px) ========== */
+@media (max-width: 599px) {
+  .container {
+    padding: 12px 16px;
+  }
+
+  .modal-form-container {
+    max-width: 100%;
+  }
+
+  .form-card {
+    padding: 16px;
+  }
+
+  .form-card mat-card-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .form-section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Override flex-basis 280px - in column layout it would apply to height and make fields too tall */
+  .half-width {
+    flex: 0 0 auto;
+    min-width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 12px;
+  }
+
+  .button-group button {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  /* Prevent iOS zoom on input focus (16px minimum) */
+  .form-card input[type="text"],
+  .form-card input[type="number"],
+  .form-card input[type="date"],
+  .form-card input[type="email"],
+  .form-card textarea {
+    font-size: 16px !important;
+  }
+
+  .drop-zone {
+    min-height: 120px;
+    margin: 8px 0;
+    /* Disable scale on touch - avoid jarring effect on mobile */
+    transform: none !important;
+  }
+
+  .drop-zone.drag-over {
+    transform: none !important;
+    /* Keep visual feedback without scale */
+    background-color: #c8e6c9;
+    border-color: #4CAF50;
+  }
+
+  .drop-zone-content {
+    padding: 16px;
+  }
+
+  .upload-section .upload-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .drop-zone-text {
+    font-size: 13px;
+  }
+
+  .upload-section .upload-optional-hint,
+  .upload-section .upload-hint {
+    flex-wrap: wrap;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .upload-section .indicator-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Dialog mode - mobile Material */
+  .ppa-form-wrapper.dialog-mode .dialog-header {
+    padding: 16px 16px 12px;
+    min-height: 48px;
+  }
+
+  .ppa-form-wrapper.dialog-mode .dialog-header .dialog-title,
+  .ppa-form-wrapper.dialog-mode .dialog-header h2[mat-dialog-title] {
+    font-size: 18px;
+  }
+
+  .ppa-form-wrapper.dialog-mode .dialog-close-btn {
+    min-width: 48px;
+    min-height: 48px;
+    margin: -12px -12px -12px 8px;
+  }
+
+  .ppa-form-wrapper.dialog-mode .container.dialog-container {
+    padding: 8px 16px 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+  }
+
+  .ppa-form-wrapper.dialog-mode .button-group.dialog-actions {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    margin-top: 20px;
+  }
+
+  .ppa-form-wrapper.dialog-mode .button-group .submit-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .ppa-form-wrapper.dialog-mode .button-group .cancel-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* Skeleton - mobile */
+  .skeleton-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .skeleton-field-half {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .skeleton-section .skeleton-upload {
+    height: 120px;
+  }
+}
+
+.modal-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-card {
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-card mat-card-title {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+/* Skeleton loading */
+.skeleton-loading {
+  padding: 0;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-section {
+  margin-bottom: 28px;
+}
+
+.skeleton-section .skeleton-title {
+  height: 16px;
+  width: 140px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+
+.skeleton-section .skeleton-field {
+  height: 56px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton-section .skeleton-field-textarea {
+  height: 72px;
+}
+
+.skeleton-section .skeleton-field-chip {
+  height: 88px;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.skeleton-field-half {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.skeleton-section .skeleton-upload {
+  height: 160px;
+  width: 100%;
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
+.form-section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #424242;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.button-group button mat-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.upload-section {
+  margin: 16px 0;
+}
+
+.upload-section-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0 0 8px 0;
+}
+
+.upload-section .upload-optional-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  border-left: 4px solid #2196F3;
+  color: #1976D2;
+  font-size: 13px;
+}
+
+.upload-section .upload-optional-hint mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #2196F3;
+  flex-shrink: 0;
+}
+
+.drop-zone {
+  width: 100%;
+  min-height: 160px;
+  border: 2px dashed #4CAF50;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 12px 0;
+}
+
+.drop-zone:hover {
+  background-color: #e8f5e9;
+  border-color: #45a049;
+}
+
+.drop-zone.drag-over {
+  background-color: #c8e6c9;
+  border-color: #4CAF50;
+  border-style: solid;
+  transform: scale(1.02);
+}
+
+.drop-zone-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.upload-section .upload-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #4CAF50;
+  margin-bottom: 12px;
+}
+
+.drop-zone-text {
+  font-size: 14px;
+  color: #333;
+  margin: 8px 0;
+}
+
+.drop-zone-subtext {
+  font-size: 13px;
+  color: #666;
+  margin: 4px 0;
+}
+
+.drop-zone-hint {
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.upload-section .file-preview {
+  margin: 12px 0;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.upload-section .file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-section .file-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #4CAF50;
+}
+
+.upload-section .file-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-section .file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  word-break: break-all;
+}
+
+.upload-section .file-size {
+  font-size: 12px;
+  color: #666;
+}
+
+.upload-section .remove-file-btn {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.upload-section .remove-file-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.upload-section .upload-progress {
+  width: 100%;
+  margin: 12px 0;
+  height: 4px;
+}
+
+.upload-section .upload-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  border-left: 4px solid #2196F3;
+  color: #1976D2;
+  font-size: 13px;
+}
+
+.upload-section .upload-hint mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #2196F3;
+}
+
+.upload-section .uploaded-doc-indicator {
+  margin: 12px 0;
+  padding: 16px;
+  background-color: #e8f5e9;
+  border-radius: 8px;
+  border: 2px solid #4CAF50;
+}
+
+.upload-section .indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.upload-section .indicator-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-section .indicator-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.upload-section .indicator-subtitle {
+  font-size: 12px;
+  color: #666;
+}
+
+.upload-section .indicator-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.upload-section .check-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #4CAF50;
+  flex-shrink: 0;
+}

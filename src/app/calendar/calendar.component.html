@@ -1,0 +1,84 @@
+<div class="calendar-layout">
+  <!-- Top app bar (Google Calendar style) -->
+  <header class="calendar-toolbar">
+    <div class="toolbar-start">
+      <div class="search-wrap">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Search" />
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="toolbar-center">
+      <button mat-stroked-button class="today-btn" (click)="goToToday()">Today</button>
+      <div class="nav-arrows">
+        <button mat-icon-button aria-label="Previous" (click)="goPrev()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button mat-icon-button aria-label="Next" (click)="goNext()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <span class="current-range">{{ monthLabel }}</span>
+    </div>
+  </header>
+
+  <div class="calendar-body">
+    <main class="calendar-main">
+      <div class="month-grid-header">
+        @for (d of weekdays; track d) {
+          <div class="month-header-cell">{{ d }}</div>
+        }
+      </div>
+      <div class="month-grid-body">
+        @for (row of monthGrid; track $index) {
+          <div class="month-row">
+            @for (day of row; track $index) {
+              <button
+                class="month-cell"
+                [class.empty]="day === null"
+                [class.today]="day === todayDate"
+                [class.selected]="day === selectedDay && selectedDay !== null"
+                (click)="day !== null && selectDay(day)"
+              >
+                <span class="month-cell-num">{{ day }}</span>
+                <div class="month-cell-plans">
+                  @for (plan of getPlansForDay(day); track trackByPlan(plan, $index)) {
+                    <div class="plan-bar plan-bar-blue" [attr.title]="plan.title">
+                      {{ plan.title }}
+                    </div>
+                  }
+                </div>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </main>
+
+    <!-- Right sidebar: PPA plans list -->
+    <aside class="calendar-sidebar">
+      <button mat-flat-button color="primary" class="create-btn" routerLink="/program-holder/ppa-plans/create">
+        <mat-icon>add</mat-icon>
+        Create
+      </button>
+      <div class="plans-list">
+        <h3 class="plans-list-title">PPA Plans</h3>
+        @if (isLoading) {
+          <div class="plans-loading">Loading plans…</div>
+        } @else if (selectedDay === null) {
+          <div class="plans-empty">Select a day</div>
+        } @else if (plansInSelectedDay.length === 0) {
+          <div class="plans-empty">No plans on this day</div>
+        } @else {
+          @for (plan of plansInSelectedDay; track plan._id!) {
+            <a class="plan-item" [routerLink]="['/program-holder/ppa-plans/edit', plan._id]">
+              <mat-icon class="plan-icon">task_alt</mat-icon>
+              <span class="plan-title">{{ plan.title }}</span>
+            </a>
+          }
+        }
+      </div>
+    </aside>
+  </div>
+</div>

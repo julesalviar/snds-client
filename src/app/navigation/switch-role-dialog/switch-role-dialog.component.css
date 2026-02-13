@@ -4,9 +4,25 @@
   margin-bottom: 16px;
 }
 
+@media (max-width: 480px) {
+  .dialog-title {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .dialog-message {
+    font-size: 14px;
+  }
+}
+
 mat-dialog-content {
-  min-width: 400px;
   padding: 20px 24px;
+}
+
+@media (max-width: 480px) {
+  mat-dialog-content {
+    padding: 16px;
+  }
 }
 
 .dialog-message {
@@ -24,8 +40,28 @@ mat-dialog-content {
 }
 
 .role-option {
-  display: block;
-  padding: 8px 0;
+  padding: 12px 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 480px) {
+  .role-option {
+    padding: 14px 0;
+  }
+}
+
+.role-option-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-option-content .role-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .loading-container {
@@ -39,5 +75,18 @@ mat-dialog-content {
 mat-dialog-actions {
   padding: 8px 24px 16px;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  mat-dialog-actions {
+    padding: 8px 16px 16px;
+    justify-content: stretch;
+  }
+
+  mat-dialog-actions button {
+    flex: 1;
+    min-width: 0;
+  }
 }
 

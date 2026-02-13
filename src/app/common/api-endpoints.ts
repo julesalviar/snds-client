@@ -24,5 +24,6 @@ export const API_ENDPOINT = {
     resetPasswordVerify: `${environment.API_URL}/mail/reset-password/verify`,
     invite: `${environment.API_URL}/mail/invite`,
   },
-  reports: `${environment.API_URL}/reports`
+  reports: `${environment.API_URL}/reports`,
+  ppaPlan: `${environment.API_URL}/ppa-plan`,
 }

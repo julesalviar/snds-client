@@ -4,6 +4,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { getRoleLabel } from '../../registration/user-type.enum';
+import { getRoleIcon } from '../../registration/user-type-icons';
+import { MatIconModule } from '@angular/material/icon';
 import { HttpService } from '../../common/services/http.service';
 import { API_ENDPOINT } from '../../common/api-endpoints';
 import { catchError, tap, throwError } from 'rxjs';
@@ -23,6 +26,7 @@ export interface SwitchRoleDialogData {
     MatDialogModule,
     MatButtonModule,
     MatRadioModule,
+    MatIconModule,
     FormsModule,
     MatProgressSpinnerModule
   ],
@@ -79,13 +83,9 @@ export class SwitchRoleDialogComponent implements OnInit {
   }
 
   getRoleDisplayName(role: string): string {
-    const roleMap: { [key: string]: string } = {
-      'stakeholder': 'Stakeholder',
-      'schoolAdmin': 'School Admin',
-      'divisionAdmin': 'Division Admin',
-      'systemAdmin': 'System Admin'
-    };
-    return roleMap[role] || role;
+    return getRoleLabel(role);
   }
+
+  getRoleIcon = getRoleIcon;
 }
 

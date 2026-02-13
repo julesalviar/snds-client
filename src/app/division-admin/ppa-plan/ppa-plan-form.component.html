@@ -1,0 +1,295 @@
+<div class="ppa-form-wrapper" [class.dialog-mode]="isDialogMode">
+  <!-- Material Design dialog header: title + close button -->
+  <header class="dialog-header" *ngIf="isDialogMode">
+    <h2 mat-dialog-title class="dialog-title">{{ isEdit ? 'Edit' : 'Create' }} PPA Plan</h2>
+    <button mat-icon-button class="dialog-close-btn" (click)="onCancel()" [disabled]="isSaving"
+            matTooltip="Close"
+            matTooltipPosition="below"
+            aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <!-- Scrollable content area (mat-dialog-content semantics when in dialog) -->
+  <div class="container dialog-content-area" [class.dialog-container]="isDialogMode">
+    <div class="modal-form-container">
+      <mat-card class="form-card" [class.dialog-card]="isDialogMode">
+        <mat-card-title *ngIf="!isDialogMode">{{ isEdit ? 'Edit' : 'Create' }} PPA Plan</mat-card-title>
+        <mat-card-content>
+        <div *ngIf="isLoading" class="skeleton-loading" aria-hidden="true">
+          <section class="skeleton-section">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-field"></div>
+            <div class="skeleton skeleton-field"></div>
+            <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+            <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+            <div class="skeleton-row">
+              <div class="skeleton skeleton-field skeleton-field-half"></div>
+              <div class="skeleton skeleton-field skeleton-field-half"></div>
+            </div>
+            <div class="skeleton skeleton-field"></div>
+            <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+          </section>
+          <section class="skeleton-section">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-field"></div>
+            <div class="skeleton-row">
+              <div class="skeleton skeleton-field skeleton-field-half"></div>
+              <div class="skeleton skeleton-field skeleton-field-half"></div>
+            </div>
+            <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+            <div class="skeleton skeleton-field"></div>
+          </section>
+          <section class="skeleton-section">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-field"></div>
+            <div class="skeleton skeleton-field skeleton-field-chip"></div>
+            <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+            <div class="skeleton skeleton-field"></div>
+          </section>
+          <section class="skeleton-section">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+            <div class="skeleton skeleton-upload"></div>
+          </section>
+        </div>
+
+        <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
+          <section class="form-section">
+            <h3 class="section-title">Basic information</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>KRA</mat-label>
+              <input matInput formControlName="kra" placeholder="Key Result Area">
+              <mat-error>KRA is required.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Program Title</mat-label>
+              <input matInput formControlName="title" placeholder="Program Title">
+              <mat-error>Program Title is required.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Activity</mat-label>
+              <textarea matInput formControlName="activity" rows="2" placeholder="Activity"></textarea>
+              <mat-error>Activity is required.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>PPA Objective</mat-label>
+              <textarea matInput formControlName="objective" rows="2" placeholder="PPA Objective"></textarea>
+              <mat-error>PPA Objective is required.</mat-error>
+            </mat-form-field>
+            <div class="row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>{{ classificationDisplay.getDisplayTitle() }}</mat-label>
+                <mat-select formControlName="classification">
+                  <mat-option *ngFor="let opt of classificationOptions" [value]="opt">{{ classificationDisplay.getDisplayText(opt) }}</mat-option>
+                </mat-select>
+                <mat-error>Classification is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Implementation Status</mat-label>
+                <mat-select formControlName="implementationStatus">
+                  <mat-option *ngFor="let opt of implementationStatusOptions" [value]="opt">{{ opt }}</mat-option>
+                </mat-select>
+                <mat-error>Implementation status is required.</mat-error>
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Timeliness</mat-label>
+              <mat-select formControlName="timeliness">
+                <mat-option value="">—</mat-option>
+                <mat-option *ngFor="let opt of timelinessOptions" [value]="opt">{{ opt }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Expected Output</mat-label>
+              <textarea matInput formControlName="expectedOutput" rows="2" placeholder="Expected output"></textarea>
+              <mat-error>Expected output is required.</mat-error>
+            </mat-form-field>
+          </section>
+
+          <section class="form-section">
+            <h3 class="section-title">Dates &amp; budget</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Implementation Date</mat-label>
+              <input matInput formControlName="implementationDate" type="date" placeholder="YYYY-MM-DD">
+            </mat-form-field>
+            <div class="row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Budgetary Requirement</mat-label>
+                <input matInput formControlName="budgetaryRequirement" type="number" min="0" placeholder="0">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Amount Utilized</mat-label>
+                <input matInput formControlName="amountUtilized" type="number" min="0" placeholder="0">
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Materials and Supplies</mat-label>
+              <textarea matInput formControlName="materialsAndSupplies" rows="2"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Fund Source</mat-label>
+              <input matInput formControlName="fundSource" placeholder="Fund source">
+            </mat-form-field>
+          </section>
+
+          <section class="form-section">
+            <h3 class="section-title">Stakeholder &amp; support</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Type the name of the stakeholder to engage</mat-label>
+              <input matInput
+                     formControlName="stakeholderUserId"
+                     [matAutocomplete]="stakeholderAuto"
+                     (input)="onStakeholderInput($event)"
+                     placeholder="Search by name or email">
+              <mat-autocomplete #stakeholderAuto="matAutocomplete"
+                               [displayWith]="displayStakeholderFn"
+                               (optionSelected)="onStakeholderOptionSelected($event.option.value)">
+                <mat-option *ngFor="let user of filteredUsers" [value]="user._id">
+                  {{ getStakeholderDisplayName(user) }}
+                </mat-option>
+              </mat-autocomplete>
+              <mat-error>Stakeholder is required. Please select a user from the list.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width participant-chip-list">
+              <mat-label>Participants</mat-label>
+              <mat-chip-grid #participantChipGrid aria-label="Participants">
+                <mat-chip-row
+                  *ngFor="let participant of participantsArray; trackBy: trackByParticipant"
+                  (removed)="removeParticipant(participant)"
+                >
+                  {{ participant }}
+                  <button matChipRemove [attr.aria-label]="'remove ' + participant">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip-row>
+              </mat-chip-grid>
+              <input
+                placeholder="Add participant..."
+                [matChipInputFor]="participantChipGrid"
+                [matChipInputSeparatorKeyCodes]="participantSeparatorKeysCodes"
+                [matChipInputAddOnBlur]="participantAddOnBlur"
+                (matChipInputTokenEnd)="addParticipantFromInput($event)"
+                [matAutocomplete]="participantAuto"
+                [formControl]="participantInputControl"
+                aria-label="Add participant"
+              />
+              <mat-autocomplete
+                #participantAuto="matAutocomplete"
+                (optionSelected)="addParticipantFromSelect($event)"
+                [displayWith]="displayParticipantFn"
+              >
+                <mat-option *ngFor="let opt of availableParticipantOptions" [value]="opt">
+                  {{ opt }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Support Need</mat-label>
+              <textarea matInput formControlName="supportNeed" rows="2"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Support Received Value</mat-label>
+              <input matInput formControlName="supportReceivedValue" type="number" min="0" placeholder="0">
+            </mat-form-field>
+          </section>
+
+          <section class="form-section">
+            <h3 class="section-title">Other</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Factors</mat-label>
+              <textarea matInput formControlName="factors" rows="2" placeholder="Factors affecting implementation"></textarea>
+            </mat-form-field>
+
+            <!-- Report document upload -->
+            <div class="upload-section">
+              <h3 class="upload-section-title">{{ reportDocUrl ? 'Report document uploaded' : 'Upload report document' }}</h3>
+              <p class="upload-optional-hint">
+                <mat-icon>info</mat-icon>
+                <span>Optional. You can create the plan now and upload the report document later.</span>
+              </p>
+
+              <div *ngIf="reportDocUrl" class="uploaded-doc-indicator">
+                <div class="indicator-content">
+                  <mat-icon class="check-icon">check_circle</mat-icon>
+                  <div class="indicator-text">
+                    <span class="indicator-title">Report document uploaded</span>
+                    <span class="indicator-subtitle">Document is available for download</span>
+                  </div>
+                  <div class="indicator-actions">
+                    <button mat-icon-button (click)="onDownloadReportDoc()" class="download-btn" title="Download document">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="onRemoveReportDoc()" class="remove-doc-btn" title="Remove document">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                *ngIf="!reportDocUrl"
+                class="drop-zone"
+                [class.drag-over]="isDraggingReport"
+                (dragover)="onReportDragOver($event)"
+                (dragleave)="onReportDragLeave($event)"
+                (drop)="onReportDrop($event)"
+                (click)="onReportFileInputClick()">
+                <input
+                  #reportFileInput
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  (change)="onReportFileSelected($event)"
+                  hidden />
+                <div class="drop-zone-content">
+                  <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                  <p class="drop-zone-text">
+                    <strong>Drag and drop your file here</strong>
+                  </p>
+                  <p class="drop-zone-subtext">or click to browse</p>
+                  <p class="drop-zone-hint">Supported formats: PDF, DOC, DOCX (Max 10MB)</p>
+                </div>
+              </div>
+
+              <div *ngIf="selectedReportFile" class="file-preview">
+                <div class="file-info">
+                  <mat-icon class="file-icon">description</mat-icon>
+                  <div class="file-details">
+                    <span class="file-name">{{ selectedReportFile.name }}</span>
+                    <span class="file-size">{{ (selectedReportFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+                  </div>
+                  <button mat-icon-button (click)="removeReportFile()" class="remove-file-btn">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <mat-progress-bar
+                *ngIf="isUploadingReport"
+                mode="determinate"
+                [value]="reportUploadProgress"
+                class="upload-progress">
+              </mat-progress-bar>
+
+              <p *ngIf="selectedReportFile" class="upload-hint">
+                <mat-icon>info</mat-icon>
+                <span>File will be uploaded when you save the plan.</span>
+              </p>
+            </div>
+          </section>
+
+          <div class="button-group" [class.dialog-actions]="isDialogMode" [attr.role]="isDialogMode ? 'group' : null" [attr.aria-label]="isDialogMode ? 'Form actions' : null">
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isSaving" class="submit-btn">
+              <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+              {{ isEdit ? 'Update' : 'Create' }} PPA Plan
+            </button>
+            <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving" class="cancel-btn">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+</div>

@@ -1,0 +1,249 @@
+/* Use app-ppa-plan-list mat-card to beat Material's .mat-mdc-card specificity (0,1,0) */
+app-ppa-plan-list mat-card.mat-mdc-card {
+  margin: 20px;
+  padding: 20px;
+  box-shadow: 0 0;
+  border-radius: 8px;
+  border: 1px solid green;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+app-ppa-plan-list mat-card-title {
+  margin-bottom: 20px;
+  margin-left: 5px;
+  font-size: 20px;
+  color: #45a049;
+}
+
+.top-actions {
+  margin-bottom: 16px;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  gap: 10px;
+}
+
+.filter-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-field {
+  width: 250px;
+  min-width: 200px;
+}
+
+.clear-button {
+  margin-left: 0;
+}
+
+.column-customize-btn {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* Column visibility menu - renders in overlay; scoped via panelClass */
+.mat-mdc-menu-panel.ppa-plan-list-column-menu .column-menu-header {
+  padding: 12px 16px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.mat-mdc-menu-panel.ppa-plan-list-column-menu .column-check {
+  margin-right: 12px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: rgba(0, 0, 0, 0.54) !important;
+}
+
+.mat-mdc-menu-panel.ppa-plan-list-column-menu .column-item {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.mat-mdc-menu-panel.ppa-plan-list-column-menu .mat-mdc-menu-item .column-check {
+  margin-left: 0;
+  color: rgba(0, 0, 0, 0.54) !important;
+}
+
+.table-wrapper {
+  margin-top: 15px;
+  padding: 2px;
+  border-radius: 12px;
+  border: 1px solid green;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-table-wrapper {
+  overflow-x: auto;
+  min-width: 0;
+  padding: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.skeleton-table {
+  display: table;
+  min-width: 800px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.skeleton-table-header {
+  display: table-row;
+  background: #f5f5f5;
+}
+
+.skeleton-table-header .skeleton-table-cell {
+  display: table-cell;
+  padding: 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-table-header .skeleton-table-cell:first-child {
+  border-top-left-radius: 12px;
+}
+
+.skeleton-table-header .skeleton-table-cell:last-child {
+  border-top-right-radius: 12px;
+}
+
+.skeleton-table-row {
+  display: table-row;
+  background: #fff;
+}
+
+.skeleton-table-row .skeleton-table-cell {
+  display: table-cell;
+  padding: 10px 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px dashed #e0e0e0;
+}
+
+.empty-state-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #424242;
+}
+
+.empty-state-message {
+  margin: 0;
+  font-size: 14px;
+  color: #757575;
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  min-width: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.ppa-plan-table {
+  width: 100%;
+  min-width: 800px;
+  background: #fff !important;
+}
+
+.ppa-plan-table .mat-mdc-header-row,
+.ppa-plan-table .mat-header-row {
+  background: #f5f5f5 !important;
+}
+
+.ppa-plan-table .mat-mdc-header-cell,
+.ppa-plan-table .mat-header-cell {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #424242;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5 !important;
+}
+
+.ppa-plan-table .mat-mdc-cell,
+.ppa-plan-table .mat-cell {
+  font-size: 0.875rem;
+  color: #212121;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff !important;
+}
+
+.actions-cell {
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.actions-cell .mat-mdc-icon-button,
+.actions-cell .mat-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.action-edit:hover:not([disabled]) {
+  background-color: rgba(69, 160, 73, 0.12);
+  color: #2e7d32;
+}
+
+.action-delete .mat-icon {
+  color: #b3261e;
+}
+
+.action-delete:hover:not([disabled]) {
+  background-color: rgba(179, 38, 30, 0.12);
+  color: #b3261e;
+}

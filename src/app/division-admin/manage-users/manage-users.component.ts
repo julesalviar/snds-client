@@ -26,18 +26,10 @@ import { UserInviteService } from '../../common/services/user-invite.service';
 import { UserInvite } from '../../common/model/user-invite.model';
 import { UserListItem } from '../../registration/user.model';
 import { UserType, getRoleLabel } from '../../registration/user-type.enum';
+import { getRoleIcon } from '../../registration/user-type-icons';
 import { formatDateString, formatDateTimeString } from '../../common/date-utils';
 import { InviteUserDialogComponent } from './invite-user-dialog/invite-user-dialog.component';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
-
-/** Material icon name per UserType for the roles column. */
-const ROLE_ICONS: Partial<Record<UserType, string>> = {
-  [UserType.StakeHolder]: 'people',
-  [UserType.SchoolAdmin]: 'school',
-  [UserType.DivisionAdmin]: 'domain',
-  [UserType.SystemAdmin]: 'admin_panel_settings',
-  [UserType.System]: 'dns',
-};
 
 @Component({
   selector: 'app-manage-users',
@@ -88,8 +80,8 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   getVisibleRoles(roles: string[] | undefined): string[] {
     if (!roles?.length) return [];
     if (this.canSeeSystemRoleIcons) return roles;
-    const visible = [UserType.StakeHolder, UserType.SchoolAdmin, UserType.DivisionAdmin];
-    return roles.filter((r) => visible.includes(r as UserType));
+    const visible = new Set([UserType.StakeHolder, UserType.SchoolAdmin, UserType.DivisionAdmin, UserType.ProgramHolder]);
+    return roles.filter((r) => visible.has(r as UserType));
   }
 
   dataSource = new MatTableDataSource<UserListItem>([]);
@@ -119,6 +111,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
     { value: UserType.SchoolAdmin, label: getRoleLabel(UserType.SchoolAdmin) },
     { value: UserType.DivisionAdmin, label: getRoleLabel(UserType.DivisionAdmin) },
+    { value: UserType.ProgramHolder, label: getRoleLabel(UserType.ProgramHolder) },
   ];
 
   /** Role filter options including system/systemAdmin (stable reference). */
@@ -126,6 +119,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
     { value: UserType.SchoolAdmin, label: getRoleLabel(UserType.SchoolAdmin) },
     { value: UserType.DivisionAdmin, label: getRoleLabel(UserType.DivisionAdmin) },
+    { value: UserType.ProgramHolder, label: getRoleLabel(UserType.ProgramHolder) },
     { value: UserType.SystemAdmin, label: getRoleLabel(UserType.SystemAdmin) },
     { value: UserType.System, label: getRoleLabel(UserType.System) },
   ];
@@ -392,10 +386,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
       });
   }
 
-  getRoleIcon(role: string): string {
-    return ROLE_ICONS[role as UserType] ?? 'person';
-  }
-
+  getRoleIcon = getRoleIcon;
   getRoleLabel = getRoleLabel;
 
   loadInvites(): void {

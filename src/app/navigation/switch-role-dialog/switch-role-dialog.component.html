@@ -4,7 +4,10 @@
   <div class="role-selection">
     <mat-radio-group [(ngModel)]="selectedRole">
       <mat-radio-button *ngFor="let role of data.roles" [value]="role" class="role-option">
-        {{ getRoleDisplayName(role) }}
+        <span class="role-option-content">
+          <mat-icon class="role-icon">{{ getRoleIcon(role) }}</mat-icon>
+          {{ getRoleDisplayName(role) }}
+        </span>
       </mat-radio-button>
     </mat-radio-group>
   </div>

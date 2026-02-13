@@ -13,8 +13,8 @@
 $sndsapp-theme: mat.define-theme((
   color: (
     theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
+    primary: mat.$green-palette,
+    tertiary: mat.$spring-green-palette,
   ),
   density: (
     scale: 0,
@@ -37,6 +37,7 @@ $sndsapp-theme: mat.define-theme((
   @include mat.select-theme($sndsapp-theme);
   @include mat.datepicker-theme($sndsapp-theme);
   @include mat.autocomplete-theme($sndsapp-theme);
+  @include mat.chips-theme($sndsapp-theme);
   @include mat.progress-bar-theme($sndsapp-theme);
   @include mat.snack-bar-theme($sndsapp-theme);
   @include mat.dialog-theme($sndsapp-theme);
