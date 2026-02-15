@@ -4,12 +4,14 @@ import { RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatRippleModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
 import { PpaPlanService } from '../common/services/ppa-plan.service';
 import { PpaPlan } from '../common/model/ppa-plan.model';
+import { PpaPlanContextDialogComponent } from './ppa-plan-context-dialog/ppa-plan-context-dialog.component';
+import { AuthService } from '../auth/auth.service';
+import { UserType } from '../registration/user-type.enum';
 
 /** Calendar UI inspired by calendar.google.com. Tasks are PPA plans. */
 @Component({
@@ -21,8 +23,6 @@ import { PpaPlan } from '../common/model/ppa-plan.model';
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatRippleModule,
     MatTooltipModule,
   ],
@@ -36,13 +36,23 @@ export class CalendarComponent implements OnInit {
   /** PPA plans loaded from the service */
   plans: PpaPlan[] = [];
 
-  /** Currently selected day (1–31) in the current month, or null */
-  selectedDay: number | null = null;
+  /** Currently selected date, or null */
+  selectedDate: Date | null = null;
 
-  /** Plans on the selected day that have an _id (for sidebar links) */
+  /** Plans on the selected date that have an _id (for sidebar links) */
   get plansInSelectedDay(): PpaPlan[] {
-    if (this.selectedDay === null) return [];
-    return this.getPlansForDay(this.selectedDay).filter((p) => !!p._id);
+    if (this.selectedDate === null) return [];
+    return this.getPlansForDate(this.selectedDate).filter((p) => !!p._id);
+  }
+
+  /** Whether the given day (in current month) matches selectedDate (day, month, year) */
+  isDaySelected(day: number | null): boolean {
+    if (day === null || this.selectedDate === null) return false;
+    return (
+      this.selectedDate.getDate() === day &&
+      this.selectedDate.getMonth() === this.currentMonth &&
+      this.selectedDate.getFullYear() === this.currentYear
+    );
   }
 
   /** Current month (0–11) and year for the visible calendar */
@@ -57,8 +67,8 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  /** Main month grid: 6 rows × 7 columns. Empty cells are null. */
-  monthGrid: (number | null)[][] = [];
+  /** Main month grid: 6 rows × 7 columns. Each cell has unique id and day (null for empty). */
+  monthGrid: { id: number; day: number | null }[][] = [];
 
   /** Today's date number (1–31) in the current month, or null if a different month */
   get todayDate(): number | null {
@@ -73,7 +83,15 @@ export class CalendarComponent implements OnInit {
 
   private hasInitialLoad = false;
 
-  constructor(private readonly ppaPlanService: PpaPlanService) {}
+  get isProgramHolder(): boolean {
+    return this.authService.getActiveRole() === UserType.ProgramHolder;
+  }
+
+  constructor(
+    private readonly ppaPlanService: PpaPlanService,
+    private readonly dialog: MatDialog,
+    private readonly authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.rebuildGrid();
@@ -111,7 +129,7 @@ export class CalendarComponent implements OnInit {
     if (this.currentYear !== y || this.currentMonth !== planMonth) {
       this.currentYear = y;
       this.currentMonth = planMonth;
-      this.selectedDay = null;
+      this.selectedDate = null;
       this.rebuildGrid();
     }
   }
@@ -120,6 +138,12 @@ export class CalendarComponent implements OnInit {
   getPlansForDay(day: number | null): PpaPlan[] {
     if (day === null) return [];
     const dateStr = this.toDateString(day);
+    return this.plans.filter((plan) => this.planOverlapsDay(plan, dateStr));
+  }
+
+  /** Plans that fall on a given date (any month/year) */
+  getPlansForDate(date: Date): PpaPlan[] {
+    const dateStr = this.toDateStringFromDate(date);
     return this.plans.filter((plan) => this.planOverlapsDay(plan, dateStr));
   }
 
@@ -153,21 +177,27 @@ export class CalendarComponent implements OnInit {
     return `${y}-${m}-${d}`;
   }
 
+  private toDateStringFromDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
   selectDay(day: number | null): void {
-    console.log('Selected day:', day);
-    this.selectedDay = day;
+    this.selectedDate = day !== null ? new Date(this.currentYear, this.currentMonth, day) : null;
   }
 
   goToToday(): void {
     const today = new Date();
     this.currentMonth = today.getMonth();
     this.currentYear = today.getFullYear();
-    this.selectedDay = null;
+    this.selectedDate = null;
     this.rebuildGrid();
   }
 
   goPrev(): void {
-    this.selectedDay = null;
+    this.selectedDate = null;
     if (this.currentMonth === 0) {
       this.currentMonth = 11;
       this.currentYear--;
@@ -178,7 +208,7 @@ export class CalendarComponent implements OnInit {
   }
 
   goNext(): void {
-    this.selectedDay = null;
+    this.selectedDate = null;
     if (this.currentMonth === 11) {
       this.currentMonth = 0;
       this.currentYear++;
@@ -190,6 +220,53 @@ export class CalendarComponent implements OnInit {
 
   trackByPlan(plan: any, index: number) { return plan._id ?? index; }
 
+  /** Program/office display: division or officeDivision from officeId (string or populated object) */
+  getPlanProgramDisplay(plan: PpaPlan): string {
+    const office = plan.officeId;
+    if (office == null) return '—';
+    if (typeof office === 'string') return office || '—';
+    const o = office as { division?: string; officeDivision?: string; name?: string; _id?: string };
+    return o?.division ?? o?.officeDivision ?? o?.name ?? o?._id ?? '—';
+  }
+
+  /** Participants display: comma-separated list */
+  getPlanParticipantsDisplay(plan: PpaPlan): string {
+    const p = plan.participants;
+    if (!Array.isArray(p) || p.length === 0) return '';
+    return p.join(', ');
+  }
+
+  /** True if this plan shares at least one participant with another plan on the same day */
+  hasParticipantConflict(plan: PpaPlan): boolean {
+    const participants = plan.participants;
+    if (!Array.isArray(participants) || participants.length === 0) return false;
+
+    const toId = (p: string | { _id?: string }): string =>
+      typeof p === 'string' ? p : (p as { _id?: string })?._id ?? '';
+    const planIds = new Set(participants.map(toId).filter(Boolean));
+
+    const others = this.plansInSelectedDay.filter((p) => p._id !== plan._id);
+    return others.some((other) => {
+      const op = other.participants;
+      if (!Array.isArray(op)) return false;
+      return op.some((x) => planIds.has(toId(x)));
+    });
+  }
+
+  openPlanContext(plan: PpaPlan): void {
+    const dialogRef = this.dialog.open(PpaPlanContextDialogComponent, {
+      width: '560px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: { plan },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.action === 'deleted') {
+        this.loadPlans();
+      }
+    });
+  }
+
   private rebuildGrid(): void {
     const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
     const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
@@ -199,7 +276,11 @@ export class CalendarComponent implements OnInit {
     while (flat.length < 42) flat.push(null);
     this.monthGrid = [];
     for (let row = 0; row < 6; row++) {
-      this.monthGrid.push(flat.slice(row * 7, (row + 1) * 7));
+      const rowCells = flat.slice(row * 7, (row + 1) * 7).map((day, col) => ({
+        id: row * 7 + col,
+        day,
+      }));
+      this.monthGrid.push(rowCells);
     }
   }
 }

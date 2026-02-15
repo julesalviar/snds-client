@@ -5,6 +5,7 @@ export const API_ENDPOINT = {
     login: `${environment.API_URL}/auth/login`,
     register: `${environment.API_URL}/auth/signup`,
     switchRole: `${environment.API_URL}/auth/switch-role`,
+    assignRoles: `${environment.API_URL}/auth/users`,
   },
   referenceData: `${environment.API_URL}/reference-data`,
   internalReferenceData: `${environment.API_URL}/internal-reference-data`,
@@ -26,4 +27,5 @@ export const API_ENDPOINT = {
   },
   reports: `${environment.API_URL}/reports`,
   ppaPlan: `${environment.API_URL}/ppa-plan`,
+  offices: `${environment.API_URL}/offices`,
 }

@@ -50,6 +50,14 @@ export class AuthService {
     return this.isTokenValid(payload) ? payload?.['sid'] ?? '' : '';
   }
 
+  getOfficeIds(): string[] {
+    const payload = this.getTokenPayload();
+    if (!this.isTokenValid(payload)) return [];
+    const oids = payload?.['oids'];
+    if (oids == null || typeof oids !== 'string') return [];
+    return oids.split(',').map((id) => id.trim()).filter(Boolean);
+  }
+
   getActiveRole(): string {
     const payload = this.getTokenPayload();
     return this.isTokenValid(payload) ? payload?.activeRole ?? (payload?.role ?? '') : '';

@@ -88,11 +88,12 @@
         <ng-container matColumnDef="roles">
           <th mat-header-cell *matHeaderCellDef> Roles </th>
           <td mat-cell *matCellDef="let row" class="roles-cell">
-            <ng-container *ngIf="getVisibleRoles(row.roles).length; else noRoles">
+            <ng-container *ngIf="getVisibleRolesSorted(row.roles).length; else noRoles">
               <mat-icon
-                *ngFor="let role of getVisibleRoles(row.roles)"
+                *ngFor="let role of getVisibleRolesSorted(row.roles)"
                 [matTooltip]="getRoleLabel(role)"
                 class="role-icon"
+                [style.color]="getRoleColor(role)"
                 [attr.aria-label]="getRoleLabel(role)">{{ getRoleIcon(role) }}</mat-icon>
             </ng-container>
             <ng-template #noRoles>—</ng-template>
@@ -106,15 +107,6 @@
           <th mat-header-cell *matHeaderCellDef> Actions </th>
           <td mat-cell *matCellDef="let row" class="actions-cell">
             <button mat-icon-button
-                    class="action-edit"
-                    type="button"
-                    matTooltip="Edit"
-                    aria-label="Edit user"
-                    *ngIf="row.created === 'system'"
-                    (click)="onEdit(row)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button
                     class="action-delete"
                     type="button"
                     matTooltip="Delete"
@@ -122,6 +114,26 @@
                     (click)="onDelete(row)">
               <mat-icon>delete</mat-icon>
             </button>
+            <button *ngIf="canAssignRole || row.created === 'system'"
+                    mat-icon-button
+                    type="button"
+                    [matMenuTriggerFor]="rowActionsMenu"
+                    matTooltip="More actions"
+                    aria-label="More actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #rowActionsMenu="matMenu">
+              <button mat-menu-item
+                      *ngIf="row.created === 'system'"
+                      (click)="onEdit(row)">
+                <mat-icon>edit</mat-icon> Edit
+              </button>
+              <button mat-menu-item
+                      *ngIf="canAssignRole"
+                      (click)="onAssignRole(row)">
+                <mat-icon>manage_accounts</mat-icon> Manage Roles
+              </button>
+            </mat-menu>
           </td>
         </ng-container>
 

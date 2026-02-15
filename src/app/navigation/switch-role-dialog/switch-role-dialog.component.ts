@@ -5,7 +5,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { getRoleLabel } from '../../registration/user-type.enum';
-import { getRoleIcon } from '../../registration/user-type-icons';
+import { getRoleIcon, getRoleColor } from '../../registration/user-type-icons';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpService } from '../../common/services/http.service';
 import { API_ENDPOINT } from '../../common/api-endpoints';
@@ -87,5 +87,6 @@ export class SwitchRoleDialogComponent implements OnInit {
   }
 
   getRoleIcon = getRoleIcon;
+  getRoleColor = getRoleColor;
 }
 

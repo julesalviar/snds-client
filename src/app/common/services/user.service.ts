@@ -92,6 +92,25 @@ export class UserService {
     );
   }
 
+  /**
+   * Update a user's roles and optional school/office assignment.
+   * POST /auth/users/:userId/assign-roles with body { roles, schoolId?, officeIds?, sector?, subsector? }
+   */
+  updateUserRoles(
+    userId: string,
+    payload: {
+      roles: string[];
+      schoolId?: string;
+      officeIds?: string[];
+      sector?: string;
+      subsector?: string;
+    }
+  ): Observable<any> {
+    return this.httpService.post(`${API_ENDPOINT.auth.assignRoles}/${userId}/assign-roles`, payload).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
    getSchoolProfile(): any {
     const user = this.httpService.get(API_ENDPOINT.schools).pipe(
       catchError(this.httpService.handleError)

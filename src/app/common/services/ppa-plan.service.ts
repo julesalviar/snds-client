@@ -11,6 +11,7 @@ export interface PpaPlanListParams {
   search?: string;
   classification?: string;
   implementationStatus?: string;
+  assignedUserId?: string;
 }
 
 @Injectable({
@@ -33,6 +34,9 @@ export class PpaPlanService {
       queryParams.push(
         `implementationStatus=${encodeURIComponent(params.implementationStatus.trim())}`
       );
+    }
+    if (params.assignedUserId?.trim()) {
+      queryParams.push(`assignedUserId=${encodeURIComponent(params.assignedUserId.trim())}`);
     }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.ppaPlan}?${queryParams.join('&')}` : API_ENDPOINT.ppaPlan;

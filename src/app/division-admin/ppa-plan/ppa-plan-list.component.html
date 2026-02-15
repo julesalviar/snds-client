@@ -2,7 +2,7 @@
   <mat-card-title>PPA Plans</mat-card-title>
 
   <div class="top-actions">
-    <button mat-raised-button color="primary" (click)="onCreate()">
+    <button *ngIf="userActiveRole === UserType.ProgramHolder" mat-raised-button color="primary" (click)="onCreate()">
       <mat-icon>add</mat-icon>
       Create PPA Plan
     </button>
@@ -24,7 +24,7 @@
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>{{ classificationDisplay.getDisplayTitle() }}</mat-label>
           <mat-select
-            [(value)]="filterClassification"
+            [(ngModel)]="filterClassification"
             (selectionChange)="onClassificationChange()">
             <mat-option *ngFor="let opt of classificationOptions" [value]="opt">
               {{ classificationDisplay.getDisplayText(opt) || 'All' }}
@@ -35,13 +35,21 @@
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>Implementation Status</mat-label>
           <mat-select
-            [(value)]="filterImplementationStatus"
+            [(ngModel)]="filterImplementationStatus"
             (selectionChange)="onImplementationStatusChange()">
             <mat-option *ngFor="let opt of implementationStatusOptions" [value]="opt">
               {{ opt || 'All' }}
             </mat-option>
           </mat-select>
         </mat-form-field>
+
+        <mat-checkbox
+          *ngIf="userActiveRole === UserType.ProgramHolder"
+          [(ngModel)]="filterAssignedToMe"
+          (change)="onAssignedToMeChange()"
+          class="filter-checkbox">
+          Assigned to me
+        </mat-checkbox>
 
         <button *ngIf="hasActiveFilters" mat-button color="warn" (click)="clearFilters()" class="clear-button">
           Clear Filters
@@ -111,7 +119,7 @@
     <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
       <p class="empty-state-title">No PPA plans found</p>
       <p class="empty-state-message">
-        Create a PPA plan using the button above, or adjust your filters.
+        <ng-container *ngIf="userActiveRole === UserType.ProgramHolder">Create a PPA plan using the button above, or </ng-container>adjust your filters.
       </p>
     </div>
 
@@ -119,87 +127,99 @@
       <table mat-table [dataSource]="dataSource" class="ppa-plan-table mat-elevation-z2">
         <ng-container matColumnDef="kra">
           <th mat-header-cell *matHeaderCellDef>KRA</th>
-          <td mat-cell *matCellDef="let row">{{ row.kra ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.kra ?? '—'">{{ row.kra ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="title">
           <th mat-header-cell *matHeaderCellDef>Program Title</th>
-          <td mat-cell *matCellDef="let row">{{ row.title ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.title ?? '—'">{{ row.title ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="activity">
           <th mat-header-cell *matHeaderCellDef>Activity</th>
-          <td mat-cell *matCellDef="let row">{{ row.activity ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.activity ?? '—'">{{ row.activity ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="ppaObjective">
           <th mat-header-cell *matHeaderCellDef>PPA Objective</th>
-          <td mat-cell *matCellDef="let row">{{ row.objective ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.objective ?? '—'">{{ row.objective ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="classification">
           <th mat-header-cell *matHeaderCellDef>{{ classificationDisplay.getDisplayTitle() }}</th>
-          <td mat-cell *matCellDef="let row">{{ classificationDisplay.getDisplayText(row.classification) || '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="classificationDisplay.getDisplayText(row.classification) || '—'">{{ classificationDisplay.getDisplayText(row.classification) || '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="expectedOutput">
           <th mat-header-cell *matHeaderCellDef>Expected Output</th>
-          <td mat-cell *matCellDef="let row">{{ row.expectedOutput ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.expectedOutput ?? '—'">{{ row.expectedOutput ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="implementationStartDate">
           <th mat-header-cell *matHeaderCellDef>Implementation Date</th>
-          <td mat-cell *matCellDef="let row">{{ formatDate(row.implementationStartDate) }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatDate(row.implementationStartDate)">{{ formatDate(row.implementationStartDate) }}</div></td>
         </ng-container>
         <ng-container matColumnDef="budgetaryRequirement">
           <th mat-header-cell *matHeaderCellDef>Budgetary Requirement</th>
-          <td mat-cell *matCellDef="let row">{{ row.budgetaryRequirement != null ? (row.budgetaryRequirement | number:'1.2-2') : '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.budgetaryRequirement != null ? (row.budgetaryRequirement | number:'1.2-2') : '—'">{{ row.budgetaryRequirement != null ? (row.budgetaryRequirement | number:'1.2-2') : '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="materialsAndSupplies">
           <th mat-header-cell *matHeaderCellDef>Materials and Supplies</th>
-          <td mat-cell *matCellDef="let row">{{ row.materialsAndSupplies ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.materialsAndSupplies ?? '—'">{{ row.materialsAndSupplies ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="fundSource">
           <th mat-header-cell *matHeaderCellDef>Fund Source</th>
-          <td mat-cell *matCellDef="let row">{{ row.fundSource ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.fundSource ?? '—'">{{ row.fundSource ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="participants">
           <th mat-header-cell *matHeaderCellDef>Participants</th>
-          <td mat-cell *matCellDef="let row">{{ (row.participants?.length ? row.participants.join(', ') : null) ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="(row.participants?.length ? row.participants.join(', ') : null) ?? '—'">{{ (row.participants?.length ? row.participants.join(', ') : null) ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="supportNeed">
           <th mat-header-cell *matHeaderCellDef>Support Needed From Stakeholder</th>
-          <td mat-cell *matCellDef="let row">{{ row.supportNeed ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.supportNeed ?? '—'">{{ row.supportNeed ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="supportReceivedValue">
           <th mat-header-cell *matHeaderCellDef>Support Received From Stakeholder</th>
-          <td mat-cell *matCellDef="let row">{{ row.supportReceivedValue != null ? (row.supportReceivedValue | number:'1.2-2') : '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.supportReceivedValue != null ? (row.supportReceivedValue | number:'1.2-2') : '—'">{{ row.supportReceivedValue != null ? (row.supportReceivedValue | number:'1.2-2') : '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="stakeholderUserId">
           <th mat-header-cell *matHeaderCellDef>Stakeholder</th>
-          <td mat-cell *matCellDef="let row">{{ getStakeholderDisplay(row.stakeholderUserId) }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="getStakeholderDisplay(row.stakeholderUserId)">{{ getStakeholderDisplay(row.stakeholderUserId) }}</div></td>
         </ng-container>
         <ng-container matColumnDef="amountUtilized">
           <th mat-header-cell *matHeaderCellDef>Amount Utilized</th>
-          <td mat-cell *matCellDef="let row">{{ row.amountUtilized != null ? (row.amountUtilized | number:'1.2-2') : '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.amountUtilized != null ? (row.amountUtilized | number:'1.2-2') : '—'">{{ row.amountUtilized != null ? (row.amountUtilized | number:'1.2-2') : '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="variance">
           <th mat-header-cell *matHeaderCellDef>Variance</th>
-          <td mat-cell *matCellDef="let row">{{ getVariance(row) | number:'1.2-2' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="getVariance(row) | number:'1.2-2'">{{ getVariance(row) | number:'1.2-2' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="percentOfUtilization">
           <th mat-header-cell *matHeaderCellDef>Percent of Utilization</th>
-          <td mat-cell *matCellDef="let row">{{ getPercentOfUtilization(row) + '%' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="(getPercentOfUtilization(row) | number:'1.2-2') + '%'">{{ getPercentOfUtilization(row) | number:'1.2-2' }}%</div></td>
         </ng-container>
         <ng-container matColumnDef="implementationStatus">
           <th mat-header-cell *matHeaderCellDef>Implementation Status</th>
-          <td mat-cell *matCellDef="let row">{{ row.implementationStatus ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.implementationStatus ?? '—'">{{ row.implementationStatus ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="timeliness">
           <th mat-header-cell *matHeaderCellDef>Timeliness</th>
-          <td mat-cell *matCellDef="let row">{{ row.timeliness ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.timeliness ?? '—'">{{ row.timeliness ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="factors">
           <th mat-header-cell *matHeaderCellDef>Factors</th>
-          <td mat-cell *matCellDef="let row">{{ row.factors ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.factors ?? '—'">{{ row.factors ?? '—' }}</div></td>
         </ng-container>
         <ng-container matColumnDef="reportDocument">
           <th mat-header-cell *matHeaderCellDef>Report Document</th>
-          <td mat-cell *matCellDef="let row">{{ hasReportDocument(row) ? 'Yes' : '—' }}</td>
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-content report-docs-cell">
+              <ng-container *ngIf="(row.reportUrls ?? []).length === 0">—</ng-container>
+              <ng-container *ngFor="let url of (row.reportUrls ?? []); let i = index">
+                <a [href]="url" target="_blank" rel="noopener noreferrer" class="report-doc-link" (click)="$event.stopPropagation()"
+                   [matTooltip]="'Download report ' + (i + 1)">
+                  <mat-icon class="report-doc-icon">download</mat-icon>
+                  {{ getReportLinkLabel(row.reportUrls ?? [], i) }}
+                </a>
+                <span *ngIf="i < (row.reportUrls?.length ?? 0) - 1" class="report-doc-separator">, </span>
+              </ng-container>
+            </div>
+          </td>
         </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>

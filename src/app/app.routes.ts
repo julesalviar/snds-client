@@ -36,6 +36,7 @@ import { CloseRegistrationComponent } from './close-registration/close-registrat
 import { CalendarComponent } from './calendar/calendar.component';
 import { PpaPlanListComponent } from './division-admin/ppa-plan/ppa-plan-list.component';
 import { PpaPlanFormComponent } from './division-admin/ppa-plan/ppa-plan-form.component';
+import { OfficeListComponent } from './division-admin/office/office-list.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -138,13 +139,22 @@ export const routes: Routes = [
     data: { roleType: UserType.ProgramHolder },
     children: [
       { path: 'ppa-plans', component: PpaPlanListComponent },
-      { path: 'ppa-plans', component: PpaPlanListComponent },
       { path: 'ppa-plans/create', component: PpaPlanFormComponent },
       { path: 'ppa-plans/edit/:id', component: PpaPlanFormComponent },
       { path: 'calendar', component: CalendarComponent },
     ]
   },
+  {// Office Admin routes
+    path: 'office-admin',
+    canActivateChild: [AuthGuard],
+    data: { roleType: UserType.OfficeAdmin },
+    children: [
+      { path: 'offices', component: OfficeListComponent },
+      { path: 'calendar', component: CalendarComponent },
+      { path: 'ppa-plans', component: PpaPlanListComponent },
+    ]
+  },
 
   // Wildcard redirect
-  {path: '**', redirectTo: '/home'}
+  { path: '**', redirectTo: '/home' }
 ];

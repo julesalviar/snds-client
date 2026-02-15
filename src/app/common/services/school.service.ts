@@ -56,7 +56,7 @@ export class SchoolService {
     }
 
     if (district) {
-      params.push(`district=${encodeURIComponent(district.toLowerCase())}`);
+      params.push(`district=${encodeQueryValue(district.toLowerCase().trim())}`);
     }
 
     url += `?${params.join('&')}`;
@@ -71,7 +71,7 @@ export class SchoolService {
     const params: string[] = ['withNeed=true', 'withAip=true'];
 
     if (district) {
-      params.push(`district=${encodeURIComponent(district.toLowerCase())}`);
+      params.push(`district=${encodeQueryValue(district.toLowerCase().trim())}`);
     }
 
     if (search) {

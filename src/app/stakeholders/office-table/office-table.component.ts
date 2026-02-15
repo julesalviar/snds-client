@@ -11,6 +11,10 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { PpaPlanService } from '../../common/services/ppa-plan.service';
+import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
+import { PpaPlan } from '../../common/model/ppa-plan.model';
+import { PLAN_CLASSIFICATION } from '../../common/enums/plan-classification.enum';
 
 interface OfficeTableData {
     kra: string;
@@ -76,17 +80,22 @@ export class OfficeTableComponent implements OnInit {
     filters = {
         startDate: null,
         endDate: null,
-        dateRangeOption: 'custom', 
-        projectChampClassification: '',
+        dateRangeOption: 'custom',
+        classification: '',
         fundSource: '',
         implementationStatus: '',
         timeliness: '',
         yearRange: '',
-        remarks: '',
-        fivePointReformAgenda: ''
+        remarks: ''
     };
 
-    constructor(private route: ActivatedRoute) {
+    readonly classificationOptions = ['', ...PLAN_CLASSIFICATION];
+
+    constructor(
+        private route: ActivatedRoute,
+        private ppaPlanService: PpaPlanService,
+        public readonly classificationDisplay: PlanClassificationDisplayService
+    ) {
         this.filteredOfficeTableData = new MatTableDataSource(this.officeTableData);
     }
 
@@ -99,85 +108,58 @@ export class OfficeTableComponent implements OnInit {
     }
 
     fetchOfficeTableData(): void {
-        // Simulated async data fetch/Sample data
-        setTimeout(() => {
-            this.officeTableData = [
-                {
-                    kra: 'KRA 1',
-                    programTitle: 'Program Title 1',
-                    activity: 'Activity 1',
-                    ppaObjective: 'Objective 1',
-                    fivePointReformAgenda: 'Enabling Learning Environment',
-                    projectChampClassification: 'GOLD (Enabling Environment)',
-                    expectedOutput: 'Output 1',
-                    dateOfImplementation: new Date('2026-01-01'),
-                    budgetaryRequirements: 100000,
-                    materialsSupplies: 'Meals',
-                    fundSource: 'CO',
-                    participants: 'SPTA',
-                    supportNeededFromStakeholders: 'Support Needed',
-                    supportReceivedFromStakeholders: 'Support Received',
-                    stakeholdersName: 'Stakeholder 1',
-                    amountUtilized: 75000,
-                    variance: 25000,
-                    percentageUtilization: 75,
-                    implementationStatus: 'Completed',
-                    remarks: 'On-time',
-                    hinderingFacilitatingFactors: 'Factors 1',
-                    accomplishmentReport: 'Report 1',
-                },
-                {
-                    kra: 'KRA 2',
-                    programTitle: 'Program Title 1',
-                    activity: 'Activity 1',
-                    ppaObjective: 'Objective 1',
-                    fivePointReformAgenda: 'Learner Well-being',
-                    projectChampClassification: 'SAFE (Well-being of Learners)',
-                    expectedOutput: 'Output 1',
-                    dateOfImplementation: new Date('2026-12-31'),
-                    budgetaryRequirements: 100000,
-                    materialsSupplies: 'Office Supplies',
-                    fundSource: 'PSF',
-                    participants: 'Division Personnel',
-                    supportNeededFromStakeholders: 'Support Needed',
-                    supportReceivedFromStakeholders: 'Support Received',
-                    stakeholdersName: 'Stakeholder 1',
-                    amountUtilized: 75000,
-                    variance: 25000,
-                    percentageUtilization: 75,
-                    implementationStatus: 'For Implementation',
-                    remarks: 'On-time',
-                    hinderingFacilitatingFactors: 'Factors 1',
-                    accomplishmentReport: 'Report 1',
-                },
-                {
-                    kra: 'KRA 3',
-                    programTitle: 'Program Title 3',
-                    activity: 'Activity 1',
-                    ppaObjective: 'Objective 1',
-                    fivePointReformAgenda: 'Teacher Welfare',
-                    projectChampClassification: 'COACH (Welfare of Teachers)',
-                    expectedOutput: 'Output 1',
-                    dateOfImplementation: new Date('2027-01-01'),
-                    budgetaryRequirements: 100000,
-                    materialsSupplies: 'Venue',
-                    fundSource: 'SDO',
-                    participants: 'Teachers',
-                    supportNeededFromStakeholders: 'Support Needed',
-                    supportReceivedFromStakeholders: 'Support Received',
-                    stakeholdersName: 'Stakeholder 1',
-                    amountUtilized: 75000,
-                    variance: 25000,
-                    percentageUtilization: 75,
-                    implementationStatus: 'Ongoing',
-                    remarks: 'Delayed',
-                    hinderingFacilitatingFactors: 'Factors 1',
-                    accomplishmentReport: 'Report 1',
-                }
-            ];
-            this.filteredOfficeTableData.data = this.officeTableData; // Initialize with original data
-            this.isLoading = false;
-        }, 1000);
+        this.ppaPlanService.getList({ limit: 1000 }).subscribe({
+            next: (res) => {
+                this.officeTableData = res.data.map((plan) => this.mapPpaPlanToOfficeTableData(plan));
+                this.filteredOfficeTableData.data = this.officeTableData;
+                this.isLoading = false;
+            },
+            error: () => {
+                this.officeTableData = [];
+                this.filteredOfficeTableData.data = [];
+                this.isLoading = false;
+            }
+        });
+    }
+
+    private mapPpaPlanToOfficeTableData(plan: PpaPlan): OfficeTableData {
+        const budgetaryRequirements = plan.budgetaryRequirement ?? 0;
+        const amountUtilized = plan.amountUtilized ?? 0;
+        const variance = budgetaryRequirements - amountUtilized;
+        const percentageUtilization = budgetaryRequirements > 0
+            ? Math.round((amountUtilized / budgetaryRequirements) * 100)
+            : 0;
+
+        const dateOfImplementation = plan.implementationStartDate
+            ? new Date(plan.implementationStartDate)
+            : plan.implementationEndDate
+                ? new Date(plan.implementationEndDate)
+                : new Date(0);
+
+        return {
+            kra: plan.kra ?? '',
+            programTitle: plan.title ?? '',
+            activity: plan.activity ?? '',
+            ppaObjective: plan.objective ?? '',
+            fivePointReformAgenda: plan.classification ?? '',
+            projectChampClassification: plan.classification ?? '',
+            expectedOutput: plan.expectedOutput ?? '',
+            dateOfImplementation,
+            budgetaryRequirements,
+            materialsSupplies: plan.materialsAndSupplies ?? '',
+            fundSource: plan.fundSource ?? '',
+            participants: Array.isArray(plan.participants) ? plan.participants.join(', ') : '',
+            supportNeededFromStakeholders: plan.supportNeed ?? '',
+            supportReceivedFromStakeholders: plan.supportReceivedValue != null ? String(plan.supportReceivedValue) : '',
+            stakeholdersName: plan.stakeholderUserId ?? '-',
+            amountUtilized,
+            variance,
+            percentageUtilization,
+            implementationStatus: plan.implementationStatus ?? '',
+            remarks: plan.timeliness ?? '',
+            hinderingFacilitatingFactors: plan.factors ?? '',
+            accomplishmentReport: Array.isArray(plan.reportUrls) ? plan.reportUrls.join(', ') : '',
+        };
     }
 
     applyFilter(): void {
@@ -258,11 +240,8 @@ export class OfficeTableComponent implements OnInit {
         if (this.filters.timeliness) {
             filteredData = filteredData.filter(item => item.remarks === this.filters.timeliness);
         }
-        if (this.filters.fivePointReformAgenda) {
-            filteredData = filteredData.filter(item => item.fivePointReformAgenda.includes(this.filters.fivePointReformAgenda));
-        }
-        if (this.filters.projectChampClassification) {
-            filteredData = filteredData.filter(item => item.projectChampClassification.includes(this.filters.projectChampClassification));
+        if (this.filters.classification) {
+            filteredData = filteredData.filter(item => item.fivePointReformAgenda === this.filters.classification);
         }
         if (this.filters.fundSource) {
             filteredData = filteredData.filter(item => item.fundSource.includes(this.filters.fundSource));
@@ -278,13 +257,12 @@ export class OfficeTableComponent implements OnInit {
             startDate: null,
             endDate: null,
             dateRangeOption: 'custom',
-            projectChampClassification: '',
+            classification: '',
             fundSource: '',
             implementationStatus: '',
             timeliness: '',
             yearRange: '',
-            remarks: '',
-            fivePointReformAgenda: ''
+            remarks: ''
         };
 
         this.applyFilter();
@@ -301,5 +279,9 @@ export class OfficeTableComponent implements OnInit {
 
     onRowClicked(index: number): void {
         this.selectedRowIndex = index;
+    }
+
+    getClassificationDisplay(classification: string): string {
+        return this.classificationDisplay.getDisplayText(classification) || '';
     }
 }

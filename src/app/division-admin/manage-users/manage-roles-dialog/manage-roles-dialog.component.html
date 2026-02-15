@@ -1,0 +1,92 @@
+<h2 mat-dialog-title>Manage Roles</h2>
+<mat-dialog-content>
+  <p class="user-info">{{ displayName }}</p>
+  <p class="user-email" *ngIf="data.user?.email">{{ data.user.email }}</p>
+
+  <p class="section-label">Select roles for this user:</p>
+  <div class="roles-list">
+    <label *ngFor="let role of displayRoles" class="role-checkbox-row" [class.role-disabled]="!isRoleAssignable(role)">
+      <mat-checkbox
+        [checked]="isRoleSelected(role)"
+        [disabled]="!isRoleAssignable(role)"
+        (change)="onRoleChange(role, $event.checked)">
+      </mat-checkbox>
+      <span class="role-option-content">
+        <mat-icon class="role-icon" [style.color]="getRoleColor(role)">{{ getRoleIcon(role) }}</mat-icon>
+        {{ getRoleLabel(role) }}
+      </span>
+    </label>
+  </div>
+
+  <div *ngIf="isRoleSelected(UserType.SchoolAdmin) && isRoleAssignable(UserType.SchoolAdmin)" class="role-assignment-section">
+    <p class="section-label">Assign School (required for School Admin):</p>
+    <div class="assignment-fields">
+      <mat-form-field appearance="outline">
+        <mat-label>District/Cluster</mat-label>
+        <mat-select [(ngModel)]="selectedCluster" (selectionChange)="onClusterChange($event.value)">
+          <mat-option *ngFor="let opt of clusterOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>School</mat-label>
+        <mat-select [(ngModel)]="selectedSchoolId" required>
+          <mat-option value="">— Select school —</mat-option>
+          <mat-option *ngFor="let school of schools" [value]="school._id || school.id">
+            {{ (school.schoolName || school.name) || '—' }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div *ngIf="isRoleSelected(UserType.ProgramHolder) && isRoleAssignable(UserType.ProgramHolder)" class="role-assignment-section">
+    <p class="section-label">Assign Offices (required for Program Holder — select one or more):</p>
+    <div class="assignment-fields">
+      <mat-form-field appearance="outline">
+        <mat-label>Division</mat-label>
+        <mat-select [(ngModel)]="selectedOfficeDivision" placeholder="— All divisions —">
+          <mat-option value="">— All divisions —</mat-option>
+          <mat-option *ngFor="let div of officeDivisions" [value]="div">{{ div }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Add Office</mat-label>
+        <mat-select
+          [(ngModel)]="officeSelectValue"
+          (selectionChange)="addOffice($event.value); officeSelectValue = ''"
+          placeholder="— Select office to add —">
+          <mat-option *ngFor="let office of officesForSelect" [value]="office._id" [disabled]="selectedOfficeIds.includes(office._id)">
+            {{ office.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div *ngIf="selectedOfficeIds.length > 0" class="chips-container">
+        <mat-chip-set aria-label="Selected Offices">
+          <mat-chip *ngFor="let officeId of selectedOfficeIds" (removed)="removeOffice(officeId)" [matTooltip]="getOfficeDisplayName(officeId)" class="office-chip">
+            <span class="chip-label">{{ getOfficeName(officeId) }}</span>
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSave()"
+    [disabled]="isSubmitting">
+    <span *ngIf="!isSubmitting">Save</span>
+    <span *ngIf="isSubmitting">
+      <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+      Saving...
+    </span>
+  </button>
+</mat-dialog-actions>

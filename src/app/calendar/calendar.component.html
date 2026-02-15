@@ -1,14 +1,7 @@
 <div class="calendar-layout">
   <!-- Top app bar (Google Calendar style) -->
   <header class="calendar-toolbar">
-    <div class="toolbar-start">
-      <div class="search-wrap">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
-          <mat-icon matPrefix>search</mat-icon>
-          <input matInput placeholder="Search" />
-        </mat-form-field>
-      </div>
-    </div>
+    <div class="toolbar-start"></div>
     <div class="toolbar-center">
       <button mat-stroked-button class="today-btn" (click)="goToToday()">Today</button>
       <div class="nav-arrows">
@@ -33,17 +26,17 @@
       <div class="month-grid-body">
         @for (row of monthGrid; track $index) {
           <div class="month-row">
-            @for (day of row; track $index) {
+            @for (cell of row; track cell.id + '-' + currentMonth + '-' + currentYear) {
               <button
                 class="month-cell"
-                [class.empty]="day === null"
-                [class.today]="day === todayDate"
-                [class.selected]="day === selectedDay && selectedDay !== null"
-                (click)="day !== null && selectDay(day)"
+                [class.empty]="cell.day === null"
+                [class.today]="cell.day === todayDate"
+                [class.selected]="cell.day !== null && isDaySelected(cell.day)"
+                (click)="cell.day !== null && selectDay(cell.day)"
               >
-                <span class="month-cell-num">{{ day }}</span>
+                <span class="month-cell-num">{{ cell.day }}</span>
                 <div class="month-cell-plans">
-                  @for (plan of getPlansForDay(day); track trackByPlan(plan, $index)) {
+                  @for (plan of getPlansForDay(cell.day); track trackByPlan(plan, $index)) {
                     <div class="plan-bar plan-bar-blue" [attr.title]="plan.title">
                       {{ plan.title }}
                     </div>
@@ -58,24 +51,36 @@
 
     <!-- Right sidebar: PPA plans list -->
     <aside class="calendar-sidebar">
-      <button mat-flat-button color="primary" class="create-btn" routerLink="/program-holder/ppa-plans/create">
-        <mat-icon>add</mat-icon>
-        Create
-      </button>
+      @if (isProgramHolder) {
+        <button mat-flat-button color="primary" class="create-btn" routerLink="/program-holder/ppa-plans/create">
+          <mat-icon>add</mat-icon>
+          Create
+        </button>
+      }
       <div class="plans-list">
         <h3 class="plans-list-title">PPA Plans</h3>
         @if (isLoading) {
           <div class="plans-loading">Loading plans…</div>
-        } @else if (selectedDay === null) {
+        } @else if (selectedDate === null) {
           <div class="plans-empty">Select a day</div>
         } @else if (plansInSelectedDay.length === 0) {
           <div class="plans-empty">No plans on this day</div>
         } @else {
           @for (plan of plansInSelectedDay; track plan._id!) {
-            <a class="plan-item" [routerLink]="['/program-holder/ppa-plans/edit', plan._id]">
-              <mat-icon class="plan-icon">task_alt</mat-icon>
-              <span class="plan-title">{{ plan.title }}</span>
-            </a>
+            @let hasConflict = hasParticipantConflict(plan);
+            <button type="button" class="plan-item" [class.plan-item-conflict]="hasConflict" (click)="openPlanContext(plan)" [attr.title]="plan.title">
+              @let participants = getPlanParticipantsDisplay(plan);
+              <div class="plan-item-content">
+                <span class="plan-title">{{ plan.title }}</span>
+                <span class="plan-program">{{ getPlanProgramDisplay(plan) }}</span>
+                @if (participants) {
+                  <span class="plan-participants">{{ participants }}</span>
+                }
+              </div>
+              @if (hasConflict) {
+                <mat-icon class="plan-conflict-icon" matTooltip="Participant conflict: same participant in multiple plans" aria-label="Conflict">report_problem</mat-icon>
+              }
+            </button>
           }
         }
       </div>

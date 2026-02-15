@@ -5,7 +5,7 @@
     <mat-radio-group [(ngModel)]="selectedRole">
       <mat-radio-button *ngFor="let role of data.roles" [value]="role" class="role-option">
         <span class="role-option-content">
-          <mat-icon class="role-icon">{{ getRoleIcon(role) }}</mat-icon>
+          <mat-icon class="role-icon" [style.color]="getRoleColor(role)">{{ getRoleIcon(role) }}</mat-icon>
           {{ getRoleDisplayName(role) }}
         </span>
       </mat-radio-button>

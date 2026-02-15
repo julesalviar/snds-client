@@ -5,8 +5,10 @@
   </button>
 
   <ul class="nav-list" [class.open]="isMenuOpen">
+    <!-- Start (Leading) Menu Items -->
     <li><a routerLink="/home" (click)="closeMenu()">Home</a></li>
 
+    <!-- Middle (Center) Menu Items -->
     <!-- Stakeholder Menus -->
     <ng-container *ngIf="userType.StakeHolder === userActiveRole">
       <li>
@@ -232,6 +234,17 @@
       <li><a routerLink="/program-holder/calendar">Calendar</a></li>
     </ng-container>
 
+    <!-- Office Admin Menus -->
+    <ng-container *ngIf="UserType.OfficeAdmin === userActiveRole">
+      <li><a routerLink="/office-admin/ppa-plans">PPA Plans</a></li>
+      <li><a routerLink="/office-admin/calendar">Calendar</a></li>
+      <li><a routerLink="/office-admin/offices">Offices</a></li>
+    </ng-container>
+
+    <ng-container *ngIf="UserType.SystemAdmin === userActiveRole">
+      <li><a routerLink="/system-admin/manage-users">Users</a></li>
+    </ng-container>
+
     <!-- Guest Menus - for users who are not logged in -->
     <ng-container *ngIf="!isLoggedIn()">
       <li>
@@ -296,6 +309,7 @@
       </li>
     </ng-container>
 
+    <!-- End (Lagging) Menu Items -->
     <li><a routerLink="about-us" (click)="closeMenu()">About Us</a></li>
   </ul>
 

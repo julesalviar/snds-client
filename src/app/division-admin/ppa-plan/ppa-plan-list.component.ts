@@ -5,7 +5,6 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { finalize } from 'rxjs/operators';
-import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,8 +16,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
+import { AuthService } from '../../auth/auth.service';
+import { UserType } from '../../registration/user-type.enum';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { PLAN_CLASSIFICATION } from '../../common/enums/plan-classification.enum';
@@ -58,14 +60,20 @@ export interface ColumnCategory {
     MatSelectModule,
     MatButtonModule,
     MatMenuModule,
+    MatCheckboxModule,
   ],
   templateUrl: './ppa-plan-list.component.html',
   styleUrl: './ppa-plan-list.component.css',
   encapsulation: ViewEncapsulation.None,
 })
 export class PpaPlanListComponent implements OnInit, OnDestroy {
+  readonly UserType = UserType;
   private readonly destroy$ = new Subject<void>();
   private readonly searchSubject = new Subject<string>();
+
+  get userActiveRole(): string {
+    return this.authService.getActiveRole();
+  }
 
   /** Column categories for visibility toggle. Actions column is always visible. */
   columnCategories: ColumnCategory[] = [
@@ -145,6 +153,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   searchTerm = '';
   filterClassification = '';
   filterImplementationStatus = '';
+  filterAssignedToMe = true;
 
   readonly classificationOptions = ['', ...PLAN_CLASSIFICATION];
   readonly implementationStatusOptions = ['', ...PLAN_IMPLEMENTATION_STATUS];
@@ -153,16 +162,17 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     return (
       this.searchTerm.trim() !== '' ||
       this.filterClassification !== '' ||
-      this.filterImplementationStatus !== ''
+      this.filterImplementationStatus !== '' ||
+      (this.userActiveRole === UserType.ProgramHolder && !this.filterAssignedToMe)
     );
   }
 
   constructor(
     private readonly ppaPlanService: PpaPlanService,
+    private readonly authService: AuthService,
     public readonly classificationDisplay: PlanClassificationDisplayService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
-    private readonly router: Router,
     private readonly breakpointObserver: BreakpointObserver
   ) {}
 
@@ -243,10 +253,16 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     this.loadPlans();
   }
 
+  onAssignedToMeChange(): void {
+    this.pageIndex = 0;
+    this.loadPlans();
+  }
+
   clearFilters(): void {
     this.searchTerm = '';
     this.filterClassification = '';
     this.filterImplementationStatus = '';
+    this.filterAssignedToMe = true;
     this.pageIndex = 0;
     this.loadPlans();
   }
@@ -260,6 +276,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
         search: this.searchTerm.trim() || undefined,
         classification: this.filterClassification || undefined,
         implementationStatus: this.filterImplementationStatus || undefined,
+        assignedUserId: this.filterAssignedToMe && this.userActiveRole === UserType.ProgramHolder ? this.authService.getUserId() || undefined : undefined,
       })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
@@ -294,9 +311,21 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   }
 
   onEdit(row: PpaPlan): void {
-    if (row._id) {
-      this.router.navigate(['/program-holder', 'ppa-plan', 'edit', row._id]);
-    }
+    if (!row._id) return;
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const dialogRef = this.dialog.open(PpaPlanFormComponent, {
+      width: isMobile ? '100vw' : 'min(900px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      data: { planId: row._id },
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadPlans();
+      }
+    });
   }
 
   onDelete(row: PpaPlan): void {
@@ -353,6 +382,12 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
 
   hasReportDocument(row: PpaPlan): boolean {
     return Array.isArray(row.reportUrls) && row.reportUrls.length > 0;
+  }
+
+  /** Label for report document link (e.g. "Report 1" or "Download" when single). */
+  getReportLinkLabel(urls: string[], index: number): string {
+    if (urls.length <= 1) return 'Download';
+    return `Report ${index + 1}`;
   }
 
   private showSuccess(message: string): void {

@@ -1,0 +1,115 @@
+mat-dialog-content {
+  padding-top: 8px;
+  min-height: 120px;
+}
+
+.user-info {
+  font-weight: 500;
+  font-size: 16px;
+  margin: 0 0 4px 0;
+}
+
+.user-email {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  margin: 0 0 16px 0;
+}
+
+.section-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 12px 0;
+}
+
+.roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.role-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.role-checkbox-row.role-disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.role-option-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-option-content .role-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.inline-spinner {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.role-assignment-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.assignment-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assignment-fields mat-form-field {
+  width: 100%;
+  min-width: 200px;
+}
+
+.chips-container {
+  margin-top: 8px;
+}
+
+.chips-container mat-chip-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips-container mat-chip.office-chip {
+  max-width: 200px;
+  overflow: hidden;
+}
+
+.chips-container mat-chip.office-chip .chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 160px;
+  vertical-align: middle;
+}
+
+/* Force truncation on chip internal elements */
+:host ::ng-deep .chips-container mat-chip.office-chip {
+  overflow: hidden !important;
+}
+
+:host ::ng-deep .chips-container mat-chip.office-chip .mdc-evolution-chip__cell--primary,
+:host ::ng-deep .chips-container mat-chip.office-chip .mat-mdc-chip-action-label,
+:host ::ng-deep .chips-container mat-chip.office-chip .mdc-evolution-chip__text-label {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}

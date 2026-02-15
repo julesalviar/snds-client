@@ -58,6 +58,17 @@
           <section class="form-section">
             <h3 class="section-title">Basic information</h3>
             <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Program Holder</mat-label>
+              <input matInput [value]="programHolderDisplayName" readonly disabled>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Program</mat-label>
+              <mat-select formControlName="officeId" placeholder="Select program">
+                <mat-option value="">—</mat-option>
+                <mat-option *ngFor="let opt of officeOptionsForSelect" [value]="opt.value">{{ opt.label }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>KRA</mat-label>
               <input matInput formControlName="kra" placeholder="Key Result Area">
               <mat-error>KRA is required.</mat-error>
@@ -129,7 +140,10 @@
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Fund Source</mat-label>
-              <input matInput formControlName="fundSource" placeholder="Fund source">
+              <mat-select formControlName="fundSource" placeholder="Select fund source">
+                <mat-option value="">—</mat-option>
+                <mat-option *ngFor="let opt of fundSourceOptions" [value]="opt">{{ opt }}</mat-option>
+              </mat-select>
             </mat-form-field>
           </section>
 

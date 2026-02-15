@@ -1,0 +1,102 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="title-icon">task_alt</mat-icon>
+  {{ plan.title }}
+</h2>
+<mat-dialog-content>
+  <div class="summary-section">
+    <dl class="summary-list">
+      <dt>KRA</dt>
+      <dd>{{ plan.kra || '—' }}</dd>
+
+      <dt>Activity</dt>
+      <dd>{{ plan.activity || '—' }}</dd>
+
+      <dt>Objective</dt>
+      <dd>{{ plan.objective || '—' }}</dd>
+
+      <dt>Classification</dt>
+      <dd>{{ getClassificationDisplay(plan.classification) }}</dd>
+
+      <dt>Expected Output</dt>
+      <dd>{{ plan.expectedOutput || '—' }}</dd>
+
+      <dt>Implementation Start</dt>
+      <dd>{{ getStartDate() }}</dd>
+
+      <dt>Implementation End</dt>
+      <dd>{{ getEndDate() }}</dd>
+
+      <dt>Implementation Status</dt>
+      <dd>{{ plan.implementationStatus || '—' }}</dd>
+
+      <dt>Timeliness</dt>
+      <dd>{{ plan.timeliness || '—' }}</dd>
+
+      <dt>Budgetary Requirement</dt>
+      <dd>{{ plan.budgetaryRequirement != null ? (plan.budgetaryRequirement | number:'1.2-2') : '—' }}</dd>
+
+      <dt>Amount Utilized</dt>
+      <dd>{{ plan.amountUtilized != null ? (plan.amountUtilized | number:'1.2-2') : '—' }}</dd>
+
+      <dt>Materials and Supplies</dt>
+      <dd>{{ plan.materialsAndSupplies || '—' }}</dd>
+
+      <dt>Fund Source</dt>
+      <dd>{{ plan.fundSource || '—' }}</dd>
+
+      <dt>Participants</dt>
+      <dd>{{ getArrayDisplay(plan.participants) }}</dd>
+
+      <dt>Support Need</dt>
+      <dd>{{ plan.supportNeed || '—' }}</dd>
+
+      <dt>Support Received Value</dt>
+      <dd>{{ plan.supportReceivedValue != null ? (plan.supportReceivedValue | number:'1.2-2') : '—' }}</dd>
+
+      <dt>Stakeholder</dt>
+      <dd>{{ getUserDisplay(plan.stakeholderUserId) }}</dd>
+
+      <dt>Assigned User</dt>
+      <dd>{{ getUserDisplay(plan.assignedUserId) }}</dd>
+
+      <dt>Office</dt>
+      <dd>{{ getUserDisplay(plan.officeId) }}</dd>
+
+      <dt>Factors</dt>
+      <dd>{{ plan.factors || '—' }}</dd>
+
+      <dt>Reports</dt>
+      <dd>
+        <ng-container *ngIf="!(plan.reportUrls?.length)">—</ng-container>
+        <ng-container *ngFor="let url of (plan.reportUrls ?? []); let i = index">
+          <a [href]="url" target="_blank" rel="noopener noreferrer" class="report-link">
+            {{ getReportLinkLabel(plan.reportUrls ?? [], i) }}
+          </a>
+          <span *ngIf="i < (plan.reportUrls?.length ?? 0) - 1">, </span>
+        </ng-container>
+      </dd>
+
+      <dt>Allowed Roles</dt>
+      <dd>{{ getArrayDisplay(plan.allowedRoles) }}</dd>
+
+      <dt>Created At</dt>
+      <dd>{{ formatDate(plan.createdAt) }}</dd>
+
+      <dt>Updated At</dt>
+      <dd>{{ formatDate(plan.updatedAt) }}</dd>
+    </dl>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  @if (canEdit) {
+    <button mat-stroked-button color="primary" (click)="onEdit()">
+      <mat-icon>edit</mat-icon>
+      Edit
+    </button>
+    <button mat-stroked-button color="warn" (click)="onDelete()">
+      <mat-icon>delete</mat-icon>
+      Delete
+    </button>
+  }
+  <button mat-button (click)="onClose()">Close</button>
+</mat-dialog-actions>

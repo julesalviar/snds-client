@@ -32,6 +32,7 @@ export interface UserListItem {
   address?: string;
   sector?: string;
   subsector?: string;
+  officeIds?: string[];
   createdAt?: string | { $date: string };
   updatedAt?: string | { $date: string };
 }

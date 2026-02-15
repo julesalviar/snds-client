@@ -3,9 +3,8 @@ import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Subject, forkJoin, of, from } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil, switchMap, map, catchError } from 'rxjs/operators';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -25,9 +24,13 @@ import { HttpService } from '../../common/services/http.service';
 import { API_ENDPOINT } from '../../common/api-endpoints';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { PLAN_CLASSIFICATION } from '../../common/enums/plan-classification.enum';
+import { AuthService } from '../../auth/auth.service';
+import { OfficeService } from '../../common/services/office.service';
+import { Office } from '../../common/model/office.model';
 import { PLAN_IMPLEMENTATION_STATUS } from '../../common/enums/plan-implementation-status.enum';
 import { PLAN_PARTICIPANT_OPTIONS } from '../../common/enums/plan-participant.enum';
 import { TIMELINESS } from '../../common/enums/timeliness.enum';
+import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { UserListItem } from '../../registration/user.model';
 
 @Component({
@@ -65,8 +68,15 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   readonly classificationOptions = PLAN_CLASSIFICATION;
   readonly implementationStatusOptions = PLAN_IMPLEMENTATION_STATUS;
   readonly timelinessOptions = TIMELINESS;
+  fundSourceOptions: string[] = [];
   readonly participantOptions = PLAN_PARTICIPANT_OPTIONS;
   readonly userSearchLimit = 50;
+  officeOptionsForSelect: Array<{ value: string; label: string }> = [];
+  get programHolderDisplayName(): string {
+    const name = this.authService.getName();
+    const username = this.authService.getUsername();
+    return name || username || '—';
+  }
   @ViewChild('reportFileInput') reportFileInput!: ElementRef<HTMLInputElement>;
 
   /** Report document upload state */
@@ -139,6 +149,9 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly ppaPlanService: PpaPlanService,
     private readonly userService: UserService,
+    private readonly authService: AuthService,
+    private readonly officeService: OfficeService,
+    private readonly internalReferenceDataService: InternalReferenceDataService,
     private readonly httpService: HttpService,
     public readonly classificationDisplay: PlanClassificationDisplayService,
     private readonly snackBar: MatSnackBar,
@@ -165,6 +178,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       supportNeed: [''],
       supportReceivedValue: [null as number | null],
       stakeholderUserId: ['', Validators.required],
+      assignedUserId: [''],
+      officeId: [''],
       amountUtilized: [null as number | null],
       implementationStatus: ['', Validators.required],
       timeliness: [''],
@@ -178,6 +193,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       this.isEdit = !!this.planId;
     }
     this.setupStakeholderSearch();
+    this.initializeAssignedUserId();
     this.loadUsers();
   }
 
@@ -194,6 +210,13 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((term) => this.performStakeholderSearch(term));
+  }
+
+  private initializeAssignedUserId(): void {
+    const currentUserId = this.authService.getUserId();
+    if (currentUserId) {
+      this.form.patchValue({ assignedUserId: currentUserId });
+    }
   }
 
   onStakeholderInput(event: Event): void {
@@ -232,6 +255,20 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  private normalizeOfficeId(value: string | { _id?: string } | null | undefined): string {
+    if (value == null) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'object' && value !== null && '_id' in value) return (value as { _id?: string })._id ?? '';
+    return '';
+  }
+
+  private normalizeUserId(value: string | UserListItem | null | undefined): string {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object' && value !== null && '_id' in value) return (value as UserListItem)._id ?? '';
+    return '';
+  }
+
   /** Used by mat-autocomplete displayWith; handles both id string and populated user object from API. */
   displayStakeholderFn = (value: string | UserListItem): string => {
     if (value == null) return '';
@@ -245,12 +282,29 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   };
 
   private loadUsers(): void {
-    this.userService
-      .getUsers({ page: 1, limit: 500 })
+    const users$ = this.userService.getUsers({ page: 1, limit: 500 }).pipe(
+      map((res) => {
+        this.users = res.data ?? [];
+        this.filteredUsers = [...this.users];
+        return this.users;
+      }),
+      catchError(() => {
+        this.users = [];
+        this.filteredUsers = [];
+        return of([]);
+      })
+    );
+    const offices$ = this.loadOfficesObservable();
+    const refData$ = from(this.internalReferenceDataService.initialize()).pipe(
+      map(() => {
+        this.fundSourceOptions = [...this.internalReferenceDataService.getFundSources()];
+        return true;
+      })
+    );
+    forkJoin({ users: users$, offices: offices$, refData: refData$ })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
-          this.users = res.data ?? [];
-          this.filteredUsers = [...this.users];
+        next: () => {
           if (this.isEdit && this.planId) {
             this.loadPlan();
           } else {
@@ -258,12 +312,60 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           }
         },
         error: () => {
-          this.users = [];
-          this.filteredUsers = [];
           if (!this.isEdit) this.isLoading = false;
           if (this.isEdit && this.planId) this.loadPlan();
         },
       });
+  }
+
+  private loadOfficesObservable() {
+    let officeIds: string[] = [];
+    try {
+      officeIds = (this.authService.getOfficeIds() ?? []).filter((id) => id?.trim?.());
+    } catch {
+      officeIds = [];
+    }
+    const mapOfficesToOptions = (offices: { _id: string; name?: string; division?: string }[]) =>
+      offices.map((o) => ({
+        value: o._id,
+        label: `${o.division || ''} - ${o.name || ''}`.trim() || o._id,
+      }));
+
+    const params = { page: 1, limit: 100, ...(officeIds.length > 0 && { ids: officeIds }) };
+    return this.officeService.getOffices(params).pipe(
+      map((res) => res.data),
+      map((offices) => {
+        if (officeIds.length === 0) return offices;
+        const allowedIds = new Set(officeIds);
+        const filtered = offices.filter((o) => o?._id && allowedIds.has(o._id));
+        return filtered.length > 0 ? filtered : null;
+      }),
+      switchMap((filtered) => {
+        if (filtered && filtered.length > 0) {
+          this.officeOptionsForSelect = mapOfficesToOptions(filtered);
+          return of(true);
+        }
+        if (officeIds.length === 0) {
+          this.officeOptionsForSelect = [];
+          return of(true);
+        }
+        return forkJoin(
+          officeIds.map((id) =>
+            this.officeService.getById(id).pipe(catchError(() => of(null as Office | null)))
+          )
+        ).pipe(
+          map((results) => {
+            const offices = results.filter((o): o is Office => o != null);
+            this.officeOptionsForSelect = mapOfficesToOptions(offices);
+            return true;
+          })
+        );
+      }),
+      catchError(() => {
+        this.officeOptionsForSelect = [];
+        return of(true);
+      })
+    );
   }
 
   private loadPlan(): void {
@@ -280,6 +382,26 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
             this.filteredUsers = [...this.filteredUsers, userObj];
           }
         }
+        const officeId = this.normalizeOfficeId(plan.officeId);
+        if (officeId && !this.officeOptionsForSelect.some((o) => o.value === officeId)) {
+          this.officeService.getById(officeId).pipe(
+            takeUntil(this.destroy$),
+            catchError(() => of(null))
+          ).subscribe((office) => {
+            if (office) {
+              this.officeOptionsForSelect = [
+                ...this.officeOptionsForSelect,
+                {
+                  value: office._id,
+                  label: `${office.division || ''} - ${office.name || ''}`.trim() || office._id,
+                },
+              ];
+            }
+            this.form.patchValue({ officeId: officeId || '' });
+          });
+        } else {
+          this.form.patchValue({ officeId: officeId ?? '' });
+        }
         this.form.patchValue({
           kra: plan.kra,
           title: plan.title,
@@ -295,6 +417,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           supportNeed: plan.supportNeed ?? '',
           supportReceivedValue: plan.supportReceivedValue ?? null,
           stakeholderUserId: stakeholderId ?? '',
+          assignedUserId: this.authService.getUserId() ?? '',
           amountUtilized: plan.amountUtilized ?? null,
           implementationStatus: plan.implementationStatus ?? '',
           timeliness: plan.timeliness ?? '',
@@ -335,6 +458,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       supportNeed: raw.supportNeed || undefined,
       supportReceivedValue: raw.supportReceivedValue ?? undefined,
       stakeholderUserId: this.normalizeStakeholderUserId(raw.stakeholderUserId),
+      assignedUserId: this.authService.getUserId() || undefined,
+      officeId: raw.officeId?.trim?.() || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
       implementationStatus: raw.implementationStatus,
       timeliness: raw.timeliness || undefined,
@@ -496,12 +621,9 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     return user.name || user.userName || user.email || user._id || '—';
   }
 
-  /** Normalize API value: return id string whether stakeholderUserId is a string or populated object. */
+  /** Normalize API value: return id string whether userId is a string or populated object. */
   private normalizeStakeholderUserId(value: string | UserListItem | null | undefined): string {
-    if (value == null) return '';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'object' && value !== null && '_id' in value) return (value as UserListItem)._id ?? '';
-    return '';
+    return this.normalizeUserId(value);
   }
 
   private showSuccess(message: string): void {

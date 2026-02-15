@@ -18,6 +18,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { AuthService } from '../../auth/auth.service';
@@ -26,9 +27,10 @@ import { UserInviteService } from '../../common/services/user-invite.service';
 import { UserInvite } from '../../common/model/user-invite.model';
 import { UserListItem } from '../../registration/user.model';
 import { UserType, getRoleLabel } from '../../registration/user-type.enum';
-import { getRoleIcon } from '../../registration/user-type-icons';
+import { getRoleIcon, getRoleColor } from '../../registration/user-type-icons';
 import { formatDateString, formatDateTimeString } from '../../common/date-utils';
 import { InviteUserDialogComponent } from './invite-user-dialog/invite-user-dialog.component';
+import { ManageRolesDialogComponent } from './manage-roles-dialog/manage-roles-dialog.component';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -51,6 +53,7 @@ import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/c
     MatButtonModule,
     MatTabsModule,
     MatSlideToggleModule,
+    MatMenuModule,
   ],
   templateUrl: './manage-users.component.html',
   styleUrl: './manage-users.component.css',
@@ -77,11 +80,23 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     return role === UserType.System || role === UserType.SystemAdmin;
   }
 
+  /** True when the current user can assign roles (systemAdmin or divisionAdmin). */
+  get canAssignRole(): boolean {
+    const role = this.authService.getActiveRole();
+    return role === UserType.SystemAdmin || role === UserType.DivisionAdmin;
+  }
+
   getVisibleRoles(roles: string[] | undefined): string[] {
     if (!roles?.length) return [];
     if (this.canSeeSystemRoleIcons) return roles;
     const visible = new Set([UserType.StakeHolder, UserType.SchoolAdmin, UserType.DivisionAdmin, UserType.ProgramHolder]);
     return roles.filter((r) => visible.has(r as UserType));
+  }
+
+  /** Visible roles sorted by role display name. */
+  getVisibleRolesSorted(roles: string[] | undefined): string[] {
+    const visible = this.getVisibleRoles(roles);
+    return [...visible].sort((a, b) => getRoleLabel(a).localeCompare(getRoleLabel(b)));
   }
 
   dataSource = new MatTableDataSource<UserListItem>([]);
@@ -323,6 +338,18 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     // TODO: implement edit
   }
 
+  onAssignRole(row: UserListItem): void {
+    const dialogRef = this.dialog.open(ManageRolesDialogComponent, {
+      width: '400px',
+      data: { user: row },
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadUsers();
+      }
+    });
+  }
+
   onDelete(row: UserListItem): void {
     const displayName = row.name || row.userName || row.email || 'this user';
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
@@ -387,6 +414,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   }
 
   getRoleIcon = getRoleIcon;
+  getRoleColor = getRoleColor;
   getRoleLabel = getRoleLabel;
 
   loadInvites(): void {

@@ -1,0 +1,57 @@
+<div class="office-form-wrapper" [class.dialog-mode]="isDialogMode">
+  <header class="dialog-header" *ngIf="isDialogMode">
+    <h2 mat-dialog-title class="dialog-title">{{ isEdit ? 'Edit' : 'Create' }} Office</h2>
+    <button mat-icon-button class="dialog-close-btn" (click)="onCancel()" [disabled]="isSaving"
+            matTooltip="Close"
+            matTooltipPosition="below"
+            aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="container dialog-content-area" [class.dialog-container]="isDialogMode">
+    <div class="modal-form-container">
+      <mat-card class="form-card" [class.dialog-card]="isDialogMode">
+        <mat-card-title *ngIf="!isDialogMode">{{ isEdit ? 'Edit' : 'Create' }} Office</mat-card-title>
+        <mat-card-content>
+          <div *ngIf="isLoading" class="skeleton-loading" aria-hidden="true">
+            <section class="skeleton-section">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-field"></div>
+              <div class="skeleton skeleton-field"></div>
+            </section>
+          </div>
+
+          <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
+            <section class="form-section">
+              <h3 class="section-title">Office information</h3>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Division</mat-label>
+                <mat-select formControlName="division" placeholder="Select division">
+                  <mat-option value="">—</mat-option>
+                  <mat-option *ngFor="let div of divisionOptions" [value]="div">{{ div }}</mat-option>
+                </mat-select>
+                <mat-error>Division is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" placeholder="Office name (e.g. Accounting, Math)">
+                <mat-error>Name is required.</mat-error>
+              </mat-form-field>
+            </section>
+
+            <div class="button-group" [class.dialog-actions]="isDialogMode" [attr.role]="isDialogMode ? 'group' : null" [attr.aria-label]="isDialogMode ? 'Form actions' : null">
+              <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isSaving" class="submit-btn">
+                <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+                {{ isEdit ? 'Update' : 'Create' }} Office
+              </button>
+              <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving" class="cancel-btn">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

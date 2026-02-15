@@ -6,6 +6,8 @@ import { BaseReferenceDataService } from "./base-reference-data.service";
 
 const CLUSTERS_KEY = 'clusters';
 const OPEN_REGISTRATION_KEY = 'openRegistration';
+const OFFICE_DIVISIONS_KEY = 'officeDivisions';
+const FUND_SOURCE_KEY = 'fundSource';
 
 @Injectable({ providedIn: 'root' })
 export class InternalReferenceDataService extends BaseReferenceDataService {
@@ -25,6 +27,26 @@ export class InternalReferenceDataService extends BaseReferenceDataService {
 
   protected getErrorMessage(): string {
     return 'Internal reference data failed';
+  }
+
+  /** Get office divisions array. Call initialize() first. */
+  getOfficeDivisions(): string[] {
+    const raw = this.get(OFFICE_DIVISIONS_KEY);
+    if (Array.isArray(raw)) return raw;
+    if (raw && typeof raw === 'object' && Array.isArray((raw as { value?: string[] }).value)) {
+      return (raw as { value: string[] }).value;
+    }
+    return [];
+  }
+
+  /** Get fund source options array. Call initialize() first. */
+  getFundSources(): string[] {
+    const raw = this.get(FUND_SOURCE_KEY);
+    if (Array.isArray(raw)) return raw;
+    if (raw && typeof raw === 'object' && Array.isArray((raw as { value?: string[] }).value)) {
+      return (raw as { value: string[] }).value;
+    }
+    return [];
   }
 
   /** Get clusters (districts) array. Call initialize() first. */

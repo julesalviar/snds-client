@@ -15,6 +15,8 @@ export interface PpaPlan {
   supportNeed?: string;
   supportReceivedValue?: number;
   stakeholderUserId: string;
+  assignedUserId?: string;
+  officeId?: string;
   amountUtilized?: number;
   implementationStatus: string;
   timeliness?: string;
