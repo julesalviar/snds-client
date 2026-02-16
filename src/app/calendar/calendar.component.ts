@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PpaPlanService } from '../common/services/ppa-plan.service';
 import { PpaPlan } from '../common/model/ppa-plan.model';
 import { PpaPlanContextDialogComponent } from './ppa-plan-context-dialog/ppa-plan-context-dialog.component';
+import { PpaPlanFormComponent } from '../division-admin/ppa-plan/ppa-plan-form.component';
 import { AuthService } from '../auth/auth.service';
 import { UserType } from '../registration/user-type.enum';
 
@@ -81,8 +83,6 @@ export class CalendarComponent implements OnInit {
 
   isLoading = false;
 
-  private hasInitialLoad = false;
-
   get isProgramHolder(): boolean {
     return this.authService.getActiveRole() === UserType.ProgramHolder;
   }
@@ -91,6 +91,8 @@ export class CalendarComponent implements OnInit {
     private readonly ppaPlanService: PpaPlanService,
     private readonly dialog: MatDialog,
     private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly breakpointObserver: BreakpointObserver,
   ) {}
 
   ngOnInit(): void {
@@ -98,16 +100,14 @@ export class CalendarComponent implements OnInit {
     this.loadPlans();
   }
 
-  /** Load PPA plans for the visible month range */
+  /** Load PPA plans for the visible month using startDateFrom and startDateTo */
   loadPlans(): void {
     this.isLoading = true;
-    this.ppaPlanService.getList({ limit: 500 }).subscribe({
+    const startDateFrom = this.getMonthStartDateString();
+    const startDateTo = this.getMonthEndDateString();
+    this.ppaPlanService.getList({ startDateFrom, startDateTo }).subscribe({
       next: (res) => {
         this.plans = Array.isArray(res.data) ? res.data : [];
-        if (!this.hasInitialLoad && this.plans.length > 0) {
-          this.hasInitialLoad = true;
-          this.navigateToFirstMonthWithPlansIfNeeded();
-        }
         this.isLoading = false;
       },
       error: () => {
@@ -116,22 +116,18 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  /** When we have plans but none in the current month, jump to the first month that has plans */
-  private navigateToFirstMonthWithPlansIfNeeded(): void {
-    if (this.plans.length === 0) return;
-    const firstDateStr = this.plans
-      .map((p) => this.getPlanDateStr(p, 'implementationStartDate') ?? this.getPlanDateStr(p, 'implementation_start_date'))
-      .filter((s): s is string => !!s)
-      .sort()[0];
-    if (!firstDateStr) return;
-    const [y, m] = firstDateStr.split('-').map(Number);
-    const planMonth = m - 1;
-    if (this.currentYear !== y || this.currentMonth !== planMonth) {
-      this.currentYear = y;
-      this.currentMonth = planMonth;
-      this.selectedDate = null;
-      this.rebuildGrid();
-    }
+  private getMonthStartDateString(): string {
+    const y = this.currentYear;
+    const m = String(this.currentMonth + 1).padStart(2, '0');
+    return `${y}-${m}-01`;
+  }
+
+  private getMonthEndDateString(): string {
+    const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+    const y = this.currentYear;
+    const m = String(this.currentMonth + 1).padStart(2, '0');
+    const d = String(lastDay).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   /** Plans that fall on a given day in the current month */
@@ -194,6 +190,7 @@ export class CalendarComponent implements OnInit {
     this.currentYear = today.getFullYear();
     this.selectedDate = null;
     this.rebuildGrid();
+    this.loadPlans();
   }
 
   goPrev(): void {
@@ -205,6 +202,7 @@ export class CalendarComponent implements OnInit {
       this.currentMonth--;
     }
     this.rebuildGrid();
+    this.loadPlans();
   }
 
   goNext(): void {
@@ -216,6 +214,7 @@ export class CalendarComponent implements OnInit {
       this.currentMonth++;
     }
     this.rebuildGrid();
+    this.loadPlans();
   }
 
   trackByPlan(plan: any, index: number) { return plan._id ?? index; }
@@ -225,8 +224,24 @@ export class CalendarComponent implements OnInit {
     const office = plan.officeId;
     if (office == null) return '—';
     if (typeof office === 'string') return office || '—';
-    const o = office as { division?: string; officeDivision?: string; name?: string; _id?: string };
-    return o?.division ?? o?.officeDivision ?? o?.name ?? o?._id ?? '—';
+    const o = office as { division?: string; officeDivision?: string; code?: string; name?: string };
+    return o?.code ?? o.name ?? o.division ?? '—';
+  }
+
+  /** Office code and assigned user: "o.code - p.name" when both exist */
+  getPlanOfficeAndAssignedDisplay(plan: PpaPlan): string {
+    const oCode = this.getPlanProgramDisplay(plan);
+    const assigned = plan.assignedUserId;
+    const pName =
+      assigned == null
+        ? ''
+        : typeof assigned === 'object' && 'name' in assigned
+          ? (assigned as { name?: string }).name ?? ''
+          : '';
+    if (oCode && oCode !== '—' && pName) return `${oCode} | ${pName}`;
+    if (oCode && oCode !== '—') return oCode;
+    if (pName) return pName;
+    return '—';
   }
 
   /** Participants display: comma-separated list */
@@ -250,6 +265,22 @@ export class CalendarComponent implements OnInit {
       const op = other.participants;
       if (!Array.isArray(op)) return false;
       return op.some((x) => planIds.has(toId(x)));
+    });
+  }
+
+  openCreatePlanModal(): void {
+    this.router.navigate(['/program-holder/ppa-plans']);
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const dialogRef = this.dialog.open(PpaPlanFormComponent, {
+      width: isMobile ? '100vw' : 'min(900px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      data: {},
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) this.loadPlans();
     });
   }
 

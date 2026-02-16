@@ -12,6 +12,8 @@ export interface PpaPlanListParams {
   classification?: string;
   implementationStatus?: string;
   assignedUserId?: string;
+  startDateFrom?: string;
+  startDateTo?: string;
 }
 
 @Injectable({
@@ -37,6 +39,12 @@ export class PpaPlanService {
     }
     if (params.assignedUserId?.trim()) {
       queryParams.push(`assignedUserId=${encodeURIComponent(params.assignedUserId.trim())}`);
+    }
+    if (params.startDateFrom) {
+      queryParams.push(`startDateFrom=${encodeURIComponent(params.startDateFrom)}`);
+    }
+    if (params.startDateTo) {
+      queryParams.push(`startDateTo=${encodeURIComponent(params.startDateTo)}`);
     }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.ppaPlan}?${queryParams.join('&')}` : API_ENDPOINT.ppaPlan;

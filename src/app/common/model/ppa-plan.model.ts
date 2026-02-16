@@ -1,3 +1,6 @@
+import {Office} from "./office.model";
+import {User} from "../../registration/user.model";
+
 export interface PpaPlan {
   _id?: string;
   kra: string;
@@ -15,8 +18,8 @@ export interface PpaPlan {
   supportNeed?: string;
   supportReceivedValue?: number;
   stakeholderUserId: string;
-  assignedUserId?: string;
-  officeId?: string;
+  assignedUserId?: string | User;
+  officeId?: string | Office;
   amountUtilized?: number;
   implementationStatus: string;
   timeliness?: string;

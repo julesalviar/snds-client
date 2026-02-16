@@ -1,6 +1,7 @@
 /** Office from backend CRUD. */
 export interface Office {
   _id: string;
+  code: string;
   name: string;
   division: string;
 }

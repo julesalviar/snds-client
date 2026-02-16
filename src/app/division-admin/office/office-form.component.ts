@@ -58,6 +58,7 @@ export class OfficeFormComponent implements OnInit {
       this.isEdit = !!this.officeId;
     }
     this.form = this.fb.group({
+      code: ['', Validators.required],
       division: ['', Validators.required],
       name: ['', Validators.required],
     });
@@ -80,6 +81,7 @@ export class OfficeFormComponent implements OnInit {
           this.divisionOptions = [...this.divisionOptions, division].sort();
         }
         this.form.patchValue({
+          code: office.code ?? '',
           division,
           name: office.name ?? '',
         });
@@ -97,6 +99,7 @@ export class OfficeFormComponent implements OnInit {
     if (this.form.invalid || this.isSaving) return;
     const raw = this.form.getRawValue();
     const payload: Partial<Office> = {
+      code: raw.code?.trim() || '',
       division: raw.division?.trim() || '',
       name: raw.name?.trim() || '',
     };

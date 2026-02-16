@@ -331,6 +331,58 @@
   background: #d50000;
 }
 
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.month-cell.skeleton-cell {
+  pointer-events: none;
+}
+
+.skeleton-plan-bar {
+  height: 18px;
+  width: 100%;
+}
+
+.skeleton-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-plan-item {
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-low, #f8f9fa);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-plan-title {
+  height: 16px;
+  width: 85%;
+}
+
+.skeleton-plan-meta {
+  height: 12px;
+  width: 60%;
+}
+
 /* Responsive: stack toolbar on small screens */
 @media (max-width: 960px) {
   .current-range {

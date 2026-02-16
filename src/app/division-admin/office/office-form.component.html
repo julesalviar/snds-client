@@ -26,6 +26,11 @@
             <section class="form-section">
               <h3 class="section-title">Office information</h3>
               <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Code</mat-label>
+                <input matInput formControlName="code" placeholder="Office code (e.g. SGOD, CID, OSDS)">
+                <mat-error>Code is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Division</mat-label>
                 <mat-select formControlName="division" placeholder="Select division">
                   <mat-option value="">—</mat-option>

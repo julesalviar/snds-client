@@ -122,7 +122,9 @@
             <h3 class="section-title">Dates &amp; budget</h3>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Implementation Date</mat-label>
-              <input matInput formControlName="implementationDate" type="date" placeholder="YYYY-MM-DD">
+              <input matInput [matDatepicker]="implDatePicker" formControlName="implementationDate" placeholder="YYYY-MM-DD" (click)="implDatePicker.open()">
+              <mat-datepicker-toggle matSuffix [for]="implDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #implDatePicker startView="month" panelClass="ppa-datepicker-overlay"></mat-datepicker>
             </mat-form-field>
             <div class="row">
               <mat-form-field appearance="outline" class="half-width">
@@ -150,7 +152,7 @@
           <section class="form-section">
             <h3 class="section-title">Stakeholder &amp; support</h3>
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Type the name of the stakeholder to engage</mat-label>
+              <mat-label>Type the name of the stakeholder to engage (optional)</mat-label>
               <input matInput
                      formControlName="stakeholderUserId"
                      [matAutocomplete]="stakeholderAuto"
@@ -163,7 +165,6 @@
                   {{ getStakeholderDisplayName(user) }}
                 </mat-option>
               </mat-autocomplete>
-              <mat-error>Stakeholder is required. Please select a user from the list.</mat-error>
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width participant-chip-list">
               <mat-label>Participants</mat-label>

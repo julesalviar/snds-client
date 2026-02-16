@@ -54,8 +54,14 @@ export class AuthService {
     const payload = this.getTokenPayload();
     if (!this.isTokenValid(payload)) return [];
     const oids = payload?.['oids'];
-    if (oids == null || typeof oids !== 'string') return [];
-    return oids.split(',').map((id) => id.trim()).filter(Boolean);
+    if (oids == null) return [];
+    if (Array.isArray(oids)) {
+      return oids.map((id) => String(id ?? '').trim()).filter(Boolean);
+    }
+    if (typeof oids === 'string') {
+      return oids.split(',').map((id) => id.trim()).filter(Boolean);
+    }
+    return [];
   }
 
   getActiveRole(): string {

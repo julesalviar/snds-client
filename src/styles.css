@@ -160,6 +160,12 @@ body {
   z-index: 2000 !important;
 }
 
+/* Datepicker overlay - must appear above dialog when form is in dialog mode */
+.ppa-datepicker-overlay,
+.mat-mdc-datepicker-content.ppa-datepicker-overlay {
+  z-index: 2001 !important;
+}
+
 /* Tree structure spacing fixes - replaces Material theme spacing */
 ul {
   line-height: 1.3;

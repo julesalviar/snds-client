@@ -5,10 +5,10 @@
     <div class="toolbar-center">
       <button mat-stroked-button class="today-btn" (click)="goToToday()">Today</button>
       <div class="nav-arrows">
-        <button mat-icon-button aria-label="Previous" (click)="goPrev()">
+        <button mat-icon-button aria-label="Previous" (click)="goPrev()" [disabled]="isLoading">
           <mat-icon>chevron_left</mat-icon>
         </button>
-        <button mat-icon-button aria-label="Next" (click)="goNext()">
+        <button mat-icon-button aria-label="Next" (click)="goNext()" [disabled]="isLoading">
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
@@ -32,14 +32,21 @@
                 [class.empty]="cell.day === null"
                 [class.today]="cell.day === todayDate"
                 [class.selected]="cell.day !== null && isDaySelected(cell.day)"
-                (click)="cell.day !== null && selectDay(cell.day)"
+                [class.skeleton-cell]="isLoading && cell.day !== null"
+                [disabled]="isLoading"
+                (click)="cell.day !== null && !isLoading && selectDay(cell.day)"
               >
                 <span class="month-cell-num">{{ cell.day }}</span>
                 <div class="month-cell-plans">
-                  @for (plan of getPlansForDay(cell.day); track trackByPlan(plan, $index)) {
-                    <div class="plan-bar plan-bar-blue" [attr.title]="plan.title">
-                      {{ plan.title }}
-                    </div>
+                  @if (isLoading && cell.day !== null) {
+                    <div class="skeleton skeleton-plan-bar"></div>
+                    <div class="skeleton skeleton-plan-bar" style="width: 70%"></div>
+                  } @else {
+                    @for (plan of getPlansForDay(cell.day); track trackByPlan(plan, $index)) {
+                      <div class="plan-bar plan-bar-blue" [attr.title]="plan.title">
+                        {{ plan.title }}
+                      </div>
+                    }
                   }
                 </div>
               </button>
@@ -52,7 +59,7 @@
     <!-- Right sidebar: PPA plans list -->
     <aside class="calendar-sidebar">
       @if (isProgramHolder) {
-        <button mat-flat-button color="primary" class="create-btn" routerLink="/program-holder/ppa-plans/create">
+        <button mat-flat-button color="primary" class="create-btn" (click)="openCreatePlanModal()">
           <mat-icon>add</mat-icon>
           Create
         </button>
@@ -60,7 +67,14 @@
       <div class="plans-list">
         <h3 class="plans-list-title">PPA Plans</h3>
         @if (isLoading) {
-          <div class="plans-loading">Loading plans…</div>
+          <div class="skeleton-plans" aria-hidden="true">
+            @for (_ of [1,2,3,4,5]; track $index) {
+              <div class="skeleton-plan-item">
+                <div class="skeleton skeleton-plan-title"></div>
+                <div class="skeleton skeleton-plan-meta"></div>
+              </div>
+            }
+          </div>
         } @else if (selectedDate === null) {
           <div class="plans-empty">Select a day</div>
         } @else if (plansInSelectedDay.length === 0) {
@@ -72,7 +86,7 @@
               @let participants = getPlanParticipantsDisplay(plan);
               <div class="plan-item-content">
                 <span class="plan-title">{{ plan.title }}</span>
-                <span class="plan-program">{{ getPlanProgramDisplay(plan) }}</span>
+                <span class="plan-program">{{ getPlanOfficeAndAssignedDisplay(plan) }}</span>
                 @if (participants) {
                   <span class="plan-participants">{{ participants }}</span>
                 }

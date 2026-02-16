@@ -47,7 +47,7 @@ export class OfficeListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchSubject = new Subject<string>();
 
-  displayedColumns: string[] = ['name', 'division', 'actions'];
+  displayedColumns: string[] = ['code', 'name', 'division', 'actions'];
   dataSource = new MatTableDataSource<Office>([]);
   isLoading = true;
   pageIndex = 0;

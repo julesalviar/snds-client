@@ -17,6 +17,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { UserService } from '../../common/services/user.service';
@@ -36,6 +38,7 @@ import { UserListItem } from '../../registration/user.model';
 @Component({
   selector: 'app-ppa-plan-form',
   standalone: true,
+  providers: [provideNativeDateAdapter()],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -51,6 +54,7 @@ import { UserListItem } from '../../registration/user.model';
     MatTooltipModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatDatepickerModule,
   ],
   templateUrl: './ppa-plan-form.component.html',
   styleUrl: './ppa-plan-form.component.css',
@@ -71,7 +75,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   fundSourceOptions: string[] = [];
   readonly participantOptions = PLAN_PARTICIPANT_OPTIONS;
   readonly userSearchLimit = 50;
-  officeOptionsForSelect: Array<{ value: string; label: string }> = [];
+  officeOptionsForSelect: Array<{ value: string; label: string; id: string }> = [];
   get programHolderDisplayName(): string {
     const name = this.authService.getName();
     const username = this.authService.getUsername();
@@ -170,14 +174,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       objective: ['', Validators.required],
       classification: ['', Validators.required],
       expectedOutput: ['', Validators.required],
-      implementationDate: [''], // maps to implementation start date
+      implementationDate: [null as Date | string | null], // maps to implementation start date
       budgetaryRequirement: [null as number | null],
       materialsAndSupplies: [''],
       fundSource: [''],
       participants: [[] as string[]],
       supportNeed: [''],
       supportReceivedValue: [null as number | null],
-      stakeholderUserId: ['', Validators.required],
+      stakeholderUserId: [''],
       assignedUserId: [''],
       officeId: [''],
       amountUtilized: [null as number | null],
@@ -255,10 +259,27 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private normalizeOfficeId(value: string | { _id?: string } | null | undefined): string {
+  /** Format Date to YYYY-MM-DD using local timezone (avoids UTC shift). */
+  private formatDateForPayload(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  /** Resolve form value (office.code) to office._id for API payload. */
+  private resolveOfficeIdForPayload(formValue: string | null | undefined): string | undefined {
+    const v = formValue?.trim?.();
+    if (!v) return undefined;
+    const opt = this.officeOptionsForSelect.find((o) => o.value === v);
+    return opt?.id ?? v;
+  }
+
+  /** Normalize plan.officeId to office.code for form value. */
+  private normalizeOfficeCode(value: string | Office | { _id?: string; code?: string } | null | undefined): string {
     if (value == null) return '';
     if (typeof value === 'string') return value.trim();
-    if (typeof value === 'object' && value !== null && '_id' in value) return (value as { _id?: string })._id ?? '';
+    if (typeof value === 'object' && value !== null && 'code' in value) return (value as Office).code ?? '';
     return '';
   }
 
@@ -325,41 +346,27 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     } catch {
       officeIds = [];
     }
-    const mapOfficesToOptions = (offices: { _id: string; name?: string; division?: string }[]) =>
+    const mapOfficesToOptions = (offices: { _id: string; code?: string; name?: string; division?: string }[]) =>
       offices.map((o) => ({
-        value: o._id,
-        label: `${o.division || ''} - ${o.name || ''}`.trim() || o._id,
+        value: o.code ?? o._id,
+        label: [o.division, o.name].filter(Boolean).join(' - ') || (o.code ?? o._id),
+        id: o._id,
       }));
 
-    const params = { page: 1, limit: 100, ...(officeIds.length > 0 && { ids: officeIds }) };
-    return this.officeService.getOffices(params).pipe(
-      map((res) => res.data),
-      map((offices) => {
-        if (officeIds.length === 0) return offices;
-        const allowedIds = new Set(officeIds);
-        const filtered = offices.filter((o) => o?._id && allowedIds.has(o._id));
-        return filtered.length > 0 ? filtered : null;
-      }),
-      switchMap((filtered) => {
-        if (filtered && filtered.length > 0) {
-          this.officeOptionsForSelect = mapOfficesToOptions(filtered);
-          return of(true);
-        }
-        if (officeIds.length === 0) {
-          this.officeOptionsForSelect = [];
-          return of(true);
-        }
-        return forkJoin(
-          officeIds.map((id) =>
-            this.officeService.getById(id).pipe(catchError(() => of(null as Office | null)))
-          )
-        ).pipe(
-          map((results) => {
-            const offices = results.filter((o): o is Office => o != null);
-            this.officeOptionsForSelect = mapOfficesToOptions(offices);
-            return true;
-          })
-        );
+    if (officeIds.length === 0) {
+      this.officeOptionsForSelect = [];
+      return of(true);
+    }
+
+    return forkJoin(
+      officeIds.map((id) =>
+        this.officeService.getById(id).pipe(catchError(() => of(null as Office | null)))
+      )
+    ).pipe(
+      map((results) => {
+        const offices = results.filter((o): o is Office => o != null);
+        this.officeOptionsForSelect = mapOfficesToOptions(offices);
+        return true;
       }),
       catchError(() => {
         this.officeOptionsForSelect = [];
@@ -382,25 +389,28 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
             this.filteredUsers = [...this.filteredUsers, userObj];
           }
         }
-        const officeId = this.normalizeOfficeId(plan.officeId);
-        if (officeId && !this.officeOptionsForSelect.some((o) => o.value === officeId)) {
-          this.officeService.getById(officeId).pipe(
-            takeUntil(this.destroy$),
-            catchError(() => of(null))
-          ).subscribe((office) => {
-            if (office) {
-              this.officeOptionsForSelect = [
-                ...this.officeOptionsForSelect,
-                {
-                  value: office._id,
-                  label: `${office.division || ''} - ${office.name || ''}`.trim() || office._id,
-                },
-              ];
-            }
-            this.form.patchValue({ officeId: officeId || '' });
-          });
+        const officeCode = this.normalizeOfficeCode(plan.officeId);
+        if (officeCode && !this.officeOptionsForSelect.some((o) => o.value === officeCode)) {
+          const rawOfficeId = typeof plan.officeId === 'string' ? plan.officeId : (plan.officeId as Office)?._id;
+          if (rawOfficeId) {
+            this.officeService.getById(rawOfficeId).pipe(
+              takeUntil(this.destroy$),
+              catchError(() => of(null))
+            ).subscribe((office) => {
+              if (office) {
+                const code = office.code ?? office._id;
+                this.officeOptionsForSelect = [
+                  ...this.officeOptionsForSelect,
+                  { value: code, label: [office.division, office.name].filter(Boolean).join(' - ') || (office.code ?? office._id), id: office._id },
+                ];
+              }
+              this.form.patchValue({ officeId: officeCode || '' });
+            });
+          } else {
+            this.form.patchValue({ officeId: officeCode ?? '' });
+          }
         } else {
-          this.form.patchValue({ officeId: officeId ?? '' });
+          this.form.patchValue({ officeId: officeCode ?? '' });
         }
         this.form.patchValue({
           kra: plan.kra,
@@ -409,7 +419,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           objective: plan.objective,
           classification: plan.classification,
           expectedOutput: plan.expectedOutput,
-          implementationDate: startDate || '',
+          implementationDate: startDate ? new Date(startDate) : null,
           budgetaryRequirement: plan.budgetaryRequirement ?? null,
           materialsAndSupplies: plan.materialsAndSupplies ?? '',
           fundSource: plan.fundSource ?? '',
@@ -438,7 +448,10 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.form.invalid || this.isSaving) return;
     const raw = this.form.getRawValue();
-    const implementationStartDate = raw.implementationDate?.trim?.()?.substring(0, 10) ?? '';
+    const implDate = raw.implementationDate;
+    const implementationStartDate = implDate instanceof Date
+      ? this.formatDateForPayload(implDate)
+      : (typeof implDate === 'string' ? implDate.trim().substring(0, 10) : '') || '';
     const implementationEndDate = implementationStartDate; // TODO: use start date for end date for now
     const hasReportFile = !!this.selectedReportFile;
 
@@ -459,7 +472,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       supportReceivedValue: raw.supportReceivedValue ?? undefined,
       stakeholderUserId: this.normalizeStakeholderUserId(raw.stakeholderUserId),
       assignedUserId: this.authService.getUserId() || undefined,
-      officeId: raw.officeId?.trim?.() || undefined,
+      officeId: this.resolveOfficeIdForPayload(raw.officeId) || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
       implementationStatus: raw.implementationStatus,
       timeliness: raw.timeliness || undefined,
