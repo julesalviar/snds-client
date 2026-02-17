@@ -224,7 +224,8 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let row" class="actions-cell">
-            <button mat-icon-button
+            <button *ngIf="canEditOrDelete"
+                    mat-icon-button
                     class="action-edit"
                     type="button"
                     matTooltip="Edit"
@@ -232,7 +233,8 @@
                     (click)="onEdit(row)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button
+            <button *ngIf="canEditOrDelete"
+                    mat-icon-button
                     class="action-delete"
                     type="button"
                     matTooltip="Delete"

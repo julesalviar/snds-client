@@ -75,6 +75,16 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     return this.authService.getActiveRole();
   }
 
+  /** True if the user can edit or delete PPA plans (ProgramHolder, OfficeAdmin, OfficeAdminAssistant). */
+  get canEditOrDelete(): boolean {
+    const role = this.userActiveRole;
+    return (
+      role === UserType.ProgramHolder ||
+      role === UserType.OfficeAdmin ||
+      role === UserType.OfficeAdminAssistant
+    );
+  }
+
   /** Column categories for visibility toggle. Actions column is always visible. */
   columnCategories: ColumnCategory[] = [
     {

@@ -144,10 +144,10 @@ export const routes: Routes = [
       { path: 'calendar', component: CalendarComponent },
     ]
   },
-  {// Office Admin routes
+  {// Office Admin routes (OfficeAdmin and OfficeAdminAssistant)
     path: 'office-admin',
     canActivateChild: [AuthGuard],
-    data: { roleType: UserType.OfficeAdmin },
+    data: { allowedRoles: [UserType.OfficeAdmin, UserType.OfficeAdminAssistant] },
     children: [
       { path: 'offices', component: OfficeListComponent },
       { path: 'calendar', component: CalendarComponent },

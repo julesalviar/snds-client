@@ -234,8 +234,8 @@
       <li><a routerLink="/program-holder/calendar">Calendar</a></li>
     </ng-container>
 
-    <!-- Office Admin Menus -->
-    <ng-container *ngIf="UserType.OfficeAdmin === userActiveRole">
+    <!-- Office Admin Menus (OfficeAdmin and OfficeAdminAssistant share same navigation) -->
+    <ng-container *ngIf="UserType.OfficeAdmin === userActiveRole || UserType.OfficeAdminAssistant === userActiveRole">
       <li><a routerLink="/office-admin/ppa-plans">PPA Plans</a></li>
       <li><a routerLink="/office-admin/calendar">Calendar</a></li>
       <li><a routerLink="/office-admin/offices">Offices</a></li>
