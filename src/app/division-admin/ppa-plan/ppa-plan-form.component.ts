@@ -160,7 +160,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     public readonly classificationDisplay: PlanClassificationDisplayService,
     private readonly snackBar: MatSnackBar,
     @Optional() private readonly dialogRef: MatDialogRef<PpaPlanFormComponent>,
-    @Optional() @Inject(MAT_DIALOG_DATA) dialogData?: { planId?: string }
+    @Optional() @Inject(MAT_DIALOG_DATA) dialogData?: { planId?: string; initialDate?: Date }
   ) {
     this.isDialogMode = !!this.dialogRef;
     if (this.isDialogMode && dialogData) {
@@ -189,6 +189,9 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       timeliness: [''],
       factors: [''],
     });
+    if (this.isDialogMode && dialogData?.initialDate && !this.isEdit) {
+      this.form.patchValue({ implementationDate: dialogData.initialDate });
+    }
   }
 
   ngOnInit(): void {

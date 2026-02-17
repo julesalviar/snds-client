@@ -2,58 +2,84 @@
 <ng-container *ngIf="homeState$ | async as state">
   <div class="container">
     <div class="sections-wrapper">
-      <div class="tree-section">
+      <div class="column-first">
         <div class="welcome-section">
           <h2 class="welcome-title">Welcome {{ state.name?.trim() ? state.name : 'Partners' }}</h2>
         </div>
-
-        <div class="second-message">
-          <p>All the needs of our schools are given in the menu categories below.</p>
-        </div>
-        <h2>Menu of Education Investment</h2>
-
-        <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
-          <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
-          <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>
-          <li class="skeleton skeleton-tree-line indent" style="width: 50%;"></li>
-          <li class="skeleton skeleton-tree-line indent" style="width: 55%;"></li>
-          <li class="skeleton skeleton-tree-line" style="width: 70%;"></li>
-          <li class="skeleton skeleton-tree-line indent" style="width: 45%;"></li>
-          <li class="skeleton skeleton-tree-line" style="width: 65%;"></li>
-          <li class="skeleton skeleton-tree-line indent" style="width: 52%;"></li>
-        </ul>
-
-        <ul *ngIf="!state.loading.schoolNeeds">
-          <li *ngFor="let node of state.treeData">
-            <div (click)="toggleChildren(state, node)" style="cursor: pointer;">
-              <span
-                class="node-name"
-                [ngClass]="{ 'expanded-node': node.expanded }"
-                matBadgeColor="primary"
-                matBadgeOverlap="false"
-              >
-                {{ node.name }}
-              </span>
-              <span *ngIf="(node?.count ?? 0) > 0">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span *ngIf="node.children && node.children.length > 0">
-                [{{ node.expanded ? '−' : '+' }}]
-              </span>
+        <div class="ppa-features-section" *ngIf="shouldHideTreeSection(state)">
+          <h2>Available Features</h2>
+          <p>Use the navigation menu to access the following features:</p>
+          <div class="feature-cards">
+            <div class="feature-card">
+              <h3>PPA Plans</h3>
+              <p>Create, view, edit, and manage your Program Plans and Activities (PPA). Track implementation status, budgetary requirements, participants, and other plan details in one place.</p>
+              <a *ngIf="state.userRole === UserType.ProgramHolder" routerLink="/program-holder/ppa-plans" class="feature-link">Go to PPA Plans</a>
+              <a *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant" routerLink="/office-admin/ppa-plans" class="feature-link">Go to PPA Plans</a>
             </div>
-            <ul *ngIf="node.expanded">
-              <li *ngFor="let child of node.children" style="list-style-type: none;">
-                <span (click)="onChildClick(child, state)" style="cursor: pointer;">
-                  {{ child.name }}
-                  <span *ngIf="child.count">
-                    <span matBadge="{{ child.count }}" matBadgeColor="primary" matBadgeOverlap="false"></span>
-                  </span>
+            <div class="feature-card">
+              <h3>Calendar</h3>
+              <p>View your PPA plans in a monthly calendar format. See plans by date, select a day to view its plans in the sidebar, and add new plans directly from the calendar.</p>
+              <a *ngIf="state.userRole === UserType.ProgramHolder" routerLink="/program-holder/calendar" class="feature-link">Go to Calendar</a>
+              <a *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant" routerLink="/office-admin/calendar" class="feature-link">Go to Calendar</a>
+            </div>
+            <div class="feature-card" *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant">
+              <h3>Offices</h3>
+              <p>View and manage offices within your division. Browse office details, divisions, and related information.</p>
+              <a routerLink="/office-admin/offices" class="feature-link">Go to Offices</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="tree-section" *ngIf="!shouldHideTreeSection(state)">
+          <div class="second-message">
+            <p>All the needs of our schools are given in the menu categories below.</p>
+          </div>
+          <h2>Menu of Education Investment</h2>
+
+          <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
+            <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
+            <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>
+            <li class="skeleton skeleton-tree-line indent" style="width: 50%;"></li>
+            <li class="skeleton skeleton-tree-line indent" style="width: 55%;"></li>
+            <li class="skeleton skeleton-tree-line" style="width: 70%;"></li>
+            <li class="skeleton skeleton-tree-line indent" style="width: 45%;"></li>
+            <li class="skeleton skeleton-tree-line" style="width: 65%;"></li>
+            <li class="skeleton skeleton-tree-line indent" style="width: 52%;"></li>
+          </ul>
+
+          <ul *ngIf="!state.loading.schoolNeeds">
+            <li *ngFor="let node of state.treeData">
+              <div (click)="toggleChildren(state, node)" style="cursor: pointer;">
+                <span
+                  class="node-name"
+                  [ngClass]="{ 'expanded-node': node.expanded }"
+                  matBadgeColor="primary"
+                  matBadgeOverlap="false"
+                >
+                  {{ node.name }}
                 </span>
-              </li>
-            </ul>
-          </li>
-        </ul>
+                <span *ngIf="(node?.count ?? 0) > 0">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span *ngIf="node.children && node.children.length > 0">
+                  [{{ node.expanded ? '−' : '+' }}]
+                </span>
+              </div>
+              <ul *ngIf="node.expanded">
+                <li *ngFor="let child of node.children" style="list-style-type: none;">
+                  <span (click)="onChildClick(child, state)" style="cursor: pointer;">
+                    {{ child.name }}
+                    <span *ngIf="child.count">
+                      <span matBadge="{{ child.count }}" matBadgeColor="primary" matBadgeOverlap="false"></span>
+                    </span>
+                  </span>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div class="text-section">
+      <div class="column-second">
+        <div class="text-section">
         <div class="welcome-header" *ngIf="shouldShowStats(state)">
           <div class="aip-info-detailed">
             <div class="aip-status-header">
@@ -113,6 +139,7 @@
             <li><span class="icon">🔧</span> Work</li>
           </ul>
           <p>We have numerous skilled Senior High School graduates and graduating students waiting for your call.</p>
+        </div>
         </div>
       </div>
     </div>

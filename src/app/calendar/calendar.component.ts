@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRippleModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PpaPlanService } from '../common/services/ppa-plan.service';
 import { PpaPlan } from '../common/model/ppa-plan.model';
 import { PpaPlanContextDialogComponent } from './ppa-plan-context-dialog/ppa-plan-context-dialog.component';
@@ -91,8 +92,8 @@ export class CalendarComponent implements OnInit {
     private readonly ppaPlanService: PpaPlanService,
     private readonly dialog: MatDialog,
     private readonly authService: AuthService,
-    private readonly router: Router,
     private readonly breakpointObserver: BreakpointObserver,
+    private readonly snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -269,13 +270,35 @@ export class CalendarComponent implements OnInit {
   }
 
   openCreatePlanModal(): void {
-    this.router.navigate(['/program-holder/ppa-plans']);
+    if (this.selectedDate === null) {
+      this.snackBar.open('Please select a day first', 'Close', {
+        duration: 4000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+      });
+      return;
+    }
     const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
     const dialogRef = this.dialog.open(PpaPlanFormComponent, {
       width: isMobile ? '100vw' : 'min(900px, 95vw)',
       maxWidth: isMobile ? '100vw' : '95vw',
       maxHeight: isMobile ? '100vh' : '90vh',
-      data: {},
+      data: { initialDate: this.selectedDate },
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) this.loadPlans();
+    });
+  }
+
+  openEditPlanModal(planId: string): void {
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const dialogRef = this.dialog.open(PpaPlanFormComponent, {
+      width: isMobile ? '100vw' : 'min(900px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      data: { planId },
       disableClose: false,
       panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
     });
@@ -294,6 +317,8 @@ export class CalendarComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result?.action === 'deleted') {
         this.loadPlans();
+      } else if (result?.action === 'edit' && result?.planId) {
+        this.openEditPlanModal(result.planId);
       }
     });
   }

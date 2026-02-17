@@ -58,6 +58,12 @@
           <section class="form-section">
             <h3 class="section-title">Basic information</h3>
             <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Implementation Date</mat-label>
+              <input matInput [matDatepicker]="implDatePicker" formControlName="implementationDate" placeholder="YYYY-MM-DD" (click)="implDatePicker.open()">
+              <mat-datepicker-toggle matSuffix [for]="implDatePicker"></mat-datepicker-toggle>
+              <mat-datepicker #implDatePicker startView="month" panelClass="ppa-datepicker-overlay"></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>Program Holder</mat-label>
               <input matInput [value]="programHolderDisplayName" readonly disabled>
             </mat-form-field>
@@ -120,12 +126,6 @@
 
           <section class="form-section">
             <h3 class="section-title">Dates &amp; budget</h3>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Implementation Date</mat-label>
-              <input matInput [matDatepicker]="implDatePicker" formControlName="implementationDate" placeholder="YYYY-MM-DD" (click)="implDatePicker.open()">
-              <mat-datepicker-toggle matSuffix [for]="implDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #implDatePicker startView="month" panelClass="ppa-datepicker-overlay"></mat-datepicker>
-            </mat-form-field>
             <div class="row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Budgetary Requirement</mat-label>

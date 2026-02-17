@@ -4,10 +4,6 @@
   padding: 20px;
 }
 
-.container > .welcome-section {
-  width: 100%;
-  margin-bottom: 24px;
-}
 
 
 .sections-wrapper {
@@ -15,6 +11,21 @@
   justify-content: space-between;
   width: 100%;
   gap: 20px;
+}
+
+.column-first {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 16px;
+}
+
+.column-second {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .expanded-node {
@@ -38,6 +49,62 @@ h4 {
 
 .tree-section {
   flex: 1;
+  min-height: 0;
+}
+
+.ppa-features-section {
+  flex-shrink: 0;
+}
+
+.ppa-features-section h2 {
+  margin-bottom: 12px;
+}
+
+.ppa-features-section > p {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.feature-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.feature-card h3 {
+  color: #28a745;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.feature-card p {
+  margin: 0 0 12px 0;
+  color: #444;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.feature-link {
+  display: inline-block;
+  color: #28a745;
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.feature-link:hover {
+  text-decoration: underline;
 }
 
 
@@ -52,7 +119,7 @@ h2.welcome-title {
 }
 
 .welcome-section {
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
 
 .welcome-title {
@@ -201,7 +268,7 @@ h2.welcome-title {
   .logo-preview {
     display: none !important;
   }
-  
+
   .school-logo-container {
     overflow: hidden;
   }
@@ -334,6 +401,11 @@ span {
 
   .sections-wrapper {
     flex-direction: column;
+  }
+
+  .column-first,
+  .column-second {
+    width: 100%;
   }
 
   .welcome-header {
@@ -720,8 +792,8 @@ span {
 }
 
 .second-message {
-  margin: 20px 0;
-  padding: 12px 0;
+  margin: 0;
+  padding: 0 0 12px 0;
 }
 
 .second-message p {

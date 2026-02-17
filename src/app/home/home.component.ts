@@ -2,7 +2,7 @@ import {Component, OnInit, ViewChild, ElementRef} from '@angular/core';
 import {UserService} from '../common/services/user.service';
 import {CommonModule, DecimalPipe} from '@angular/common';
 import {MatBadgeModule} from '@angular/material/badge';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {ReferenceDataService} from "../common/services/reference-data.service";
 import {SchoolNeedService} from "../common/services/school-need.service";
 import {AuthService} from "../auth/auth.service";
@@ -49,7 +49,7 @@ export interface HomeState {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatBadgeModule, MatIcon, MatProgressBarModule, MatCardModule],
+  imports: [CommonModule, MatBadgeModule, MatIcon, MatProgressBarModule, MatCardModule, RouterLink],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   providers: [DecimalPipe]
@@ -195,6 +195,13 @@ export class HomeComponent implements OnInit {
   }
 
   private loadSchoolNeeds$(state: HomeState): Observable<HomeState> {
+    if (
+      state.userRole === UserType.ProgramHolder ||
+      state.userRole === UserType.OfficeAdmin ||
+      state.userRole === UserType.OfficeAdminAssistant
+    ) {
+      return of({ ...state, loading: { ...state.loading, schoolNeeds: false } });
+    }
     return forkJoin({
       tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
       needs: this.fetchAllSchoolNeedsData(),
@@ -328,6 +335,15 @@ export class HomeComponent implements OnInit {
 
   shouldShowStats(state: HomeState): boolean {
     return this.isSchoolAdmin(state) || this.isDivisionAdmin(state);
+  }
+
+  /** Hide tree section for program holder, office admin, and office admin assistant. */
+  shouldHideTreeSection(state: HomeState): boolean {
+    return (
+      state.userRole === UserType.ProgramHolder ||
+      state.userRole === UserType.OfficeAdmin ||
+      state.userRole === UserType.OfficeAdminAssistant
+    );
   }
 
   isHeaderLoading(state: HomeState): boolean {

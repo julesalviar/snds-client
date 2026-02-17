@@ -1,19 +1,15 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { AuthService } from '../../auth/auth.service';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { formatDateString } from '../../common/date-utils';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
-import { PpaPlanFormComponent } from '../../division-admin/ppa-plan/ppa-plan-form.component';
 
 export interface PpaPlanContextDialogData {
   plan: PpaPlan;
@@ -39,10 +35,8 @@ export class PpaPlanContextDialogComponent {
     private readonly authService: AuthService,
     private readonly ppaPlanService: PpaPlanService,
     private readonly planClassificationService: PlanClassificationDisplayService,
-    private readonly router: Router,
     private readonly dialog: MatDialog,
     private readonly snackBar: MatSnackBar,
-    private readonly breakpointObserver: BreakpointObserver,
   ) {}
 
   get plan(): PpaPlan {
@@ -102,18 +96,8 @@ export class PpaPlanContextDialogComponent {
 
   onEdit(): void {
     const planId = this.plan._id;
-    this.dialogRef.close({ action: 'edit' });
     if (planId) {
-      this.router.navigate(['/program-holder/ppa-plans']);
-      const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
-      this.dialog.open(PpaPlanFormComponent, {
-        width: isMobile ? '100vw' : 'min(900px, 95vw)',
-        maxWidth: isMobile ? '100vw' : '95vw',
-        maxHeight: isMobile ? '100vh' : '90vh',
-        data: { planId },
-        disableClose: false,
-        panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
-      });
+      this.dialogRef.close({ action: 'edit', planId });
     }
   }
 

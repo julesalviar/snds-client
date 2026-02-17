@@ -1,6 +1,7 @@
 export enum UserType {
   DivisionAdmin = 'divisionAdmin',
   OfficeAdmin = 'officeAdmin',
+  OfficeAdminAssistant = 'officeAdminAssistant',
   ProgramHolder = 'programHolder',
   SchoolAdmin = 'schoolAdmin',
   StakeHolder = 'stakeholder',
@@ -16,7 +17,8 @@ export const USER_TYPE_LABELS: Record<UserType, string> = {
   [UserType.SystemAdmin]: 'System Admin',
   [UserType.System]: 'System',
   [UserType.ProgramHolder]: 'Program Holder',
-  [UserType.OfficeAdmin]: 'Office Admin'
+  [UserType.OfficeAdmin]: 'Office Admin',
+  [UserType.OfficeAdminAssistant]: 'Office Admin Assistant',
 };
 
 /** Returns the display label for a role string (e.g. from UserType); falls back to the raw value. */
