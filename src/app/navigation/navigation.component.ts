@@ -8,7 +8,8 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from "../auth/auth.service";
-import {UserType} from "../registration/user-type.enum";
+import {UserType, getRoleLabel} from "../registration/user-type.enum";
+import {getRoleIcon} from "../registration/user-type-icons";
 import {filter} from "rxjs";
 import {TenantService} from "../config/tenant.service";
 import {Tenant} from "../config/tenants.enum";
@@ -71,6 +72,18 @@ export class NavigationComponent implements OnInit {
 
   get userRoles(): string[] {
     return this.authService.getUserRoles();
+  }
+
+  get activeRoleIcon(): string {
+    return getRoleIcon(this.userActiveRole);
+  }
+
+  get activeRoleLabel(): string {
+    return getRoleLabel(this.userActiveRole);
+  }
+
+  getName(): string {
+    return this.authService.getName();
   }
 
   isLoggedIn(): boolean {

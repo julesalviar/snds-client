@@ -80,8 +80,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     const role = this.userActiveRole;
     return (
       role === UserType.ProgramHolder ||
-      role === UserType.OfficeAdmin ||
-      role === UserType.OfficeAdminAssistant
+      role === UserType.OfficeAdmin
     );
   }
 

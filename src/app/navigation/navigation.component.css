@@ -88,19 +88,68 @@ nav {
   width: 100%;
 }
 
-/* Profile Section Styles */
+/* Right-side wrapper: profile on top, nav-info below */
+.nav-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  gap: 0.15rem;
+}
+
 .profile {
   display: flex;
   align-items: center;
-  margin-left: auto;
   font-weight: bold;
 }
-.profile a{
+
+.profile a {
   color: whitesmoke;
   font-weight: bold;
 }
-.profile a:hover{
+
+.profile a:hover {
   color: red;
+}
+
+/* Text info section (like breadcrumbs) - role indicator lives here */
+.nav-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.user-name {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #ecf0f1;
+}
+
+.nav-info-separator {
+  font-size: 1rem;
+  color: #ecf0f1;
+  opacity: 0.7;
+}
+
+.role-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1;
+}
+
+.role-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: #ecf0f1;
+}
+
+.role-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #ecf0f1;
 }
 
 .avatar-button {
@@ -137,7 +186,7 @@ nav {
   line-height: 20px;
   overflow: hidden;
   /* Material 3 elevation level 1 */
-  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3),
               0px 1px 3px 1px rgba(0, 0, 0, 0.15);
   font-family: 'Roboto', 'Helvetica Neue', sans-serif;
   letter-spacing: 0.15px;
@@ -212,6 +261,13 @@ mat-menu mat-divider::before,
 }
 
 @media (max-width: 769px) {
+  .user-name,
+  .nav-info-separator {
+    display: none;
+  }
+}
+
+@media (max-width: 769px) {
   nav {
     flex-direction: row;
     padding: 0.5rem;
@@ -255,7 +311,7 @@ mat-menu mat-divider::before,
     order: 2;
   }
 
-  .profile {
+  .nav-right {
     order: 3;
     margin-left: 1rem;
   }
@@ -318,7 +374,7 @@ mat-menu mat-divider::before,
       order: 2;
     }
 
-    .profile {
+    .nav-right {
       order: 3;
       margin-left: 1rem;
     }
@@ -332,9 +388,13 @@ mat-menu mat-divider::before,
       order: 2;
     }
 
-    .profile {
+    .nav-right {
       order: 3;
       margin-left: 0.5rem;
+    }
+
+    .role-label {
+      display: none;
     }
 
     .avatar {

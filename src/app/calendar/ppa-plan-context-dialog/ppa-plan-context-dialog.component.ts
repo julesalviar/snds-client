@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { AuthService } from '../../auth/auth.service';
+import { UserType } from '../../registration/user-type.enum';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { formatDateString } from '../../common/date-utils';
@@ -43,9 +44,15 @@ export class PpaPlanContextDialogComponent {
     return this.data.plan;
   }
 
-  /** Whether the current user is the assigned user (can edit/delete) */
+  /** Whether the current user can edit/delete: must be OfficeAdmin or ProgramHolder, and be the assigned user */
   get canEdit(): boolean {
     const currentUserId = this.authService.getUserId();
+    const activeRole = this.authService.getActiveRole();
+
+    if (activeRole !== UserType.OfficeAdmin && activeRole !== UserType.ProgramHolder) {
+      return false;
+    }
+
     const assigned = this.plan.assignedUserId;
     if (!currentUserId || assigned == null) return false;
     const assignedId = typeof assigned === 'string' ? assigned : (assigned as unknown as { _id?: string })?._id;
