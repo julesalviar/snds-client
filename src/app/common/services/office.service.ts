@@ -9,8 +9,8 @@ export class OfficeService {
   constructor(private readonly httpService: HttpService) {}
 
   /**
-   * Fetch offices from backend.
-   * GET /office?page=1&limit=10&search=...&ids=...
+   * Fetch offices from the backend.
+   * GET /office?page=1&limit=10&search=...&ids=...&includePpaPlanCount=true
    */
   getOffices(params: {
     page: number;
@@ -18,10 +18,10 @@ export class OfficeService {
     search?: string;
     ids?: string[];
     division?: string;
+    includePpaPlanCount?: boolean;
   }): Observable<{ data: Office[]; totalItems: number }> {
     const queryParams: string[] = [];
-    queryParams.push(`page=${params.page}`);
-    queryParams.push(`limit=${params.limit}`);
+    queryParams.push(`page=${params.page}`, `limit=${params.limit}`);
     if (params.search?.trim()) {
       queryParams.push(`search=${encodeURIComponent(params.search.trim())}`);
     }
@@ -31,18 +31,29 @@ export class OfficeService {
     if (params.division?.trim()) {
       queryParams.push(`division=${encodeURIComponent(params.division.trim())}`);
     }
+    if (params.includePpaPlanCount) {
+      queryParams.push('includePpaPlanCount=true');
+    }
     const url = `${API_ENDPOINT.offices}?${queryParams.join('&')}`;
     return this.httpService.get<OfficeListResponse | Office[]>(url).pipe(
       map((res: OfficeListResponse | Office[]) => {
-        const data = Array.isArray(res) ? res : (res as OfficeListResponse)?.data ?? [];
+        const data = Array.isArray(res) ? res : res?.data ?? [];
         const totalItems =
           !Array.isArray(res) && res
-            ? (res as OfficeListResponse).totalItems ?? (res as OfficeListResponse).total ?? data.length
+            ? res.totalItems ?? res.total ?? data.length
             : data.length;
         return { data, totalItems };
       }),
       catchError(this.httpService.handleError)
     );
+  }
+
+  getOfficesForNavigation(): Observable<Office[]> {
+    return this.getOffices({
+      page: 1,
+      limit: 1000,
+      includePpaPlanCount: true,
+    }).pipe(map((res) => res.data));
   }
 
   /** Fetch a single office by ID. */
@@ -51,7 +62,7 @@ export class OfficeService {
       .get<Office | { data: Office }>(`${API_ENDPOINT.offices}/${id}`)
       .pipe(
         map((res: Office | { data: Office }) =>
-          res && typeof res === 'object' && 'data' in res ? (res as { data: Office }).data : (res as Office)
+          res && typeof res === 'object' && 'data' in res ? (res as { data: Office }).data : res
         ),
         catchError(this.httpService.handleError)
       );

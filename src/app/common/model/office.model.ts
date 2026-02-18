@@ -4,6 +4,8 @@ export interface Office {
   code: string;
   name: string;
   division: string;
+
+  ppaPlanCount?: number;
 }
 
 export interface OfficeListResponse {

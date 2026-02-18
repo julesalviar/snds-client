@@ -141,7 +141,7 @@
 
             <ng-container matColumnDef="budgetaryRequirements">
                 <th mat-header-cell *matHeaderCellDef class="green-column">Budgetary Requirements</th>
-                <td mat-cell *matCellDef="let element">{{ element.budgetaryRequirements }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.budgetaryRequirements | number:'1.2-2' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="materialsSupplies">
@@ -167,7 +167,7 @@
 
             <ng-container matColumnDef="supportReceivedFromStakeholders">
                 <th mat-header-cell *matHeaderCellDef class="red-column">Support Received from Stakeholders</th>
-                <td mat-cell *matCellDef="let element">{{ element.supportReceivedFromStakeholders }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.supportReceivedFromStakeholders != null ? (element.supportReceivedFromStakeholders | number:'1.2-2') : '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="stakeholdersName">
@@ -178,12 +178,12 @@
             <!-- Blue Columns -->
             <ng-container matColumnDef="amountUtilized">
                 <th mat-header-cell *matHeaderCellDef class="blue-column">Amount Utilized</th>
-                <td mat-cell *matCellDef="let element">{{ element.amountUtilized }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.amountUtilized | number:'1.2-2' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="variance">
                 <th mat-header-cell *matHeaderCellDef class="blue-column">Variance</th>
-                <td mat-cell *matCellDef="let element">{{ element.variance }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.variance | number:'1.2-2' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="percentageUtilization">
@@ -208,7 +208,15 @@
 
             <ng-container matColumnDef="accomplishmentReport">
                 <th mat-header-cell *matHeaderCellDef class="blue-column">Accomplishment Report</th>
-                <td mat-cell *matCellDef="let element">{{ element.accomplishmentReport }}</td>
+                <td mat-cell *matCellDef="let element">
+                    <ng-container *ngIf="(element.accomplishmentReportUrls ?? []).length === 0">—</ng-container>
+                    <ng-container *ngFor="let url of (element.accomplishmentReportUrls ?? []); let i = index">
+                        <a [href]="url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">
+                            {{ getReportLinkLabel(element.accomplishmentReportUrls ?? [], i) }}
+                        </a>
+                        <span *ngIf="i < (element.accomplishmentReportUrls?.length ?? 0) - 1">, </span>
+                    </ng-container>
+                </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="['kra', 'programTitle', 'activity', 'ppaObjective', 'classification', 'expectedOutput', 'dateOfImplementation', 'budgetaryRequirements', 'materialsSupplies', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'amountUtilized', 'variance', 'percentageUtilization', 'implementationStatus', 'remarks', 'hinderingFacilitatingFactors', 'accomplishmentReport']"></tr>

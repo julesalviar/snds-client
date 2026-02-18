@@ -12,6 +12,8 @@ export interface PpaPlanListParams {
   classification?: string;
   implementationStatus?: string;
   assignedUserId?: string;
+  officeId?: string;
+  stakeholderUserId?: string;
   startDateFrom?: string;
   startDateTo?: string;
 }
@@ -39,6 +41,12 @@ export class PpaPlanService {
     }
     if (params.assignedUserId?.trim()) {
       queryParams.push(`assignedUserId=${encodeURIComponent(params.assignedUserId.trim())}`);
+    }
+    if (params.officeId?.trim()) {
+      queryParams.push(`officeId=${encodeURIComponent(params.officeId.trim())}`);
+    }
+    if (params.stakeholderUserId?.trim()) {
+      queryParams.push(`stakeholderUserId=${encodeURIComponent(params.stakeholderUserId.trim())}`);
     }
     if (params.startDateFrom) {
       queryParams.push(`startDateFrom=${encodeURIComponent(params.startDateFrom)}`);

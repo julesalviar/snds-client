@@ -30,7 +30,7 @@ interface OfficeTableData {
     fundSource: string;
     participants: string;
     supportNeededFromStakeholders: string;
-    supportReceivedFromStakeholders: string;
+    supportReceivedFromStakeholders: number | null;
     stakeholdersName: string;
     amountUtilized: number;
     variance: number;
@@ -38,7 +38,7 @@ interface OfficeTableData {
     implementationStatus: string;
     remarks: string;
     hinderingFacilitatingFactors: string;
-    accomplishmentReport: string;
+    accomplishmentReportUrls: string[];
 }
 
 @Component({
@@ -103,12 +103,17 @@ export class OfficeTableComponent implements OnInit {
         this.route.queryParams.subscribe(params => {
             this.divisionTitle = params['division'];
             this.subjectTitle = params['subject'];
+            this.fetchOfficeTableData(params['officeId']);
         });
-        this.fetchOfficeTableData();
     }
 
-    fetchOfficeTableData(): void {
-        this.ppaPlanService.getList({ limit: 1000 }).subscribe({
+    fetchOfficeTableData(officeId?: string): void {
+        this.isLoading = true;
+        const params: { limit: number; officeId?: string } = { limit: 1000 };
+        if (officeId?.trim()) {
+            params.officeId = officeId.trim();
+        }
+        this.ppaPlanService.getList(params).subscribe({
             next: (res) => {
                 this.officeTableData = res.data.map((plan) => this.mapPpaPlanToOfficeTableData(plan));
                 this.filteredOfficeTableData.data = this.officeTableData;
@@ -150,15 +155,15 @@ export class OfficeTableComponent implements OnInit {
             fundSource: plan.fundSource ?? '',
             participants: Array.isArray(plan.participants) ? plan.participants.join(', ') : '',
             supportNeededFromStakeholders: plan.supportNeed ?? '',
-            supportReceivedFromStakeholders: plan.supportReceivedValue != null ? String(plan.supportReceivedValue) : '',
-            stakeholdersName: plan.stakeholderUserId ?? '-',
+            supportReceivedFromStakeholders: plan.supportReceivedValue ?? null,
+            stakeholdersName: this.getStakeholderDisplay(plan.stakeholderUserId),
             amountUtilized,
             variance,
             percentageUtilization,
             implementationStatus: plan.implementationStatus ?? '',
             remarks: plan.timeliness ?? '',
             hinderingFacilitatingFactors: plan.factors ?? '',
-            accomplishmentReport: Array.isArray(plan.reportUrls) ? plan.reportUrls.join(', ') : '',
+            accomplishmentReportUrls: Array.isArray(plan.reportUrls) ? plan.reportUrls : [],
         };
     }
 
@@ -283,5 +288,18 @@ export class OfficeTableComponent implements OnInit {
 
     getClassificationDisplay(classification: string): string {
         return this.classificationDisplay.getDisplayText(classification) || '';
+    }
+
+    /** Display stakeholder name from either id string or populated user object from API. */
+    getStakeholderDisplay(stakeholderUserId: string | { _id?: string; name?: string; userName?: string; email?: string } | null | undefined): string {
+        if (stakeholderUserId == null) return '—';
+        if (typeof stakeholderUserId === 'string') return stakeholderUserId || '—';
+        const u = stakeholderUserId as { name?: string; userName?: string; email?: string; _id?: string };
+        return u?.name || u?.userName || u?.email || u?._id || '—';
+    }
+
+    getReportLinkLabel(urls: string[], index: number): string {
+        if (urls.length <= 1) return 'Download';
+        return `Report ${index + 1}`;
     }
 }
