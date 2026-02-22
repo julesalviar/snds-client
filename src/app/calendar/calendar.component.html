@@ -30,6 +30,7 @@
               <button
                 class="month-cell"
                 [class.empty]="cell.day === null"
+                [class.weekend]="isWeekendCell(cell)"
                 [class.today]="cell.day === todayDate"
                 [class.selected]="cell.day !== null && isDaySelected(cell.day)"
                 [class.skeleton-cell]="isLoading && cell.day !== null"
@@ -43,8 +44,8 @@
                     <div class="skeleton skeleton-plan-bar" style="width: 70%"></div>
                   } @else {
                     @for (plan of getPlansForDay(cell.day); track trackByPlan(plan, $index)) {
-                      <div class="plan-bar plan-bar-blue" [attr.title]="plan.title">
-                        {{ plan.title }}
+                      <div class="plan-bar" [ngClass]="getPlanBarColorClass(plan)" [attr.title]="plan.ppn != null ? '#' + plan.ppn + ': ' + plan.title : plan.title">
+                        {{ plan.ppn != null ? '#' + plan.ppn + ': ' + plan.title : plan.title }}
                       </div>
                     }
                   }
@@ -82,10 +83,10 @@
         } @else {
           @for (plan of plansInSelectedDay; track plan._id!) {
             @let hasConflict = hasParticipantConflict(plan);
-            <button type="button" class="plan-item" [class.plan-item-conflict]="hasConflict" (click)="openPlanContext(plan)" [attr.title]="plan.title">
+            <button type="button" class="plan-item" [class.plan-item-conflict]="hasConflict" (click)="openPlanContext(plan)" [attr.title]="plan.ppn != null ? '#' + plan.ppn + ': ' + plan.title : plan.title">
               @let participants = getPlanParticipantsDisplay(plan);
               <div class="plan-item-content">
-                <span class="plan-title">{{ plan.title }}</span>
+                <span class="plan-title">{{ plan.ppn != null ? '#' + plan.ppn + ': ' + plan.title : plan.title }}</span>
                 <span class="plan-program">{{ getPlanOfficeAndAssignedDisplay(plan) }}</span>
                 @if (participants) {
                   <span class="plan-participants">{{ participants }}</span>

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, Optional, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -34,6 +34,20 @@ import { PLAN_PARTICIPANT_OPTIONS } from '../../common/enums/plan-participant.en
 import { TIMELINESS } from '../../common/enums/timeliness.enum';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { UserListItem } from '../../registration/user.model';
+
+/** Validator: end date must not be before start date. */
+function implementationDateRangeValidator(control: AbstractControl): ValidationErrors | null {
+  const form = control.parent;
+  if (!form) return null;
+  const start = form.get('implementationStartDate')?.value;
+  const end = control.value;
+  if (!start || !end) return null;
+  const startDate = start instanceof Date ? start : new Date(String(start).substring(0, 10));
+  const endDate = end instanceof Date ? end : new Date(String(end).substring(0, 10));
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return null;
+  if (endDate < startDate) return { endBeforeStart: true };
+  return null;
+}
 
 @Component({
   selector: 'app-ppa-plan-form',
@@ -174,7 +188,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       objective: ['', Validators.required],
       classification: ['', Validators.required],
       expectedOutput: ['', Validators.required],
-      implementationDate: [null as Date | string | null], // maps to implementation start date
+      implementationStartDate: [null as Date | string | null],
+      implementationEndDate: [null as Date | string | null, [implementationDateRangeValidator]],
       budgetaryRequirement: [null as number | null],
       materialsAndSupplies: [''],
       fundSource: [''],
@@ -190,7 +205,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       factors: [''],
     });
     if (this.isDialogMode && dialogData?.initialDate && !this.isEdit) {
-      this.form.patchValue({ implementationDate: dialogData.initialDate });
+      this.form.patchValue({ implementationStartDate: dialogData.initialDate, implementationEndDate: dialogData.initialDate });
     }
   }
 
@@ -200,6 +215,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       this.isEdit = !!this.planId;
     }
     this.setupStakeholderSearch();
+    this.setupImplementationDateValidation();
     this.initializeAssignedUserId();
     this.loadUsers();
   }
@@ -207,6 +223,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private setupImplementationDateValidation(): void {
+    const startControl = this.form.get('implementationStartDate');
+    const endControl = this.form.get('implementationEndDate');
+    startControl?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      endControl?.updateValueAndValidity();
+    });
   }
 
   private setupStakeholderSearch(): void {
@@ -383,6 +407,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     this.ppaPlanService.getById(this.planId).subscribe({
       next: (plan) => {
         const startDate = plan.implementationStartDate ?? '';
+        const endDate = plan.implementationEndDate ?? '';
         const stakeholderRaw = plan.stakeholderUserId;
         const stakeholderId = this.normalizeStakeholderUserId(stakeholderRaw);
         if (stakeholderRaw && typeof stakeholderRaw === 'object' && stakeholderRaw !== null && '_id' in stakeholderRaw) {
@@ -422,7 +447,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           objective: plan.objective,
           classification: plan.classification,
           expectedOutput: plan.expectedOutput,
-          implementationDate: startDate ? new Date(startDate) : null,
+          implementationStartDate: startDate ? new Date(startDate) : null,
+          implementationEndDate: endDate ? new Date(endDate) : null,
           budgetaryRequirement: plan.budgetaryRequirement ?? null,
           materialsAndSupplies: plan.materialsAndSupplies ?? '',
           fundSource: plan.fundSource ?? '',
@@ -451,11 +477,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.form.invalid || this.isSaving) return;
     const raw = this.form.getRawValue();
-    const implDate = raw.implementationDate;
-    const implementationStartDate = implDate instanceof Date
-      ? this.formatDateForPayload(implDate)
-      : (typeof implDate === 'string' ? implDate.trim().substring(0, 10) : '') || '';
-    const implementationEndDate = implementationStartDate; // TODO: use start date for end date for now
+    const implStart = raw.implementationStartDate;
+    const implEnd = raw.implementationEndDate;
+    const implementationStartDate = implStart instanceof Date
+      ? this.formatDateForPayload(implStart)
+      : (typeof implStart === 'string' ? implStart.trim().substring(0, 10) : '') || '';
+    const implementationEndDate = implEnd instanceof Date
+      ? this.formatDateForPayload(implEnd)
+      : (typeof implEnd === 'string' ? implEnd.trim().substring(0, 10) : '') || '';
     const hasReportFile = !!this.selectedReportFile;
 
     const buildPayload = (reportUrls: string[]): PpaPlan => ({

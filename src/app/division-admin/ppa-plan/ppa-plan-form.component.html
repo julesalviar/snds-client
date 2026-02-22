@@ -57,12 +57,23 @@
         <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
           <section class="form-section">
             <h3 class="section-title">Basic information</h3>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Implementation Date</mat-label>
-              <input matInput [matDatepicker]="implDatePicker" formControlName="implementationDate" placeholder="YYYY-MM-DD" (click)="implDatePicker.open()">
-              <mat-datepicker-toggle matSuffix [for]="implDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #implDatePicker startView="month" panelClass="ppa-datepicker-overlay"></mat-datepicker>
-            </mat-form-field>
+            <div class="row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Implementation Start Date</mat-label>
+                <input matInput [matDatepicker]="implStartDatePicker" formControlName="implementationStartDate" [max]="form.get('implementationEndDate')?.value" placeholder="YYYY-MM-DD" (click)="implStartDatePicker.open()">
+                <mat-datepicker-toggle matSuffix [for]="implStartDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #implStartDatePicker startView="month" panelClass="ppa-datepicker-overlay"></mat-datepicker>
+                <mat-hint>Start date must be on or before the end date.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Implementation End Date</mat-label>
+                <input matInput [matDatepicker]="implEndDatePicker" formControlName="implementationEndDate" [min]="form.get('implementationStartDate')?.value" placeholder="YYYY-MM-DD" (click)="implEndDatePicker.open()">
+                <mat-datepicker-toggle matSuffix [for]="implEndDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #implEndDatePicker startView="month" panelClass="ppa-datepicker-overlay"></mat-datepicker>
+                <mat-hint>End date must be on or after the start date.</mat-hint>
+                <mat-error *ngIf="form.get('implementationEndDate')?.hasError('endBeforeStart')">End date must be on or after the start date.</mat-error>
+              </mat-form-field>
+            </div>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Program Holder</mat-label>
               <input matInput [value]="programHolderDisplayName" readonly disabled>

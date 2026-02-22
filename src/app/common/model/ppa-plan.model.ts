@@ -11,6 +11,7 @@ export interface PpaPlan {
   expectedOutput: string;
   implementationStartDate?: string;
   implementationEndDate?: string;
+  ppn?: number;
   budgetaryRequirement?: number;
   materialsAndSupplies?: string;
   fundSource?: string;

@@ -48,6 +48,12 @@ export class CalendarComponent implements OnInit {
     return this.getPlansForDate(this.selectedDate).filter((p) => !!p._id);
   }
 
+  /** Whether the cell is in a weekend column (Sun = 0, Sat = 6) */
+  isWeekendCell(cell: { id: number; day: number | null }): boolean {
+    const col = cell.id % 7;
+    return col === 0 || col === 6;
+  }
+
   /** Whether the given day (in current month) matches selectedDate (day, month, year) */
   isDaySelected(day: number | null): boolean {
     if (day === null || this.selectedDate === null) return false;
@@ -219,6 +225,24 @@ export class CalendarComponent implements OnInit {
   }
 
   trackByPlan(plan: any, index: number) { return plan._id ?? index; }
+
+  /** Color classes for plan bars; same ppn gets same color. Supports many distinct ppns via modulo. */
+  private readonly planBarColorClasses = [
+    'plan-bar-blue', 'plan-bar-green', 'plan-bar-red', 'plan-bar-orange', 'plan-bar-purple', 'plan-bar-teal',
+    'plan-bar-indigo', 'plan-bar-cyan', 'plan-bar-amber', 'plan-bar-pink', 'plan-bar-brown', 'plan-bar-lime',
+    'plan-bar-deep-orange', 'plan-bar-blue-grey', 'plan-bar-deep-purple', 'plan-bar-light-green', 'plan-bar-amber-dark',
+    'plan-bar-rose', 'plan-bar-slate', 'plan-bar-emerald', 'plan-bar-violet', 'plan-bar-coral', 'plan-bar-navy',
+  ];
+
+  /** Returns the plan-bar color class for a plan; plans with same ppn share the same color */
+  getPlanBarColorClass(plan: PpaPlan): string {
+    const ppn = plan.ppn;
+    if (ppn == null) return 'plan-bar-blue';
+    const uniquePpns = [...new Set(this.plans.map((p) => p.ppn).filter((x) => x != null))].sort((a, b) => (a as number) - (b as number));
+    const index = uniquePpns.indexOf(ppn);
+    if (index === -1) return 'plan-bar-blue';
+    return this.planBarColorClasses[index % this.planBarColorClasses.length];
+  }
 
   /** Program/office display: division or officeDivision from officeId (string or populated object) */
   getPlanProgramDisplay(plan: PpaPlan): string {

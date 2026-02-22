@@ -260,6 +260,11 @@
   border-color: var(--mat-sys-outline-variant, #e8e8e8);
 }
 
+/* Weekend cells (non-empty): very light pastel tint */
+.month-cell.weekend:not(.empty) {
+  background: #f5f7ff;
+}
+
 /* Empty cells must never show today/selected styling (fixes DOM reuse on month nav) */
 .month-cell.empty.today {
   background: var(--mat-sys-surface-container-lowest, #fafafa);
@@ -329,6 +334,86 @@
 
 .plan-bar-red {
   background: #d50000;
+}
+
+.plan-bar-orange {
+  background: #e65100;
+}
+
+.plan-bar-purple {
+  background: #7b1fa2;
+}
+
+.plan-bar-teal {
+  background: #00796b;
+}
+
+.plan-bar-indigo {
+  background: #3949ab;
+}
+
+.plan-bar-cyan {
+  background: #0097a7;
+}
+
+.plan-bar-amber {
+  background: #ff8f00;
+}
+
+.plan-bar-pink {
+  background: #c2185b;
+}
+
+.plan-bar-brown {
+  background: #5d4037;
+}
+
+.plan-bar-lime {
+  background: #689f38;
+}
+
+.plan-bar-deep-orange {
+  background: #bf360c;
+}
+
+.plan-bar-blue-grey {
+  background: #455a64;
+}
+
+.plan-bar-deep-purple {
+  background: #512da8;
+}
+
+.plan-bar-light-green {
+  background: #558b2f;
+}
+
+.plan-bar-amber-dark {
+  background: #ff6f00;
+}
+
+.plan-bar-rose {
+  background: #ad1457;
+}
+
+.plan-bar-slate {
+  background: #37474f;
+}
+
+.plan-bar-emerald {
+  background: #2e7d32;
+}
+
+.plan-bar-violet {
+  background: #6a1b9a;
+}
+
+.plan-bar-coral {
+  background: #d84315;
+}
+
+.plan-bar-navy {
+  background: #1565c0;
 }
 
 /* Skeleton loading */

@@ -8,6 +8,8 @@ export enum PlanParticipant {
   SGC = 'SGC',
   SPTA = 'SPTA',
   DIVISION_PERSONNEL = 'Division Personnel',
+  EXTERNAL_PARTNERS = 'External Partners',
+  PROGRAM_SCHOOL_COORDINATORS = 'Program School Coordinators',
   OTHERS = 'Others',
 }
 
