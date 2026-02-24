@@ -19,7 +19,7 @@
       </mat-error>
     </mat-form-field>
 
-    <button mat-raised-button class="custom-signin" type="submit" [disabled]="signInForm.invalid"><span>Sign In</span></button>
+    <button mat-raised-button class="custom-signin" type="submit" [disabled]="signInForm.invalid || isSubmitting"><span>Sign In</span></button>
 
     <div class="forgot-password">
       <a href="javascript:void(0);" (click)="onForgotPassword()">Forgot Password?</a>

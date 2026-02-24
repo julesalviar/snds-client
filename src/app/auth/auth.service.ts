@@ -18,7 +18,11 @@ export class AuthService {
       credentials
     ).pipe(
       tap(authResponse => {
-        localStorage.setItem('token', authResponse.access_token)
+        const token = authResponse?.access_token ?? (authResponse as unknown as Record<string, string>)?.['accessToken'];
+        if (!token) {
+          throw new Error('Login response missing token');
+        }
+        localStorage.setItem('token', token);
       }),
       map(() => void 0), // Not exposing the token here
       catchError(error => {

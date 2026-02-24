@@ -89,11 +89,12 @@ export class SignInComponent implements OnInit {
       const password = this.signInForm.get('password')?.value;
 
       this.isSubmitting = true;
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? this.returnUrl;
       this.authService.login({ userName: email, password }).subscribe({
         next: (response: any) => {
           this.isError = false;
           this.isSubmitting = false;
-          this.router.navigateByUrl(this.returnUrl);
+          this.router.navigateByUrl(returnUrl);
         },
 
         error: (error: any) => {
