@@ -16,6 +16,8 @@ export interface PpaPlanListParams {
   stakeholderUserId?: string;
   startDateFrom?: string;
   startDateTo?: string;
+  endDateFrom?: string;
+  endDateTo?: string;
 }
 
 @Injectable({
@@ -53,6 +55,12 @@ export class PpaPlanService {
     }
     if (params.startDateTo) {
       queryParams.push(`startDateTo=${encodeURIComponent(params.startDateTo)}`);
+    }
+    if (params.endDateFrom) {
+      queryParams.push(`endDateFrom=${encodeURIComponent(params.endDateFrom)}`);
+    }
+    if (params.endDateTo) {
+      queryParams.push(`endDateTo=${encodeURIComponent(params.endDateTo)}`);
     }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.ppaPlan}?${queryParams.join('&')}` : API_ENDPOINT.ppaPlan;

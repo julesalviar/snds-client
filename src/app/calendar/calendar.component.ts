@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -107,14 +108,25 @@ export class CalendarComponent implements OnInit {
     this.loadPlans();
   }
 
-  /** Load PPA plans for the visible month using startDateFrom and startDateTo */
+  /** Load PPA plans for the visible month: plans that start OR end in the month */
   loadPlans(): void {
     this.isLoading = true;
-    const startDateFrom = this.getMonthStartDateString();
-    const startDateTo = this.getMonthEndDateString();
-    this.ppaPlanService.getList({ startDateFrom, startDateTo }).subscribe({
-      next: (res) => {
-        this.plans = Array.isArray(res.data) ? res.data : [];
+    const monthStart = this.getMonthStartDateString();
+    const monthEnd = this.getMonthEndDateString();
+    forkJoin({
+      byStart: this.ppaPlanService.getList({ startDateFrom: monthStart, startDateTo: monthEnd }),
+      byEnd: this.ppaPlanService.getList({ endDateFrom: monthStart, endDateTo: monthEnd }),
+    }).subscribe({
+      next: ({ byStart, byEnd }) => {
+        const startPlans = Array.isArray(byStart.data) ? byStart.data : [];
+        const endPlans = Array.isArray(byEnd.data) ? byEnd.data : [];
+        const seen = new Set<string>();
+        this.plans = [...startPlans, ...endPlans].filter((p) => {
+          const id = p._id ?? '';
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        });
         this.isLoading = false;
       },
       error: () => {
