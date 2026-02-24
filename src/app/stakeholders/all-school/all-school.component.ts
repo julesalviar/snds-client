@@ -163,16 +163,13 @@ export class AllSchoolComponent implements OnInit {
     const userRole = this.authService.getActiveRole();
     const schoolId = school._id || school.id;
 
-    if (userRole === 'stakeholder') {
-      this.router.navigate(['/stakeholder/school-needs'], {
-        queryParams: {schoolId: schoolId}
-      });
-    } else if (userRole === 'divisionAdmin') {
+
+    if (userRole === 'divisionAdmin') {
       this.router.navigate(['/division-admin/school-needs'], {
         queryParams: {schoolId: schoolId}
       });
     } else {
-      this.router.navigate(['/guest/school-needs'], {
+      this.router.navigate(['/stakeholder/school-needs'], {
         queryParams: {schoolId: schoolId}
       });
     }

@@ -157,7 +157,7 @@
               *ngFor="let division of officeDivisionsWithOffices"
               [division]="division"
               [offices]="getOfficesForDivision(division)"
-              [officeTableBasePath]="'/guest'"
+              [officeTableBasePath]="'/stakeholder'"
               (divisionHover)="onDivisionHover($event)"
               (menuItemClick)="closeMenu()" />
           </mat-menu>

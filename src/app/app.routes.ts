@@ -59,8 +59,6 @@ export const routes: Routes = [
     children: [
       {path: 'all-school', component: AllSchoolComponent},
       {path: 'districts', component: ClustersComponent, canActivate: [AuthGuard]},
-      {path: 'school-needs', component: StakeholdersComponent},
-      {path: 'office-table', component: OfficeTableComponent},
     ],
   },
 
