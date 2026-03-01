@@ -79,6 +79,49 @@
       </div>
 
       <div class="column-second">
+        <!-- Upcoming events widget: office-admin, assistant-office-admin, program-holders only -->
+        <aside *ngIf="canShowUpcomingEventsWidget(state)" class="upcoming-events-widget">
+          <h3 class="upcoming-events-title">
+            <mat-icon class="upcoming-events-icon">event</mat-icon>
+            Upcoming Events
+          </h3>
+          @if (state.loading.upcomingPlans) {
+            <div class="upcoming-events-skeleton" aria-hidden="true">
+              @for (_ of [1,2,3,4,5,6]; track $index) {
+                <div class="skeleton skeleton-upcoming-item"></div>
+              }
+            </div>
+          } @else if (state.upcomingPlans.length === 0) {
+            <div class="upcoming-events-empty">No upcoming events</div>
+          } @else {
+            <ul class="upcoming-events-list">
+              @for (plan of state.upcomingPlans.slice(0, 6); track plan._id || $index) {
+                <li class="upcoming-event-item">
+                  <a [routerLink]="getCalendarRoute(state)" (click)="onUpcomingEventClick(plan)" class="upcoming-event-link">
+                    <span class="upcoming-event-date">{{ getPlanDisplayDate(plan) }}</span>
+                    <span class="upcoming-event-title">{{ getUpcomingPlanTitle(plan) }}</span>
+                    <span class="upcoming-event-meta">
+                      <span class="upcoming-event-meta-item" *ngIf="getPlanOfficeCode(plan) !== '—'">
+                        <mat-icon class="upcoming-meta-icon">business</mat-icon>
+                        {{ getPlanOfficeCode(plan) }}
+                      </span>
+                      <span class="upcoming-event-meta-item" *ngIf="getPlanAssignedUser(plan) !== '—'">
+                        <mat-icon class="upcoming-meta-icon">person</mat-icon>
+                        {{ getPlanAssignedUser(plan) }}
+                      </span>
+                      <span class="upcoming-event-meta-item" *ngIf="getPlanParticipants(plan) !== '—'" [title]="getPlanParticipants(plan)">
+                        <mat-icon class="upcoming-meta-icon">group</mat-icon>
+                        {{ getPlanParticipants(plan) }}
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+          <a [routerLink]="getCalendarRoute(state)" class="upcoming-events-view-all">View Calendar</a>
+        </aside>
+
         <div class="text-section">
         <div class="welcome-header" *ngIf="shouldShowStats(state)">
           <div class="aip-info-detailed">

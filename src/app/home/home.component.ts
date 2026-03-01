@@ -16,6 +16,9 @@ import {UserType} from "../registration/user-type.enum";
 import {MatCardModule} from "@angular/material/card";
 import {SchoolInfo} from "../common/model/school-need.model";
 import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
+import {PpaPlanService} from "../common/services/ppa-plan.service";
+import {PpaPlan} from "../common/model/ppa-plan.model";
+import {CalendarNavigationService} from "../common/services/calendar-navigation.service";
 
 interface TreeNode {
   name: string;
@@ -28,6 +31,7 @@ interface HomeLoadingState {
   internalRefData: boolean;
   schoolNeeds: boolean;
   aipStats: boolean;
+  upcomingPlans: boolean;
 }
 
 /** Full home view state – single source for template; use with async pipe. */
@@ -44,6 +48,7 @@ export interface HomeState {
   logoError: boolean;
   aipStatusStats: Map<AipStatus, number>;
   totalAips: number;
+  upcomingPlans: PpaPlan[];
 }
 
 @Component({
@@ -74,6 +79,8 @@ export class HomeComponent implements OnInit {
     private readonly schoolNeedService: SchoolNeedService,
     private readonly authService: AuthService,
     private readonly aipService: AipService,
+    private readonly ppaPlanService: PpaPlanService,
+    private readonly calendarNavigationService: CalendarNavigationService,
     private decimalPipe: DecimalPipe,
   ) {
     const initial = this.getInitialState();
@@ -95,7 +102,7 @@ export class HomeComponent implements OnInit {
     const aipStatusStats = new Map<AipStatus, number>();
     AIP_STATUSES.forEach((s) => aipStatusStats.set(s, 0));
     return {
-      loading: { internalRefData: true, schoolNeeds: true, aipStats: true },
+      loading: { internalRefData: true, schoolNeeds: true, aipStats: true, upcomingPlans: true },
       name,
       userRole,
       treeData: [],
@@ -107,6 +114,7 @@ export class HomeComponent implements OnInit {
       logoError: false,
       aipStatusStats,
       totalAips: 0,
+      upcomingPlans: [],
     };
   }
 
@@ -126,6 +134,11 @@ export class HomeComponent implements OnInit {
         ),
         switchMap((s) =>
           this.loadAipStatsIfNeeded$(s).pipe(
+            tap((result) => this.homeStateSubject.next(result)),
+          ),
+        ),
+        switchMap((s) =>
+          this.loadUpcomingPlansIfNeeded$(s).pipe(
             tap((result) => this.homeStateSubject.next(result)),
           ),
         ),
@@ -311,6 +324,93 @@ export class HomeComponent implements OnInit {
         })
       );
     }
+
+  private loadUpcomingPlansIfNeeded$(state: HomeState): Observable<HomeState> {
+    if (
+      state.userRole !== UserType.ProgramHolder &&
+      state.userRole !== UserType.OfficeAdmin &&
+      state.userRole !== UserType.OfficeAdminAssistant
+    ) {
+      return of({ ...state, loading: { ...state.loading, upcomingPlans: false } });
+    }
+    const today = new Date();
+    const startDateFrom = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const sixMonthsLater = new Date(today);
+    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+    const startDateTo = `${sixMonthsLater.getFullYear()}-${String(sixMonthsLater.getMonth() + 1).padStart(2, '0')}-${String(sixMonthsLater.getDate()).padStart(2, '0')}`;
+    return this.ppaPlanService.getList({ startDateFrom, startDateTo, limit: 6 }).pipe(
+      map((res) => ({
+        ...state,
+        loading: { ...state.loading, upcomingPlans: false },
+        upcomingPlans: res.data ?? [],
+      })),
+      catchError((err) => {
+        console.error('Error loading upcoming plans:', err);
+        return of({ ...state, loading: { ...state.loading, upcomingPlans: false }, upcomingPlans: [] });
+      }),
+    );
+  }
+
+  /** Whether the user can see the upcoming events widget (office-admin, assistant-office-admin, program-holders). */
+  canShowUpcomingEventsWidget(state: HomeState): boolean {
+    return (
+      state.userRole === UserType.OfficeAdmin ||
+      state.userRole === UserType.OfficeAdminAssistant ||
+      state.userRole === UserType.ProgramHolder
+    );
+  }
+
+  /** Calendar route based on user role. */
+  getCalendarRoute(state: HomeState): string {
+    return state.userRole === UserType.ProgramHolder ? '/program-holder/calendar' : '/office-admin/calendar';
+  }
+
+  /** Format plan date for display. */
+  getPlanDisplayDate(plan: PpaPlan): string {
+    const dateStr = plan.implementationStartDate ?? (plan as unknown as Record<string, string>)?.['implementation_start_date'];
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  /** Plan title for display (ppn + title when available). */
+  getUpcomingPlanTitle(plan: PpaPlan): string {
+    return plan.ppn != null ? `#${plan.ppn}: ${plan.title}` : plan.title;
+  }
+
+  /** Called when clicking an upcoming event: set plan for calendar to open dialog. */
+  onUpcomingEventClick(plan: PpaPlan): void {
+    this.calendarNavigationService.setPlanToOpen(plan);
+  }
+
+  /** Office code from officeId (string or populated object). */
+  getPlanOfficeCode(plan: PpaPlan): string {
+    const office = plan.officeId;
+    if (office == null) return '—';
+    if (typeof office === 'string') return office || '—';
+    const o = office as { code?: string; name?: string; division?: string };
+    return o?.code ?? o.name ?? o.division ?? '—';
+  }
+
+  /** Assigned user display name. */
+  getPlanAssignedUser(plan: PpaPlan): string {
+    const assigned = plan.assignedUserId;
+    if (assigned == null) return '—';
+    if (typeof assigned === 'object' && 'name' in assigned) {
+      return (assigned as { name?: string }).name ?? '—';
+    }
+    return '—';
+  }
+
+  /** Participants display: comma-separated (handles string[] or object[] with name). */
+  getPlanParticipants(plan: PpaPlan): string {
+    const p = plan.participants;
+    if (!Array.isArray(p) || p.length === 0) return '—';
+    return p
+      .map((x) => (typeof x === 'string' ? x : (x as { name?: string })?.name ?? ''))
+      .filter(Boolean)
+      .join(', ') || '—';
+  }
 
   getStatusPercentage(state: HomeState, status: AipStatus): number {
     if (state.totalAips === 0) return 0;

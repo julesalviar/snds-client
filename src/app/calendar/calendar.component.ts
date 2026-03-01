@@ -16,6 +16,7 @@ import { PpaPlanContextDialogComponent } from './ppa-plan-context-dialog/ppa-pla
 import { PpaPlanFormComponent } from '../division-admin/ppa-plan/ppa-plan-form.component';
 import { AuthService } from '../auth/auth.service';
 import { UserType } from '../registration/user-type.enum';
+import { CalendarNavigationService } from '../common/services/calendar-navigation.service';
 
 /** Calendar UI inspired by calendar.google.com. Tasks are PPA plans. */
 @Component({
@@ -91,6 +92,8 @@ export class CalendarComponent implements OnInit {
 
   isLoading = false;
 
+  private pendingPlanToOpen: PpaPlan | null = null;
+
   get isProgramHolder(): boolean {
     return this.authService.getActiveRole() === UserType.ProgramHolder;
   }
@@ -101,11 +104,28 @@ export class CalendarComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly breakpointObserver: BreakpointObserver,
     private readonly snackBar: MatSnackBar,
+    private readonly calendarNavigationService: CalendarNavigationService,
   ) {}
 
   ngOnInit(): void {
+    const plan = this.calendarNavigationService.getAndClearPlanToOpen();
+    if (plan) {
+      this.pendingPlanToOpen = plan;
+      this.navigateToPlanMonth(plan);
+    }
     this.rebuildGrid();
     this.loadPlans();
+  }
+
+  private navigateToPlanMonth(plan: PpaPlan): void {
+    const dateStr = plan.implementationStartDate ?? (plan as unknown as Record<string, string>)?.['implementation_start_date'];
+    if (dateStr) {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        this.currentMonth = d.getMonth();
+        this.currentYear = d.getFullYear();
+      }
+    }
   }
 
   /** Load PPA plans for the visible month: plans that start OR end in the month */
@@ -128,9 +148,11 @@ export class CalendarComponent implements OnInit {
           return true;
         });
         this.isLoading = false;
+        this.openPlanDialogIfRequested();
       },
       error: () => {
         this.isLoading = false;
+        this.openPlanDialogIfRequested();
       },
     });
   }
@@ -357,6 +379,14 @@ export class CalendarComponent implements OnInit {
         this.openEditPlanModal(result.planId);
       }
     });
+  }
+
+  private openPlanDialogIfRequested(): void {
+    const plan = this.pendingPlanToOpen;
+    this.pendingPlanToOpen = null;
+    if (plan) {
+      setTimeout(() => this.openPlanContext(plan), 0);
+    }
   }
 
   private rebuildGrid(): void {

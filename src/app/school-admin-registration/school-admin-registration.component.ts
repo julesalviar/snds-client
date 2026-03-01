@@ -66,7 +66,7 @@ export class SchoolAdminRegistrationComponent implements OnInit {
       contactNumber: this.fb.control('', Validators.required),
       officialEmail: this.fb.control('', [Validators.required, Validators.email]),
       password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
-      confirmPassword: [this.defaultPassword, Validators.required],
+      confirmPassword: [this.defaultPassword, Validators.required]
     }, {validators: this.passwordMatchValidator});
   }
 

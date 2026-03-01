@@ -119,7 +119,7 @@ export class RegistrationComponent {
       address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: [DEFAULT_PASSWORD, [Validators.required, Validators.minLength(6)]],
-      confirmPassword: [DEFAULT_PASSWORD, Validators.required],
+      confirmPassword: [DEFAULT_PASSWORD, Validators.required]
     }, {validators: passwordMatchValidator()});
   }
 
