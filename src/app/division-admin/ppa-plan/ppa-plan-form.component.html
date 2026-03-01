@@ -56,7 +56,44 @@
 
         <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
           <section class="form-section">
-            <h3 class="section-title">PPA Plan Basic</h3>
+            <h3 class="section-title">PPA Plan Basic Information</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Program Holder</mat-label>
+              <input matInput [value]="programHolderDisplayName" readonly disabled>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width participant-chip-list">
+              <mat-label>Participants</mat-label>
+              <mat-chip-grid #participantChipGrid aria-label="Participants">
+                <mat-chip-row
+                  *ngFor="let participant of participantsArray; trackBy: trackByParticipant"
+                  (removed)="removeParticipant(participant)"
+                >
+                  {{ participant }}
+                  <button matChipRemove [attr.aria-label]="'remove ' + participant">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip-row>
+              </mat-chip-grid>
+              <input
+                placeholder="Add participant..."
+                [matChipInputFor]="participantChipGrid"
+                [matChipInputSeparatorKeyCodes]="participantSeparatorKeysCodes"
+                [matChipInputAddOnBlur]="participantAddOnBlur"
+                (matChipInputTokenEnd)="addParticipantFromInput($event)"
+                [matAutocomplete]="participantAuto"
+                [formControl]="participantInputControl"
+                aria-label="Add participant"
+              />
+              <mat-autocomplete
+                #participantAuto="matAutocomplete"
+                (optionSelected)="addParticipantFromSelect($event)"
+                [displayWith]="displayParticipantFn"
+              >
+                <mat-option *ngFor="let opt of availableParticipantOptions" [value]="opt">
+                  {{ opt }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
             <div class="row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Implementation Start Date</mat-label>
@@ -74,10 +111,6 @@
                 <mat-error *ngIf="form.get('implementationEndDate')?.hasError('endBeforeStart')">End date must be on or after the start date.</mat-error>
               </mat-form-field>
             </div>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Program Holder</mat-label>
-              <input matInput [value]="programHolderDisplayName" readonly disabled>
-            </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Program</mat-label>
               <mat-select formControlName="officeId" placeholder="Select program">
@@ -158,39 +191,6 @@
                                (optionSelected)="onStakeholderOptionSelected($event.option.value)">
                 <mat-option *ngFor="let user of filteredUsers" [value]="user._id">
                   {{ getStakeholderDisplayName(user) }}
-                </mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width participant-chip-list">
-              <mat-label>Participants</mat-label>
-              <mat-chip-grid #participantChipGrid aria-label="Participants">
-                <mat-chip-row
-                  *ngFor="let participant of participantsArray; trackBy: trackByParticipant"
-                  (removed)="removeParticipant(participant)"
-                >
-                  {{ participant }}
-                  <button matChipRemove [attr.aria-label]="'remove ' + participant">
-                    <mat-icon>cancel</mat-icon>
-                  </button>
-                </mat-chip-row>
-              </mat-chip-grid>
-              <input
-                placeholder="Add participant..."
-                [matChipInputFor]="participantChipGrid"
-                [matChipInputSeparatorKeyCodes]="participantSeparatorKeysCodes"
-                [matChipInputAddOnBlur]="participantAddOnBlur"
-                (matChipInputTokenEnd)="addParticipantFromInput($event)"
-                [matAutocomplete]="participantAuto"
-                [formControl]="participantInputControl"
-                aria-label="Add participant"
-              />
-              <mat-autocomplete
-                #participantAuto="matAutocomplete"
-                (optionSelected)="addParticipantFromSelect($event)"
-                [displayWith]="displayParticipantFn"
-              >
-                <mat-option *ngFor="let opt of availableParticipantOptions" [value]="opt">
-                  {{ opt }}
                 </mat-option>
               </mat-autocomplete>
             </mat-form-field>

@@ -119,7 +119,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   /** Participant options not yet added (for autocomplete). */
   get availableParticipantOptions(): string[] {
     const current = this.participantsArray;
-    const available = this.participantOptions.filter((p) => !current.includes(p));
+    const available = this.participantOptions.filter((p) => !current.includes(p)).sort((a, b) => a.localeCompare(b));
     const query = (this.participantInputControl.value ?? '').trim().toLowerCase();
     if (!query) return available;
     return available.filter((p) => p.toLowerCase().includes(query));
@@ -345,7 +345,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     const offices$ = this.loadOfficesObservable();
     const refData$ = from(this.internalReferenceDataService.initialize()).pipe(
       map(() => {
-        this.fundSourceOptions = [...this.internalReferenceDataService.getFundSources()];
+        this.fundSourceOptions = [...this.internalReferenceDataService.getFundSources()].sort((a, b) => a.localeCompare(b));
         return true;
       })
     );
