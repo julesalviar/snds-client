@@ -84,7 +84,6 @@ export class OfficeTableComponent implements OnInit {
         classification: '',
         fundSource: '',
         implementationStatus: '',
-        timeliness: '',
         yearRange: '',
         remarks: ''
     };
@@ -169,7 +168,7 @@ export class OfficeTableComponent implements OnInit {
 
     applyFilter(): void {
         let filteredData = this.officeTableData;
-        
+
 
         // Apply Year Range filter
         if (this.filters.yearRange) {
@@ -241,10 +240,7 @@ export class OfficeTableComponent implements OnInit {
             });
         }
 
-        // Apply other filters 
-        if (this.filters.timeliness) {
-            filteredData = filteredData.filter(item => item.remarks === this.filters.timeliness);
-        }
+        // Apply other filters
         if (this.filters.classification) {
             filteredData = filteredData.filter(item => item.fivePointReformAgenda === this.filters.classification);
         }
@@ -265,7 +261,6 @@ export class OfficeTableComponent implements OnInit {
             classification: '',
             fundSource: '',
             implementationStatus: '',
-            timeliness: '',
             yearRange: '',
             remarks: ''
         };
@@ -296,10 +291,5 @@ export class OfficeTableComponent implements OnInit {
         if (typeof stakeholderUserId === 'string') return stakeholderUserId || '—';
         const u = stakeholderUserId as { name?: string; userName?: string; email?: string; _id?: string };
         return u?.name || u?.userName || u?.email || u?._id || '—';
-    }
-
-    getReportLinkLabel(urls: string[], index: number): string {
-        if (urls.length <= 1) return 'Download';
-        return `Report ${index + 1}`;
     }
 }

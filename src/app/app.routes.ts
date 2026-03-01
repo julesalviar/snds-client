@@ -29,6 +29,7 @@ import {UserType} from './registration/user-type.enum';
 import { DpdsDataComponent } from './school-admin/dpds-data/dpds-data.component';
 import { OfficeTableComponent } from './stakeholders/office-table/office-table.component';
 import { ManageDistrictComponent } from './division-admin/manage-district/manage-district.component';
+import { ManageFundSourceComponent } from './division-admin/manage-fund-source/manage-fund-source.component';
 import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 import { OpenRegistrationComponent } from './open-registration/open-registration.component';
@@ -151,6 +152,7 @@ export const routes: Routes = [
       { path: 'offices', component: OfficeListComponent },
       { path: 'calendar', component: CalendarComponent },
       { path: 'ppa-plans', component: PpaPlanListComponent },
+      { path: 'manage-fund-source', component: ManageFundSourceComponent },
     ]
   },
 

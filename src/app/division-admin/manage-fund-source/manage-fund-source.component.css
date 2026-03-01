@@ -1,0 +1,264 @@
+/* Align with office-list styling */
+app-manage-fund-source mat-card.mat-mdc-card {
+  margin: 20px;
+  padding: 20px;
+  box-shadow: 0 0;
+  border-radius: 8px;
+  border: 1px solid green;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+app-manage-fund-source mat-card-title {
+  margin-bottom: 20px;
+  margin-left: 5px;
+  font-size: 20px;
+  color: #45a049;
+}
+
+.top-actions {
+  margin-bottom: 16px;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  gap: 10px;
+}
+
+.filter-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-field {
+  width: 250px;
+  min-width: 200px;
+}
+
+.clear-button {
+  margin-left: 0;
+}
+
+.table-wrapper {
+  margin-top: 15px;
+  padding: 2px;
+  border-radius: 12px;
+  border: 1px solid green;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-table-wrapper {
+  overflow-x: auto;
+  min-width: 0;
+  padding: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.skeleton-table {
+  display: table;
+  min-width: 400px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.skeleton-table-header {
+  display: table-row;
+  background: #f5f5f5;
+}
+
+.skeleton-table-header .skeleton-table-cell {
+  display: table-cell;
+  padding: 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-table-header .skeleton-table-cell:first-child {
+  border-top-left-radius: 12px;
+}
+
+.skeleton-table-header .skeleton-table-cell:last-child {
+  border-top-right-radius: 12px;
+}
+
+.skeleton-table-row {
+  display: table-row;
+  background: #fff;
+}
+
+.skeleton-table-row .skeleton-table-cell {
+  display: table-cell;
+  padding: 10px 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px dashed #e0e0e0;
+}
+
+.empty-state-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #424242;
+}
+
+.empty-state-message {
+  margin: 0;
+  font-size: 14px;
+  color: #757575;
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  min-width: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.fund-source-table {
+  width: 100%;
+  min-width: 400px;
+  background: #fff !important;
+}
+
+.fund-source-table .mat-mdc-header-row,
+.fund-source-table .mat-header-row {
+  background: #f5f5f5 !important;
+}
+
+.fund-source-table .mat-mdc-header-cell,
+.fund-source-table .mat-header-cell {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #424242;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5 !important;
+}
+
+.fund-source-table .mat-mdc-cell,
+.fund-source-table .mat-cell {
+  font-size: 0.875rem;
+  color: #212121;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff !important;
+  max-height: 104px;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.fund-source-table .mat-mdc-cell .cell-content,
+.fund-source-table .mat-cell .cell-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: 5.6em;
+  word-break: break-word;
+}
+
+/* Fixed width for actions column so it doesn't shift when paginating */
+.fund-source-table .mat-mdc-header-cell:last-child,
+.fund-source-table .mat-header-cell:last-child,
+.fund-source-table .mat-mdc-cell.actions-cell,
+.fund-source-table .mat-cell.actions-cell {
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+  box-sizing: border-box;
+}
+
+/* Override cell overflow/ellipsis for actions - prevents ellipsis on icons */
+.fund-source-table .mat-mdc-cell.actions-cell,
+.fund-source-table .mat-cell.actions-cell {
+  overflow: visible;
+  max-height: none;
+  text-overflow: clip;
+}
+
+.actions-cell {
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.actions-cell .mat-mdc-icon-button,
+.actions-cell .mat-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.action-edit:hover:not([disabled]) {
+  background-color: rgba(69, 160, 73, 0.12);
+  color: #2e7d32;
+}
+
+.action-delete .mat-icon {
+  color: #b3261e;
+}
+
+.action-delete:hover:not([disabled]) {
+  background-color: rgba(179, 38, 30, 0.12);
+  color: #b3261e;
+}
+
+.saving-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.saving-overlay mat-progress-bar {
+  height: 4px;
+}

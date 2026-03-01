@@ -122,7 +122,13 @@
     <ng-container *ngIf="UserType.OfficeAdmin === userActiveRole || UserType.OfficeAdminAssistant === userActiveRole">
       <li><a routerLink="/office-admin/ppa-plans">PPA Plans</a></li>
       <li><a routerLink="/office-admin/calendar">Calendar</a></li>
-      <li><a routerLink="/office-admin/offices">Offices</a></li>
+      <li>
+        <button mat-button [matMenuTriggerFor]="officeAdminOfficeMenu" class="menu-trigger">Administration</button>
+        <mat-menu #officeAdminOfficeMenu="matMenu">
+          <button mat-menu-item [routerLink]="['/office-admin/offices']" (click)="closeMenu()">Manage Office</button>
+          <button mat-menu-item [routerLink]="['/office-admin/manage-fund-source']" (click)="closeMenu()">Manage Fund Source</button>
+        </mat-menu>
+      </li>
     </ng-container>
 
     <ng-container *ngIf="UserType.SystemAdmin === userActiveRole">

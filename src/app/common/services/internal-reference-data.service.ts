@@ -66,6 +66,13 @@ export class InternalReferenceDataService extends BaseReferenceDataService {
     this.invalidate();
   }
 
+  /** Update fund sources and invalidate cache so next get refetches. */
+  async updateFundSources(value: string[]): Promise<void> {
+    const url = `${this.getEndpoint()}/${FUND_SOURCE_KEY}`;
+    await firstValueFrom(this.http.put(url, value));
+    this.invalidate();
+  }
+
   /** Update openRegistration and invalidate cache so next get refetches. */
   async updateOpenRegistration(value: boolean): Promise<void> {
     const url = `${this.getEndpoint()}/${OPEN_REGISTRATION_KEY}`;

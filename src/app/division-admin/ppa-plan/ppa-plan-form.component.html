@@ -56,7 +56,7 @@
 
         <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
           <section class="form-section">
-            <h3 class="section-title">Basic information</h3>
+            <h3 class="section-title">PPA Plan Basic</h3>
             <div class="row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Implementation Start Date</mat-label>
@@ -105,28 +105,12 @@
               <textarea matInput formControlName="objective" rows="2" placeholder="PPA Objective"></textarea>
               <mat-error>PPA Objective is required.</mat-error>
             </mat-form-field>
-            <div class="row">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>{{ classificationDisplay.getDisplayTitle() }}</mat-label>
-                <mat-select formControlName="classification">
-                  <mat-option *ngFor="let opt of classificationOptions" [value]="opt">{{ classificationDisplay.getDisplayText(opt) }}</mat-option>
-                </mat-select>
-                <mat-error>Classification is required.</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Implementation Status</mat-label>
-                <mat-select formControlName="implementationStatus">
-                  <mat-option *ngFor="let opt of implementationStatusOptions" [value]="opt">{{ opt }}</mat-option>
-                </mat-select>
-                <mat-error>Implementation status is required.</mat-error>
-              </mat-form-field>
-            </div>
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Timeliness</mat-label>
-              <mat-select formControlName="timeliness">
-                <mat-option value="">—</mat-option>
-                <mat-option *ngFor="let opt of timelinessOptions" [value]="opt">{{ opt }}</mat-option>
+              <mat-label>{{ classificationDisplay.getDisplayTitle() }}</mat-label>
+              <mat-select formControlName="classification">
+                <mat-option *ngFor="let opt of classificationOptions" [value]="opt">{{ classificationDisplay.getDisplayText(opt) }}</mat-option>
               </mat-select>
+              <mat-error>Classification is required.</mat-error>
             </mat-form-field>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Expected Output</mat-label>
@@ -136,7 +120,7 @@
           </section>
 
           <section class="form-section">
-            <h3 class="section-title">Dates &amp; budget</h3>
+            <h3 class="section-title">Resource Requirements</h3>
             <div class="row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Budgetary Requirement</mat-label>
@@ -161,7 +145,7 @@
           </section>
 
           <section class="form-section">
-            <h3 class="section-title">Stakeholder &amp; support</h3>
+            <h3 class="section-title">Stakeholders Support</h3>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Type the name of the stakeholder to engage (optional)</mat-label>
               <input matInput
@@ -221,9 +205,25 @@
           </section>
 
           <section class="form-section">
-            <h3 class="section-title">Other</h3>
+            <h3 class="section-title">Accomplishment Report</h3>
+            <div class="row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Implementation Status</mat-label>
+                <mat-select formControlName="implementationStatus">
+                  <mat-option *ngFor="let opt of implementationStatusOptions" [value]="opt">{{ opt }}</mat-option>
+                </mat-select>
+                <mat-error>Implementation status is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Timeliness</mat-label>
+                <mat-select formControlName="timeliness">
+                  <mat-option value="">—</mat-option>
+                  <mat-option *ngFor="let opt of timelinessOptions" [value]="opt">{{ opt }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Factors</mat-label>
+              <mat-label>Facilitating/Hindering Factors</mat-label>
               <textarea matInput formControlName="factors" rows="2" placeholder="Factors affecting implementation"></textarea>
             </mat-form-field>
 

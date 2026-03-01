@@ -14,7 +14,7 @@ export type PlanClassification = (typeof PLAN_CLASSIFICATION)[number];
  * Stored value remains the same as PLAN_CLASSIFICATION.
  */
 export const PLAN_CLASSIFICATION_GENSAN_DISPLAY_MAP: Record<PlanClassification, string> = {
-  'Enabling Learning Environment': 'GOLD (Enabling Learning Environment)',
+  'Enabling Learning Environment': 'GOLD (Governance)',
   'Teacher Welfare': 'COACH (Teacher Welfare)',
   'Learner Well-being': 'SAFE (Learner Well-being)',
   'Efficient Learning Delivery': 'AGILE (Efficient Learning Delivery)',

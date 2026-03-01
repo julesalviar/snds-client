@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit Fund Source' : 'Add Fund Source' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="fund-source-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g. General Fund" />
+      <mat-error *ngIf="nameControl?.hasError('required')">Name is required</mat-error>
+      <mat-error *ngIf="nameControl?.hasError('maxlength')">Name is too long</mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="form.invalid">
+    {{ isEdit ? 'Save' : 'Add' }}
+  </button>
+</mat-dialog-actions>
