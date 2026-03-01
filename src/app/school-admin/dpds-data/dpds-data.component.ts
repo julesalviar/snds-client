@@ -11,12 +11,12 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser, PopulatedSchoolNeed } from '../../common/model/engagement.model';
-import { SchoolInfo } from '../../common/model/school-need.model';
 import { getSchoolYear } from '../../common/date-utils';
+import { SchoolInfo } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
 
 type SectionKey = 'school' | 'contribution' | 'partnership';
-type ColumnVisibility = Record<string, boolean>;
+
 
 @Component({
   selector: 'app-dpds-data',
@@ -45,12 +45,11 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   isLoading: boolean = false;
   allEngagements: Engagement[] = [];
-
+  consolidatedData: any[] = [];
   /*FILTER STATE*/
   filterType: 'schoolYear' | 'dateRange' | null = null;
   schoolYears: string[] = [];
   selectedSchoolYear: string | null = null;
-
   dateRangeType: 'period' | 'custom' | null = null;
   selectedPeriod: string | null = null;
 
@@ -82,20 +81,14 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     'specificPartnerType',
     'remarks',
     'partnerName',
-    'partnerContactDetails'
-  ];
-
-  partnersContributionDisplayedColumns: string[] = [
+    'partnerContactDetails',
     'contributionType',
     'specificContributionType',
     'unitOfContribution',
     'quantityContributed',
     'actualAmountValue',
     'noOfBeneficiaryLearners',
-    'noOfBeneficiaryPersonnel'
-  ];
-
-  partnershipAgreementsDisplayedColumns: string[] = [
+    'noOfBeneficiaryPersonnel',
     'formOfAgreement',
     'signatoryName',
     'signatoryDesignation',
@@ -104,41 +97,9 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     'projectCategory',
     'projectName',
     'statusOfAgreement',
-    'remarks',
+    'remarksPartnership',
     'initiatedBy'
   ];
-
-  /*COLUMN VISIBILITY*/
-  columnsVisible: Record<SectionKey, ColumnVisibility> = {
-    school: {
-      generalPartnerType: true,
-      specificPartnerType: true,
-      remarks: true,
-      partnerName: true,
-      partnerContactDetails: true
-    },
-    contribution: {
-      contributionType: true,
-      specificContributionType: true,
-      unitOfContribution: true,
-      quantityContributed: true,
-      actualAmountValue: true,
-      noOfBeneficiaryLearners: true,
-      noOfBeneficiaryPersonnel: true
-    },
-    partnership: {
-      formOfAgreement: true,
-      signatoryName: true,
-      signatoryDesignation: true,
-      agreementStartDate: true,
-      agreementEndDate: true,
-      projectCategory: true,
-      projectName: true,
-      statusOfAgreement: true,
-      remarks: true,
-      initiatedBy: true
-    }
-  };
 
   /* DATA SOURCES*/
   schoolPartnersData = new MatTableDataSource<any>([]);
@@ -299,9 +260,11 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     const schoolPartners: any[] = [];
     const partnersContribution: any[] = [];
     const partnershipAgreements: any[] = [];
-
     const partnerMap = new Map<string, any>();
 
+    this.schoolPartnersData.data = Array.from(partnerMap.values());
+    this.partnersContributionData.data = partnersContribution;
+    this.partnershipAgreementsData.data = partnershipAgreements;
     this.allEngagements.forEach((engagement) => {
       const stakeholder = this.getStakeholder(engagement);
       const schoolNeed = this.getSchoolNeed(engagement);
@@ -478,21 +441,15 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /*COLUMN TOGGLE*/
-  toggleSingleColumn(section: SectionKey, column: string): void {
-    this.columnsVisible[section][column] = !this.columnsVisible[section][column];
-  }
-
-  getVisibleColumns(section: SectionKey): string[] {
-    return Object.keys(this.columnsVisible[section])
-      .filter(col => this.columnsVisible[section][col]);
-  }
-
   formatColumnName(column: string): string {
     if (!column) return ''; 
     const formatted = column.replace(/([a-z])([A-Z])/g, '$1 $2'); 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
+  }
+
+  getVisibleColumns(): string[] {
+    return this.schoolPartnersDisplayedColumns; 
+  }
 
   private resetDateFilters(): void {
     this.dateRangeType = null;
