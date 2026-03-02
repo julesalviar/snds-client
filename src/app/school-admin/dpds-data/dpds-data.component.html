@@ -203,4 +203,5 @@
             <tr mat-row *matRowDef="let row; let i = index; columns: getVisibleColumns()" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
         </table>
     </div>
+    <div *ngIf="isLoading" class="loading">Loading Data...</div>
 </div>
