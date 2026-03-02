@@ -92,6 +92,9 @@ export class CalendarComponent implements OnInit {
 
   isLoading = false;
 
+  /** Sidebar expanded state. Expanded by default; auto-expands when user selects a day. */
+  sidebarExpanded = true;
+
   private pendingPlanToOpen: PpaPlan | null = null;
 
   get isProgramHolder(): boolean {
@@ -223,6 +226,13 @@ export class CalendarComponent implements OnInit {
 
   selectDay(day: number | null): void {
     this.selectedDate = day !== null ? new Date(this.currentYear, this.currentMonth, day) : null;
+    if (day !== null) {
+      this.sidebarExpanded = true;
+    }
+  }
+
+  toggleSidebar(): void {
+    this.sidebarExpanded = !this.sidebarExpanded;
   }
 
   goToToday(): void {

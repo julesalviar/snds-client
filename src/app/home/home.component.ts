@@ -334,16 +334,35 @@ export class HomeComponent implements OnInit {
       return of({ ...state, loading: { ...state.loading, upcomingPlans: false } });
     }
     const today = new Date();
-    const startDateFrom = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const dateFrom = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const sixMonthsLater = new Date(today);
     sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-    const startDateTo = `${sixMonthsLater.getFullYear()}-${String(sixMonthsLater.getMonth() + 1).padStart(2, '0')}-${String(sixMonthsLater.getDate()).padStart(2, '0')}`;
-    return this.ppaPlanService.getList({ startDateFrom, startDateTo, limit: 6 }).pipe(
-      map((res) => ({
-        ...state,
-        loading: { ...state.loading, upcomingPlans: false },
-        upcomingPlans: res.data ?? [],
-      })),
+    const dateTo = `${sixMonthsLater.getFullYear()}-${String(sixMonthsLater.getMonth() + 1).padStart(2, '0')}-${String(sixMonthsLater.getDate()).padStart(2, '0')}`;
+    return forkJoin({
+      byStart: this.ppaPlanService.getList({ startDateFrom: dateFrom, startDateTo: dateTo }),
+      byEnd: this.ppaPlanService.getList({ endDateFrom: dateFrom, endDateTo: dateTo }),
+    }).pipe(
+      map(({ byStart, byEnd }) => {
+        const startPlans = Array.isArray(byStart.data) ? byStart.data : [];
+        const endPlans = Array.isArray(byEnd.data) ? byEnd.data : [];
+        const seen = new Set<string>();
+        const merged = [...startPlans, ...endPlans].filter((p) => {
+          const id = p._id ?? '';
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        });
+        const sorted = merged.sort((a, b) => {
+          const aStart = a.implementationStartDate ?? (a as unknown as Record<string, string>)?.['implementation_start_date'] ?? '';
+          const bStart = b.implementationStartDate ?? (b as unknown as Record<string, string>)?.['implementation_start_date'] ?? '';
+          return aStart.localeCompare(bStart);
+        });
+        return {
+          ...state,
+          loading: { ...state.loading, upcomingPlans: false },
+          upcomingPlans: sorted.slice(0, 9),
+        };
+      }),
       catchError((err) => {
         console.error('Error loading upcoming plans:', err);
         return of({ ...state, loading: { ...state.loading, upcomingPlans: false }, upcomingPlans: [] });
@@ -365,12 +384,20 @@ export class HomeComponent implements OnInit {
     return state.userRole === UserType.ProgramHolder ? '/program-holder/calendar' : '/office-admin/calendar';
   }
 
-  /** Format plan date for display. */
+  /** Format plan date for display. If span > 1 day, show dateStart-dateEnd; else dateStart. */
   getPlanDisplayDate(plan: PpaPlan): string {
-    const dateStr = plan.implementationStartDate ?? (plan as unknown as Record<string, string>)?.['implementation_start_date'];
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const startStr = plan.implementationStartDate ?? (plan as unknown as Record<string, string>)?.['implementation_start_date'];
+    if (!startStr) return '—';
+    const endStr = plan.implementationEndDate ?? (plan as unknown as Record<string, string>)?.['implementation_end_date'];
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr ?? startStr);
+    const daysBetween = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysBetween > 1) {
+      const endFormatted = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const startFormatted = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `${startFormatted} – ${endFormatted}`;
+    }
+    return startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   /** Plan title for display (ppn + title when available). */

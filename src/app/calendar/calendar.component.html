@@ -58,14 +58,24 @@
     </main>
 
     <!-- Right sidebar: PPA plans list -->
-    <aside class="calendar-sidebar">
-      @if (isProgramHolder) {
-        <button mat-flat-button color="primary" class="create-btn" (click)="openCreatePlanModal()">
-          <mat-icon>add</mat-icon>
-          Add Plan
-        </button>
-      }
-      <div class="plans-list">
+    <aside class="calendar-sidebar" [class.sidebar-expanded]="sidebarExpanded">
+      <button
+        type="button"
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
+        [attr.aria-expanded]="sidebarExpanded"
+      >
+        <mat-icon>{{ sidebarExpanded ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
+      <div class="sidebar-content">
+        @if (isProgramHolder) {
+          <button mat-flat-button color="primary" class="create-btn" (click)="openCreatePlanModal()">
+            <mat-icon>add</mat-icon>
+            Add Plan
+          </button>
+        }
+        <div class="plans-list">
         <h3 class="plans-list-title">PPA Plans</h3>
         @if (isLoading) {
           <div class="skeleton-plans" aria-hidden="true">
@@ -98,6 +108,7 @@
             </button>
           }
         }
+        </div>
       </div>
     </aside>
   </div>

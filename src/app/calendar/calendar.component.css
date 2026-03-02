@@ -86,15 +86,77 @@
 
 /* ----- Right sidebar ----- */
 .calendar-sidebar {
-  width: 280px;
   flex-shrink: 0;
-  padding: 16px;
   border-left: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
   background: var(--mat-sys-surface, #fff);
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  transition: width 0.25s ease;
+  position: relative;
+}
+
+/* Collapsed: narrow strip with toggle only */
+.calendar-sidebar {
+  width: 48px;
+}
+
+.calendar-sidebar .sidebar-content {
+  display: none;
+  overflow-y: auto;
+  flex: 1;
+  min-width: 0;
   flex-direction: column;
   gap: 16px;
+  padding: 16px;
+}
+
+/* Expanded: web gets wider sidebar */
+@media (min-width: 769px) {
+  .calendar-sidebar.sidebar-expanded {
+    width: 400px;
+  }
+
+  .calendar-sidebar.sidebar-expanded .sidebar-content {
+    display: flex;
+  }
+}
+
+/* Expanded: mobile */
+@media (max-width: 768px) {
+  .calendar-sidebar.sidebar-expanded {
+    width: min(320px, 85vw);
+  }
+
+  .calendar-sidebar.sidebar-expanded .sidebar-content {
+    display: flex;
+  }
+}
+
+.sidebar-toggle {
+  flex-shrink: 0;
+  width: 48px;
+  min-width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--mat-sys-surface-container-low, #f8f9fa);
+  color: var(--mat-sys-on-surface-variant, #49454f);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--mat-sys-surface-container-high, #e8e8e8);
+}
+
+.sidebar-toggle .mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .create-btn {

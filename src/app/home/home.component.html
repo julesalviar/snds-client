@@ -87,7 +87,7 @@
           </h3>
           @if (state.loading.upcomingPlans) {
             <div class="upcoming-events-skeleton" aria-hidden="true">
-              @for (_ of [1,2,3,4,5,6]; track $index) {
+              @for (_ of [1,2,3,4,5,6,7,8,9]; track $index) {
                 <div class="skeleton skeleton-upcoming-item"></div>
               }
             </div>
@@ -95,7 +95,7 @@
             <div class="upcoming-events-empty">No upcoming events</div>
           } @else {
             <ul class="upcoming-events-list">
-              @for (plan of state.upcomingPlans.slice(0, 6); track plan._id || $index) {
+              @for (plan of state.upcomingPlans.slice(0, 9); track plan._id || $index) {
                 <li class="upcoming-event-item">
                   <a [routerLink]="getCalendarRoute(state)" (click)="onUpcomingEventClick(plan)" class="upcoming-event-link">
                     <span class="upcoming-event-date">{{ getPlanDisplayDate(plan) }}</span>
