@@ -11,12 +11,9 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser, PopulatedSchoolNeed } from '../../common/model/engagement.model';
-import { SchoolInfo } from '../../common/model/school-need.model';
 import { getSchoolYear } from '../../common/date-utils';
+import { SchoolInfo } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
-
-type SectionKey = 'school' | 'contribution' | 'partnership';
-type ColumnVisibility = Record<string, boolean>;
 
 @Component({
   selector: 'app-dpds-data',
@@ -45,12 +42,12 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   isLoading: boolean = false;
   allEngagements: Engagement[] = [];
+  consolidatedData: MatTableDataSource<any> = new MatTableDataSource<any>([]);
 
   /*FILTER STATE*/
   filterType: 'schoolYear' | 'dateRange' | null = null;
   schoolYears: string[] = [];
   selectedSchoolYear: string | null = null;
-
   dateRangeType: 'period' | 'custom' | null = null;
   selectedPeriod: string | null = null;
 
@@ -64,6 +61,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     { value: 'last3Months', label: 'Last 3 Months' },
     { value: 'last6Months', label: 'Last 6 Months' }
   ];
+  
   customStartDate: Date | null = null;
   customEndDate: Date | null = null;
 
@@ -76,26 +74,20 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   selectedSector: string[] = [];
 
-  /*DISPLAYED COLUMNS*/
-  schoolPartnersDisplayedColumns: string[] = [
+  /* DISPLAYED COLUMNS */
+  displayedColumns: string[] = [
     'generalPartnerType',
     'specificPartnerType',
     'remarks',
     'partnerName',
-    'partnerContactDetails'
-  ];
-
-  partnersContributionDisplayedColumns: string[] = [
+    'partnerContactDetails',
     'contributionType',
     'specificContributionType',
     'unitOfContribution',
     'quantityContributed',
     'actualAmountValue',
     'noOfBeneficiaryLearners',
-    'noOfBeneficiaryPersonnel'
-  ];
-
-  partnershipAgreementsDisplayedColumns: string[] = [
+    'noOfBeneficiaryPersonnel',
     'formOfAgreement',
     'signatoryName',
     'signatoryDesignation',
@@ -104,46 +96,9 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     'projectCategory',
     'projectName',
     'statusOfAgreement',
-    'remarks',
+    'remarksPartnership',
     'initiatedBy'
   ];
-
-  /*COLUMN VISIBILITY*/
-  columnsVisible: Record<SectionKey, ColumnVisibility> = {
-    school: {
-      generalPartnerType: true,
-      specificPartnerType: true,
-      remarks: true,
-      partnerName: true,
-      partnerContactDetails: true
-    },
-    contribution: {
-      contributionType: true,
-      specificContributionType: true,
-      unitOfContribution: true,
-      quantityContributed: true,
-      actualAmountValue: true,
-      noOfBeneficiaryLearners: true,
-      noOfBeneficiaryPersonnel: true
-    },
-    partnership: {
-      formOfAgreement: true,
-      signatoryName: true,
-      signatoryDesignation: true,
-      agreementStartDate: true,
-      agreementEndDate: true,
-      projectCategory: true,
-      projectName: true,
-      statusOfAgreement: true,
-      remarks: true,
-      initiatedBy: true
-    }
-  };
-
-  /* DATA SOURCES*/
-  schoolPartnersData = new MatTableDataSource<any>([]);
-  partnersContributionData = new MatTableDataSource<any>([]);
-  partnershipAgreementsData = new MatTableDataSource<any>([]);
 
   constructor(
     private readonly engagementService: EngagementService,
@@ -164,9 +119,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.schoolPartnersData.paginator = this.paginator;
-    this.partnersContributionData.paginator = this.paginator;
-    this.partnershipAgreementsData.paginator = this.paginator;
+    this.consolidatedData.paginator = this.paginator;
   }
 
   private generateSchoolYears(): string[] {
@@ -174,7 +127,6 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
     const years: string[] = [];
 
-    // Generate from current year back to 2024
     for (let year = currentStartYear; year >= 2024; year--) {
       years.push(`${year}-${year + 1}`);
     }
@@ -202,16 +154,13 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     this.engagementService.getAllEngagement(1, 1000, undefined, schoolYear, undefined, schoolId, startDate, endDate, sector).subscribe({
       next: (response) => {
         this.allEngagements = response.data;
-        this.transformAndPopulateTables();
+        this.transformAndPopulateTable();
         this.applyGlobalFilter();
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading engagements:', error);
-        this.allEngagements = [];
-        this.schoolPartnersData.data = [];
-        this.partnersContributionData.data = [];
-        this.partnershipAgreementsData.data = [];
+        this.consolidatedData.data = [];
         this.isLoading = false;
       }
     });
@@ -295,12 +244,9 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     return { start, end };
   }
 
-  private transformAndPopulateTables(): void {
-    const schoolPartners: any[] = [];
-    const partnersContribution: any[] = [];
-    const partnershipAgreements: any[] = [];
-
+  private transformAndPopulateTable(): void {
     const partnerMap = new Map<string, any>();
+    const transformedData: any[] = [];
 
     this.allEngagements.forEach((engagement) => {
       const stakeholder = this.getStakeholder(engagement);
@@ -324,7 +270,11 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
       // Transform to Partners Contribution
       if (schoolNeed) {
-        partnersContribution.push({
+            if (stakeholder?._id) {
+                const partnerData = partnerMap.get(stakeholder._id);
+                if (partnerData) {
+                transformedData.push({
+                    ...partnerData,
           contributionType: (schoolNeed as any).contributionType || '-',
           specificContributionType: engagement.specificContribution || '-',
           unitOfContribution: engagement.unit || '-',
@@ -332,33 +282,24 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
           actualAmountValue: engagement.amount || 0,
           noOfBeneficiaryLearners: (schoolNeed as any).studentBeneficiaries || 0,
           noOfBeneficiaryPersonnel: (schoolNeed as any).personnelBeneficiaries || 0,
-          schoolYear: engagement.schoolYear,
-          sector: sector
+          formOfAgreement: (engagement as any).agreementType || '-',
+          signatoryName: (engagement as any).signatoryName || '-',
+          signatoryDesignation: (engagement as any).signatoryDesignation || '-',
+          agreementStartDate: engagement.startDate ? new Date(engagement.startDate) : null,
+          agreementEndDate: engagement.endDate ? new Date(engagement.endDate) : null,
+          projectCategory: (engagement as any).projectCategory || '-',
+          projectName: (engagement as any).projectName || '-',
+          statusOfAgreement: (engagement as any).agreementStatus || '-',
+          remarksPartnership: '',
+          initiatedBy: (engagement as any).initiatedBy || '-',
         });
       }
-
-      // Transform to Partnership Agreements
-      const agreementData: any = {
-        formOfAgreement: (engagement as any).agreementType || '-',
-        signatoryName: (engagement as any).signatoryName || '-',
-        signatoryDesignation: (engagement as any).signatoryDesignation || '-',
-        agreementStartDate: engagement.startDate ? new Date(engagement.startDate) : null,
-        agreementEndDate: engagement.endDate ? new Date(engagement.endDate) : null,
-        projectCategory: (engagement as any).projectCategory || '-',
-        projectName: (engagement as any).projectName || '-',
-        statusOfAgreement: (engagement as any).agreementStatus || '-',
-        remarks: '',
-        initiatedBy: (engagement as any).initiatedBy || '-',
-        schoolYear: engagement.schoolYear,
-        sector: sector
-      };
-      partnershipAgreements.push(agreementData);
+            }
+          }
     });
 
-    // Convert Set to Array for school partners
-    this.schoolPartnersData.data = Array.from(partnerMap.values());
-    this.partnersContributionData.data = partnersContribution;
-    this.partnershipAgreementsData.data = partnershipAgreements;
+    // Update the consolidated data
+    this.consolidatedData.data = Array.from(partnerMap.values()).concat(transformedData);
   }
 
   private getStakeholder(engagement: Engagement): PopulatedStakeholderUser | null {
@@ -384,29 +325,25 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   }
 
   private getGeneralPartnerType(sector: string): string {
-    if (sector === 'Public Sector' || sector === 'Government') {
-      return 'Government';
-    } else if (sector === 'Private Sector') {
-      return 'Private';
-    } else if (sector === 'Civil Society Organization') {
-      return 'NGO';
-    } else if (sector === 'International') {
-      return 'International';
-    }
-    return 'Other';
+    const typeMapping: { [key: string]: string } = {
+      'Public Sector': 'Government',
+      'Government': 'Government',
+      'Private Sector': 'Private',
+      'Civil Society Organization': 'NGO',
+      'International': 'International'
+    };
+    return typeMapping[sector] || 'Other';
   }
 
   private getSpecificPartnerType(sector: string, stakeholder: PopulatedStakeholderUser): string {
-    if (sector === 'Public Sector' || sector === 'Government') {
-      return 'Local Government Unit';
-    } else if (sector === 'Private Sector') {
-      return 'Private Organization';
-    } else if (sector === 'Civil Society Organization') {
-      return 'Non-Profit Organization';
-    } else if (sector === 'International') {
-      return 'International Organization';
-    }
-    return 'Other';
+    const typeMapping: { [key: string]: string } = {
+      'Public Sector': 'Local Government Unit',
+      'Government': 'Local Government Unit',
+      'Private Sector': 'Private Organization',
+      'Civil Society Organization': 'Non-Profit Organization',
+      'International': 'International Organization'
+    };
+    return typeMapping[sector] || 'Other';
   }
 
   onFilterTypeChange(): void {
@@ -471,28 +408,18 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   }
 
   applyGlobalFilter(): void {
-    [this.schoolPartnersData,
-     this.partnersContributionData,
-     this.partnershipAgreementsData].forEach(ds => {
-      ds.paginator?.firstPage();
-    });
-  }
-
-  /*COLUMN TOGGLE*/
-  toggleSingleColumn(section: SectionKey, column: string): void {
-    this.columnsVisible[section][column] = !this.columnsVisible[section][column];
-  }
-
-  getVisibleColumns(section: SectionKey): string[] {
-    return Object.keys(this.columnsVisible[section])
-      .filter(col => this.columnsVisible[section][col]);
+    this.consolidatedData.paginator?.firstPage();
   }
 
   formatColumnName(column: string): string {
     if (!column) return ''; 
     const formatted = column.replace(/([a-z])([A-Z])/g, '$1 $2'); 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
+  }
+
+  getVisibleColumns(): string[] {
+    return this.displayedColumns; 
+  }
 
   private resetDateFilters(): void {
     this.dateRangeType = null;

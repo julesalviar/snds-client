@@ -72,162 +72,136 @@
     </div>
 
     <hr>
+    <div class="indicator-container">
+    <div class="indicator blue"></div>
+    <span>School / Learning Center Partners</span>
 
-    <!--SCHOOL / LEARNING CENTER PARTNERS-->
-    <h2 *ngIf="!isLoading" class="table-title title-school">SCHOOL / LEARNING CENTER PARTNERS</h2>
-    <div *ngIf="!isLoading" class="column-toggle">
-        <label *ngFor="let col of schoolPartnersDisplayedColumns">
-            <input type="checkbox" [checked]="columnsVisible.school[col]" (change)="toggleSingleColumn('school', col)" />
-            {{ formatColumnName(col) }}
-        </label>
-    </div>
+    <div class="indicator green"></div>
+    <span>Partners' Contribution</span>
 
-    <div *ngIf="!isLoading" class="table-scroll">
-        <table mat-table [dataSource]="schoolPartnersData" class="mat-elevation-z8">
-            <ng-container matColumnDef="generalPartnerType" *ngIf="columnsVisible.school['generalPartnerType']">
-                <th mat-header-cell *matHeaderCellDef>General Partner Type</th>
+    <div class="indicator pink"></div>
+    <span>Partnership Agreements</span>
+</div>
+    <div class="table-container">
+        <div *ngIf="!isLoading" class="table-scroll">
+        <table mat-table [dataSource]="consolidatedData" class="mat-elevation-z8">
+
+            <!-- School / Learning Center Partners -->
+            <ng-container matColumnDef="generalPartnerType">
+                <th mat-header-cell *matHeaderCellDef class="blue-column" >General Partner Type</th>
                 <td mat-cell *matCellDef="let element">{{ element.generalPartnerType }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="specificPartnerType" *ngIf="columnsVisible.school['specificPartnerType']">
-                <th mat-header-cell *matHeaderCellDef>Specific Partner Type</th>
+            <ng-container matColumnDef="specificPartnerType">
+                <th mat-header-cell *matHeaderCellDef class="blue-column" >Specific Partner Type</th>
                 <td mat-cell *matCellDef="let element">{{ element.specificPartnerType }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="remarks" *ngIf="columnsVisible.school['remarks']">
-                <th mat-header-cell *matHeaderCellDef>Remarks</th>
+            <ng-container matColumnDef="remarks">
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Remarks</th>
                 <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="partnerName" *ngIf="columnsVisible.school['partnerName']">
-                <th mat-header-cell *matHeaderCellDef>Partner Name</th>
+            <ng-container matColumnDef="partnerName">
+                <th mat-header-cell *matHeaderCellDef class="blue-column" >Partner Name</th>
                 <td mat-cell *matCellDef="let element">{{ element.partnerName }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="partnerContactDetails" *ngIf="columnsVisible.school['partnerContactDetails']">
-                <th mat-header-cell *matHeaderCellDef>Partner Contact Details</th>
+            <ng-container matColumnDef="partnerContactDetails">
+                <th mat-header-cell *matHeaderCellDef class="blue-column"  >Partner Contact Details</th>
                 <td mat-cell *matCellDef="let element">{{ element.partnerContactDetails }}</td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="getVisibleColumns('school')"></tr>
-            <tr mat-row *matRowDef="let row; let i = index; columns: getVisibleColumns('school')" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
-        </table>
-    </div>
-
-    <!--PARTNERS' CONTRIBUTION-->
-    <h2 *ngIf="!isLoading" class="table-title title-contribution">PARTNERS' CONTRIBUTION</h2>
-    <div *ngIf="!isLoading" class="column-toggle">
-        <label *ngFor="let col of partnersContributionDisplayedColumns">
-            <input type="checkbox" [checked]="columnsVisible.contribution[col]" (change)="toggleSingleColumn('contribution', col)" />
-            {{ formatColumnName(col) }}
-        </label>
-    </div>
-
-    <div *ngIf="!isLoading" class="table-scroll">
-        <table mat-table [dataSource]="partnersContributionData" class="mat-elevation-z8">
-            <ng-container matColumnDef="contributionType" *ngIf="columnsVisible.contribution['contributionType']">
-                <th mat-header-cell *matHeaderCellDef>Contribution Type</th>
+            <!-- Partners' Contribution -->
+            <ng-container matColumnDef="contributionType">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Contribution Type</th>
                 <td mat-cell *matCellDef="let element">{{ element.contributionType }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="specificContributionType" *ngIf="columnsVisible.contribution['specificContributionType']">
-                <th mat-header-cell *matHeaderCellDef>Specific Contribution Type</th>
+            <ng-container matColumnDef="specificContributionType">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Specific Contribution Type</th>
                 <td mat-cell *matCellDef="let element">{{ element.specificContributionType }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="unitOfContribution" *ngIf="columnsVisible.contribution['unitOfContribution']">
-                <th mat-header-cell *matHeaderCellDef>Unit Of Contribution</th>
+            <ng-container matColumnDef="unitOfContribution">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Unit Of Contribution</th>
                 <td mat-cell *matCellDef="let element">{{ element.unitOfContribution }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="quantityContributed" *ngIf="columnsVisible.contribution['quantityContributed']">
-                <th mat-header-cell *matHeaderCellDef>Quantity Contributed</th>
+            <ng-container matColumnDef="quantityContributed">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Quantity Contributed</th>
                 <td mat-cell *matCellDef="let element">{{ element.quantityContributed }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="actualAmountValue" *ngIf="columnsVisible.contribution['actualAmountValue']">
-                <th mat-header-cell *matHeaderCellDef>Actual Amount / Value (₱)</th>
+            <ng-container matColumnDef="actualAmountValue">
+                <th mat-header-cell *matHeaderCellDef class="green-column">Actual Amount / Value (₱)</th>
                 <td mat-cell *matCellDef="let element">{{ element.actualAmountValue }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="noOfBeneficiaryLearners" *ngIf="columnsVisible.contribution['noOfBeneficiaryLearners']">
-                <th mat-header-cell *matHeaderCellDef>No. of Beneficiary Learners</th>
+            <ng-container matColumnDef="noOfBeneficiaryLearners">
+                <th mat-header-cell *matHeaderCellDef class="green-column">No. of Beneficiary Learners</th>
                 <td mat-cell *matCellDef="let element">{{ element.noOfBeneficiaryLearners }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="noOfBeneficiaryPersonnel" *ngIf="columnsVisible.contribution['noOfBeneficiaryPersonnel']">
-                <th mat-header-cell *matHeaderCellDef>No. of Beneficiary Personnel</th>
+            <ng-container matColumnDef="noOfBeneficiaryPersonnel">
+                <th mat-header-cell *matHeaderCellDef class="green-column">No. of Beneficiary Personnel</th>
                 <td mat-cell *matCellDef="let element">{{ element.noOfBeneficiaryPersonnel }}</td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="getVisibleColumns('contribution')"></tr>
-            <tr mat-row *matRowDef="let row; let i = index; columns: getVisibleColumns('contribution')" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
-        </table>
-    </div>
-
-    <!--PARTNERSHIP AGREEMENTS-->
-    <h2 *ngIf="!isLoading" class="table-title title-partnership">PARTNERSHIP AGREEMENTS</h2>
-    <div *ngIf="!isLoading" class="column-toggle">
-        <label *ngFor="let col of partnershipAgreementsDisplayedColumns">
-            <input type="checkbox" [checked]="columnsVisible.partnership[col]" (change)="toggleSingleColumn('partnership', col)" />
-            {{ formatColumnName(col) }}
-        </label>
-    </div>
-
-    <div *ngIf="!isLoading" class="table-scroll">
-        <table mat-table [dataSource]="partnershipAgreementsData" class="mat-elevation-z8">
-            <ng-container matColumnDef="formOfAgreement" *ngIf="columnsVisible.partnership['formOfAgreement']">
-                <th mat-header-cell *matHeaderCellDef>Form of Agreement</th>
+            <!-- Partnership Agreements -->
+            <ng-container matColumnDef="formOfAgreement">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Form of Agreement</th>
                 <td mat-cell *matCellDef="let element">{{ element.formOfAgreement }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="signatoryName" *ngIf="columnsVisible.partnership['signatoryName']">
-                <th mat-header-cell *matHeaderCellDef>Signatory Name</th>
+            <ng-container matColumnDef="signatoryName">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Signatory Name</th>
                 <td mat-cell *matCellDef="let element">{{ element.signatoryName }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="signatoryDesignation" *ngIf="columnsVisible.partnership['signatoryDesignation']">
-                <th mat-header-cell *matHeaderCellDef>Signatory Designation</th>
+            <ng-container matColumnDef="signatoryDesignation">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Signatory Designation</th>
                 <td mat-cell *matCellDef="let element">{{ element.signatoryDesignation }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="agreementStartDate" *ngIf="columnsVisible.partnership['agreementStartDate']">
-                <th mat-header-cell *matHeaderCellDef>Agreement Start Date</th>
+            <ng-container matColumnDef="agreementStartDate">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Agreement Start Date</th>
                 <td mat-cell *matCellDef="let element">{{ element.agreementStartDate | date:'dd/MM/yyyy' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="agreementEndDate" *ngIf="columnsVisible.partnership['agreementEndDate']">
-                <th mat-header-cell *matHeaderCellDef>Agreement End Date</th>
+            <ng-container matColumnDef="agreementEndDate">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Agreement End Date</th>
                 <td mat-cell *matCellDef="let element">{{ element.agreementEndDate | date:'dd/MM/yyyy' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="projectCategory" *ngIf="columnsVisible.partnership['projectCategory']">
-                <th mat-header-cell *matHeaderCellDef>Project Category</th>
+            <ng-container matColumnDef="projectCategory">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Project Category</th>
                 <td mat-cell *matCellDef="let element">{{ element.projectCategory }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="projectName" *ngIf="columnsVisible.partnership['projectName']">
-                <th mat-header-cell *matHeaderCellDef>Project Name</th>
+            <ng-container matColumnDef="projectName">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Project Name</th>
                 <td mat-cell *matCellDef="let element">{{ element.projectName }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="statusOfAgreement" *ngIf="columnsVisible.partnership['statusOfAgreement']">
-                <th mat-header-cell *matHeaderCellDef>Status of Agreement / Project</th>
+            <ng-container matColumnDef="statusOfAgreement">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Status of Agreement / Project</th>
                 <td mat-cell *matCellDef="let element">{{ element.statusOfAgreement }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="remarks" *ngIf="columnsVisible.partnership['remarks']">
-                <th mat-header-cell *matHeaderCellDef>Remarks</th>
+            <ng-container matColumnDef="remarksPartnership">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Remarks</th>
                 <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="initiatedBy" *ngIf="columnsVisible.partnership['initiatedBy']">
-                <th mat-header-cell *matHeaderCellDef>Initiated By</th>
+            <ng-container matColumnDef="initiatedBy">
+                <th mat-header-cell *matHeaderCellDef class="pink-column">Initiated By</th>
                 <td mat-cell *matCellDef="let element">{{ element.initiatedBy }}</td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="getVisibleColumns('partnership')"></tr>
-            <tr mat-row *matRowDef="let row; let i = index; columns: getVisibleColumns('partnership')" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
+            <tr mat-header-row *matHeaderRowDef="getVisibleColumns()"></tr>
+            <tr mat-row *matRowDef="let row; let i = index; columns: getVisibleColumns()" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
         </table>
     </div>
+    <div *ngIf="isLoading" class="loading">Loading Data...</div>
 </div>

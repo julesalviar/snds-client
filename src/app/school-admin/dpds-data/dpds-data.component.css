@@ -9,6 +9,10 @@
     color: white;
     border-radius: 5px;
 }
+.table-container {
+  height: 400px; 
+  overflow: auto; 
+}
 
 .filter-container {
   display: flex;
@@ -52,13 +56,39 @@
   padding: 10px;
   border: 1px solid rgb(2, 98, 2);
   border-radius: 8px;
-  background-color: rgb(2, 98, 2);
-  color: white;
+  background-color: transparent;
+  color: green;
   cursor: pointer;
 }
 .clear-button:hover {
   background-color: rgb(1, 70, 1);
+  color: white;
   font-weight: bold;
+}
+/* Specific Color Indicator */
+.indicator-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px; 
+}
+
+.indicator {
+    width: 20px; 
+    height: 20px;
+    margin-right: 5px; 
+    margin-left: 8px;
+}
+
+.blue {
+    background-color: #2196F3;
+}
+
+.green {
+    background-color: #4CAF50; 
+}
+
+.pink {
+    background-color: #E91E63; 
 }
 
 
@@ -75,15 +105,15 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.title-school {
-    background-color: #007bff; 
+.blue-column {
+    background-color: #007bff !important; 
 }
-.title-contribution {
-    background-color: #28a745; 
+.green-column {
+    background-color: #28a745 !important; 
 }
 
-.title-partnership {
-    background-color: #dc3545;
+.pink-column {
+    background-color: #dc3545 !important;
 }
 
 .toggle-button {
@@ -123,6 +153,14 @@
 
     .custom-paginator {
         font-size: 0.8rem; 
+    }
+
+    .loading{
+        display: flex;
+        justify-content: center;
+        align-items: center; 
+        height: 100vh;
+        font-size: 20px;
     }
 
     @media (max-width: 768px) {
