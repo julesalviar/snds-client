@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -9,17 +9,36 @@ import { MatDatepicker, MatDatepickerToggle, MatDatepickerModule } from '@angula
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCardModule } from '@angular/material/card';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser, PopulatedSchoolNeed } from '../../common/model/engagement.model';
 import { getSchoolYear } from '../../common/date-utils';
 import { SchoolInfo } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
 
+const COLUMN_STORAGE_KEY = 'dpds-data-table-columns';
+
+export interface ColumnConfig {
+  id: string;
+  label: string;
+  visible: boolean;
+}
+
+export interface ColumnCategory {
+  id: string;
+  label: string;
+  columns: ColumnConfig[];
+}
+
 @Component({
   selector: 'app-dpds-data',
   standalone: true,
   templateUrl: './dpds-data.component.html',
   styleUrls: ['./dpds-data.component.css'],
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     MatTableModule,
@@ -34,7 +53,11 @@ import { AuthService } from '../../auth/auth.service';
     MatDatepickerModule,
     MatNativeDateModule,
     MatProgressBarModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatTooltipModule,
+    MatCardModule
   ],
 })
 export class DpdsDataComponent implements OnInit, AfterViewInit {
@@ -61,7 +84,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     { value: 'last3Months', label: 'Last 3 Months' },
     { value: 'last6Months', label: 'Last 6 Months' }
   ];
-  
+
   customStartDate: Date | null = null;
   customEndDate: Date | null = null;
 
@@ -74,30 +97,48 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   selectedSector: string[] = [];
 
-  /* DISPLAYED COLUMNS */
-  displayedColumns: string[] = [
-    'generalPartnerType',
-    'specificPartnerType',
-    'remarks',
-    'partnerName',
-    'partnerContactDetails',
-    'contributionType',
-    'specificContributionType',
-    'unitOfContribution',
-    'quantityContributed',
-    'actualAmountValue',
-    'noOfBeneficiaryLearners',
-    'noOfBeneficiaryPersonnel',
-    'formOfAgreement',
-    'signatoryName',
-    'signatoryDesignation',
-    'agreementStartDate',
-    'agreementEndDate',
-    'projectCategory',
-    'projectName',
-    'statusOfAgreement',
-    'remarksPartnership',
-    'initiatedBy'
+  /* COLUMN VISIBILITY */
+  columnCategories: ColumnCategory[] = [
+    {
+      id: 'partners',
+      label: 'School / Learning Center Partners',
+      columns: [
+        { id: 'generalPartnerType', label: 'General Partner Type', visible: true },
+        { id: 'specificPartnerType', label: 'Specific Partner Type', visible: true },
+        { id: 'remarks', label: 'Remarks', visible: false },
+        { id: 'partnerName', label: 'Partner Name', visible: true },
+        { id: 'partnerContactDetails', label: 'Partner Contact Details', visible: true },
+      ],
+    },
+    {
+      id: 'contribution',
+      label: "Partners' Contribution",
+      columns: [
+        { id: 'contributionType', label: 'Contribution Type', visible: true },
+        { id: 'specificContributionType', label: 'Specific Contribution Type', visible: true },
+        { id: 'unitOfContribution', label: 'Unit Of Contribution', visible: true },
+        { id: 'quantityContributed', label: 'Quantity Contributed', visible: true },
+        { id: 'actualAmountValue', label: 'Actual Amount / Value (₱)', visible: true },
+        { id: 'noOfBeneficiaryLearners', label: 'No. of Beneficiary Learners', visible: true },
+        { id: 'noOfBeneficiaryPersonnel', label: 'No. of Beneficiary Personnel', visible: true },
+      ],
+    },
+    {
+      id: 'agreements',
+      label: 'Partnership Agreements',
+      columns: [
+        { id: 'formOfAgreement', label: 'Form of Agreement', visible: true },
+        { id: 'signatoryName', label: 'Signatory Name', visible: true },
+        { id: 'signatoryDesignation', label: 'Signatory Designation', visible: true },
+        { id: 'agreementStartDate', label: 'Agreement Start Date', visible: true },
+        { id: 'agreementEndDate', label: 'Agreement End Date', visible: true },
+        { id: 'projectCategory', label: 'Project Category', visible: true },
+        { id: 'projectName', label: 'Project Name', visible: true },
+        { id: 'statusOfAgreement', label: 'Status of Agreement / Project', visible: true },
+        { id: 'remarksPartnership', label: 'Remarks', visible: false },
+        { id: 'initiatedBy', label: 'Initiated By', visible: false },
+      ],
+    },
   ];
 
   constructor(
@@ -109,7 +150,49 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.loadColumnPreferences();
     this.loadEngagements();
+  }
+
+  toggleColumnVisibility(column: ColumnConfig): void {
+    const totalVisible = this.columnCategories.reduce(
+      (sum, cat) => sum + cat.columns.filter((c) => c.visible).length,
+      0
+    );
+    if (!column.visible || totalVisible > 1) {
+      column.visible = !column.visible;
+      this.saveColumnPreferences();
+    }
+  }
+
+  private loadColumnPreferences(): void {
+    try {
+      const stored = localStorage.getItem(COLUMN_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Record<string, boolean>;
+        this.columnCategories.forEach((cat) => {
+          cat.columns.forEach((c) => {
+            if (parsed[c.id] !== undefined) {
+              c.visible = parsed[c.id];
+            }
+          });
+        });
+      }
+    } catch {
+      // ignore invalid stored data
+    }
+  }
+
+  private saveColumnPreferences(): void {
+    try {
+      const prefs: Record<string, boolean> = {};
+      this.columnCategories.forEach((cat) =>
+        cat.columns.forEach((c) => (prefs[c.id] = c.visible))
+      );
+      localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(prefs));
+    } catch {
+      // ignore
+    }
   }
 
   selectedRowIndex: number | null = null;
@@ -261,7 +344,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
             specificPartnerType: this.getSpecificPartnerType(sector, stakeholder),
             remarks: '',
             partnerName: stakeholder.name || '-',
-            partnerContactDetails: stakeholder.email || '-',
+            partnerContactDetails: stakeholder["contactNumber"] || '-',
             schoolYear: engagement.schoolYear,
             sector: sector
           });
@@ -270,36 +353,37 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
       // Transform to Partners Contribution
       if (schoolNeed) {
-            if (stakeholder?._id) {
-                const partnerData = partnerMap.get(stakeholder._id);
-                if (partnerData) {
-                transformedData.push({
-                    ...partnerData,
-          contributionType: (schoolNeed as any).contributionType || '-',
-          specificContributionType: engagement.specificContribution || '-',
-          unitOfContribution: engagement.unit || '-',
-          quantityContributed: engagement.quantity || 0,
-          actualAmountValue: engagement.amount || 0,
-          noOfBeneficiaryLearners: (schoolNeed as any).studentBeneficiaries || 0,
-          noOfBeneficiaryPersonnel: (schoolNeed as any).personnelBeneficiaries || 0,
-          formOfAgreement: (engagement as any).agreementType || '-',
-          signatoryName: (engagement as any).signatoryName || '-',
-          signatoryDesignation: (engagement as any).signatoryDesignation || '-',
-          agreementStartDate: engagement.startDate ? new Date(engagement.startDate) : null,
-          agreementEndDate: engagement.endDate ? new Date(engagement.endDate) : null,
-          projectCategory: (engagement as any).projectCategory || '-',
-          projectName: (engagement as any).projectName || '-',
-          statusOfAgreement: (engagement as any).agreementStatus || '-',
-          remarksPartnership: '',
-          initiatedBy: (engagement as any).initiatedBy || '-',
-        });
-      }
-            }
+        if (stakeholder?._id) {
+          const partnerData = partnerMap.get(stakeholder._id);
+          if (partnerData) {
+            console.log(schoolNeed);
+            transformedData.push({
+              ...partnerData,
+              contributionType: (schoolNeed as any).contributionType || '-',
+              specificContributionType: (schoolNeed as any).specificContribution || '-',
+              unitOfContribution: engagement.unit || '-',
+              quantityContributed: engagement.quantity || 0,
+              actualAmountValue: engagement.amount || 0,
+              noOfBeneficiaryLearners: (schoolNeed as any).studentBeneficiaries || 0,
+              noOfBeneficiaryPersonnel: (schoolNeed as any).personnelBeneficiaries || 0,
+              formOfAgreement: (engagement as any).agreementType || '-',
+              signatoryName: (engagement as any).signatoryName || '-',
+              signatoryDesignation: (engagement as any).signatoryDesignation || '-',
+              agreementStartDate: engagement.startDate ? new Date(engagement.startDate) : null,
+              agreementEndDate: engagement.endDate ? new Date(engagement.endDate) : null,
+              projectCategory: (engagement as any).projectCategory || '-',
+              projectName: (engagement as any).projectName || '-',
+              statusOfAgreement: (engagement as any).agreementStatus || '-',
+              remarksPartnership: '',
+              initiatedBy: (engagement as any).initiatedBy || '-',
+            });
           }
+        }
+      }
     });
 
     // Update the consolidated data
-    this.consolidatedData.data = Array.from(partnerMap.values()).concat(transformedData);
+    this.consolidatedData.data = transformedData;
   }
 
   private getStakeholder(engagement: Engagement): PopulatedStakeholderUser | null {
@@ -343,7 +427,9 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
       'Civil Society Organization': 'Non-Profit Organization',
       'International': 'International Organization'
     };
-    return typeMapping[sector] || 'Other';
+    const specificPartnerType = typeMapping[sector] || stakeholder["subsector"] || 'Other';
+    console.log(specificPartnerType);
+    return specificPartnerType;
   }
 
   onFilterTypeChange(): void {
@@ -412,13 +498,15 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   }
 
   formatColumnName(column: string): string {
-    if (!column) return ''; 
-    const formatted = column.replace(/([a-z])([A-Z])/g, '$1 $2'); 
+    if (!column) return '';
+    const formatted = column.replace(/([a-z])([A-Z])/g, '$1 $2');
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }
 
   getVisibleColumns(): string[] {
-    return this.displayedColumns; 
+    return this.columnCategories.flatMap((cat) =>
+      cat.columns.filter((c) => c.visible).map((c) => c.id)
+    );
   }
 
   private resetDateFilters(): void {

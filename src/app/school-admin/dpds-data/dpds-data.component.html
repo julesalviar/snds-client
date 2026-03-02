@@ -1,11 +1,9 @@
-<div class="table-section">
+<mat-card>
+  <mat-card-title>DPDS Data</mat-card-title>
 
-    <div *ngIf="isLoading" class="loading-container" style="padding: 20px; text-align: center;">
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        <p>Loading data...</p>
-    </div>
-
+  <div class="table-wrapper">
     <div class="filter-container">
+      <div class="filter-fields">
         <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Filter By</mat-label>
             <mat-select [(value)]="filterType" (selectionChange)="onFilterTypeChange()">
@@ -67,11 +65,26 @@
         </mat-form-field>
 
         <button *ngIf="filterType" mat-button color="warn" (click)="clearFilters()" class="clear-button">
-            Clear Filters
+          Clear Filters
         </button>
+      </div>
+
+      <button mat-icon-button [matMenuTriggerFor]="columnMenu" matTooltip="Show/hide columns" aria-label="Column visibility" class="column-customize-btn">
+        <mat-icon>view_column</mat-icon>
+      </button>
     </div>
 
-    <hr>
+    <mat-menu #columnMenu="matMenu" class="column-menu" panelClass="dpds-data-column-menu">
+        <div class="column-menu-header">
+            <span>Columns</span>
+        </div>
+        <ng-container *ngFor="let category of columnCategories">
+            <button mat-menu-item *ngFor="let col of category.columns" class="column-item" (click)="toggleColumnVisibility(col)">
+                <mat-icon class="column-check">{{ col.visible ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                <span>{{ col.label }}</span>
+            </button>
+        </ng-container>
+    </mat-menu>
     <div class="indicator-container">
     <div class="indicator blue"></div>
     <span>School / Learning Center Partners</span>
@@ -82,126 +95,166 @@
     <div class="indicator pink"></div>
     <span>Partnership Agreements</span>
 </div>
-    <div class="table-container">
-        <div *ngIf="!isLoading" class="table-scroll">
-        <table mat-table [dataSource]="consolidatedData" class="mat-elevation-z8">
+    <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
+      <div class="skeleton-table">
+        <div class="skeleton-table-header">
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 5%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 5%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 5%"></div>
+        </div>
+        <div class="skeleton-table-row" *ngFor="let _ of [1,2,3,4,5,6,7]">
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 6%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 5%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 5%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 5%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading" class="table-scroll">
+        <table mat-table [dataSource]="consolidatedData" class="dpds-data-table mat-elevation-z2">
 
             <!-- School / Learning Center Partners -->
             <ng-container matColumnDef="generalPartnerType">
-                <th mat-header-cell *matHeaderCellDef class="blue-column" >General Partner Type</th>
-                <td mat-cell *matCellDef="let element">{{ element.generalPartnerType }}</td>
+                <th mat-header-cell *matHeaderCellDef class="blue-column">General Partner Type</th>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.generalPartnerType ?? '—'">{{ element.generalPartnerType ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="specificPartnerType">
-                <th mat-header-cell *matHeaderCellDef class="blue-column" >Specific Partner Type</th>
-                <td mat-cell *matCellDef="let element">{{ element.specificPartnerType }}</td>
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Specific Partner Type</th>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.specificPartnerType ?? '—'">{{ element.specificPartnerType ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="remarks">
                 <th mat-header-cell *matHeaderCellDef class="blue-column">Remarks</th>
-                <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.remarks ?? '—'">{{ element.remarks ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="partnerName">
-                <th mat-header-cell *matHeaderCellDef class="blue-column" >Partner Name</th>
-                <td mat-cell *matCellDef="let element">{{ element.partnerName }}</td>
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Partner Name</th>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.partnerName ?? '—'">{{ element.partnerName ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="partnerContactDetails">
-                <th mat-header-cell *matHeaderCellDef class="blue-column"  >Partner Contact Details</th>
-                <td mat-cell *matCellDef="let element">{{ element.partnerContactDetails }}</td>
+                <th mat-header-cell *matHeaderCellDef class="blue-column">Partner Contact Details</th>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.partnerContactDetails ?? '—'">{{ element.partnerContactDetails ?? '—' }}</div></td>
             </ng-container>
 
             <!-- Partners' Contribution -->
             <ng-container matColumnDef="contributionType">
                 <th mat-header-cell *matHeaderCellDef class="green-column">Contribution Type</th>
-                <td mat-cell *matCellDef="let element">{{ element.contributionType }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.contributionType ?? '—'">{{ element.contributionType ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="specificContributionType">
                 <th mat-header-cell *matHeaderCellDef class="green-column">Specific Contribution Type</th>
-                <td mat-cell *matCellDef="let element">{{ element.specificContributionType }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.specificContributionType ?? '—'">{{ element.specificContributionType ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="unitOfContribution">
                 <th mat-header-cell *matHeaderCellDef class="green-column">Unit Of Contribution</th>
-                <td mat-cell *matCellDef="let element">{{ element.unitOfContribution }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.unitOfContribution ?? '—'">{{ element.unitOfContribution ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="quantityContributed">
                 <th mat-header-cell *matHeaderCellDef class="green-column">Quantity Contributed</th>
-                <td mat-cell *matCellDef="let element">{{ element.quantityContributed }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.quantityContributed ?? '—'">{{ element.quantityContributed ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="actualAmountValue">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Actual Amount / Value (₱)</th>
-                <td mat-cell *matCellDef="let element">{{ element.actualAmountValue }}</td>
+                <th mat-header-cell *matHeaderCellDef class="green-column amount-column">Actual Amount / Value (₱)</th>
+                <td mat-cell *matCellDef="let element" class="amount-column"><div class="cell-content" [matTooltip]="element.actualAmountValue != null ? (element.actualAmountValue | number:'1.2-2') : '—'">{{ element.actualAmountValue != null ? (element.actualAmountValue | number:'1.2-2') : '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="noOfBeneficiaryLearners">
                 <th mat-header-cell *matHeaderCellDef class="green-column">No. of Beneficiary Learners</th>
-                <td mat-cell *matCellDef="let element">{{ element.noOfBeneficiaryLearners }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.noOfBeneficiaryLearners ?? '—'">{{ element.noOfBeneficiaryLearners ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="noOfBeneficiaryPersonnel">
                 <th mat-header-cell *matHeaderCellDef class="green-column">No. of Beneficiary Personnel</th>
-                <td mat-cell *matCellDef="let element">{{ element.noOfBeneficiaryPersonnel }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.noOfBeneficiaryPersonnel ?? '—'">{{ element.noOfBeneficiaryPersonnel ?? '—' }}</div></td>
             </ng-container>
 
             <!-- Partnership Agreements -->
             <ng-container matColumnDef="formOfAgreement">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Form of Agreement</th>
-                <td mat-cell *matCellDef="let element">{{ element.formOfAgreement }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.formOfAgreement ?? '—'">{{ element.formOfAgreement ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="signatoryName">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Signatory Name</th>
-                <td mat-cell *matCellDef="let element">{{ element.signatoryName }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.signatoryName ?? '—'">{{ element.signatoryName ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="signatoryDesignation">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Signatory Designation</th>
-                <td mat-cell *matCellDef="let element">{{ element.signatoryDesignation }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.signatoryDesignation ?? '—'">{{ element.signatoryDesignation ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="agreementStartDate">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Agreement Start Date</th>
-                <td mat-cell *matCellDef="let element">{{ element.agreementStartDate | date:'dd/MM/yyyy' }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.agreementStartDate ? (element.agreementStartDate | date:'dd/MM/yyyy') : '—'">{{ element.agreementStartDate ? (element.agreementStartDate | date:'dd/MM/yyyy') : '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="agreementEndDate">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Agreement End Date</th>
-                <td mat-cell *matCellDef="let element">{{ element.agreementEndDate | date:'dd/MM/yyyy' }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.agreementEndDate ? (element.agreementEndDate | date:'dd/MM/yyyy') : '—'">{{ element.agreementEndDate ? (element.agreementEndDate | date:'dd/MM/yyyy') : '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="projectCategory">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Project Category</th>
-                <td mat-cell *matCellDef="let element">{{ element.projectCategory }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.projectCategory ?? '—'">{{ element.projectCategory ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="projectName">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Project Name</th>
-                <td mat-cell *matCellDef="let element">{{ element.projectName }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.projectName ?? '—'">{{ element.projectName ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="statusOfAgreement">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Status of Agreement / Project</th>
-                <td mat-cell *matCellDef="let element">{{ element.statusOfAgreement }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.statusOfAgreement ?? '—'">{{ element.statusOfAgreement ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="remarksPartnership">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Remarks</th>
-                <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.remarks ?? '—'">{{ element.remarks ?? '—' }}</div></td>
             </ng-container>
 
             <ng-container matColumnDef="initiatedBy">
                 <th mat-header-cell *matHeaderCellDef class="pink-column">Initiated By</th>
-                <td mat-cell *matCellDef="let element">{{ element.initiatedBy }}</td>
+                <td mat-cell *matCellDef="let element"><div class="cell-content" [matTooltip]="element.initiatedBy ?? '—'">{{ element.initiatedBy ?? '—' }}</div></td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="getVisibleColumns()"></tr>
             <tr mat-row *matRowDef="let row; let i = index; columns: getVisibleColumns()" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
         </table>
     </div>
-    <div *ngIf="isLoading" class="loading">Loading Data...</div>
-</div>
+  </div>
+</mat-card>
