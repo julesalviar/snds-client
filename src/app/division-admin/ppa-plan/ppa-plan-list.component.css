@@ -255,6 +255,23 @@ app-ppa-plan-list mat-card-title {
   padding: 0;
 }
 
+.actions-cell button[disabled] .mat-icon,
+.actions-cell .mat-mdc-icon-button[disabled] .mat-icon,
+.actions-cell .mat-icon-button[disabled] .mat-icon {
+  color: rgba(0, 0, 0, 0.38) !important;
+}
+
+.actions-cell button[disabled],
+.actions-cell .mat-mdc-icon-button[disabled],
+.actions-cell .mat-icon-button[disabled] {
+  opacity: 0.5;
+}
+
+.action-duplicate:hover:not([disabled]) {
+  background-color: rgba(25, 118, 210, 0.12);
+  color: #1565c0;
+}
+
 .action-edit:hover:not([disabled]) {
   background-color: rgba(69, 160, 73, 0.12);
   color: #2e7d32;

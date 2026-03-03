@@ -108,6 +108,13 @@ export class PpaPlanContextDialogComponent {
     }
   }
 
+  onDuplicate(): void {
+    const planId = this.plan._id;
+    if (planId) {
+      this.dialogRef.close({ action: 'duplicate', planId });
+    }
+  }
+
   onDelete(): void {
     const title = this.plan.title || 'this plan';
     const confirmRef = this.dialog.open(ConfirmDialogComponent, {

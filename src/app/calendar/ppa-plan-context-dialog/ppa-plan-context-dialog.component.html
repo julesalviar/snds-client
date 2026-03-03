@@ -86,6 +86,10 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   @if (canEdit) {
+    <button mat-stroked-button (click)="onDuplicate()">
+      <mat-icon>content_copy</mat-icon>
+      Duplicate
+    </button>
     <button mat-stroked-button color="primary" (click)="onEdit()">
       <mat-icon>edit</mat-icon>
       Edit
@@ -95,5 +99,5 @@
       Delete
     </button>
   }
-  <button mat-button (click)="onClose()">Close</button>
+  <button mat-button (click)="onClose()" cdkFocusInitial>Close</button>
 </mat-dialog-actions>

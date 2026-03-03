@@ -75,13 +75,34 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     return this.authService.getActiveRole();
   }
 
-  /** True if the user can edit or delete PPA plans (ProgramHolder, OfficeAdmin, OfficeAdminAssistant). */
-  get canEditOrDelete(): boolean {
+  /** True if the user can see any action buttons (ProgramHolder or OfficeAdmin; OfficeAdminAssistant sees none). */
+  get canShowActions(): boolean {
     const role = this.userActiveRole;
-    return (
-      role === UserType.ProgramHolder ||
-      role === UserType.OfficeAdmin
-    );
+    return role === UserType.ProgramHolder || role === UserType.OfficeAdmin;
+  }
+
+  /** True if the Duplicate button should be shown (ProgramHolder only; OfficeAdmin hides it). */
+  showDuplicateButton(): boolean {
+    return this.userActiveRole === UserType.ProgramHolder;
+  }
+
+  /** True if action buttons (Edit, Delete, Duplicate) should be enabled for this row. ProgramHolder: only when assigned to current user; OfficeAdmin: always. */
+  canActOnPlan(row: PpaPlan): boolean {
+    if (this.userActiveRole === UserType.OfficeAdmin) return true;
+    if (this.userActiveRole === UserType.ProgramHolder) {
+      const assignedId = this.getAssignedUserId(row);
+      const currentId = this.authService.getUserId();
+      return !!(assignedId && currentId && assignedId === currentId);
+    }
+    return false;
+  }
+
+  /** Resolve assignedUserId from row (string or populated User object). */
+  private getAssignedUserId(row: PpaPlan): string | null {
+    const v = row.assignedUserId;
+    if (v == null) return null;
+    if (typeof v === 'string') return v;
+    return (v as { _id?: string })?._id ?? null;
   }
 
   /** Column categories for visibility toggle. Actions column is always visible. */
@@ -327,6 +348,24 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
       maxWidth: isMobile ? '100vw' : '95vw',
       maxHeight: isMobile ? '100vh' : '90vh',
       data: { planId: row._id },
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadPlans();
+      }
+    });
+  }
+
+  onDuplicate(row: PpaPlan): void {
+    if (!row._id) return;
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const dialogRef = this.dialog.open(PpaPlanFormComponent, {
+      width: isMobile ? '100vw' : 'min(900px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      data: { planId: row._id, isDuplicate: true },
       disableClose: false,
       panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
     });

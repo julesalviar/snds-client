@@ -375,6 +375,21 @@ export class CalendarComponent implements OnInit {
     });
   }
 
+  openDuplicatePlanModal(planId: string): void {
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const dialogRef = this.dialog.open(PpaPlanFormComponent, {
+      width: isMobile ? '100vw' : 'min(900px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      data: { planId, isDuplicate: true },
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) this.loadPlans();
+    });
+  }
+
   openPlanContext(plan: PpaPlan): void {
     const dialogRef = this.dialog.open(PpaPlanContextDialogComponent, {
       width: '560px',
@@ -387,6 +402,8 @@ export class CalendarComponent implements OnInit {
         this.loadPlans();
       } else if (result?.action === 'edit' && result?.planId) {
         this.openEditPlanModal(result.planId);
+      } else if (result?.action === 'duplicate' && result?.planId) {
+        this.openDuplicatePlanModal(result.planId);
       }
     });
   }

@@ -77,6 +77,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
   planId: string | null = null;
   isEdit = false;
+  /** When true, form is pre-filled from an existing plan but submits as create (duplicate). */
+  private isDuplicate = false;
   isLoading = true;
   isSaving = false;
   users: UserListItem[] = [];
@@ -174,12 +176,13 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     public readonly classificationDisplay: PlanClassificationDisplayService,
     private readonly snackBar: MatSnackBar,
     @Optional() private readonly dialogRef: MatDialogRef<PpaPlanFormComponent>,
-    @Optional() @Inject(MAT_DIALOG_DATA) dialogData?: { planId?: string; initialDate?: Date }
+    @Optional() @Inject(MAT_DIALOG_DATA) dialogData?: { planId?: string; initialDate?: Date; isDuplicate?: boolean }
   ) {
     this.isDialogMode = !!this.dialogRef;
     if (this.isDialogMode && dialogData) {
       this.planId = dialogData.planId ?? null;
-      this.isEdit = !!this.planId;
+      this.isDuplicate = !!dialogData.isDuplicate;
+      this.isEdit = !!this.planId && !this.isDuplicate;
     }
     this.form = this.fb.group({
       kra: ['', Validators.required],
@@ -353,15 +356,15 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          if (this.isEdit && this.planId) {
+          if ((this.isEdit || this.isDuplicate) && this.planId) {
             this.loadPlan();
           } else {
             this.isLoading = false;
           }
         },
         error: () => {
-          if (!this.isEdit) this.isLoading = false;
-          if (this.isEdit && this.planId) this.loadPlan();
+          if (!this.isEdit && !this.isDuplicate) this.isLoading = false;
+          if ((this.isEdit || this.isDuplicate) && this.planId) this.loadPlan();
         },
       });
   }
@@ -462,8 +465,13 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           timeliness: plan.timeliness ?? '',
           factors: plan.factors ?? '',
         });
-        this.reportDocUrl = Array.isArray(plan.reportUrls) && plan.reportUrls.length > 0 ? plan.reportUrls[0] : null;
-        this.reportDocUrlRemoved = false;
+        if (!this.isDuplicate) {
+          this.reportDocUrl = Array.isArray(plan.reportUrls) && plan.reportUrls.length > 0 ? plan.reportUrls[0] : null;
+          this.reportDocUrlRemoved = false;
+        } else {
+          this.reportDocUrl = null;
+          this.reportDocUrlRemoved = false;
+        }
         this.isLoading = false;
       },
       error: (err) => {

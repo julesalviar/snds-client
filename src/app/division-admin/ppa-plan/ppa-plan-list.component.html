@@ -224,21 +224,33 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let row" class="actions-cell">
-            <button *ngIf="canEditOrDelete"
+            <button *ngIf="canShowActions && showDuplicateButton()"
+                    mat-icon-button
+                    class="action-duplicate"
+                    type="button"
+                    [matTooltip]="canActOnPlan(row) ? 'Duplicate' : 'Only the assigned program holder can duplicate'"
+                    aria-label="Duplicate PPA plan"
+                    [disabled]="!canActOnPlan(row)"
+                    (click)="onDuplicate(row)">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+            <button *ngIf="canShowActions"
                     mat-icon-button
                     class="action-edit"
                     type="button"
-                    matTooltip="Edit"
+                    [matTooltip]="canActOnPlan(row) ? 'Edit' : 'Only the assigned program holder can edit'"
                     aria-label="Edit PPA plan"
+                    [disabled]="!canActOnPlan(row)"
                     (click)="onEdit(row)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button *ngIf="canEditOrDelete"
+            <button *ngIf="canShowActions"
                     mat-icon-button
                     class="action-delete"
                     type="button"
-                    matTooltip="Delete"
+                    [matTooltip]="canActOnPlan(row) ? 'Delete' : 'Only the assigned program holder can delete'"
                     aria-label="Delete PPA plan"
+                    [disabled]="!canActOnPlan(row)"
                     (click)="onDelete(row)">
               <mat-icon>delete</mat-icon>
             </button>
