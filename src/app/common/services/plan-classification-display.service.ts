@@ -30,6 +30,6 @@ export class PlanClassificationDisplayService {
 
   /** Column/label title for the classification field. */
   getDisplayTitle(): string {
-    return this.useGensanDisplay ? 'Project Champ Classification' : '5 Point Reform Agenda';
+    return this.useGensanDisplay ? 'DEPED PILLAR (Project Champ)' : '5 Point Reform Agenda';
   }
 }

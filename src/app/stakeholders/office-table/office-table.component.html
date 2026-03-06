@@ -61,7 +61,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>Fund Source</mat-label>
+            <mat-label>Budget Source</mat-label>
             <mat-select [(ngModel)]="filters.fundSource" (selectionChange)="applyFilter()">
                 <mat-option value="">-- All --</mat-option>
                 <mat-option value="SDO">SDO</mat-option>
@@ -101,17 +101,17 @@
             </ng-container>
 
             <ng-container matColumnDef="programTitle">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Program Title</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">PROGRAM TITLE</th>
                 <td mat-cell *matCellDef="let element">{{ element.programTitle }}</td>
             </ng-container>
 
             <ng-container matColumnDef="activity">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Activity</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">ACTIVITY</th>
                 <td mat-cell *matCellDef="let element">{{ element.activity }}</td>
             </ng-container>
 
             <ng-container matColumnDef="ppaObjective">
-                <th mat-header-cell *matHeaderCellDef class="green-column">PPA Objective</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">PROJECT/ ACTIVITY OBJECTIVE</th>
                 <td mat-cell *matCellDef="let element">{{ element.ppaObjective }}</td>
             </ng-container>
 
@@ -120,85 +120,66 @@
                 <td mat-cell *matCellDef="let element">{{ getClassificationDisplay(element.fivePointReformAgenda) }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="expectedOutput">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Expected Output</th>
-                <td mat-cell *matCellDef="let element">{{ element.expectedOutput }}</td>
-            </ng-container>
-
             <ng-container matColumnDef="dateOfImplementation">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Date of Implementation</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">SCHEDULE</th>
                 <td mat-cell *matCellDef="let element">{{ element.dateOfImplementation | date:'dd/MM/yyyy' }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="responsiblePerson">
+                <th mat-header-cell *matHeaderCellDef class="green-column">RESPONSIBLE PERSON</th>
+                <td mat-cell *matCellDef="let element">{{ element.responsiblePerson }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="expectedOutput">
+                <th mat-header-cell *matHeaderCellDef class="green-column">EXPECTED OUTPUT</th>
+                <td mat-cell *matCellDef="let element">{{ element.expectedOutput }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="venue">
+                <th mat-header-cell *matHeaderCellDef class="green-column">VENUE</th>
+                <td mat-cell *matCellDef="let element">{{ element.venue }}</td>
+            </ng-container>
+
             <ng-container matColumnDef="budgetaryRequirements">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Budgetary Requirements</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">BUDGETARY REQUIREMENTS</th>
                 <td mat-cell *matCellDef="let element">{{ element.budgetaryRequirements | number:'1.2-2' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="materialsSupplies">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Materials & Supplies</th>
-                <td mat-cell *matCellDef="let element">{{ element.materialsSupplies }}</td>
-            </ng-container>
-
             <ng-container matColumnDef="fundSource">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Fund Source</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">BUDGET SOURCE</th>
                 <td mat-cell *matCellDef="let element">{{ element.fundSource }}</td>
             </ng-container>
 
             <ng-container matColumnDef="participants">
-                <th mat-header-cell *matHeaderCellDef class="green-column">Participants</th>
+                <th mat-header-cell *matHeaderCellDef class="green-column">PARTICIPANTS</th>
                 <td mat-cell *matCellDef="let element">{{ element.participants }}</td>
             </ng-container>
 
             <!-- Red Columns -->
             <ng-container matColumnDef="supportNeededFromStakeholders">
-                <th mat-header-cell *matHeaderCellDef class="red-column">Support Needed from Stakeholders</th>
+                <th mat-header-cell *matHeaderCellDef class="red-column">SUPPORT NEEDED FROM STAKEHOLDERS</th>
                 <td mat-cell *matCellDef="let element">{{ element.supportNeededFromStakeholders }}</td>
             </ng-container>
 
             <ng-container matColumnDef="supportReceivedFromStakeholders">
-                <th mat-header-cell *matHeaderCellDef class="red-column">Support Received from Stakeholders</th>
+                <th mat-header-cell *matHeaderCellDef class="red-column">SUPPORT RECEIVED FROM STAKEHOLDERS</th>
                 <td mat-cell *matCellDef="let element">{{ element.supportReceivedFromStakeholders != null ? (element.supportReceivedFromStakeholders | number:'1.2-2') : '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="stakeholdersName">
-                <th mat-header-cell *matHeaderCellDef class="red-column">Stakeholders Name</th>
+                <th mat-header-cell *matHeaderCellDef class="red-column">STAKEHOLDERS NAME</th>
                 <td mat-cell *matCellDef="let element">{{ element.stakeholdersName }}</td>
             </ng-container>
 
             <!-- Blue Columns -->
-            <ng-container matColumnDef="amountUtilized">
-                <th mat-header-cell *matHeaderCellDef class="blue-column">Amount Utilized</th>
-                <td mat-cell *matCellDef="let element">{{ element.amountUtilized | number:'1.2-2' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="variance">
-                <th mat-header-cell *matHeaderCellDef class="blue-column">Variance</th>
-                <td mat-cell *matCellDef="let element">{{ element.variance | number:'1.2-2' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="percentageUtilization">
-                <th mat-header-cell *matHeaderCellDef class="blue-column">% of Utilization</th>
-                <td mat-cell *matCellDef="let element">{{ element.percentageUtilization }}</td>
-            </ng-container>
 
             <ng-container matColumnDef="implementationStatus">
-                <th mat-header-cell *matHeaderCellDef class="blue-column">Implementation Status</th>
+                <th mat-header-cell *matHeaderCellDef class="blue-column">IMPLEMENTATION STATUS</th>
                 <td mat-cell *matCellDef="let element">{{ element.implementationStatus }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="remarks">
-                <th mat-header-cell *matHeaderCellDef class="blue-column">Remarks</th>
-                <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="hinderingFacilitatingFactors">
-                <th mat-header-cell *matHeaderCellDef class="blue-column">Hindering/Facilitating Factors</th>
-                <td mat-cell *matCellDef="let element">{{ element.hinderingFacilitatingFactors }}</td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="['kra', 'programTitle', 'activity', 'ppaObjective', 'classification', 'expectedOutput', 'dateOfImplementation', 'budgetaryRequirements', 'materialsSupplies', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'amountUtilized', 'variance', 'percentageUtilization', 'implementationStatus', 'remarks', 'hinderingFacilitatingFactors']"></tr>
-            <tr mat-row *matRowDef="let row; let i = index; columns: ['kra', 'programTitle', 'activity', 'ppaObjective', 'classification', 'expectedOutput', 'dateOfImplementation', 'budgetaryRequirements', 'materialsSupplies', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'amountUtilized', 'variance', 'percentageUtilization', 'implementationStatus', 'remarks', 'hinderingFacilitatingFactors']" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
+            <tr mat-header-row *matHeaderRowDef="['kra', 'programTitle', 'activity', 'classification', 'ppaObjective', 'expectedOutput', 'responsiblePerson', 'dateOfImplementation', 'venue', 'budgetaryRequirements', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'implementationStatus']"></tr>
+            <tr mat-row *matRowDef="let row; let i = index; columns: ['kra', 'programTitle', 'activity', 'classification', 'ppaObjective', 'expectedOutput', 'responsiblePerson', 'dateOfImplementation', 'venue', 'budgetaryRequirements', 'fundSource', 'participants', 'supportNeededFromStakeholders', 'supportReceivedFromStakeholders', 'stakeholdersName', 'implementationStatus']" (click)="onRowClicked(i)" [class.selected-row]="selectedRowIndex === i"></tr>
         </table>
     </div>
 </div>

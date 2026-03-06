@@ -23,6 +23,7 @@ export interface PpaPlan {
   officeId?: string | Office;
   amountUtilized?: number;
   implementationStatus: string;
+  venue?: string;
   timeliness?: string;
   factors?: string;
   reportUrls?: string[];

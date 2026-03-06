@@ -153,6 +153,10 @@
           <th mat-header-cell *matHeaderCellDef>Implementation Date</th>
           <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatDate(row.implementationStartDate)">{{ formatDate(row.implementationStartDate) }}</div></td>
         </ng-container>
+        <ng-container matColumnDef="venue">
+          <th mat-header-cell *matHeaderCellDef>Venue</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.venue ?? '—'">{{ row.venue ?? '—' }}</div></td>
+        </ng-container>
         <ng-container matColumnDef="budgetaryRequirement">
           <th mat-header-cell *matHeaderCellDef>Budgetary Requirement</th>
           <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.budgetaryRequirement != null ? (row.budgetaryRequirement | number:'1.2-2') : '—'">{{ row.budgetaryRequirement != null ? (row.budgetaryRequirement | number:'1.2-2') : '—' }}</div></td>

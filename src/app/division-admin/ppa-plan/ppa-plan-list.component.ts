@@ -124,6 +124,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
       label: 'Budget & Dates',
       columns: [
         { id: 'implementationStartDate', label: 'Implementation Date', visible: true },
+        { id: 'venue', label: 'Venue', visible: true },
         { id: 'budgetaryRequirement', label: 'Budgetary Requirement', visible: true },
         { id: 'materialsAndSupplies', label: 'Materials and Supplies', visible: false },
         { id: 'fundSource', label: 'Fund Source', visible: true },
@@ -185,7 +186,14 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   filterImplementationStatus = '';
   filterAssignedToMe = true;
 
-  readonly classificationOptions = ['', ...PLAN_CLASSIFICATION];
+  get classificationOptions(): (string | (typeof PLAN_CLASSIFICATION)[number])[] {
+    const opts = ['', ...PLAN_CLASSIFICATION];
+    return opts.sort((a, b) => {
+      if (!a) return -1;
+      if (!b) return 1;
+      return this.classificationDisplay.getDisplayText(a).localeCompare(this.classificationDisplay.getDisplayText(b));
+    });
+  }
   readonly implementationStatusOptions = ['', ...PLAN_IMPLEMENTATION_STATUS];
 
   get hasActiveFilters(): boolean {

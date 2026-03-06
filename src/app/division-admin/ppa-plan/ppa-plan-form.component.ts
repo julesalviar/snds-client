@@ -85,7 +85,11 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   filteredUsers: UserListItem[] = [];
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
-  readonly classificationOptions = PLAN_CLASSIFICATION;
+  get classificationOptions(): readonly (typeof PLAN_CLASSIFICATION)[number][] {
+    return [...PLAN_CLASSIFICATION].sort((a, b) =>
+      this.classificationDisplay.getDisplayText(a).localeCompare(this.classificationDisplay.getDisplayText(b))
+    );
+  }
   readonly implementationStatusOptions = PLAN_IMPLEMENTATION_STATUS;
   readonly timelinessOptions = TIMELINESS;
   fundSourceOptions: string[] = [];
@@ -96,6 +100,31 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     const name = this.authService.getName();
     const username = this.authService.getUsername();
     return name || username || '—';
+  }
+
+  /** List of required/invalid field labels that are not yet satisfied. Empty when form is valid. */
+  get missingRequiredFields(): string[] {
+    const fields: string[] = [];
+    const checks: { control: string; label: string; error: string }[] = [
+      { control: 'kra', label: 'KRA', error: 'required' },
+      { control: 'title', label: 'Program Title', error: 'required' },
+      { control: 'activity', label: 'Activity', error: 'required' },
+      { control: 'objective', label: 'PPA Objective', error: 'required' },
+      { control: 'classification', label: 'Classification', error: 'required' },
+      { control: 'expectedOutput', label: 'Expected Output', error: 'required' },
+      { control: 'implementationStatus', label: 'Implementation Status', error: 'required' },
+      { control: 'implementationEndDate', label: 'Implementation End Date', error: 'endBeforeStart' },
+      { control: 'budgetaryRequirement', label: 'Budgetary Requirement', error: 'min' },
+      { control: 'amountUtilized', label: 'Amount Utilized', error: 'min' },
+      { control: 'supportReceivedValue', label: 'Support Received Value', error: 'min' },
+    ];
+    for (const { control, label, error } of checks) {
+      const ctrl = this.form.get(control);
+      if (ctrl?.invalid && ctrl?.hasError(error)) {
+        fields.push(label);
+      }
+    }
+    return fields;
   }
   @ViewChild('reportFileInput') reportFileInput!: ElementRef<HTMLInputElement>;
 
@@ -193,16 +222,17 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       expectedOutput: ['', Validators.required],
       implementationStartDate: [null as Date | string | null],
       implementationEndDate: [null as Date | string | null, [implementationDateRangeValidator]],
-      budgetaryRequirement: [null as number | null],
+      budgetaryRequirement: [null as number | null, [Validators.min(0)]],
       materialsAndSupplies: [''],
       fundSource: [''],
       participants: [[] as string[]],
       supportNeed: [''],
-      supportReceivedValue: [null as number | null],
+      supportReceivedValue: [null as number | null, [Validators.min(0)]],
       stakeholderUserId: [''],
       assignedUserId: [''],
       officeId: [''],
-      amountUtilized: [null as number | null],
+      venue: [''],
+      amountUtilized: [null as number | null, [Validators.min(0)]],
       implementationStatus: ['', Validators.required],
       timeliness: [''],
       factors: [''],
@@ -461,6 +491,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           stakeholderUserId: stakeholderId ?? '',
           assignedUserId: this.authService.getUserId() ?? '',
           amountUtilized: plan.amountUtilized ?? null,
+          venue: plan.venue ?? '',
           implementationStatus: plan.implementationStatus ?? '',
           timeliness: plan.timeliness ?? '',
           factors: plan.factors ?? '',
@@ -513,6 +544,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       stakeholderUserId: this.normalizeStakeholderUserId(raw.stakeholderUserId),
       assignedUserId: this.authService.getUserId() || undefined,
       officeId: this.resolveOfficeIdForPayload(raw.officeId) || undefined,
+      venue: raw.venue || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
       implementationStatus: raw.implementationStatus,
       timeliness: raw.timeliness || undefined,

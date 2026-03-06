@@ -382,6 +382,21 @@
   vertical-align: middle;
 }
 
+.missing-fields-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #d32f2f;
+}
+
+.missing-fields-hint .caution-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .upload-section {
   margin: 16px 0;
 }

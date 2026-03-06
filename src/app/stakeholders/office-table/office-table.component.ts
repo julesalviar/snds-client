@@ -25,13 +25,14 @@ interface OfficeTableData {
     projectChampClassification: string;
     expectedOutput: string;
     dateOfImplementation: Date;
+    venue: string;
     budgetaryRequirements: number;
-    materialsSupplies: string;
     fundSource: string;
     participants: string;
     supportNeededFromStakeholders: string;
     supportReceivedFromStakeholders: number | null;
     stakeholdersName: string;
+    responsiblePerson: string;
     amountUtilized: number;
     variance: number;
     percentageUtilization: number;
@@ -88,7 +89,14 @@ export class OfficeTableComponent implements OnInit {
         remarks: ''
     };
 
-    readonly classificationOptions = ['', ...PLAN_CLASSIFICATION];
+    get classificationOptions(): (string | (typeof PLAN_CLASSIFICATION)[number])[] {
+        const opts = ['', ...PLAN_CLASSIFICATION];
+        return opts.sort((a, b) => {
+            if (!a) return -1;
+            if (!b) return 1;
+            return this.classificationDisplay.getDisplayText(a).localeCompare(this.classificationDisplay.getDisplayText(b));
+        });
+    }
 
     constructor(
         private route: ActivatedRoute,
@@ -149,13 +157,14 @@ export class OfficeTableComponent implements OnInit {
             projectChampClassification: plan.classification ?? '',
             expectedOutput: plan.expectedOutput ?? '',
             dateOfImplementation,
+            venue: plan.venue ?? '',
             budgetaryRequirements,
-            materialsSupplies: plan.materialsAndSupplies ?? '',
             fundSource: plan.fundSource ?? '',
             participants: Array.isArray(plan.participants) ? plan.participants.join(', ') : '',
             supportNeededFromStakeholders: plan.supportNeed ?? '',
             supportReceivedFromStakeholders: plan.supportReceivedValue ?? null,
             stakeholdersName: this.getStakeholderDisplay(plan.stakeholderUserId),
+            responsiblePerson: this.getAssignedUserDisplay(plan.assignedUserId),
             amountUtilized,
             variance,
             percentageUtilization,
@@ -290,6 +299,14 @@ export class OfficeTableComponent implements OnInit {
         if (stakeholderUserId == null) return '—';
         if (typeof stakeholderUserId === 'string') return stakeholderUserId || '—';
         const u = stakeholderUserId as { name?: string; userName?: string; email?: string; _id?: string };
+        return u?.name || u?.userName || u?.email || u?._id || '—';
+    }
+
+    /** Display assigned user name (responsible person) from either id string or populated user object from API. */
+    getAssignedUserDisplay(assignedUserId: string | { _id?: string; name?: string; userName?: string; email?: string } | null | undefined): string {
+        if (assignedUserId == null) return '—';
+        if (typeof assignedUserId === 'string') return '—';
+        const u = assignedUserId as { name?: string; userName?: string; email?: string; _id?: string };
         return u?.name || u?.userName || u?.email || u?._id || '—';
     }
 }
