@@ -21,6 +21,7 @@ import {switchMap, of} from "rxjs";
 import {Location} from "@angular/common";
 import {Router} from "@angular/router";
 import {NavigationService} from "../../common/services/navigation.service";
+import { FieldCheckerService } from '../../common/services/utils/field-checker.service';
 
 @Component({
   selector: 'app-profile',
@@ -84,6 +85,7 @@ export class ProfileComponent implements OnInit {
     private readonly location: Location,
     private readonly router: Router,
     private readonly navigationService: NavigationService,
+    private readonly fieldCheckerService: FieldCheckerService
   ) {
     this.profileForm = this.fb.group({
       region: [''],
@@ -108,6 +110,8 @@ export class ProfileComponent implements OnInit {
     await this.loadClusters();
     await this.loadSchoolOfferings();
     this.loadProfileData();
+
+   this.fieldCheckerService.checkRequiredFields(this.profileForm);
   }
 
   onFileSelected(event: Event): void {

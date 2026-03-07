@@ -7,7 +7,7 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatBadgeModule } from '@angular/material/badge';
 import {filter} from "rxjs";
 import { FooterComponent } from './footer/footer.component';
-
+import { FieldCheckerService } from './common/services/utils/field-checker.service';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -20,7 +20,7 @@ export class AppComponent {
 
   showNavBar: boolean = false;
 
-  constructor(private readonly router: Router) {
+  constructor(private readonly router: Router, private fieldCheckerService: FieldCheckerService) {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)
@@ -33,5 +33,17 @@ export class AppComponent {
         ];
         this.showNavBar = !hiddenRoutes.includes(url);
       });
+  }
+  onAipClick(): void {
+    this.fieldCheckerService.checkRequiredProfileData().then(isComplete => {
+      if (!isComplete) {
+        // Show Snackbar message if the profile is incomplete
+        this.fieldCheckerService.openSnackbar('You Need to Upload School Logo or School Location in the Edit Profile to access AIP');
+        return;
+      }
+
+      // Navigate to AIP component if the profile is complete
+      this.router.navigate(['/school-admin/aip']); 
+    });
   }
 }

@@ -1,5 +1,4 @@
-<app-navigation *ngIf="showNavBar"></app-navigation>
- 
+<app-navigation *ngIf="showNavBar" (aipClicked)="onAipClick()"></app-navigation>
 <router-outlet></router-outlet>
 <app-footer></app-footer>
 

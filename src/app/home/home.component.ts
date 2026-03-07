@@ -19,6 +19,7 @@ import {InternalReferenceDataService} from "../common/services/internal-referenc
 import {PpaPlanService} from "../common/services/ppa-plan.service";
 import {PpaPlan} from "../common/model/ppa-plan.model";
 import {CalendarNavigationService} from "../common/services/calendar-navigation.service";
+import { FieldCheckerService } from '../common/services/utils/field-checker.service';
 
 interface TreeNode {
   name: string;
@@ -82,6 +83,7 @@ export class HomeComponent implements OnInit {
     private readonly ppaPlanService: PpaPlanService,
     private readonly calendarNavigationService: CalendarNavigationService,
     private decimalPipe: DecimalPipe,
+    private fieldCheckerService: FieldCheckerService
   ) {
     const initial = this.getInitialState();
     this.homeStateSubject = new BehaviorSubject(initial);
@@ -89,6 +91,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.fieldCheckerService.checkRequiredProfileData(),
     // Pipeline pushes after each step via tap() so UI updates progressively (tree, then AIP, etc.).
     this.buildLoadPipeline().subscribe({
       error: (err) => console.error('Home load error:', err),
@@ -182,6 +185,12 @@ export class HomeComponent implements OnInit {
   }
 
   onChildClick(child: TreeNode, state: HomeState): void {
+// Check if the profile is complete before proceeding
+      this.fieldCheckerService.checkRequiredProfileData().then(isComplete => {
+    if (!isComplete) {
+      return;// Exit early if the profile is incomplete
+      }
+
     const parentName = state.treeData.find((node) => node.children?.includes(child))?.name;
     this.userService.setContribution({ name: parentName, specificContribution: child.name });
     let path: string;
@@ -205,7 +214,8 @@ export class HomeComponent implements OnInit {
         break;
     }
     this.router.navigate([path], { queryParams });
-  }
+  });
+}
 
   private loadSchoolNeeds$(state: HomeState): Observable<HomeState> {
     if (

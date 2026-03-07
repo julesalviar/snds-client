@@ -1,4 +1,4 @@
-import {Component, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {Component, OnInit, QueryList, ViewChildren, EventEmitter,Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {NavigationEnd, Router, RouterModule} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
@@ -18,7 +18,6 @@ import {OfficeService} from "../common/services/office.service";
 import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 import {Office} from "../common/model/office.model";
 import {OfficeDivisionSubmenuComponent} from "./office-division-submenu/office-division-submenu.component";
-
 @Component({
   standalone: true,
   selector: 'app-navigation',
@@ -36,6 +35,7 @@ import {OfficeDivisionSubmenuComponent} from "./office-division-submenu/office-d
   ]
 })
 export class NavigationComponent implements OnInit {
+  @Output() aipClicked = new EventEmitter<void>(); 
   isMenuOpen = false;
   userType = UserType;
   tenant = Tenant;
@@ -107,6 +107,10 @@ export class NavigationComponent implements OnInit {
           }
         });
       });
+  }
+
+  handleAipClick(): void {
+    this.aipClicked.emit(); 
   }
 
   getOfficesForDivision(division: string): Office[] {
@@ -199,6 +203,7 @@ export class NavigationComponent implements OnInit {
     
     return 'U';
   }
+    
 
   getProfileImageUrl(): string | null {
     // Placeholder for future image URL retrieval

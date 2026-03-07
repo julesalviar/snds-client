@@ -63,7 +63,9 @@
         </mat-menu>
       </li>
 
-      <li><a routerLink="/school-admin/aip" (click)="closeMenu()">AIP</a></li>
+     <li (click)="handleAipClick()">
+      <a href="javascript:void(0)">AIP</a>
+     </li>
 
       <li>
         <button mat-button [matMenuTriggerFor]="schoolAdminDpdsMenu" class="menu-trigger">DPDS</button>
