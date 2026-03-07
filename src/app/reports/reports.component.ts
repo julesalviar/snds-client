@@ -13,6 +13,8 @@ import {ReportService} from "../common/services/report.service";
 import {Report, ReportTemplate} from "../common/model/report.model";
 import {SchoolYearSelectComponent} from "./filters/school-year-select/school-year-select.component";
 import {SchoolsSelectComponent} from "./filters/schools-select/schools-select.component";
+import {jsPDF} from "jspdf";
+import autoTable from "jspdf-autotable";
 
 @Component({
   selector: 'app-reports',
@@ -225,6 +227,112 @@ export class ReportsComponent implements OnInit, OnChanges {
 
   private checkMobile() {
     this.isMobile = window.innerWidth <= 768;
+  }
+
+  exportToPdf() {
+    if (!this.reportData?.length || !this.selectedReport?.reportTemplateId?.table?.columns?.length) {
+      return;
+    }
+
+    const columns = this.selectedReport.reportTemplateId.table.columns;
+    const headers = columns.map((c: any) => c.header);
+    const rows = this.reportData.map((row: any) =>
+      columns.map((col: any) => {
+        const val = this.getNestedValue(row, col.field);
+        return val != null ? String(val) : '';
+      })
+    );
+
+    const colWidth = 50;
+    const margin = 14;
+    const tableWidth = columns.length * colWidth;
+    const pageWidth = tableWidth + margin * 2;
+    const orientation = (this.selectedReport.reportTemplateId.orientation || 'portrait').toLowerCase();
+    const isLandscape = orientation === 'landscape';
+    const pageHeight = isLandscape ? 210 : 297;
+
+    const doc = new jsPDF({
+      orientation: isLandscape ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: [pageWidth, pageHeight]
+    });
+
+    doc.setFontSize(18);
+    doc.text(this.selectedReport.title ?? 'Report', margin, 20);
+
+    const columnStyles: Record<number, { cellWidth: number }> = {};
+    columns.forEach((_: any, i: number) => {
+      columnStyles[i] = { cellWidth: colWidth };
+    });
+
+    const innerBorder = 0.25;
+    const outerBorder = 0.5;
+
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+      startY: 28,
+      margin: { left: margin, right: margin },
+      tableWidth,
+      columnStyles,
+      theme: 'grid',
+      styles: { fontSize: 9, fillColor: false, textColor: 0, lineColor: 0 },
+      headStyles: { fillColor: false, textColor: 0, fontStyle: 'bold', lineColor: 0 },
+      didParseCell: (data: any) => {
+        const isFirstCol = data.column.index === 0;
+        const isLastCol = data.column.index === columns.length - 1;
+        const isLastRow = data.section === 'body' && data.row.index === rows.length - 1;
+
+        data.cell.styles.lineWidth = {
+          top: data.section === 'head' ? outerBorder : innerBorder,
+          right: isLastCol ? outerBorder : innerBorder,
+          bottom: isLastRow ? outerBorder : innerBorder,
+          left: isFirstCol ? outerBorder : innerBorder
+        };
+      }
+    });
+
+    const totalPages = doc.getNumberOfPages();
+    const timestamp = new Date().toLocaleString();
+    const footerY = pageHeight - 10;
+
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(`Page ${i}/${totalPages}`, margin, footerY);
+      doc.text(timestamp, pageWidth - margin - doc.getTextWidth(timestamp), footerY);
+    }
+
+    doc.save(`${(this.selectedReport.title ?? 'report').replace(/\s+/g, '_')}.pdf`);
+  }
+
+  exportToExcel() {
+    if (!this.reportData?.length || !this.selectedReport?.reportTemplateId?.table?.columns?.length) {
+      return;
+    }
+
+    import('xlsx').then((XLSX) => {
+      const columns = this.selectedReport!.reportTemplateId!.table!.columns!;
+      const headers = columns.map((c: any) => c.header);
+      const dataRows = this.reportData.map((row: any) =>
+        columns.map((col: any) => {
+          const val = this.getNestedValue(row, col.field);
+          return val != null ? val : '';
+        })
+      );
+
+      const aoa = [headers, ...dataRows];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Report');
+      XLSX.writeFile(wb, `${(this.selectedReport!.title ?? 'report').replace(/\s+/g, '_')}.xlsx`);
+    });
+  }
+
+  private getNestedValue(obj: any, path: string): any {
+    if (!obj || !path) return undefined;
+    return path.split('.').reduce((current: any, prop: string) =>
+      current && current[prop] !== undefined ? current[prop] : undefined, obj);
   }
 
   getControl(controlName: string): FormControl {

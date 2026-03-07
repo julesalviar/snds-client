@@ -50,11 +50,12 @@
   <section class="report-panel">
     <div class="report-panel-content" #reportPanel>
       <div class="export-button-container" *ngIf="reportData && reportData.length > 0 && !isLoading">
-        <button mat-flat-button color="accent" [disabled]="true" >
-          <span>Export to PDF</span>
+        <span class="export-label">Export report:</span>
+        <button mat-icon-button matTooltip="Export to PDF" (click)="exportToPdf()" class="export-tool-btn">
+          <img src="assets/64px-PDF_file_icon.svg.png" alt="PDF" class="export-icon">
         </button>
-        <button mat-flat-button color="accent" [disabled]="true">
-          <span>Export to Excel</span>
+        <button mat-icon-button matTooltip="Export to Excel" (click)="exportToExcel()" class="export-tool-btn">
+          <img src="assets/64px-Microsoft_Office_Excel_(2019–2025).svg.png" alt="Excel" class="export-icon">
         </button>
       </div>
       <div *ngIf="isLoading" class="loading-container">
