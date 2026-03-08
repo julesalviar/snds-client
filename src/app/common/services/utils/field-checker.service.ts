@@ -3,6 +3,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SchoolService } from '../school.service';
 import { AuthService } from '../../../auth/auth.service';
 import { FormGroup } from '@angular/forms';
+import {firstValueFrom, of} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,27 +27,43 @@ export class FieldCheckerService {
     });
   }
 
-  checkRequiredProfileData(): Promise<boolean> {
-  const schoolId = this.authService.getSchoolId();
+   checkRequiredProfileData(): Promise<{ isComplete: boolean }> {
+    const schoolId = this.authService.getSchoolId();
+    console.log('Fetching school data for ID:', schoolId); // Log the school ID
 
-  if (schoolId) {
-    return new Promise((resolve) => {
-      this.schoolService.getSchoolById(schoolId).subscribe((school) => {
-        const hasLogo = !!school.logoUrl; // Check for uploaded logo
-        const hasLocation = !!school.location; // Check for location coordinates
+    if (schoolId) {
+        return firstValueFrom(
+            this.schoolService.getSchoolById(schoolId).pipe(
+                map(school => {
+                    const hasLogo = !!school.logoUrl;
+                    const hasLocation = !!school.location;
+                    return { isComplete: hasLogo && hasLocation };
+                }),
+                catchError(() => {
+                    console.error('Error fetching school data, returning incomplete status.');
+                    return of({ isComplete: false });
+                })
+            )
+        );
+    }
 
-        if (!hasLogo || !hasLocation) {
-          this.openSnackbar('Please upload School logo / input the School location coordinates To Access other Functions. Check Edit Profile');
-        }
-
-        resolve(hasLogo && hasLocation); 
-      });
-    });
+    return Promise.resolve({ isComplete: false });
+}
+  public openSnackbar(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 8000 });
   }
 
-  return Promise.resolve(false); 
-}
- public openSnackbar(message: string): void {
-    this.snackBar.open(message, 'Close', { duration: 8000 });
+  /** Method to check and notify profile incompleteness on login */
+  notifyProfileOnLogin(): void {
+    // Only check and notify for SchoolAdmin users
+    if (!this.authService.isUserSchoolAdmin()) {
+      return; // Exit if not a SchoolAdmin
+    }
+
+    this.checkRequiredProfileData().then(({ isComplete }) => {
+      if (!isComplete) {
+        this.openSnackbar('Please upload School logo / input the School location coordinates to access other functions. Check Edit Profile');
+      }
+    });
   }
 }
