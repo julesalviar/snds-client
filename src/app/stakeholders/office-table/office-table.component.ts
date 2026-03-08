@@ -15,6 +15,7 @@ import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { PLAN_CLASSIFICATION } from '../../common/enums/plan-classification.enum';
+import { PLAN_IMPLEMENTATION_STATUS } from '../../common/enums/plan-implementation-status.enum';
 
 interface OfficeTableData {
     kra: string;
@@ -88,6 +89,8 @@ export class OfficeTableComponent implements OnInit {
         yearRange: '',
         remarks: ''
     };
+
+    readonly implementationStatusOptions = ['', ...PLAN_IMPLEMENTATION_STATUS];
 
     get classificationOptions(): (string | (typeof PLAN_CLASSIFICATION)[number])[] {
         const opts = ['', ...PLAN_CLASSIFICATION];
