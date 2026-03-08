@@ -4,13 +4,17 @@ import {HttpService} from "../common/services/http.service";
 import {catchError, map, Observable, tap, throwError} from "rxjs";
 import {AuthResponse} from "./auth-response.model";
 import {JwtPayload} from "../common/model/jwt-payload.model";
+import { UserType } from '../registration/user-type.enum';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private userRole: string = '';
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) {
+    this.userRole = this.getCurrentUserRole(); 
+  }
 
   login(credentials: { userName: string; password: string }): Observable<void> {
     return this.httpService.post<AuthResponse>(
@@ -100,4 +104,18 @@ export class AuthService {
     const now = Math.floor(Date.now() / 1000);
     return token.exp > now;
   }
+
+getCurrentUserRole(): string {
+    return this.getActiveRole();
+}
+
+  updateUserRole(newRole: string): void {
+    this.userRole = newRole;
+  }
+
+  isUserSchoolAdmin(): boolean {
+    const roles = this.getUserRoles();
+    console.log('User Roles:', roles); // Log roles for debugging
+    return roles.includes('schoolAdmin');
+}
 }

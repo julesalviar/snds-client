@@ -19,12 +19,17 @@ import {InternalReferenceDataService} from "../common/services/internal-referenc
 import {PpaPlanService} from "../common/services/ppa-plan.service";
 import {PpaPlan} from "../common/model/ppa-plan.model";
 import {CalendarNavigationService} from "../common/services/calendar-navigation.service";
+import { FieldCheckerService } from '../common/services/utils/field-checker.service';
 
 interface TreeNode {
   name: string;
   children?: TreeNode[];
   expanded?: boolean;
   count?: number;
+}
+
+export enum Usertype {
+    SchoolAdmin = 'schoolAdmin',
 }
 
 interface HomeLoadingState {
@@ -60,6 +65,7 @@ export interface HomeState {
   providers: [DecimalPipe]
 })
 export class HomeComponent implements OnInit {
+  userRole: string = '';
   @ViewChild('logoContainer') logoContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('logoPreview') logoPreview!: ElementRef<HTMLDivElement>;
 
@@ -82,18 +88,64 @@ export class HomeComponent implements OnInit {
     private readonly ppaPlanService: PpaPlanService,
     private readonly calendarNavigationService: CalendarNavigationService,
     private decimalPipe: DecimalPipe,
+    private fieldCheckerService: FieldCheckerService
   ) {
     const initial = this.getInitialState();
     this.homeStateSubject = new BehaviorSubject(initial);
     this.homeState$ = this.homeStateSubject.asObservable().pipe(shareReplay(1));
   }
+ngOnInit(): void {
+    const state: HomeState = this.getState(); 
+    this.userRole = state.userRole ?? ''; 
+    const isAdmin = this.isSchoolAdmin(state);
 
-  ngOnInit(): void {
-    // Pipeline pushes after each step via tap() so UI updates progressively (tree, then AIP, etc.).
-    this.buildLoadPipeline().subscribe({
-      error: (err) => console.error('Home load error:', err),
+    this.fieldCheckerService.checkRequiredProfileData().then(({ isComplete }) => {
+        if (!isComplete && isAdmin) {
+            // Show snackbar for SchoolAdmin only
+            this.fieldCheckerService.openSnackbar('Please upload School logo / input the School location coordinates to access other functions. Check Edit Profile.');
+        }
+
+        this.loadPipelineData();
+    }).catch(err => {
+        console.error('Error checking profile data:', err);
     });
+}
+public isSchoolAdmin(state: HomeState): boolean {
+      return state.userRole === Usertype.SchoolAdmin; 
   }
+
+  private getState(): HomeState {
+        return {
+            loading: {
+                internalRefData: false,
+                schoolNeeds: false,
+                aipStats: false,
+                upcomingPlans: false
+            },
+            name: undefined,
+            userRole: this.authService.getCurrentUserRole() ?? undefined,
+            treeData: [],
+            schoolNeedData: [],
+            schoolInfo: null,
+            divisionName: '',
+            divisionLogoUrl: null,
+            schoolLogoUrl: null,
+            logoError: false,
+            aipStatusStats: new Map<AipStatus, number>(),
+            totalAips: 0,
+            upcomingPlans: []
+        };
+    }
+ private loadPipelineData(): void {
+        this.buildLoadPipeline().subscribe({
+            next: (data) => {
+                console.log('Data loaded successfully:', data);
+            },
+            error: (err) => {
+                console.error('Home load error:', err);
+            },
+        });
+    }
 
   private getInitialState(): HomeState {
     const name = this.authService.getName();
@@ -181,31 +233,58 @@ export class HomeComponent implements OnInit {
     );
   }
 
-  onChildClick(child: TreeNode, state: HomeState): void {
+onChildClick(child: TreeNode, state: HomeState): void {
+  // Allow non-SchoolAdmin users to click without restrictions
+  if (!this.isSchoolAdmin(state)) {
     const parentName = state.treeData.find((node) => node.children?.includes(child))?.name;
     this.userService.setContribution({ name: parentName, specificContribution: child.name });
-    let path: string;
-    const queryParams: Record<string, string> = {};
-    const role = state.userRole;
-    switch (role) {
-      case 'schoolAdmin':
-        path = '/school-admin/school-needs';
-        break;
-      case 'divisionAdmin':
-        path = '/division-admin/school-needs';
-        break;
-      case 'stakeholder':
-        path = '/stakeholder/school-needs';
-        queryParams['selectedContribution'] = child.name;
-        break;
-      default:
-        path = '/guest/school-needs';
-        queryParams['selectedContribution'] = child.name;
-        if (role) console.warn(`Unknown or undefined role: ${role}`);
-        break;
-    }
-    this.router.navigate([path], { queryParams });
+    this.navigateToSchoolNeeds(child, state);
+    return;
   }
+
+  // For SchoolAdmin users, check if the profile is complete
+  this.fieldCheckerService.checkRequiredProfileData().then(({ isComplete }) => {
+    if (!isComplete) {
+      // If the profile is incomplete, show Snackbar for SchoolAdmin users
+      this.fieldCheckerService.openSnackbar('Please upload School logo / input the School location coordinates to access other functions. Check Edit Profile.');
+      return;
+    }
+
+    const parentName = state.treeData.find((node) => node.children?.includes(child))?.name;
+    this.userService.setContribution({ name: parentName, specificContribution: child.name });
+
+    // Load school needs data for SchoolAdmin users
+    this.loadSchoolNeeds$(state).subscribe(updatedState => {
+      this.homeStateSubject.next(updatedState); // Update the home state after loading school needs data
+    });
+
+    this.navigateToSchoolNeeds(child, state);
+  });
+}
+
+private navigateToSchoolNeeds(child: TreeNode, state: HomeState): void {
+  let path: string;
+  const queryParams: Record<string, string> = {};
+  const role = state.userRole;
+  switch (role) {
+    case 'schoolAdmin':
+      path = '/school-admin/school-needs';
+      break;
+    case 'divisionAdmin':
+      path = '/division-admin/school-needs';
+      break;
+    case 'stakeholder':
+      path = '/stakeholder/school-needs';
+      queryParams['selectedContribution'] = child.name;
+      break;
+    default:
+      path = '/guest/school-needs';
+      queryParams['selectedContribution'] = child.name;
+      if (role) console.warn(`Unknown or undefined role: ${role}`);
+      break;
+  }
+  this.router.navigate([path], { queryParams });
+}
 
   private loadSchoolNeeds$(state: HomeState): Observable<HomeState> {
     if (
@@ -452,9 +531,8 @@ export class HomeComponent implements OnInit {
     return `${formattedCount}/${formattedTotal}`;
   }
 
-  isSchoolAdmin(state: HomeState): boolean {
-    return state.userRole === UserType.SchoolAdmin;
-  }
+  //isSchoolAdmin(state: HomeState): boolean {
+  //return state.userRole === UserType.SchoolAdmin;}
 
   isDivisionAdmin(state: HomeState): boolean {
     return state.userRole === UserType.DivisionAdmin;

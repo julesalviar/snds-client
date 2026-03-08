@@ -303,7 +303,7 @@ table {
 
 tr:hover {
   background-color: #e4a0a089;
-  color: white;
+  color: black;
 }
 .table-scroll {
   overflow-x: auto;
