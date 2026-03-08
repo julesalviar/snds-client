@@ -12,8 +12,8 @@ import {catchError, map} from 'rxjs/operators';
 export class FieldCheckerService {
 
   constructor(
-    private snackBar: MatSnackBar, 
-    private authService: AuthService, 
+    private snackBar: MatSnackBar,
+    private authService: AuthService,
     private schoolService: SchoolService
   ) {}
 
@@ -22,7 +22,7 @@ export class FieldCheckerService {
     Object.keys(form.controls).forEach(field => {
       const control = form.get(field);
       if (control && control.errors && control.errors['required']) {
-        control.markAsTouched(); 
+        control.markAsTouched();
       }
     });
   }
@@ -50,20 +50,9 @@ export class FieldCheckerService {
     return Promise.resolve({ isComplete: false });
 }
   public openSnackbar(message: string): void {
-    this.snackBar.open(message, 'Close', { duration: 8000 });
-  }
-
-  /** Method to check and notify profile incompleteness on login */
-  notifyProfileOnLogin(): void {
-    // Only check and notify for SchoolAdmin users
-    if (!this.authService.isUserSchoolAdmin()) {
-      return; // Exit if not a SchoolAdmin
-    }
-
-    this.checkRequiredProfileData().then(({ isComplete }) => {
-      if (!isComplete) {
-        this.openSnackbar('Please upload School logo / input the School location coordinates to access other functions. Check Edit Profile');
-      }
+    this.snackBar.open(message, 'Close', {
+      duration: 8000,
+      panelClass: ['error-snackbar'],
     });
   }
 }

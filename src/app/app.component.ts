@@ -8,8 +8,8 @@ import { MatBadgeModule } from '@angular/material/badge';
 import {filter} from "rxjs";
 import { FooterComponent } from './footer/footer.component';
 import { FieldCheckerService } from './common/services/utils/field-checker.service';
-import { UserType } from './registration/user-type.enum';
 import { AuthService } from './auth/auth.service';
+import {UserType} from "./registration/user-type.enum";
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -18,11 +18,14 @@ import { AuthService } from './auth/auth.service';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  title = 'sndsapp';
+  title = 'School Need Data System';
 
   showNavBar: boolean = false;
 
-  constructor(private readonly router: Router, private fieldCheckerService: FieldCheckerService, private authService: AuthService) {
+  constructor(
+    private readonly router: Router,
+    private readonly fieldCheckerService: FieldCheckerService,
+    private readonly authService: AuthService) {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)
@@ -39,19 +42,12 @@ export class AppComponent {
   onAipClick(): void {
     this.fieldCheckerService.checkRequiredProfileData().then(({ isComplete }: { isComplete: boolean }) => {
       if (!isComplete)  {
-        // Show Snackbar message if the profile is incomplete
-        if (this.isUserSchoolAdmin()) {
-          // Show Snackbar message if the profile is incomplete
+        if (this.authService.getActiveRole() === UserType.SchoolAdmin) {
           this.fieldCheckerService.openSnackbar('You Need to Upload School Logo or School Location in the Edit Profile to access AIP');
         }
         return;
       }
-
-      // Navigate to AIP component if the profile is complete
-      this.router.navigate(['/school-admin/aip']); 
+      this.router.navigate(['/school-admin/aip']);
     });
-  }
-  private isUserSchoolAdmin(): boolean {
-    return this.authService.isUserSchoolAdmin(); // Check if the user is SchoolAdmin
   }
 }
