@@ -13,7 +13,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { OfficeService } from '../../common/services/office.service';
 import { Office } from '../../common/model/office.model';
-import { OFFICE_OPTIONS } from '../../common/constants/office-options';
+import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 
 @Component({
   selector: 'app-office-form',
@@ -42,12 +42,13 @@ export class OfficeFormComponent implements OnInit {
   isSaving = false;
   readonly isDialogMode: boolean;
 
-  /** Unique divisions from OFFICE_OPTIONS (plus custom division when editing) */
-  divisionOptions: string[] = [...new Set(OFFICE_OPTIONS.map((o) => o.division))].sort();
+  /** Unique divisions from internal reference data (plus custom division when editing) */
+  divisionOptions: string[] = [];
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly officeService: OfficeService,
+    private readonly internalReferenceDataService: InternalReferenceDataService,
     private readonly snackBar: MatSnackBar,
     @Optional() private readonly dialogRef: MatDialogRef<OfficeFormComponent>,
     @Optional() @Inject(MAT_DIALOG_DATA) dialogData?: { officeId?: string }
@@ -64,7 +65,9 @@ export class OfficeFormComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.internalReferenceDataService.initialize();
+    this.divisionOptions = [...this.internalReferenceDataService.getOfficeDivisions()].sort();
     if (this.isEdit && this.officeId) {
       this.loadOffice();
     } else {

@@ -122,6 +122,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   openRegistration = false;
   openRegistrationUpdating = false;
 
+  // TODO: this list should be from the backend
   private readonly roleOptionsBase: { value: string; label: string }[] = [
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
     { value: UserType.SchoolAdmin, label: getRoleLabel(UserType.SchoolAdmin) },
@@ -129,6 +130,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     { value: UserType.ProgramHolder, label: getRoleLabel(UserType.ProgramHolder) },
   ];
 
+  // TODO: this list should be from the backend
   /** Role filter options including system/systemAdmin (stable reference). */
   private readonly roleOptionsWithSystem: { value: string; label: string }[] = [
     { value: UserType.StakeHolder, label: getRoleLabel(UserType.StakeHolder) },
@@ -136,6 +138,8 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     { value: UserType.DivisionAdmin, label: getRoleLabel(UserType.DivisionAdmin) },
     { value: UserType.ProgramHolder, label: getRoleLabel(UserType.ProgramHolder) },
     { value: UserType.SystemAdmin, label: getRoleLabel(UserType.SystemAdmin) },
+    { value: UserType.OfficeAdmin, label: getRoleLabel(UserType.OfficeAdmin) },
+    { value: UserType.OfficeAdminAssistant, label: getRoleLabel(UserType.OfficeAdminAssistant) },
     { value: UserType.System, label: getRoleLabel(UserType.System) },
   ];
 
