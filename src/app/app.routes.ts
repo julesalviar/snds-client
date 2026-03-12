@@ -37,6 +37,8 @@ import { CloseRegistrationComponent } from './close-registration/close-registrat
 import { CalendarComponent } from './calendar/calendar.component';
 import { PpaPlanListComponent } from './division-admin/ppa-plan/ppa-plan-list.component';
 import { PpaPlanFormComponent } from './division-admin/ppa-plan/ppa-plan-form.component';
+import { ActivityListComponent } from './division-admin/activity/activity-list.component';
+import { ActivityFormComponent } from './division-admin/activity/activity-form.component';
 import { OfficeListComponent } from './division-admin/office/office-list.component';
 
 export const routes: Routes = [
@@ -100,7 +102,9 @@ export const routes: Routes = [
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: GeneratedResourcesComponent},
       {path: 'reports', component: ReportsComponent},
-
+      {path: 'activities', component: ActivityListComponent},
+      {path: 'activities/create', component: ActivityFormComponent},
+      {path: 'activities/edit/:id', component: ActivityFormComponent},
     ]
   },
 
@@ -118,6 +122,9 @@ export const routes: Routes = [
       {path: 'manage-district', component: ManageDistrictComponent},
       {path: 'manage-users', component: ManageUsersComponent},
       {path: 'manage-schools', component: ManageSchoolsComponent},
+      {path: 'activities', component: ActivityListComponent},
+      {path: 'activities/create', component: ActivityFormComponent},
+      {path: 'activities/edit/:id', component: ActivityFormComponent},
       {path: 'permission-levels', component: DivisionAdminComponent},
       {path: 'open-registration', component: DivisionAdminComponent},
       {path: 'close-registration', component: DivisionAdminComponent},

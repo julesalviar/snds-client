@@ -1,0 +1,335 @@
+.activity-form-wrapper.dialog-mode {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.activity-form-wrapper.dialog-mode .dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  min-height: 56px;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.activity-form-wrapper.dialog-mode .dialog-header .dialog-title,
+.activity-form-wrapper.dialog-mode .dialog-header h2[mat-dialog-title] {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+  line-height: 32px;
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-form-wrapper.dialog-mode .dialog-close-btn {
+  margin: -8px -8px -8px 8px;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.activity-form-wrapper.dialog-mode .dialog-close-btn:hover:not([disabled]) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.activity-form-wrapper.dialog-mode .container.dialog-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding: 8px 24px 24px;
+  min-height: 0;
+}
+
+.activity-form-wrapper.dialog-mode .form-card.dialog-card {
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.activity-form-wrapper.dialog-mode .form-card.dialog-card mat-card-content {
+  padding: 0;
+}
+
+.activity-form-wrapper.dialog-mode .form-card.dialog-card .form-section {
+  margin-bottom: 24px;
+}
+
+@media (min-width: 600px) {
+  .activity-form-wrapper.dialog-mode .row .half-width {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+}
+
+.activity-form-wrapper.dialog-mode .button-group.dialog-actions {
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 0 0;
+  margin-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.activity-form-wrapper.dialog-mode .button-group .submit-btn,
+.activity-form-wrapper.dialog-mode .button-group .cancel-btn {
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.container {
+  padding: 20px;
+}
+
+@media (max-width: 599px) {
+  .container {
+    padding: 12px 16px;
+  }
+
+  .modal-form-container {
+    max-width: 100%;
+  }
+
+  .form-card {
+    padding: 16px;
+  }
+
+  .form-card mat-card-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .form-section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .half-width {
+    flex: 0 0 auto;
+    min-width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 12px;
+  }
+
+  .button-group button {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+  }
+
+  .activity-form-wrapper.dialog-mode .dialog-header {
+    padding: 16px 16px 12px;
+    min-height: 48px;
+  }
+
+  .activity-form-wrapper.dialog-mode .dialog-header .dialog-title,
+  .activity-form-wrapper.dialog-mode .dialog-header h2[mat-dialog-title] {
+    font-size: 18px;
+  }
+
+  .activity-form-wrapper.dialog-mode .button-group.dialog-actions {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    margin-top: 20px;
+  }
+
+  .activity-form-wrapper.dialog-mode .button-group .submit-btn,
+  .activity-form-wrapper.dialog-mode .button-group .cancel-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+.modal-form-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.form-card {
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-card mat-card-title {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.skeleton-loading {
+  padding: 0;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-section {
+  margin-bottom: 28px;
+}
+
+.skeleton-section .skeleton-title {
+  height: 16px;
+  width: 140px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+
+.skeleton-section .skeleton-field {
+  height: 56px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton-section .skeleton-field-textarea {
+  height: 72px;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.skeleton-field-half {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.form-section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #424242;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.half-width {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.checkbox-row mat-checkbox {
+  margin: 0;
+}
+
+.field-group {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.field-group:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox-row.include-time-row {
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.field-group-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #424242;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.1px;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.button-group button mat-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.missing-fields-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #d32f2f;
+}
+
+.missing-fields-hint .caution-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

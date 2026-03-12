@@ -1,0 +1,156 @@
+<mat-card>
+  <mat-card-title>Activities</mat-card-title>
+
+  <div class="top-actions" *ngIf="canCreateActivity">
+    <button mat-raised-button color="primary" (click)="onCreate()">
+      <mat-icon>add</mat-icon>
+      Create Activity
+    </button>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="filter-container">
+      <div class="filter-fields">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Search</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchInput()"
+            placeholder="Title, description...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-checkbox
+          *ngIf="isSchoolAdmin"
+          [(ngModel)]="onlyShowMySchool"
+          (ngModelChange)="onOnlyShowMySchoolChange()"
+          class="filter-checkbox">
+          Only show my school
+        </mat-checkbox>
+
+        <button *ngIf="hasActiveFilters" mat-button color="warn" (click)="clearFilters()" class="clear-button">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
+      <div class="skeleton-table">
+        <div class="skeleton-table-header">
+          <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 13%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 9%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+        </div>
+        <div class="skeleton-table-row" *ngFor="let _ of [1,2,3,4,5,6,7]">
+          <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 13%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 9%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+      <p class="empty-state-title">No activities found</p>
+      <p class="empty-state-message">
+        Create an activity using the button above, or adjust your filters.
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="activity-table mat-elevation-z2">
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef aria-label="Type"></th>
+          <td mat-cell *matCellDef="let row">
+            <mat-icon *ngIf="row.type" class="activity-type-icon" [style.color]="getActivityTypeColor(row.type)" [matTooltip]="formatType(row.type)" matTooltipPosition="above">{{ getActivityTypeIcon(row.type) }}</mat-icon>
+            <span *ngIf="!row.type">—</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Title</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.title ?? '—'">{{ row.title ?? '—' }}</div></td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.description ?? '—'">{{ row.description ?? '—' }}</div></td>
+        </ng-container>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatDateRange(row)">{{ formatDateRange(row) }}</div></td>
+        </ng-container>
+        <ng-container matColumnDef="time">
+          <th mat-header-cell *matHeaderCellDef>Time</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatTimeRange(row)">{{ formatTimeRange(row) }}</div></td>
+        </ng-container>
+        <ng-container matColumnDef="location">
+          <th mat-header-cell *matHeaderCellDef>Venue</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.location ?? '—'">{{ row.location ?? '—' }}</div></td>
+        </ng-container>
+        <ng-container matColumnDef="schoolLogo">
+          <th mat-header-cell *matHeaderCellDef aria-label="School logo"></th>
+          <td mat-cell *matCellDef="let row" class="school-logo-cell">
+            <img
+              *ngIf="getSchoolLogoUrl(row) && !hasLogoError(row)"
+              [src]="getSchoolLogoUrl(row)"
+              alt=""
+              class="school-logo"
+              (error)="onLogoError(row)">
+            <mat-icon *ngIf="!getSchoolLogoUrl(row) || hasLogoError(row)" class="school-logo-placeholder">school</mat-icon>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="school">
+          <th mat-header-cell *matHeaderCellDef>School</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatSchool(row)">{{ formatSchool(row) }}</div></td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row" class="actions-cell">
+            <button *ngIf="row._id && canEditActivity(row)"
+                    mat-icon-button
+                    class="action-edit"
+                    type="button"
+                    matTooltip="Edit"
+                    aria-label="Edit activity"
+                    (click)="onEdit(row)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button *ngIf="row._id && canDeleteActivity(row)"
+                    mat-icon-button
+                    class="action-delete"
+                    type="button"
+                    matTooltip="Delete"
+                    aria-label="Delete activity"
+                    (click)="onDelete(row)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</mat-card>

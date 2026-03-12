@@ -1,0 +1,141 @@
+<div class="activity-form-wrapper" [class.dialog-mode]="isDialogMode">
+  <header class="dialog-header" *ngIf="isDialogMode">
+    <h2 mat-dialog-title class="dialog-title">{{ isEdit ? 'Edit' : 'Create' }} Activity</h2>
+    <button mat-icon-button class="dialog-close-btn" (click)="onCancel()" [disabled]="isSaving"
+            matTooltip="Close"
+            matTooltipPosition="below"
+            aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="container dialog-content-area" [class.dialog-container]="isDialogMode">
+    <div class="modal-form-container">
+      <mat-card class="form-card" [class.dialog-card]="isDialogMode">
+        <mat-card-title *ngIf="!isDialogMode">{{ isEdit ? 'Edit' : 'Create' }} Activity</mat-card-title>
+        <mat-card-content>
+          <div *ngIf="isLoading" class="skeleton-loading" aria-hidden="true">
+            <section class="skeleton-section">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-field"></div>
+              <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+              <div class="skeleton skeleton-field"></div>
+              <div class="skeleton-row">
+                <div class="skeleton skeleton-field skeleton-field-half"></div>
+                <div class="skeleton skeleton-field skeleton-field-half"></div>
+              </div>
+              <div class="skeleton skeleton-field"></div>
+              <div class="skeleton skeleton-field"></div>
+            </section>
+          </div>
+
+          <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="onSubmit()">
+            <section class="form-section">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Type</mat-label>
+                <mat-select formControlName="type" placeholder="Select type">
+                  <mat-option *ngFor="let t of activityTypes" [value]="t">{{ getActivityTypeLabel(t) }}</mat-option>
+                </mat-select>
+                <mat-error *ngIf="form.get('type')?.hasError('required')">Type is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Stakeholder</mat-label>
+                <input matInput
+                       formControlName="stakeholderId"
+                       [matAutocomplete]="stakeholderAuto"
+                       (input)="onStakeholderInput($event)"
+                       placeholder="Search by name or email">
+                <mat-autocomplete #stakeholderAuto="matAutocomplete"
+                                 [displayWith]="displayStakeholderFn"
+                                 (optionSelected)="onStakeholderOptionSelected($event.option.value)">
+                  <mat-option *ngFor="let user of filteredUsers" [value]="user._id">
+                    {{ getStakeholderDisplayName(user) }}
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="form.get('stakeholderId')?.hasError('required')">Stakeholder is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Title</mat-label>
+                <input matInput formControlName="title" placeholder="Activity title">
+                <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="3" placeholder="Description"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Venue</mat-label>
+                <input matInput formControlName="location" placeholder="Venue">
+              </mat-form-field>
+            </section>
+
+            <section class="form-section">
+              <div class="field-group">
+                <h3 class="field-group-title">Date</h3>
+                <div class="checkbox-row">
+                  <mat-checkbox formControlName="hasEndDate">Add end date</mat-checkbox>
+                </div>
+                <div class="row">
+                  <mat-form-field appearance="outline" [class.half-width]="form.get('hasEndDate')?.value" [class.full-width]="!form.get('hasEndDate')?.value">
+                    <mat-label>Start date</mat-label>
+                    <input matInput [matDatepicker]="startPicker" formControlName="startDate" placeholder="Date">
+                    <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startPicker startView="month" panelClass="activity-datepicker-overlay"></mat-datepicker>
+                    <mat-error *ngIf="form.get('startDate')?.hasError('required')">Date is required.</mat-error>
+                  </mat-form-field>
+                  <mat-form-field *ngIf="form.get('hasEndDate')?.value" appearance="outline" class="half-width">
+                    <mat-label>End date</mat-label>
+                    <input matInput [matDatepicker]="endPicker" formControlName="endDate" placeholder="End date">
+                    <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker startView="month" panelClass="activity-datepicker-overlay"></mat-datepicker>
+                    <mat-error *ngIf="form.get('endDate')?.hasError('dateOrder')">End date must be on or after start date.</mat-error>
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <div class="checkbox-row include-time-row">
+                <mat-checkbox formControlName="hasTime">Include time</mat-checkbox>
+              </div>
+
+              <div *ngIf="form.get('hasTime')?.value" class="field-group">
+                <h3 class="field-group-title">Time</h3>
+                <div class="checkbox-row">
+                  <mat-checkbox formControlName="hasTimeRange">Time range</mat-checkbox>
+                </div>
+                <div class="row">
+                    <mat-form-field appearance="outline" [class.half-width]="form.get('hasTimeRange')?.value" [class.full-width]="!form.get('hasTimeRange')?.value">
+                      <mat-label>Start time</mat-label>
+                      <input matInput [matTimepicker]="startTimePicker" formControlName="startTimeValue" placeholder="Time">
+                      <mat-timepicker-toggle matIconSuffix [for]="startTimePicker"></mat-timepicker-toggle>
+                      <mat-timepicker #startTimePicker interval="15m"></mat-timepicker>
+                    </mat-form-field>
+                    <mat-form-field *ngIf="form.get('hasTimeRange')?.value" appearance="outline" class="half-width">
+                      <mat-label>End time</mat-label>
+                      <input matInput [matTimepicker]="endTimePicker" formControlName="endTimeValue" placeholder="End time">
+                      <mat-timepicker-toggle matIconSuffix [for]="endTimePicker"></mat-timepicker-toggle>
+                      <mat-timepicker #endTimePicker interval="15m"></mat-timepicker>
+                      <mat-error *ngIf="form.get('endTimeValue')?.hasError('timeOrder')">End time must be on or after start time.</mat-error>
+                    </mat-form-field>
+                </div>
+              </div>
+            </section>
+
+            <div class="button-group" [class.dialog-actions]="isDialogMode" [attr.role]="isDialogMode ? 'group' : null" [attr.aria-label]="isDialogMode ? 'Form actions' : null">
+              <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isSaving" class="submit-btn">
+                <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+                {{ isEdit ? 'Update' : 'Create' }} Activity
+              </button>
+              <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving" class="cancel-btn">
+                Cancel
+              </button>
+            </div>
+            <p *ngIf="missingRequiredFields.length > 0" class="missing-fields-hint">
+              <mat-icon class="caution-icon">warning</mat-icon>
+              <small>Required fields not yet set: {{ missingRequiredFields.join(', ') }}</small>
+            </p>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

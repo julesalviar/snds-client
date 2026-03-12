@@ -76,6 +76,12 @@
       </li>
 
       <li><a routerLink="/school-admin/quick-count" (click)="closeMenu()" >Quick Count</a></li>
+      <li>
+        <button mat-button [matMenuTriggerFor]="activitiesMenu" class="menu-trigger">Activities</button>
+        <mat-menu #activitiesMenu="matMenu">
+          <button mat-menu-item [routerLink]="['/school-admin/activities']" (click)="closeMenu()">Manage Activities</button>
+        </mat-menu>
+      </li>
       <li><a routerLink="/school-admin/reports" (click)="closeMenu()">Reports</a></li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="schoolAdminSupportMenu" class="menu-trigger">Support</button>
@@ -110,6 +116,7 @@
           <button mat-menu-item [routerLink]="['/division-admin/manage-district']" (click)="closeMenu()">Manage District</button>
           <button mat-menu-item [routerLink]="['/division-admin/manage-users']" (click)="closeMenu()">Manage Users</button>
           <button mat-menu-item [routerLink]="['/division-admin/manage-schools']" (click)="closeMenu()">Manage Schools</button>
+          <button mat-menu-item [routerLink]="['/division-admin/activities']" (click)="closeMenu()">Activities</button>
         </mat-menu>
       </li>
     </ng-container>

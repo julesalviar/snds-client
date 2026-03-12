@@ -27,5 +27,6 @@ export const API_ENDPOINT = {
   },
   reports: `${environment.API_URL}/reports`,
   ppaPlan: `${environment.API_URL}/ppa-plan`,
+  activity: `${environment.API_URL}/activity`,
   offices: `${environment.API_URL}/offices`,
 }
