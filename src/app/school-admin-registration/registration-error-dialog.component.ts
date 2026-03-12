@@ -6,7 +6,6 @@ import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-registration-error-dialog',
-  standalone: true,
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
     <h2 mat-dialog-title>

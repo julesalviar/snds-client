@@ -19,7 +19,6 @@ import { maskContactNumber } from '../../common/string-utils';
 
 @Component({
   selector: 'app-all-school',
-  standalone: true,
   imports: [
     MatTable,
     CommonModule,
@@ -36,7 +35,7 @@ import { maskContactNumber } from '../../common/string-utils';
     MatProgressBarModule
   ],
   templateUrl: './all-school.component.html',
-  styleUrls: ['./all-school.component.css']
+  styleUrls: ['./all-school.component.css'],
 })
 export class AllSchoolComponent implements OnInit {
   displayedColumns: string[] = ['needsIndicator', 'logo', 'schoolName', 'schoolId', 'accountableName', 'designation', 'contactNumber', 'actions'];

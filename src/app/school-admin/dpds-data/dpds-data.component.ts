@@ -35,7 +35,6 @@ export interface ColumnCategory {
 
 @Component({
   selector: 'app-dpds-data',
-  standalone: true,
   templateUrl: './dpds-data.component.html',
   styleUrls: ['./dpds-data.component.css'],
   encapsulation: ViewEncapsulation.None,
@@ -57,8 +56,8 @@ export interface ColumnCategory {
     MatIconModule,
     MatMenuModule,
     MatTooltipModule,
-    MatCardModule
-  ],
+    MatCardModule,
+  ]
 })
 export class DpdsDataComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;

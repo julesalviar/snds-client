@@ -6,7 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { Office } from '../../common/model/office.model';
 
 @Component({
-  standalone: true,
   selector: 'app-office-division-submenu',
   imports: [CommonModule, RouterModule, MatMenuModule, MatButtonModule],
   template: `

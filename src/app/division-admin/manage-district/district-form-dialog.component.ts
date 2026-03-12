@@ -14,7 +14,6 @@ export interface DistrictFormDialogData {
 
 @Component({
   selector: 'app-district-form-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

@@ -15,7 +15,6 @@ import { DistrictFormDialogComponent, DistrictFormDialogData } from './district-
 
 @Component({
   selector: 'app-manage-district',
-  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,

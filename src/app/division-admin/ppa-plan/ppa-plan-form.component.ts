@@ -51,7 +51,6 @@ function implementationDateRangeValidator(control: AbstractControl): ValidationE
 
 @Component({
   selector: 'app-ppa-plan-form',
-  standalone: true,
   providers: [provideNativeDateAdapter()],
   imports: [
     CommonModule,
@@ -71,7 +70,7 @@ function implementationDateRangeValidator(control: AbstractControl): ValidationE
     MatDatepickerModule,
   ],
   templateUrl: './ppa-plan-form.component.html',
-  styleUrl: './ppa-plan-form.component.css',
+  styleUrl: './ppa-plan-form.component.css'
 })
 export class PpaPlanFormComponent implements OnInit, OnDestroy {
   form: FormGroup;

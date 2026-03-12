@@ -18,7 +18,6 @@ import { AIP_STATUSES } from '../../../common/enums/aip-status.enum';
 
 @Component({
   selector: 'app-aip-edit',
-  standalone: true,
   imports: [
     CommonModule,
     MatFormFieldModule,
@@ -27,10 +26,10 @@ import { AIP_STATUSES } from '../../../common/enums/aip-status.enum';
     MatButtonModule,
     MatCardModule,
     ReactiveFormsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
   ],
   templateUrl: './aip-edit.component.html',
-  styleUrls: ['./aip-edit.component.css']
+  styleUrls: ['./aip-edit.component.css'],
 })
 export class AipEditComponent implements OnInit {
   aipForm: FormGroup;

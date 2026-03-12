@@ -14,7 +14,6 @@ import {Report, ReportTemplate, ReportTemplateParameter} from "../../../common/m
 
 @Component({
   selector: 'app-basic-report',
-  standalone: true,
   templateUrl: './basic-report.component.html',
   imports: [
     MatTable,
@@ -30,7 +29,7 @@ import {Report, ReportTemplate, ReportTemplateParameter} from "../../../common/m
     NgForOf,
     NgIf
   ],
-  styleUrls: ['./basic-report.component.css', '../../reports.component.css']
+  styleUrls: ['./basic-report.component.css', '../../reports.component.css'],
 })
 export class BasicReportComponent {
   protected data: any[] = [];

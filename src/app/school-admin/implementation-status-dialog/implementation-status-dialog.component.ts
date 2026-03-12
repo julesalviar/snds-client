@@ -10,7 +10,6 @@ import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-implementation-status-dialog',
-  standalone: true,
   templateUrl: './implementation-status-dialog.component.html',
   styleUrls: ['./implementation-status-dialog.component.css'],
   imports: [
@@ -23,7 +22,7 @@ import { MatInputModule } from '@angular/material/input';
     MatNativeDateModule,
     FormsModule,
     MatDatepickerToggle
-  ],
+  ]
 })
 export class ImplementationStatusDialogComponent {
   selectedStatus: string = '';

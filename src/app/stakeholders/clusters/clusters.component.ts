@@ -19,7 +19,6 @@ import { ZeroReplacePipe } from '../../common/pipes/zero-replace.pipe';
 
 @Component({
   selector: 'app-clusters',
-  standalone: true,
   imports: [
     MatTable,
     CommonModule,
@@ -35,10 +34,10 @@ import { ZeroReplacePipe } from '../../common/pipes/zero-replace.pipe';
     MatSelectModule,
     FormsModule,
     MatProgressBarModule,
-    ZeroReplacePipe
+    ZeroReplacePipe,
   ],
   templateUrl: './clusters.component.html',
-  styleUrls: ['./clusters.component.css']
+  styleUrls: ['./clusters.component.css'],
 })
 export class ClustersComponent implements OnInit {
   displayedColumns: string[] = ['logo', 'schoolName', 'schoolId', 'accountableName', 'designation', 'ppasEncoded', 'ppasAccomplished', 'needsEncoded', 'needsAccomplished', 'generatedResources', 'actions'];

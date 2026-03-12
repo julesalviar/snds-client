@@ -23,7 +23,6 @@ import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 
 @Component({
   selector: 'app-school-needs-engage',
-  standalone: true,
   imports: [
     CommonModule,
     MatOption,
@@ -47,7 +46,7 @@ import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
     MatSelectModule
   ],
   templateUrl: './school-needs-engage.component.html',
-  styleUrls: ['./school-needs-engage.component.css']
+  styleUrls: ['./school-needs-engage.component.css'],
 })
 export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   schoolNeed: SchoolNeed | undefined;

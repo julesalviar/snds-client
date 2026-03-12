@@ -12,7 +12,6 @@ import { AuthService } from './auth/auth.service';
 import {UserType} from "./registration/user-type.enum";
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [CommonModule, MatButtonModule, RouterModule, NavigationComponent, MatTreeModule, MatBadgeModule, FooterComponent ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],

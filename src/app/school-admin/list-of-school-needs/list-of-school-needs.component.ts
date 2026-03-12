@@ -19,7 +19,6 @@ import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/c
 
 @Component({
   selector: 'app-list-of-school-needs',
-  standalone: true,
   imports: [
     CommonModule,
     MatTableModule,
@@ -36,7 +35,7 @@ import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/c
     MatBadgeModule
   ],
   templateUrl: './list-of-school-needs.component.html',
-  styleUrls: ['./list-of-school-needs.component.css']
+  styleUrls: ['./list-of-school-needs.component.css'],
 })
 export class ListOfSchoolNeedsComponent implements OnInit {
   displayedColumns: string[] = [

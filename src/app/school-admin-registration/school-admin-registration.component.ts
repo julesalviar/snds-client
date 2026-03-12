@@ -20,7 +20,6 @@ import {InternalReferenceDataService} from "../common/services/internal-referenc
 
 @Component({
   selector: 'app-school-admin-registration',
-  standalone: true,
   templateUrl: './school-admin-registration.component.html',
   styleUrls: ['./school-admin-registration.component.css'],
   imports: [

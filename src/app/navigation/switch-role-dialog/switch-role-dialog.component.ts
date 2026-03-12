@@ -20,7 +20,6 @@ export interface SwitchRoleDialogData {
 
 @Component({
   selector: 'app-switch-role-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     MatDialogModule,
@@ -31,7 +30,7 @@ export interface SwitchRoleDialogData {
     MatProgressSpinnerModule
   ],
   templateUrl: './switch-role-dialog.component.html',
-  styleUrls: ['./switch-role-dialog.component.css']
+  styleUrls: ['./switch-role-dialog.component.css'],
 })
 export class SwitchRoleDialogComponent implements OnInit {
   selectedRole: string = '';

@@ -18,7 +18,6 @@ import autoTable from "jspdf-autotable";
 
 @Component({
   selector: 'app-reports',
-  standalone: true,
   imports: [
     NgClass,
     ReactiveFormsModule,

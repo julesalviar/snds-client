@@ -29,7 +29,6 @@ import {MatChipsModule} from '@angular/material/chips';
 
 @Component({
   selector: 'app-school-need',
-  standalone: true,
   imports: [
     MatNativeDateModule,
     ReactiveFormsModule,
@@ -44,10 +43,10 @@ import {MatChipsModule} from '@angular/material/chips';
     MatCardTitle,
     MatIcon,
     MatProgressBar,
-    MatChipsModule
+    MatChipsModule,
   ],
   templateUrl: './school-need.component.html',
-  styleUrl: './school-need.component.css'
+  styleUrl: './school-need.component.css',
 })
 export class SchoolNeedComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
@@ -71,7 +70,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   filteredSpecificContributions: string[] = [];
   contributionTreeData: any[] = [];
   previousContributionType: string = '';
-  
+
   selectedProjectIds: string[] = [];
 
   private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
@@ -236,7 +235,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     console.log('Populating form with school need:', this.schoolNeed);
 
     // Extract project IDs from the array
-    this.selectedProjectIds = this.schoolNeed.projectId.map(project => 
+    this.selectedProjectIds = this.schoolNeed.projectId.map(project =>
       typeof project === 'object' ? project._id : project
     );
 

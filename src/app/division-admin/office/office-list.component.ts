@@ -24,7 +24,6 @@ import { OfficeFormComponent } from './office-form.component';
 
 @Component({
   selector: 'app-office-list',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

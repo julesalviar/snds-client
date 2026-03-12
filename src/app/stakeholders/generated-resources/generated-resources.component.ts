@@ -21,7 +21,6 @@ import {AuthService} from "../../auth/auth.service";
 
 @Component({
   selector: 'app-generated-resources',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -38,7 +37,7 @@ import {AuthService} from "../../auth/auth.service";
     MatDividerModule
   ],
   templateUrl: './generated-resources.component.html',
-  styleUrls: ['./generated-resources.component.css']
+  styleUrls: ['./generated-resources.component.css'],
 })
 export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
 

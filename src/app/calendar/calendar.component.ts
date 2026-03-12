@@ -18,10 +18,8 @@ import { AuthService } from '../auth/auth.service';
 import { UserType } from '../registration/user-type.enum';
 import { CalendarNavigationService } from '../common/services/calendar-navigation.service';
 
-/** Calendar UI inspired by calendar.google.com. Tasks are PPA plans. */
 @Component({
   selector: 'app-calendar',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,

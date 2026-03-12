@@ -13,6 +13,14 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "canvg",
+              "jspdf",
+              "html2canvas",
+              "raf",
+              "rgbcolor",
+              "core-js"
+            ],
             "outputPath": "dist/sndsapp",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -44,7 +52,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "2mb",
-                  "maximumError": "2.5mb"
+                  "maximumError": "2.6mb"
                 },
                 {
                   "type": "anyComponentStyle",

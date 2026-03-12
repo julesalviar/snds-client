@@ -21,7 +21,6 @@ import {formatDateString} from "../../common/date-utils";
 
 @Component({
   selector: 'app-manage-schools',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

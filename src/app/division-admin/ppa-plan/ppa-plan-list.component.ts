@@ -45,7 +45,6 @@ export interface ColumnCategory {
 
 @Component({
   selector: 'app-ppa-plan-list',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

@@ -13,7 +13,6 @@ export interface ConfirmDialogData {
 
 @Component({
   selector: 'app-confirm-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     MatDialogActions,
@@ -23,7 +22,7 @@ export interface ConfirmDialogData {
     MatIconModule
   ],
   templateUrl: './confirm-dialog.component.html',
-  styleUrls: ['./confirm-dialog.component.css']
+  styleUrls: ['./confirm-dialog.component.css'],
 })
 export class ConfirmDialogComponent {
   constructor(

@@ -8,7 +8,6 @@ import {getSchoolYear} from '../../../common/date-utils';
 
 @Component({
   selector: 'app-school-year-select',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatFormField, MatLabel, MatSelect, MatSelectModule, MatOption],
   template: `
     <mat-form-field appearance="outline">

@@ -9,13 +9,12 @@ export interface ConfirmDeleteData {
 
 @Component({
   selector: 'app-confirm-delete-dialog',
-  standalone: true,
   imports: [
     MatDialogModule,
-    MatButtonModule
+    MatButtonModule,
   ],
   templateUrl: './confirm-delete-dialog.component.html',
-  styleUrl: './confirm-delete-dialog.component.css'
+  styleUrl: './confirm-delete-dialog.component.css',
 })
 export class ConfirmDeleteDialogComponent {
   title: string;

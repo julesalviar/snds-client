@@ -45,7 +45,6 @@ interface OfficeTableData {
 
 @Component({
     selector: 'app-office-table',
-    standalone: true,
     imports: [
         CommonModule,
         MatHeaderCell,

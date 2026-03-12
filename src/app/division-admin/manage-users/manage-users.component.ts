@@ -35,7 +35,6 @@ import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/c
 
 @Component({
   selector: 'app-manage-users',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

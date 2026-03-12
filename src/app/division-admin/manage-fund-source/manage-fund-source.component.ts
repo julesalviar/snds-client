@@ -23,7 +23,6 @@ export interface FundSourceRow {
 
 @Component({
   selector: 'app-manage-fund-source',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

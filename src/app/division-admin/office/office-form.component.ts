@@ -17,7 +17,6 @@ import { InternalReferenceDataService } from '../../common/services/internal-ref
 
 @Component({
   selector: 'app-office-form',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

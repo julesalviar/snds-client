@@ -5,8 +5,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
-import { ReactiveFormsModule } from '@angular/forms'; 
-import { CommonModule } from '@angular/common'; 
+import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 
 interface Stakeholder {
@@ -15,8 +15,7 @@ interface Stakeholder {
 
 @Component({
   selector: 'app-quick-count',
-  standalone: true,
-  imports:[
+  imports: [
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -28,8 +27,7 @@ interface Stakeholder {
     MatCard
   ],
   templateUrl: './quick-count.component.html',
-  styleUrls: ['./quick-count.component.css']
-
+  styleUrls: ['./quick-count.component.css'],
 })
 export class QuickCountComponent {
   count: number = 0;

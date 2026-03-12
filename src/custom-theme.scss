@@ -7,7 +7,8 @@
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 // Define the theme object.
 $sndsapp-theme: mat.define-theme((
@@ -24,7 +25,8 @@ $sndsapp-theme: mat.define-theme((
 // Include theme styles for core and each component used in your app.
 // Only include the components that are actually used to reduce bundle size
 :root {
-  @include mat.core-theme($sndsapp-theme);
+  @include mat.elevation-classes();
+  @include mat.app-background();
   @include mat.form-field-theme($sndsapp-theme);
   @include mat.input-theme($sndsapp-theme);
   @include mat.button-theme($sndsapp-theme);
@@ -36,6 +38,8 @@ $sndsapp-theme: mat.define-theme((
   @include mat.paginator-theme($sndsapp-theme);
   @include mat.select-theme($sndsapp-theme);
   @include mat.datepicker-theme($sndsapp-theme);
+  @include mat.option-theme($sndsapp-theme);
+  @include mat.timepicker-theme($sndsapp-theme);
   @include mat.autocomplete-theme($sndsapp-theme);
   @include mat.chips-theme($sndsapp-theme);
   @include mat.progress-bar-theme($sndsapp-theme);
@@ -56,3 +60,12 @@ $sndsapp-theme: mat.define-theme((
 
 // Comment out the line below if you want to use the deprecated `color` inputs.
 // @include mat.color-variants-backwards-compatibility($sndsapp-theme);
+
+// Timepicker dropdown: ensure option hover highlight is visible (panel is in overlay)
+.mat-timepicker-panel .mat-mdc-option:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.mat-timepicker-panel .mat-mdc-option.mdc-list-item--selected:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+

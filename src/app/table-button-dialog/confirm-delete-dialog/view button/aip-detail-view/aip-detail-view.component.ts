@@ -8,10 +8,9 @@ import {Aip} from "../../../../common/model/aip.model";
 
 @Component({
   selector: 'app-aip-detail-view',
-  standalone: true,
-  imports: [ MatCardTitle, MatCard, MatCardContent, ReactiveFormsModule, CommonModule ],
+  imports: [MatCardTitle, MatCard, MatCardContent, ReactiveFormsModule, CommonModule],
   templateUrl: './aip-detail-view.component.html',
-  styleUrl: './aip-detail-view.component.css'
+  styleUrl: './aip-detail-view.component.css',
 })
 export class AipDetailViewComponent {
   constructor(

@@ -9,7 +9,6 @@ import { SchoolAdminRegistrationComponent } from '../school-admin-registration/s
 
 @Component({
   selector: 'app-close-registration',
-  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,

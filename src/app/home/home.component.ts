@@ -68,7 +68,6 @@ export interface HomeState {
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [CommonModule, MatBadgeModule, MatIcon, MatProgressBarModule, MatCardModule, RouterLink],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],

@@ -25,7 +25,6 @@ const MAX_EMAILS = 10;
 
 @Component({
   selector: 'app-invite-user-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

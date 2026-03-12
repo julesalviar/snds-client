@@ -18,7 +18,6 @@ export interface PpaPlanContextDialogData {
 
 @Component({
   selector: 'app-ppa-plan-context-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     MatDialogModule,

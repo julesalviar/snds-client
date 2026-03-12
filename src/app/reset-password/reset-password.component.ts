@@ -13,7 +13,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-reset-password',
-  standalone: true,
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
   imports: [
@@ -52,7 +51,7 @@ export class ResetPasswordComponent implements OnInit {
   ngOnInit() {
     // Extract token from query parameters
     this.token = this.route.snapshot.queryParams['token'];
-    
+
     if (!this.token) {
       this.isError = true;
       this.errorMessage = 'Invalid or missing reset token. Please request a new password reset.';
@@ -62,11 +61,11 @@ export class ResetPasswordComponent implements OnInit {
   passwordMatchValidator(form: AbstractControl): ValidationErrors | null {
     const newPassword = form.get('newPassword')?.value;
     const confirmPassword = form.get('confirmPassword')?.value;
-    
+
     if (!newPassword || !confirmPassword) {
       return null;
     }
-    
+
     return newPassword === confirmPassword ? null : { mismatch: true };
   }
 
@@ -81,7 +80,7 @@ export class ResetPasswordComponent implements OnInit {
   onSubmit() {
     if (this.resetPasswordForm.valid && this.token) {
       const newPassword = this.resetPasswordForm.get('newPassword')?.value;
-      
+
       this.isSubmitting = true;
       this.isError = false;
       this.isSuccess = false;
@@ -95,7 +94,7 @@ export class ResetPasswordComponent implements OnInit {
           this.isSubmitting = false;
           this.isSuccess = true;
           this.showSuccessNotification('Password reset successfully! Redirecting to sign in...');
-          
+
           // Redirect to sign-in after 2 seconds
           setTimeout(() => {
             this.router.navigate(['/sign-in']);

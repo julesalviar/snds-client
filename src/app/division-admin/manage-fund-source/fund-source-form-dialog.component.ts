@@ -14,7 +14,6 @@ export interface FundSourceFormDialogData {
 
 @Component({
   selector: 'app-fund-source-form-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

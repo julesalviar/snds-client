@@ -27,7 +27,6 @@ import {AIP_STATUSES} from "../../common/enums/aip-status.enum";
 
 @Component({
   selector: 'app-aip',
-  standalone: true,
   imports: [MatFormField, CommonModule, MatFormFieldModule, MatTooltipModule, MatInputModule, MatSelectModule, MatButtonModule, MatCardModule, ReactiveFormsModule, MatIconButton, MatTableModule, MatIcon, MatPaginator, MatProgressBarModule],
   templateUrl: './aip.component.html',
   styleUrls: ['./aip.component.css'],

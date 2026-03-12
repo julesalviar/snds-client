@@ -9,7 +9,6 @@ import {InternalReferenceDataService} from '../../../common/services/internal-re
 
 @Component({
   selector: 'app-schools-select',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatFormField, MatLabel, MatSelect, MatSelectModule, MatOption],
   template: `
     <div class="schools-group">

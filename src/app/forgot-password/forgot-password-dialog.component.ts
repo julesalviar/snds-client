@@ -12,7 +12,6 @@ import { API_ENDPOINT } from '../common/api-endpoints';
 
 @Component({
   selector: 'app-forgot-password-dialog',
-  standalone: true,
   templateUrl: './forgot-password-dialog.component.html',
   styleUrls: ['./forgot-password-dialog.component.css'],
   imports: [
@@ -58,7 +57,7 @@ export class ForgotPasswordDialogComponent {
   onSend() {
     if (this.forgotPasswordForm.valid) {
       const email = this.forgotPasswordForm.get('email')?.value?.trim() ?? '';
-      
+
       this.isSubmitting = true;
       this.isError = false;
       this.isSuccess = false;

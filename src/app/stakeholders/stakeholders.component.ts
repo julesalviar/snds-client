@@ -14,7 +14,6 @@ import {SchoolNeedService} from "../common/services/school-need.service";
 
 @Component({
   selector: 'app-stakeholders',
-  standalone: true,
   imports: [
     CommonModule,
     MatTableModule,

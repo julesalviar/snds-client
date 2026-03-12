@@ -35,7 +35,6 @@ import {UserType} from "../registration/user-type.enum";
 
 @Component({
   selector: 'app-school-admin',
-  standalone: true,
   imports: [
     MatNativeDateModule,
     ReactiveFormsModule,
@@ -56,7 +55,7 @@ import {UserType} from "../registration/user-type.enum";
     MatChipsModule
   ],
   templateUrl: './school-admin.component.html',
-  styleUrls: ['./school-admin.component.css']
+  styleUrls: ['./school-admin.component.css'],
 })
 export class SchoolAdminComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;

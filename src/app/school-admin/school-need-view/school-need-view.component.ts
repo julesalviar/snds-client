@@ -25,7 +25,6 @@ interface ImplementationStatus {
 
 @Component({
   selector: 'app-school-need-view',
-  standalone: true,
   imports: [
     MatCardModule,
     MatIconModule,
@@ -40,11 +39,9 @@ interface ImplementationStatus {
     UpperCasePipe,
     CurrencyPipe,
     DatePipe
-
   ],
   templateUrl: './school-need-view.component.html',
-  styleUrls: ['./school-need-view.component.css']
-
+  styleUrls: ['./school-need-view.component.css'],
 })
 export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();

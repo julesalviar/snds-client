@@ -22,10 +22,9 @@ interface AboutContent {
 
 @Component({
   selector: 'app-about-us',
-  standalone: true,
   imports: [MatCardModule, CommonModule, SafeUrlPipe],
   templateUrl: './about-us.component.html',
-  styleUrl: './about-us.component.css'
+  styleUrl: './about-us.component.css',
 })
 export class AboutUsComponent implements OnInit {
   contacts: Contact[] = [];

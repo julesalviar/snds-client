@@ -11,7 +11,6 @@ const OPEN_REGISTRATION_KEY = 'openRegistration';
 
 @Component({
   selector: 'app-open-registration',
-  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,

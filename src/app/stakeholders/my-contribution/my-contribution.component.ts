@@ -27,7 +27,6 @@ import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-my-contribution',
-  standalone: true,
   templateUrl: './my-contribution.component.html',
   styleUrls: ['./my-contribution.component.css'],
   imports: [CommonModule,
@@ -46,7 +45,7 @@ import {Router} from "@angular/router";
     MatProgressBarModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatTooltipModule]
+    MatTooltipModule],
 })
 export class MyContributionComponent implements OnInit {
   displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements', 'mov', 'feedback', 'actions'];

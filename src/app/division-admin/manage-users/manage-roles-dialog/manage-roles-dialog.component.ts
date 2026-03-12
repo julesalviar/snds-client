@@ -28,7 +28,6 @@ export interface ManageRolesDialogData {
 
 @Component({
   selector: 'app-manage-roles-dialog',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,

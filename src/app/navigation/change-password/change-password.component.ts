@@ -13,7 +13,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-change-password',
-  standalone: true,
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.css'],
   imports: [MatFormFieldModule, MatError, MatInputModule, CommonModule, ReactiveFormsModule, MatButtonModule, MatIcon]

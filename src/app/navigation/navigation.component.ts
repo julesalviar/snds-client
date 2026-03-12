@@ -19,7 +19,6 @@ import {InternalReferenceDataService} from "../common/services/internal-referenc
 import {Office} from "../common/model/office.model";
 import {OfficeDivisionSubmenuComponent} from "./office-division-submenu/office-division-submenu.component";
 @Component({
-  standalone: true,
   selector: 'app-navigation',
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.css'],
@@ -35,7 +34,7 @@ import {OfficeDivisionSubmenuComponent} from "./office-division-submenu/office-d
   ]
 })
 export class NavigationComponent implements OnInit {
-  @Output() aipClicked = new EventEmitter<void>(); 
+  @Output() aipClicked = new EventEmitter<void>();
   isMenuOpen = false;
   userType = UserType;
   tenant = Tenant;
@@ -110,7 +109,7 @@ export class NavigationComponent implements OnInit {
   }
 
   handleAipClick(): void {
-    this.aipClicked.emit(); 
+    this.aipClicked.emit();
   }
 
   getOfficesForDivision(division: string): Office[] {
@@ -188,7 +187,7 @@ export class NavigationComponent implements OnInit {
   getUserInitials(): string {
     const name = this.authService.getName();
     const username = this.authService.getUsername();
-    
+
     if (name && name.trim()) {
       const parts = name.trim().split(' ');
       if (parts.length >= 2) {
@@ -196,14 +195,14 @@ export class NavigationComponent implements OnInit {
       }
       return name.substring(0, 2).toUpperCase();
     }
-    
+
     if (username && username.trim()) {
       return username.substring(0, 2).toUpperCase();
     }
-    
+
     return 'U';
   }
-    
+
 
   getProfileImageUrl(): string | null {
     // Placeholder for future image URL retrieval

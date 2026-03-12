@@ -37,7 +37,6 @@ export function passwordMatchValidator(): ValidatorFn {
 
 @Component({
   selector: 'app-registration',
-  standalone: true,
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.css'],
   imports: [
