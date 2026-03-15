@@ -49,6 +49,13 @@ app-ppa-plan-list mat-card-title {
   align-self: center;
 }
 
+.date-range-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .clear-button {
   margin-left: 0;
 }
@@ -240,6 +247,13 @@ app-ppa-plan-list mat-card-title {
   line-height: 1.4;
   max-height: 5.6em;
   word-break: break-word;
+}
+
+.cdk-column-implementationStartDate {
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  min-width: 190px;
 }
 
 .actions-cell {

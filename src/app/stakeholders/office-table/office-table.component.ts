@@ -9,8 +9,6 @@ import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
-import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
@@ -60,10 +58,7 @@ interface OfficeTableData {
         MatOption,
         MatLabel,
         MatInputModule,
-        FormsModule,
-        MatDatepicker,
-        MatDatepickerModule,
-        MatNativeDateModule
+        FormsModule
     ],
     templateUrl: './office-table.component.html',
     styleUrls: ['./office-table.component.css']
@@ -76,16 +71,11 @@ export class OfficeTableComponent implements OnInit {
     filteredOfficeTableData: MatTableDataSource<OfficeTableData>;
     isLoading: boolean = true;
     selectedRowIndex: number | null = null;
-    isCustomRangeVisible: boolean = true;
 
     filters = {
-        startDate: null,
-        endDate: null,
-        dateRangeOption: 'custom',
         classification: '',
         fundSource: '',
         implementationStatus: '',
-        yearRange: '',
         remarks: ''
     };
 
@@ -180,78 +170,7 @@ export class OfficeTableComponent implements OnInit {
     applyFilter(): void {
         let filteredData = this.officeTableData;
 
-
-        // Apply Year Range filter
-        if (this.filters.yearRange) {
-            const [startYear, endYear] = this.filters.yearRange.split('-').map(Number);
-            const startDateRange = new Date(startYear, 0, 1); // January 1st of the start year
-            const endDateRange = new Date(endYear, 11, 31); // December 31st of the end year
-
-            filteredData = filteredData.filter(item => {
-                const dateOfImplementation = new Date(item.dateOfImplementation);
-                return dateOfImplementation >= startDateRange && dateOfImplementation <= endDateRange;
-            });
-        }
-
-        // Handle date range option filtering
-        let startDate: Date | null = null;
-        let endDate: Date | null = null;
-        if (this.filters.dateRangeOption === 'custom') {
-        startDate = this.filters.startDate ? new Date(this.filters.startDate) : null;
-        endDate = this.filters.endDate ? new Date(this.filters.endDate) : null;
-    }
-
-        const today = new Date();
-        switch (this.filters.dateRangeOption) {
-            case 'thisMonth':
-                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                break;
-            case 'lastMonth':
-                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
-                break;
-            case 'thisQuarter':
-                const quarterStart = Math.floor(today.getMonth() / 3) * 3;
-                startDate = new Date(today.getFullYear(), quarterStart, 1);
-                endDate = new Date(today.getFullYear(), quarterStart + 3, 0);
-                break;
-            case 'lastQuarter':
-                const lastQuarterStart = Math.floor((today.getMonth() - 3) / 3) * 3;
-                startDate = new Date(today.getFullYear(), lastQuarterStart, 1);
-                endDate = new Date(today.getFullYear(), lastQuarterStart + 3, 0);
-                break;
-            case 'thisYear':
-                startDate = new Date(today.getFullYear(), 0, 1);
-                endDate = new Date(today.getFullYear(), 12, 0);
-                break;
-            case 'lastYear':
-                startDate = new Date(today.getFullYear() - 1, 0, 1);
-                endDate = new Date(today.getFullYear(), 0, 0);
-                break;
-            case 'last3Months':
-                startDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-                endDate = today;
-                break;
-            case 'last6Months':
-                startDate = new Date(today.getFullYear(), today.getMonth() - 5, 1);
-                endDate = today;
-                break;
-            case 'custom':
-                startDate = this.filters.startDate ? new Date(this.filters.startDate) : null;
-                endDate = this.filters.endDate ? new Date(this.filters.endDate) : null;
-                break;
-        }
-
-        // If we have valid start and end dates, filter the data
-        if (startDate && endDate) {
-            filteredData = filteredData.filter(item => {
-                const dateOfImplementation = new Date(item.dateOfImplementation);
-                return dateOfImplementation >= startDate && dateOfImplementation <= endDate;
-            });
-        }
-
-        // Apply other filters
+        // Apply filters
         if (this.filters.classification) {
             filteredData = filteredData.filter(item => item.fivePointReformAgenda === this.filters.classification);
         }
@@ -266,25 +185,12 @@ export class OfficeTableComponent implements OnInit {
 
     clearFilters(): void {
         this.filters = {
-            startDate: null,
-            endDate: null,
-            dateRangeOption: 'custom',
             classification: '',
             fundSource: '',
             implementationStatus: '',
-            yearRange: '',
             remarks: ''
         };
 
-        this.applyFilter();
-    }
-
-    updateDateRangeOption(): void {
-        this.isCustomRangeVisible = this.filters.dateRangeOption === 'custom';
-        if (!this.isCustomRangeVisible) {
-            this.filters.startDate = null;
-            this.filters.endDate = null;
-        }
         this.applyFilter();
     }
 

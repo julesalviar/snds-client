@@ -2,9 +2,8 @@ import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, takeUntil, finalize } from 'rxjs/operators';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { finalize } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +16,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { AuthService } from '../../auth/auth.service';
@@ -25,7 +26,12 @@ import { PlanClassificationDisplayService } from '../../common/services/plan-cla
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { PLAN_CLASSIFICATION } from '../../common/enums/plan-classification.enum';
 import { PLAN_IMPLEMENTATION_STATUS } from '../../common/enums/plan-implementation-status.enum';
-import { formatDateString } from '../../common/date-utils';
+import {
+  formatDateString,
+  getDateRangeForPeriod,
+  getDateRangeParamsForAPI,
+  DateRangePeriod,
+} from '../../common/date-utils';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 import { PpaPlanFormComponent } from './ppa-plan-form.component';
 
@@ -60,6 +66,8 @@ export interface ColumnCategory {
     MatButtonModule,
     MatMenuModule,
     MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   templateUrl: './ppa-plan-list.component.html',
   styleUrl: './ppa-plan-list.component.css',
@@ -153,6 +161,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
       label: 'Status',
       columns: [
         { id: 'implementationStatus', label: 'Implementation Status', visible: true },
+        { id: 'assignee', label: 'Assignee', visible: false },
         { id: 'timeliness', label: 'Timeliness', visible: false },
       ],
     },
@@ -166,11 +175,12 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     },
   ];
 
-  /** Visible columns for the table (computed from columnCategories + actions). */
+  /** Visible columns for the table (computed from columnCategories + actions). Assignee column hidden when "Assigned to me" filter is checked. */
   get displayedColumns(): string[] {
     const visible = this.columnCategories.flatMap((cat) =>
       cat.columns.filter((c) => c.visible).map((c) => c.id)
     );
+
     return [...visible, 'actions'];
   }
   dataSource = new MatTableDataSource<PpaPlan>([]);
@@ -184,6 +194,23 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   filterClassification = '';
   filterImplementationStatus = '';
   filterAssignedToMe = true;
+
+  // Date filter: implementationStartDate >= filterStart, implementationEndDate <= filterEnd (overlap)
+  dateRangeType: 'period' | 'custom' | null = null;
+  selectedPeriod: string | null = null;
+  customStartDate: Date | null = null;
+  customEndDate: Date | null = null;
+
+  periodOptions = [
+    { value: 'thisMonth', label: 'This Month' },
+    { value: 'lastMonth', label: 'Last Month' },
+    { value: 'thisQuarter', label: 'This Quarter' },
+    { value: 'lastQuarter', label: 'Last Quarter' },
+    { value: 'thisYear', label: 'This Year' },
+    { value: 'lastYear', label: 'Last Year' },
+    { value: 'last3Months', label: 'Last 3 Months' },
+    { value: 'last6Months', label: 'Last 6 Months' },
+  ];
 
   get classificationOptions(): (string | (typeof PLAN_CLASSIFICATION)[number])[] {
     const opts = ['', ...PLAN_CLASSIFICATION];
@@ -200,8 +227,16 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
       this.searchTerm.trim() !== '' ||
       this.filterClassification !== '' ||
       this.filterImplementationStatus !== '' ||
-      (this.userActiveRole === UserType.ProgramHolder && !this.filterAssignedToMe)
+      (this.userActiveRole === UserType.ProgramHolder && !this.filterAssignedToMe) ||
+      this.hasDateFilter()
     );
+  }
+
+  private hasDateFilter(): boolean {
+    if (!this.dateRangeType) return false;
+    if (this.dateRangeType === 'period') return !!this.selectedPeriod;
+    if (this.dateRangeType === 'custom') return !!(this.customStartDate && this.customEndDate);
+    return false;
   }
 
   constructor(
@@ -300,12 +335,64 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     this.filterClassification = '';
     this.filterImplementationStatus = '';
     this.filterAssignedToMe = true;
+    this.dateRangeType = null;
+    this.selectedPeriod = null;
+    this.customStartDate = null;
+    this.customEndDate = null;
     this.pageIndex = 0;
     this.loadPlans();
   }
 
+  onDateRangeTypeChange(): void {
+    if (this.dateRangeType === 'period') {
+      this.customStartDate = null;
+      this.customEndDate = null;
+      this.selectedPeriod = 'thisMonth';
+    } else if (this.dateRangeType === 'custom') {
+      const now = new Date();
+      this.customStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      this.customEndDate = new Date(now);
+      this.selectedPeriod = null;
+    } else {
+      this.selectedPeriod = null;
+      this.customStartDate = null;
+      this.customEndDate = null;
+    }
+    this.pageIndex = 0;
+    this.loadPlans();
+  }
+
+  onPeriodChange(): void {
+    this.pageIndex = 0;
+    this.loadPlans();
+  }
+
+  onCustomDateChange(): void {
+    if (this.customStartDate && this.customEndDate) {
+      this.pageIndex = 0;
+      this.loadPlans();
+    }
+  }
+
+  private getDateRange(): { start: Date | null; end: Date | null } {
+    if (this.dateRangeType === 'custom') {
+      return { start: this.customStartDate, end: this.customEndDate };
+    }
+    if (this.dateRangeType !== 'period' || !this.selectedPeriod) {
+      return { start: null, end: null };
+    }
+    const { start, end } = getDateRangeForPeriod(this.selectedPeriod as DateRangePeriod, new Date());
+    return { start, end };
+  }
+
+  private getDateRangeForAPI(): { startDateFrom?: string; endDateTo?: string } {
+    const { start, end } = this.getDateRange();
+    return getDateRangeParamsForAPI(start, end);
+  }
+
   loadPlans(): void {
     this.isLoading = true;
+    const dateParams = this.hasDateFilter() ? this.getDateRangeForAPI() : {};
     this.ppaPlanService
       .getList({
         page: this.pageIndex + 1,
@@ -314,6 +401,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
         classification: this.filterClassification || undefined,
         implementationStatus: this.filterImplementationStatus || undefined,
         assignedUserId: this.filterAssignedToMe && this.userActiveRole === UserType.ProgramHolder ? this.authService.getUserId() || undefined : undefined,
+        ...dateParams,
       })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
@@ -417,6 +505,32 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
 
   formatDate(value: string | undefined): string {
     return formatDateString(value);
+  }
+
+  /** Format implementation date: if both same day show one; if different show "start - end"; else show whichever is present */
+  formatImplementationDate(row: PpaPlan): string {
+    const start = row.implementationStartDate;
+    const end = row.implementationEndDate;
+    if (start && end) {
+      const dStart = new Date(start);
+      const dEnd = new Date(end);
+      const sameDay = dStart.getFullYear() === dEnd.getFullYear() &&
+        dStart.getMonth() === dEnd.getMonth() &&
+        dStart.getDate() === dEnd.getDate();
+      return sameDay ? formatDateString(start) : `${formatDateString(start)} - ${formatDateString(end)}`;
+    }
+    if (start) return formatDateString(start);
+    if (end) return formatDateString(end);
+    return '—';
+  }
+
+  /** Display assignee name from assignedUserId (string or populated User object). */
+  getAssigneeDisplay(row: PpaPlan): string {
+    const v = row.assignedUserId;
+    if (v == null) return '—';
+    if (typeof v === 'string') return v || '—';
+    const u = v as { name?: string; userName?: string; email?: string; _id?: string };
+    return u?.name || u?.userName || u?.email || u?._id || '—';
   }
 
   /** Display stakeholder name only (no email) from either id string or populated user object from API. */
