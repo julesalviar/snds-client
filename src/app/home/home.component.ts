@@ -40,7 +40,7 @@ interface TreeNode {
   count?: number;
 }
 
-const PROFILE_INCOMPLETE_MESSAGE = 'Please upload School logo / input the School location coordinates to access other functions. Check Edit Profile.';
+const PROFILE_INCOMPLETE_MESSAGE = 'Please upload school logo and school profile, and input the school location coordinates to access other functions. Check Edit Profile.';
 
 interface HomeLoadingState {
   internalRefData: boolean;

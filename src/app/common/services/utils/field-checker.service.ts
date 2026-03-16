@@ -37,7 +37,8 @@ export class FieldCheckerService {
                 map(school => {
                     const hasLogo = !!school.logoUrl;
                     const hasLocation = !!school.location;
-                    return { isComplete: hasLogo && hasLocation };
+                    const hasProfileUploaded = !!school.profileDocUrl;
+                    return { isComplete: hasLogo && hasLocation && hasProfileUploaded };
                 }),
                 catchError(() => {
                     console.error('Error fetching school data, returning incomplete status.');
