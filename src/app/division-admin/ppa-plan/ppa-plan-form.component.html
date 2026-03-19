@@ -178,13 +178,38 @@
               <textarea matInput formControlName="materialsAndSupplies" rows="2"></textarea>
               <mat-error *ngIf="form.get('materialsAndSupplies')?.invalid && form.get('materialsAndSupplies')?.touched">Please enter a valid value.</mat-error>
             </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="outline" class="full-width fund-source-chip-list">
               <mat-label>Fund Source</mat-label>
-              <mat-select formControlName="fundSource" placeholder="Select fund source">
-                <mat-option value="">—</mat-option>
-                <mat-option *ngFor="let opt of fundSourceOptions" [value]="opt">{{ opt }}</mat-option>
-              </mat-select>
-              <mat-error *ngIf="form.get('fundSource')?.invalid && form.get('fundSource')?.touched">Please select a valid fund source.</mat-error>
+              <mat-chip-grid #fundSourceChipGrid aria-label="Fund sources">
+                <mat-chip-row
+                  *ngFor="let fs of fundSourceArray; trackBy: trackByFundSource"
+                  (removed)="removeFundSource(fs)"
+                >
+                  {{ fs }}
+                  <button matChipRemove [attr.aria-label]="'remove ' + fs">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip-row>
+              </mat-chip-grid>
+              <input
+                placeholder="Add fund source..."
+                [matChipInputFor]="fundSourceChipGrid"
+                [matChipInputSeparatorKeyCodes]="fundSourceSeparatorKeysCodes"
+                [matChipInputAddOnBlur]="fundSourceAddOnBlur"
+                (matChipInputTokenEnd)="addFundSourceFromInput($event)"
+                [matAutocomplete]="fundSourceAuto"
+                [formControl]="fundSourceInputControl"
+                aria-label="Add fund source"
+              />
+              <mat-autocomplete
+                #fundSourceAuto="matAutocomplete"
+                (optionSelected)="addFundSourceFromSelect($event)"
+                [displayWith]="displayFundSourceFn"
+              >
+                <mat-option *ngFor="let opt of availableFundSourceOptions" [value]="opt">
+                  {{ opt }}
+                </mat-option>
+              </mat-autocomplete>
             </mat-form-field>
           </section>
 

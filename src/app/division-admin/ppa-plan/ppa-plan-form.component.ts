@@ -140,6 +140,11 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   readonly participantSeparatorKeysCodes = [13, 188] as const; // Enter, Comma
   readonly participantAddOnBlur = true;
 
+  /** Form control for the "add fund source" input (not part of the main form payload). */
+  readonly fundSourceInputControl = new FormControl<string>('');
+  readonly fundSourceSeparatorKeysCodes = [13, 188] as const; // Enter, Comma
+  readonly fundSourceAddOnBlur = true;
+
   /** Current participants array from the form (unique enum values). */
   get participantsArray(): string[] {
     const val = this.form.get('participants')?.value;
@@ -188,6 +193,52 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     this.form.get('participants')?.setValue(arr);
   }
 
+  /** Current fund sources array from the form. */
+  get fundSourceArray(): string[] {
+    const val = this.form.get('fundSource')?.value;
+    return Array.isArray(val) ? val : [];
+  }
+
+  /** Fund source options not yet added (for autocomplete). */
+  get availableFundSourceOptions(): string[] {
+    const current = this.fundSourceArray;
+    const available = this.fundSourceOptions.filter((f) => !current.includes(f));
+    const query = (this.fundSourceInputControl.value ?? '').trim().toLowerCase();
+    if (!query) return available;
+    return available.filter((f) => f.toLowerCase().includes(query));
+  }
+
+  displayFundSourceFn = (value: string): string => value ?? '';
+
+  trackByFundSource(_index: number, fundSource: string): string {
+    return fundSource;
+  }
+
+  addFundSourceFromInput(event: { value: string }): void {
+    const value = (event?.value ?? '').trim();
+    if (!value) return;
+    const matched = this.fundSourceOptions.find((f) => f === value || f.toLowerCase() === value.toLowerCase());
+    if (matched && !this.fundSourceArray.includes(matched)) {
+      this.setFundSource([...this.fundSourceArray, matched]);
+      this.fundSourceInputControl.setValue('', { emitEvent: false });
+    }
+  }
+
+  addFundSourceFromSelect(event: { option: { value: string } }): void {
+    const value = event?.option?.value ?? '';
+    if (!value || this.fundSourceArray.includes(value)) return;
+    this.setFundSource([...this.fundSourceArray, value]);
+    this.fundSourceInputControl.setValue('', { emitEvent: false });
+  }
+
+  removeFundSource(fundSource: string): void {
+    this.setFundSource(this.fundSourceArray.filter((f) => f !== fundSource));
+  }
+
+  private setFundSource(arr: string[]): void {
+    this.form.get('fundSource')?.setValue(arr);
+  }
+
   /** When true, component is used inside a dialog; cancel/close will close the dialog instead of navigating. */
   readonly isDialogMode: boolean;
 
@@ -223,7 +274,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       implementationEndDate: [null as Date | string | null, [implementationDateRangeValidator]],
       budgetaryRequirement: [null as number | null, [Validators.min(0)]],
       materialsAndSupplies: [''],
-      fundSource: [''],
+      fundSource: [[] as string[]],
       participants: [[] as string[]],
       supportNeed: [''],
       supportReceivedValue: [null as number | null, [Validators.min(0)]],
@@ -332,6 +383,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     if (!v) return undefined;
     const opt = this.officeOptionsForSelect.find((o) => o.value === v);
     return opt?.id ?? v;
+  }
+
+  /** Normalize fundSource from API: string or string[] -> string[]. */
+  private normalizeFundSource(value: string | string[] | null | undefined): string[] {
+    if (value == null) return [];
+    if (Array.isArray(value)) return value.filter((s) => typeof s === 'string' && s.trim());
+    if (typeof value === 'string' && value.trim()) return [value.trim()];
+    return [];
   }
 
   /** Normalize plan.officeId to office.code for form value. */
@@ -483,7 +542,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           implementationEndDate: endDate ? new Date(endDate) : null,
           budgetaryRequirement: plan.budgetaryRequirement ?? null,
           materialsAndSupplies: plan.materialsAndSupplies ?? '',
-          fundSource: plan.fundSource ?? '',
+          fundSource: this.normalizeFundSource(plan.fundSource),
           participants: Array.isArray(plan.participants) ? plan.participants : [],
           supportNeed: plan.supportNeed ?? '',
           supportReceivedValue: plan.supportReceivedValue ?? null,
@@ -536,7 +595,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       implementationEndDate: implementationEndDate || undefined,
       budgetaryRequirement: raw.budgetaryRequirement ?? undefined,
       materialsAndSupplies: raw.materialsAndSupplies || undefined,
-      fundSource: raw.fundSource || undefined,
+      fundSource: Array.isArray(raw.fundSource) && raw.fundSource.length > 0 ? raw.fundSource : undefined,
       participants: Array.isArray(raw.participants) && raw.participants.length > 0 ? raw.participants : undefined,
       supportNeed: raw.supportNeed || undefined,
       supportReceivedValue: raw.supportReceivedValue ?? undefined,

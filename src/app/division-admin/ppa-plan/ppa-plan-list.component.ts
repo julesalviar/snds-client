@@ -534,6 +534,13 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   }
 
   /** Display stakeholder name only (no email) from either id string or populated user object from API. */
+  /** Display fundSource (string[] or legacy string) as comma-separated string */
+  getFundSourceDisplay(fundSource: string | string[] | null | undefined): string {
+    if (fundSource == null) return '—';
+    if (Array.isArray(fundSource)) return fundSource.length > 0 ? fundSource.join(', ') : '—';
+    return typeof fundSource === 'string' ? fundSource : '—';
+  }
+
   getStakeholderDisplay(stakeholderUserId: string | { _id?: string; name?: string; userName?: string; email?: string } | null | undefined): string {
     if (stakeholderUserId == null) return '—';
     if (typeof stakeholderUserId === 'string') return stakeholderUserId || '—';

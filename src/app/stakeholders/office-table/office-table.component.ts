@@ -26,7 +26,7 @@ interface OfficeTableData {
     dateOfImplementation: Date;
     venue: string;
     budgetaryRequirements: number;
-    fundSource: string;
+    fundSource: string; // Display string: joined from plan.fundSource array
     participants: string;
     supportNeededFromStakeholders: string;
     supportReceivedFromStakeholders: number | null;
@@ -151,7 +151,7 @@ export class OfficeTableComponent implements OnInit {
             dateOfImplementation,
             venue: plan.venue ?? '',
             budgetaryRequirements,
-            fundSource: plan.fundSource ?? '',
+            fundSource: Array.isArray(plan.fundSource) ? plan.fundSource.join(', ') : (plan.fundSource ?? ''),
             participants: Array.isArray(plan.participants) ? plan.participants.join(', ') : '',
             supportNeededFromStakeholders: plan.supportNeed ?? '',
             supportReceivedFromStakeholders: plan.supportReceivedValue ?? null,
@@ -175,7 +175,7 @@ export class OfficeTableComponent implements OnInit {
             filteredData = filteredData.filter(item => item.fivePointReformAgenda === this.filters.classification);
         }
         if (this.filters.fundSource) {
-            filteredData = filteredData.filter(item => item.fundSource.includes(this.filters.fundSource));
+            filteredData = filteredData.filter(item => item.fundSource?.includes(this.filters.fundSource));
         }
         if (this.filters.implementationStatus) {
             filteredData = filteredData.filter(item => item.implementationStatus.includes(this.filters.implementationStatus));

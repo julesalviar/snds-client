@@ -100,6 +100,13 @@ export class PpaPlanContextDialogComponent {
     return arr.join(', ');
   }
 
+  /** Display fundSource (string[] or legacy string) as comma-separated string */
+  getFundSourceDisplay(fundSource: string | string[] | null | undefined): string {
+    if (fundSource == null) return '—';
+    const arr = Array.isArray(fundSource) ? fundSource : (fundSource ? [fundSource] : []);
+    return arr.length > 0 ? arr.join(', ') : '—';
+  }
+
   onEdit(): void {
     const planId = this.plan._id;
     if (planId) {

@@ -14,7 +14,7 @@ export interface PpaPlan {
   ppn?: number;
   budgetaryRequirement?: number;
   materialsAndSupplies?: string;
-  fundSource?: string;
+  fundSource?: string[];
   participants?: string[];
   supportNeed?: string;
   supportReceivedValue?: number;

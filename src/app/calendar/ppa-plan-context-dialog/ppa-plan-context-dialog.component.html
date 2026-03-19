@@ -42,7 +42,7 @@
       <dd>{{ plan.materialsAndSupplies || '—' }}</dd>
 
       <dt>Fund Source</dt>
-      <dd>{{ plan.fundSource || '—' }}</dd>
+      <dd>{{ getFundSourceDisplay(plan.fundSource) }}</dd>
 
       <dt>Participants</dt>
       <dd>{{ getArrayDisplay(plan.participants) }}</dd>
