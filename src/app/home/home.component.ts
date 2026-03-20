@@ -32,6 +32,10 @@ import {PpaPlanService} from "../common/services/ppa-plan.service";
 import {PpaPlan} from "../common/model/ppa-plan.model";
 import {CalendarNavigationService} from "../common/services/calendar-navigation.service";
 import { FieldCheckerService } from '../common/services/utils/field-checker.service';
+import { ActivityService } from '../common/services/activity.service';
+import { Activity } from '../common/model/activity.model';
+import { ActivityType } from '../common/enums/activity-type.enum';
+import { formatDateString } from '../common/date-utils';
 
 interface TreeNode {
   name: string;
@@ -47,6 +51,7 @@ interface HomeLoadingState {
   schoolNeeds: boolean;
   aipStats: boolean;
   upcomingPlans: boolean;
+  partnershipActivities: boolean;
 }
 
 /** Full home view state – single source for template; use with async pipe. */
@@ -64,6 +69,7 @@ export interface HomeState {
   aipStatusStats: Map<AipStatus, number>;
   totalAips: number;
   upcomingPlans: PpaPlan[];
+  partnershipActivities: Activity[];
 }
 
 @Component({
@@ -96,7 +102,8 @@ export class HomeComponent implements OnInit {
     private readonly ppaPlanService: PpaPlanService,
     private readonly calendarNavigationService: CalendarNavigationService,
     private readonly decimalPipe: DecimalPipe,
-    private readonly fieldCheckerService: FieldCheckerService
+    private readonly fieldCheckerService: FieldCheckerService,
+    private readonly activityService: ActivityService
   ) {
     const initial = this.getInitialState();
     this.homeStateSubject = new BehaviorSubject(initial);
@@ -121,7 +128,7 @@ export class HomeComponent implements OnInit {
     const aipStatusStats = new Map<AipStatus, number>();
     AIP_STATUSES.forEach((s) => aipStatusStats.set(s, 0));
     return {
-      loading: {internalRefData: true, schoolNeeds: true, aipStats: true, upcomingPlans: true},
+      loading: {internalRefData: true, schoolNeeds: true, aipStats: true, upcomingPlans: true, partnershipActivities: true},
       name,
       userRole,
       treeData: [],
@@ -134,6 +141,7 @@ export class HomeComponent implements OnInit {
       aipStatusStats,
       totalAips: 0,
       upcomingPlans: [],
+      partnershipActivities: [],
     };
   }
 
@@ -158,6 +166,11 @@ export class HomeComponent implements OnInit {
         ),
         switchMap((s) =>
           this.loadUpcomingPlansIfNeeded$(s).pipe(
+            tap((result) => this.homeStateSubject.next(result)),
+          ),
+        ),
+        switchMap((s) =>
+          this.loadPartnershipActivitiesIfNeeded$(s).pipe(
             tap((result) => this.homeStateSubject.next(result)),
           ),
         ),
@@ -390,6 +403,92 @@ export class HomeComponent implements OnInit {
         return of({ ...state, loading: { ...state.loading, upcomingPlans: false }, upcomingPlans: [] });
       }),
     );
+  }
+
+  /** Partnership engagement activities widget: school admin, division admin, stakeholder. */
+  canShowPartnershipActivitiesWidget(state: HomeState): boolean {
+    return (
+      state.userRole === UserType.SchoolAdmin ||
+      state.userRole === UserType.DivisionAdmin ||
+      state.userRole === UserType.StakeHolder
+    );
+  }
+
+  getPartnershipActivitiesListRoute(state: HomeState): string | null {
+    if (state.userRole === UserType.SchoolAdmin) return '/school-admin/activities';
+    if (state.userRole === UserType.DivisionAdmin) return '/division-admin/activities';
+    return null;
+  }
+
+  showPartnershipActivitySchoolColumn(state: HomeState): boolean {
+    return state.userRole === UserType.DivisionAdmin || state.userRole === UserType.StakeHolder;
+  }
+
+  formatPartnershipActivityDate(activity: Activity): string {
+    const start = formatDateString(activity.startDatetime);
+    if (!activity.endDatetime) return start;
+    const end = formatDateString(activity.endDatetime);
+    return start === end ? start : `${start} – ${end}`;
+  }
+
+  formatPartnershipActivitySchool(activity: Activity): string {
+    const raw = activity.schoolId;
+    if (!raw) return '—';
+    if (typeof raw === 'object' && raw !== null && 'schoolName' in raw) {
+      return (raw as { schoolName?: string }).schoolName ?? '—';
+    }
+    return typeof raw === 'string' ? raw : '—';
+  }
+
+  private isPartnershipEngagementType(type: string | undefined): boolean {
+    if (!type) return false;
+    const n = type.toLowerCase().replace(/_/g, '');
+    return n === 'partnershipengagement';
+  }
+
+  private loadPartnershipActivitiesIfNeeded$(state: HomeState): Observable<HomeState> {
+    const role = state.userRole;
+    if (
+      role !== UserType.SchoolAdmin &&
+      role !== UserType.DivisionAdmin &&
+      role !== UserType.StakeHolder
+    ) {
+      return of({ ...state, loading: { ...state.loading, partnershipActivities: false } });
+    }
+    const schoolId = role === UserType.SchoolAdmin ? this.authService.getSchoolId()?.trim() || undefined : undefined;
+    const stakeholderId =
+      role === UserType.StakeHolder ? this.authService.getUserId()?.trim() || undefined : undefined;
+    return this.activityService
+      .getList({
+        page: 1,
+        limit: 50,
+        type: ActivityType.PartnershipEngagement,
+        schoolId,
+        stakeholderId,
+      })
+      .pipe(
+        map((res) => {
+          const filtered = (res.data ?? []).filter((a) => this.isPartnershipEngagementType(a.type as string | undefined));
+          const sorted = [...filtered].sort((a, b) => {
+            const ta = a.startDatetime ? new Date(a.startDatetime).getTime() : 0;
+            const tb = b.startDatetime ? new Date(b.startDatetime).getTime() : 0;
+            return tb - ta;
+          });
+          return {
+            ...state,
+            loading: { ...state.loading, partnershipActivities: false },
+            partnershipActivities: sorted.slice(0, 15),
+          };
+        }),
+        catchError((err) => {
+          console.error('Error loading partnership activities:', err);
+          return of({
+            ...state,
+            loading: { ...state.loading, partnershipActivities: false },
+            partnershipActivities: [],
+          });
+        }),
+      );
   }
 
   /** Whether the user can see the upcoming events widget (office-admin, assistant-office-admin, program-holders). */

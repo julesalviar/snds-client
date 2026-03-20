@@ -1084,3 +1084,140 @@ span {
     font-size: 12px;
   }
 }
+
+/* ----- Partnership engagement activities (school admin, division admin, stakeholder) ----- */
+.partnership-activities-widget {
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.partnership-activities-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.partnership-activities-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.partnership-activities-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.skeleton-partnership-row {
+  height: 40px;
+  border-radius: 4px;
+}
+
+.partnership-activities-empty {
+  color: #666;
+  font-size: 13px;
+  padding: 12px 0;
+  margin: 0 0 4px 0;
+}
+
+.partnership-activities-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.partnership-activities-table {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #333;
+}
+
+.partnership-activities-table thead th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #555;
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.partnership-activities-table tbody td {
+  padding: 10px 10px 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  vertical-align: top;
+  line-height: 1.35;
+}
+
+.partnership-activities-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.partnership-activities-table .col-title {
+  font-weight: 500;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.partnership-activities-table .col-date,
+.partnership-activities-table .col-venue {
+  white-space: nowrap;
+}
+
+.partnership-activities-table .col-school {
+  min-width: 100px;
+  max-width: 160px;
+}
+
+.partnership-activities-view-all {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #28a745;
+  text-decoration: none;
+}
+
+.partnership-activities-view-all:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .partnership-activities-widget {
+    padding: 14px;
+  }
+
+  .partnership-activities-title {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .partnership-activities-widget {
+    padding: 12px;
+  }
+
+  .partnership-activities-title {
+    font-size: 13px;
+  }
+
+  .partnership-activities-table {
+    font-size: 12px;
+    min-width: 360px;
+  }
+}

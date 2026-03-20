@@ -121,6 +121,48 @@
           <a [routerLink]="getCalendarRoute(state)" class="upcoming-events-view-all">View Calendar</a>
         </aside>
 
+        <aside *ngIf="canShowPartnershipActivitiesWidget(state)" class="partnership-activities-widget">
+          <h3 class="partnership-activities-title">
+            <mat-icon class="partnership-activities-icon">handshake</mat-icon>
+            Partnership Engagement Activities
+          </h3>
+          @if (state.loading.partnershipActivities) {
+            <div class="partnership-activities-skeleton" aria-hidden="true">
+              @for (_ of [1,2,3,4,5]; track $index) {
+                <div class="skeleton skeleton-partnership-row"></div>
+              }
+            </div>
+          } @else if (state.partnershipActivities.length === 0) {
+            <p class="partnership-activities-empty">No partnership engagement activities</p>
+          } @else {
+            <div class="partnership-activities-table-wrap">
+              <table class="partnership-activities-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Date</th>
+                    <th *ngIf="showPartnershipActivitySchoolColumn(state)" scope="col">School</th>
+                    <th scope="col">Venue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (activity of state.partnershipActivities; track activity._id || $index) {
+                    <tr>
+                      <td class="col-title">{{ activity.title || '—' }}</td>
+                      <td class="col-date">{{ formatPartnershipActivityDate(activity) }}</td>
+                      <td *ngIf="showPartnershipActivitySchoolColumn(state)" class="col-school">{{ formatPartnershipActivitySchool(activity) }}</td>
+                      <td class="col-venue">{{ activity.location?.trim() || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          <a *ngIf="getPartnershipActivitiesListRoute(state)"
+             [routerLink]="getPartnershipActivitiesListRoute(state)!"
+             class="partnership-activities-view-all">View all activities</a>
+        </aside>
+
         <div class="text-section">
         <div class="welcome-header" *ngIf="shouldShowStats(state)">
           <div class="aip-info-detailed">
