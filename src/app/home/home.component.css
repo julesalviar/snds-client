@@ -37,15 +37,47 @@ h4 {
   font-size: medium;
 }
 
-.text-section {
-  flex: 1;
-  margin-right: 20px;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  text-align: left;
-  border-color: green;
-  background-color: rgba(255, 255, 255, 0.538);
+/* Shared chrome for home column widgets (stats, partnership, etc.) */
+.home-widget {
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 167, 69, 0.2);
   border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.home-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.home-widget-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.school-context-widget .aip-status-header {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ppa-implementation-widget-body {
+  cursor: pointer;
+}
+
+.ppa-implementation-widget-body:focus-visible {
+  outline: 2px solid rgba(40, 167, 69, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .tree-section {
@@ -130,20 +162,6 @@ h2.welcome-title {
   margin: 0 0 10px 0;
   padding: 0;
   text-align: left;
-}
-
-.welcome-header {
-  /*background: #f8f9fa;*/
-  padding: 12px;
-  margin-bottom: 0;
-  /*border-left: 4px solid #28a745;*/
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-  opacity: 0.8;
 }
 
 .welcome-content {
@@ -283,19 +301,6 @@ h2.welcome-title {
   letter-spacing: 0.5px;
 }
 
-/* Detailed School Information for School Admin */
-.aip-info-detailed {
-  flex: 1;
-  min-width: 240px;
-  max-width: 480px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(40, 167, 69, 0.2);
-  border-radius: 6px;
-  padding: 10px;
-  margin-top: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 .aip-status-header {
   display: flex;
   align-items: center;
@@ -324,15 +329,6 @@ h2.welcome-title {
   font-weight: 600;
   margin: 0;
   letter-spacing: 0.5px;
-}
-
-.school-title-subtext {
-  color: #28a745;
-  font-size: 11px;
-  font-weight: 500;
-  opacity: 0.8;
-  margin: 0;
-  letter-spacing: 0.3px;
 }
 
 .aip-status-details {
@@ -409,27 +405,13 @@ span {
     width: 100%;
   }
 
-  .welcome-header {
-    padding: 18px;
-    flex-direction: column;
-  }
-
-  .welcome-title {
-    font-size: 22px;
-  }
-
-  .welcome-section {
-    margin-bottom: 14px;
-  }
-
   .welcome-title {
     font-size: 16px;
     margin-bottom: 8px;
   }
 
-  .welcome-header {
-    padding: 10px;
-    gap: 12px;
+  .welcome-section {
+    margin-bottom: 14px;
   }
 
   .welcome-content {
@@ -437,23 +419,18 @@ span {
     min-width: 180px;
   }
 
-  .aip-info-detailed {
-    padding: 8px;
-    border-radius: 5px;
+  .home-widget {
+    padding: 14px;
   }
 
   .aip-status-header {
     gap: 6px;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
 
   .school-name-title {
     font-size: 12px;
-  }
-
-  .school-title-subtext {
-    font-size: 10px;
   }
 
   .aip-status-details {
@@ -474,11 +451,6 @@ span {
     max-width: 100%;
   }
 
-  .aip-info-detailed {
-    width: 100%;
-    max-width: 100%;
-  }
-
   .aip-stats-cards-inline {
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
     gap: 10px;
@@ -494,25 +466,9 @@ span {
     gap: 5px;
   }
 
-  .text-section {
-    margin-right: 0;
-    margin-bottom: 20px;
-    width: 100%;
-  }
-
   .image-section img {
     width: 100%;
     height: auto;
-  }
-
-  .text-section h2 {
-    margin-top: 15px;
-    margin-bottom: 0;
-  }
-
-  .text-section ul li {
-    margin-right: 30px;
-    justify-content: left;
   }
 }
 
@@ -523,11 +479,6 @@ span {
     margin: 0;
     padding: 0;
     justify-content: left;
-  }
-
-  .welcome-header {
-    padding: 15px;
-    margin-bottom: 0;
   }
 
   .welcome-title {
@@ -555,16 +506,12 @@ span {
     font-size: 14px;
   }
 
-  .aip-info-detailed {
+  .home-widget {
     padding: 12px;
   }
 
   .school-name-title {
     font-size: 16px;
-  }
-
-  .school-title-subtext {
-    font-size: 12px;
   }
 
   .school-detail-item {
@@ -578,11 +525,6 @@ span {
 
   .detail-value {
     font-size: 12px;
-  }
-
-  .text-section {
-    width: 100%;
-    margin-bottom: 20px;
   }
 
   li {
@@ -1140,7 +1082,7 @@ span {
 
 .partnership-activities-table {
   width: 100%;
-  min-width: 420px;
+  min-width: 620px;
   border-collapse: collapse;
   font-size: 13px;
   color: #333;
@@ -1176,6 +1118,7 @@ span {
 }
 
 .partnership-activities-table .col-date,
+.partnership-activities-table .col-time,
 .partnership-activities-table .col-venue {
   white-space: nowrap;
 }
@@ -1183,6 +1126,11 @@ span {
 .partnership-activities-table .col-school {
   min-width: 100px;
   max-width: 160px;
+}
+
+.partnership-activities-table .col-stakeholder {
+  min-width: 96px;
+  max-width: 140px;
 }
 
 .partnership-activities-view-all {
@@ -1218,6 +1166,6 @@ span {
 
   .partnership-activities-table {
     font-size: 12px;
-    min-width: 360px;
+    min-width: 520px;
   }
 }

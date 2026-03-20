@@ -78,7 +78,120 @@
       </div>
 
       <div class="column-second">
-        <!-- Upcoming events widget: office-admin, assistant-office-admin, program-holders only -->
+        <aside *ngIf="shouldShowStats(state)" class="home-widget school-context-widget">
+          <h3 class="home-widget-title">
+            <mat-icon class="home-widget-icon">domain</mat-icon>
+            {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
+          </h3>
+          <div class="aip-status-header school-context-widget-body">
+            <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
+              <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
+              <img
+                *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
+                [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                alt="Logo"
+                class="school-logo"
+                (error)="onLogoError(state)" />
+              <mat-icon
+                *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && (!state.schoolLogoUrl || state.logoError)) || (isDivisionAdmin(state) && (!state.divisionLogoUrl || state.logoError)))"
+                class="school-icon">school</mat-icon>
+
+              <div
+                *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
+                #logoPreview class="logo-preview">
+                <img
+                  [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                  alt="Logo Preview"
+                  class="logo-preview-image" />
+              </div>
+            </div>
+            <div class="school-title-wrapper">
+              <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-title-bar" aria-hidden="true"></div>
+              <p *ngIf="!isHeaderLoading(state)" class="school-name-title">{{ getWelcomeHeaderName(state) | uppercase }}</p>
+            </div>
+          </div>
+        </aside>
+
+        <aside *ngIf="shouldShowStats(state)" class="home-widget ppa-implementation-widget">
+          <h3 class="home-widget-title">
+            <mat-icon class="home-widget-icon">insights</mat-icon>
+            PPA Implementation Status
+          </h3>
+          <div class="aip-status-details ppa-implementation-widget-body" (click)="navigateToAip()" role="button" tabindex="0" (keydown.enter)="navigateToAip()">
+            <div class="aip-stats-cards-inline">
+              <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
+                <mat-card-content>
+                  <div class="status-title-inline">{{ status }}</div>
+                  <div *ngIf="state.loading.aipStats" class="skeleton-card-content" aria-hidden="true">
+                    <div class="skeleton skeleton-card-bar-sm"></div>
+                    <div class="skeleton skeleton-card-bar-lg"></div>
+                    <div class="skeleton skeleton-card-bar-xs"></div>
+                  </div>
+                  <div *ngIf="!state.loading.aipStats" class="aip-card-values">
+                    <div class="status-percentage-inline">{{ getStatusPercentage(state, status) }}%</div>
+                    <div class="status-count-inline">{{ getStatusCountFormatted(state, status) }}</div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </aside>
+
+        <aside *ngIf="canShowPartnershipActivitiesWidget(state)" class="partnership-activities-widget">
+          <h3 class="partnership-activities-title">
+            <mat-icon class="partnership-activities-icon">handshake</mat-icon>
+            Partnership Engagement Activities
+          </h3>
+          @if (state.loading.partnershipActivities) {
+            <div class="partnership-activities-skeleton" aria-hidden="true">
+              @for (_ of [1,2,3,4,5]; track $index) {
+                <div class="skeleton skeleton-partnership-row"></div>
+              }
+            </div>
+          } @else if (state.partnershipActivities.length === 0) {
+            <p class="partnership-activities-empty">No partnership engagement activities</p>
+          } @else {
+            <div class="partnership-activities-table-wrap">
+              <table class="partnership-activities-table">
+                <thead>
+                  <tr>
+                    @if (isPartnershipActivitiesTableAdminView(state)) {
+                      <th scope="col">School</th>
+                      <th scope="col">Activities</th>
+                    } @else if (isPartnershipActivitiesTableStakeholderView(state)) {
+                      <th scope="col">List of activities</th>
+                    }
+                    <th scope="col">Stakeholder</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Venue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (activity of state.partnershipActivities; track activity._id || $index) {
+                    <tr>
+                      @if (isPartnershipActivitiesTableAdminView(state)) {
+                        <td class="col-school">{{ formatPartnershipActivitySchool(activity) }}</td>
+                        <td class="col-title">{{ activity.title || '—' }}</td>
+                      } @else if (isPartnershipActivitiesTableStakeholderView(state)) {
+                        <td class="col-title">{{ activity.title || '—' }}</td>
+                      }
+                      <td class="col-stakeholder">{{ formatPartnershipActivityStakeholder(activity) }}</td>
+                      <td class="col-date">{{ formatPartnershipActivityDate(activity) }}</td>
+                      <td class="col-time">{{ formatPartnershipActivityTime(activity) }}</td>
+                      <td class="col-venue">{{ activity.location?.trim() || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          <a *ngIf="getPartnershipActivitiesListRoute(state)"
+             [routerLink]="getPartnershipActivitiesListRoute(state)!"
+             class="partnership-activities-view-all">View all activities</a>
+        </aside>
+
+        <!-- Upcoming events: office-admin, assistant-office-admin, program-holders only -->
         <aside *ngIf="canShowUpcomingEventsWidget(state)" class="upcoming-events-widget">
           <h3 class="upcoming-events-title">
             <mat-icon class="upcoming-events-icon">event</mat-icon>
@@ -120,111 +233,6 @@
           }
           <a [routerLink]="getCalendarRoute(state)" class="upcoming-events-view-all">View Calendar</a>
         </aside>
-
-        <aside *ngIf="canShowPartnershipActivitiesWidget(state)" class="partnership-activities-widget">
-          <h3 class="partnership-activities-title">
-            <mat-icon class="partnership-activities-icon">handshake</mat-icon>
-            Partnership Engagement Activities
-          </h3>
-          @if (state.loading.partnershipActivities) {
-            <div class="partnership-activities-skeleton" aria-hidden="true">
-              @for (_ of [1,2,3,4,5]; track $index) {
-                <div class="skeleton skeleton-partnership-row"></div>
-              }
-            </div>
-          } @else if (state.partnershipActivities.length === 0) {
-            <p class="partnership-activities-empty">No partnership engagement activities</p>
-          } @else {
-            <div class="partnership-activities-table-wrap">
-              <table class="partnership-activities-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Title</th>
-                    <th scope="col">Date</th>
-                    <th *ngIf="showPartnershipActivitySchoolColumn(state)" scope="col">School</th>
-                    <th scope="col">Venue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (activity of state.partnershipActivities; track activity._id || $index) {
-                    <tr>
-                      <td class="col-title">{{ activity.title || '—' }}</td>
-                      <td class="col-date">{{ formatPartnershipActivityDate(activity) }}</td>
-                      <td *ngIf="showPartnershipActivitySchoolColumn(state)" class="col-school">{{ formatPartnershipActivitySchool(activity) }}</td>
-                      <td class="col-venue">{{ activity.location?.trim() || '—' }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
-          <a *ngIf="getPartnershipActivitiesListRoute(state)"
-             [routerLink]="getPartnershipActivitiesListRoute(state)!"
-             class="partnership-activities-view-all">View all activities</a>
-        </aside>
-
-        <div class="text-section">
-        <div class="welcome-header" *ngIf="shouldShowStats(state)">
-          <div class="aip-info-detailed">
-            <div class="aip-status-header">
-              <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
-                <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
-                <img
-                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
-                  [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
-                  alt="Logo"
-                  class="school-logo"
-                  (error)="onLogoError(state)" />
-                <mat-icon
-                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && (!state.schoolLogoUrl || state.logoError)) || (isDivisionAdmin(state) && (!state.divisionLogoUrl || state.logoError)))"
-                  class="school-icon">school</mat-icon>
-
-                <div
-                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
-                  #logoPreview class="logo-preview">
-                  <img
-                    [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
-                    alt="Logo Preview"
-                    class="logo-preview-image" />
-                </div>
-              </div>
-              <div class="school-title-wrapper">
-                <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-title-bar" aria-hidden="true"></div>
-                <h3 *ngIf="!isHeaderLoading(state)" class="school-name-title">{{ getWelcomeHeaderName(state) | uppercase }}</h3>
-              </div>
-            </div>
-            <div class="aip-status-details" (click)="navigateToAip()" style="cursor: pointer;">
-              <div class="school-title-subtext">PPA Implementation Status</div>
-              <div class="aip-stats-cards-inline">
-                <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
-                  <mat-card-content>
-                    <div class="status-title-inline">{{ status }}</div>
-                    <div *ngIf="state.loading.aipStats" class="skeleton-card-content" aria-hidden="true">
-                      <div class="skeleton skeleton-card-bar-sm"></div>
-                      <div class="skeleton skeleton-card-bar-lg"></div>
-                      <div class="skeleton skeleton-card-bar-xs"></div>
-                    </div>
-                    <div *ngIf="!state.loading.aipStats" class="aip-card-values">
-                      <div class="status-percentage-inline">{{ getStatusPercentage(state, status) }}%</div>
-                      <div class="status-count-inline">{{ getStatusCountFormatted(state, status) }}</div>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="false">
-          <h2 class="responsive-title">SENIOR HIGH SCHOOL LOOKING FOR WORK IMMERSION VENUE & WORK</h2>
-          <p>We are looking for industry partners who can provide our graduating students and Senior High School graduates with:</p>
-          <ul class="icon-list">
-            <li><span class="icon">📍</span> Work immersion venue</li>
-            <li><span class="icon">🔧</span> Work</li>
-          </ul>
-          <p>We have numerous skilled Senior High School graduates and graduating students waiting for your call.</p>
-        </div>
-        </div>
       </div>
     </div>
   </div>

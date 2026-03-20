@@ -13,6 +13,11 @@ export interface ActivityListParams {
   active?: boolean;
   stakeholderId?: string;
   schoolId?: string;
+  activityNumber?: string;
+  startDatetimeFrom?: string;
+  startDatetimeTo?: string;
+  endDatetimeFrom?: string;
+  endDatetimeTo?: string;
 }
 
 @Injectable({
@@ -39,6 +44,21 @@ export class ActivityService {
     }
     if (params.schoolId?.trim()) {
       queryParams.push(`schoolId=${encodeURIComponent(params.schoolId.trim())}`);
+    }
+    if (params.activityNumber?.trim()) {
+      queryParams.push(`activityNumber=${encodeURIComponent(params.activityNumber.trim())}`);
+    }
+    if (params.startDatetimeFrom?.trim()) {
+      queryParams.push(`startDatetimeFrom=${encodeURIComponent(params.startDatetimeFrom.trim())}`);
+    }
+    if (params.startDatetimeTo?.trim()) {
+      queryParams.push(`startDatetimeTo=${encodeURIComponent(params.startDatetimeTo.trim())}`);
+    }
+    if (params.endDatetimeFrom?.trim()) {
+      queryParams.push(`endDatetimeFrom=${encodeURIComponent(params.endDatetimeFrom.trim())}`);
+    }
+    if (params.endDatetimeTo?.trim()) {
+      queryParams.push(`endDatetimeTo=${encodeURIComponent(params.endDatetimeTo.trim())}`);
     }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.activity}?${queryParams.join('&')}` : API_ENDPOINT.activity;

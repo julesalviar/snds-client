@@ -35,7 +35,8 @@ import { FieldCheckerService } from '../common/services/utils/field-checker.serv
 import { ActivityService } from '../common/services/activity.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
-import { formatDateString } from '../common/date-utils';
+import { formatDateString, formatTimeString } from '../common/date-utils';
+import { UserListItem } from '../registration/user.model';
 
 interface TreeNode {
   name: string;
@@ -420,8 +421,14 @@ export class HomeComponent implements OnInit {
     return null;
   }
 
-  showPartnershipActivitySchoolColumn(state: HomeState): boolean {
-    return state.userRole === UserType.DivisionAdmin || state.userRole === UserType.StakeHolder;
+  /** Table layout: School + Activities columns (school / division admin). */
+  isPartnershipActivitiesTableAdminView(state: HomeState): boolean {
+    return state.userRole === UserType.SchoolAdmin || state.userRole === UserType.DivisionAdmin;
+  }
+
+  /** Table layout: List of activities column only (stakeholder). */
+  isPartnershipActivitiesTableStakeholderView(state: HomeState): boolean {
+    return state.userRole === UserType.StakeHolder;
   }
 
   formatPartnershipActivityDate(activity: Activity): string {
@@ -429,6 +436,24 @@ export class HomeComponent implements OnInit {
     if (!activity.endDatetime) return start;
     const end = formatDateString(activity.endDatetime);
     return start === end ? start : `${start} – ${end}`;
+  }
+
+  formatPartnershipActivityTime(activity: Activity): string {
+    if (!activity.hasTime) return '—';
+    const start = formatTimeString(activity.startDatetime);
+    if (!activity.endDatetime) return start;
+    const end = formatTimeString(activity.endDatetime);
+    return start === end ? start : `${start} – ${end}`;
+  }
+
+  formatPartnershipActivityStakeholder(activity: Activity): string {
+    const raw = activity.stakeholderId;
+    if (!raw) return '—';
+    if (typeof raw === 'object' && raw !== null) {
+      const item = raw as UserListItem;
+      return item.name ?? item.userName ?? item.email ?? '—';
+    }
+    return typeof raw === 'string' ? raw : '—';
   }
 
   formatPartnershipActivitySchool(activity: Activity): string {
@@ -446,6 +471,23 @@ export class HomeComponent implements OnInit {
     return n === 'partnershipengagement';
   }
 
+  /**
+   * Inclusive calendar-day window: first day of this month through last day of (this month + 6 months).
+   * Values are date-only (YYYY-MM-DD) so the API can filter without time-of-day effects.
+   */
+  private getPartnershipActivitiesListDateRange(): { startDatetimeFrom: string; startDatetimeTo: string } {
+    const now = new Date();
+    const fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const toDate = new Date(now.getFullYear(), now.getMonth() + 7, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    return {
+      startDatetimeFrom: fmt(fromDate),
+      startDatetimeTo: fmt(toDate),
+    };
+  }
+
   private loadPartnershipActivitiesIfNeeded$(state: HomeState): Observable<HomeState> {
     const role = state.userRole;
     if (
@@ -455,16 +497,14 @@ export class HomeComponent implements OnInit {
     ) {
       return of({ ...state, loading: { ...state.loading, partnershipActivities: false } });
     }
-    const schoolId = role === UserType.SchoolAdmin ? this.authService.getSchoolId()?.trim() || undefined : undefined;
-    const stakeholderId =
-      role === UserType.StakeHolder ? this.authService.getUserId()?.trim() || undefined : undefined;
+    const { startDatetimeFrom, startDatetimeTo } = this.getPartnershipActivitiesListDateRange();
     return this.activityService
       .getList({
         page: 1,
-        limit: 50,
+        limit: 100,
         type: ActivityType.PartnershipEngagement,
-        schoolId,
-        stakeholderId,
+        startDatetimeFrom,
+        startDatetimeTo,
       })
       .pipe(
         map((res) => {
