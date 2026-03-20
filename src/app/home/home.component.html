@@ -84,8 +84,8 @@
               <mat-icon class="home-widget-icon">domain</mat-icon>
               {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
             </h3>
-            <div class="aip-status-header school-context-widget-body">
-              <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
+            <div class="school-context-widget-body">
+              <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container school-context-logo logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
                 <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
                 <img
                   *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
@@ -108,7 +108,7 @@
               </div>
               <div class="school-title-wrapper">
                 <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-title-bar" aria-hidden="true"></div>
-                <p *ngIf="!isHeaderLoading(state)" class="school-name-title">{{ getWelcomeHeaderName(state) | uppercase }}</p>
+                <p *ngIf="!isHeaderLoading(state)" class="school-context-name">{{ getWelcomeHeaderName(state) }}</p>
               </div>
             </div>
           </aside>

@@ -86,9 +86,55 @@ h4 {
   height: 20px;
 }
 
-.school-context-widget .aip-status-header {
+.school-context-widget .school-context-widget-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 0;
   padding-bottom: 0;
+  text-align: center;
+}
+
+.school-context-widget .school-context-widget-body .school-title-wrapper {
+  flex: none;
+  width: 100%;
+  align-items: center;
+}
+
+.school-context-widget .school-context-logo {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  min-height: 72px;
+  border-width: 3px;
+}
+
+.school-context-widget .school-context-logo .school-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.school-context-widget .skeleton-logo {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  min-height: 72px;
+}
+
+.school-context-widget .skeleton-title-bar {
+  height: 14px;
+  max-width: 100%;
+}
+
+.school-context-name {
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 
 .ppa-implementation-widget-body {
@@ -448,6 +494,10 @@ span {
     gap: 6px;
     margin-bottom: 0;
     padding-bottom: 0;
+  }
+
+  .school-context-name {
+    font-size: 12px;
   }
 
   .school-name-title {
