@@ -45,14 +45,25 @@
 
 .report-panel {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   min-height: 600px;
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+  overflow: hidden;
   position: relative;
+}
+
+.report-panel-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: auto;
+  scrollbar-color: #888 #e0e0e0;
 }
 
 .report-panel-content {
@@ -61,31 +72,42 @@
 }
 
 .export-button-container {
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+  row-gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid #e0e0e0;
 }
 
-.export-button-container .export-label {
+.export-button-container .export-label-text {
+  margin-right: auto;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.7);
   font-weight: 500;
+  letter-spacing: 0.1px;
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
 }
 
-.export-button-container .export-tool-btn {
-  width: 40px;
-  height: 40px;
-  padding: 0;
+.export-button-container .export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .export-button-container .export-icon {
-  width: 24px;
-  height: 24px;
+  flex-shrink: 0;
+  margin-inline-end: 8px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
+  vertical-align: middle;
 }
 
 .export-disabled-message {
@@ -96,32 +118,26 @@
 }
 
 /* Custom scrollbar styling to make it more visible and prominent */
-.report-panel::-webkit-scrollbar {
+.report-panel-scroll::-webkit-scrollbar {
   height: 14px;
 }
 
-.report-panel::-webkit-scrollbar-track {
+.report-panel-scroll::-webkit-scrollbar-track {
   background: #e0e0e0;
   border-radius: 7px;
   margin: 0 10px;
 }
 
-.report-panel::-webkit-scrollbar-thumb {
+.report-panel-scroll::-webkit-scrollbar-thumb {
   background: linear-gradient(to right, #666 0%, #888 50%, #666 100%);
   border-radius: 7px;
   border: 2px solid #e0e0e0;
   box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
-.report-panel::-webkit-scrollbar-thumb:hover {
+.report-panel-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to right, #555 0%, #777 50%, #555 100%);
   box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
-}
-
-/* For Firefox - make scrollbar more visible */
-.report-panel {
-  scrollbar-width: auto;
-  scrollbar-color: #888 #e0e0e0;
 }
 
 .no-report-message,

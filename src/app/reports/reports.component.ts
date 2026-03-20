@@ -1,5 +1,16 @@
 import {ChangeDetectorRef, Component, ElementRef, HostListener, Injector, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
-import {NgClass, NgComponentOutlet, NgForOf, NgIf} from "@angular/common";
+import {
+  CurrencyPipe,
+  DatePipe,
+  DecimalPipe,
+  LowerCasePipe,
+  NgClass,
+  NgComponentOutlet,
+  NgForOf,
+  NgIf,
+  PercentPipe,
+  UpperCasePipe
+} from "@angular/common";
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatInput} from "@angular/material/input";
@@ -49,6 +60,14 @@ export class ReportsComponent implements OnInit, OnChanges {
   isMobile: boolean = false;
   componentKey: number | null = null; // Used to force component recreation when data changes
   isLoading: boolean = false;
+  /** Populated from generateReport() when the API returns `{ template, data }`. */
+  private lastGeneratedTemplate: ReportTemplate | undefined;
+  private decimalPipe = new DecimalPipe('en-US');
+  private datePipe = new DatePipe('en-US');
+  private currencyPipe = new CurrencyPipe('en-US');
+  private percentPipe = new PercentPipe('en-US');
+  private lowerCasePipe = new LowerCasePipe();
+  private upperCasePipe = new UpperCasePipe();
   @ViewChild('reportPanel', { static: false }) reportPanel!: ElementRef;
   @ViewChild('reportContent', { static: false }) reportContent!: ElementRef;
 
@@ -139,12 +158,22 @@ export class ReportsComponent implements OnInit, OnChanges {
     this.form = this.fb.group(formControls);
   }
 
+  private getEffectiveTemplate(): ReportTemplate | undefined {
+    return this.lastGeneratedTemplate ?? this.selectedReport?.reportTemplateId;
+  }
+
+  private getReportForInjector(): Report {
+    const base = this.selectedReport ?? (this.emptyReport as Report);
+    const template = this.getEffectiveTemplate() ?? base.reportTemplateId;
+    return { ...base, reportTemplateId: template };
+  }
+
   private createCustomInjector() {
     this.customInjector = Injector.create({
       parent: this.injector,
       providers: [
         { provide: 'REPORT_DATA', useValue: this.reportData },
-        { provide: 'REPORT', useValue: this.selectedReport },
+        { provide: 'REPORT', useValue: this.getReportForInjector() },
         { provide: 'IS_LOADING', useValue: this.isLoading }
       ]
     });
@@ -168,6 +197,7 @@ export class ReportsComponent implements OnInit, OnChanges {
   onReportChange(selectedReport: Report) {
     if (selectedReport) {
       this.selectedReport = selectedReport;
+      this.lastGeneratedTemplate = undefined;
       this.reportData = [];
       this.buildForm();
       // Force component destruction first
@@ -195,7 +225,12 @@ export class ReportsComponent implements OnInit, OnChanges {
 
       this.reportService.generateReport(this.selectedReport._id, this.form.value).subscribe({
         next: (response: any) => {
-          this.reportData = response.data || response || [];
+          console.log(response);
+          this.lastGeneratedTemplate = response.template;
+          const rows = response?.data;
+          this.reportData = Array.isArray(rows)
+            ? rows
+            : (Array.isArray(response) ? response : []);
           this.isLoading = false;
 
           this.componentKey = null;
@@ -229,24 +264,22 @@ export class ReportsComponent implements OnInit, OnChanges {
   }
 
   exportToPdf() {
-    if (!this.reportData?.length || !this.selectedReport?.reportTemplateId?.table?.columns?.length) {
+    const template = this.getEffectiveTemplate();
+    if (!this.reportData?.length || !template?.table?.columns?.length) {
       return;
     }
 
-    const columns = this.selectedReport.reportTemplateId.table.columns;
+    const columns = template.table.columns;
     const headers = columns.map((c: any) => c.header);
     const rows = this.reportData.map((row: any) =>
-      columns.map((col: any) => {
-        const val = this.getNestedValue(row, col.field);
-        return val != null ? String(val) : '';
-      })
+      columns.map((col: any) => this.getExportCellDisplay(row, col))
     );
 
     const colWidth = 50;
     const margin = 14;
     const tableWidth = columns.length * colWidth;
     const pageWidth = tableWidth + margin * 2;
-    const orientation = (this.selectedReport.reportTemplateId.orientation || 'portrait').toLowerCase();
+    const orientation = (template.orientation || 'portrait').toLowerCase();
     const isLandscape = orientation === 'landscape';
     const pageHeight = isLandscape ? 210 : 297;
 
@@ -257,7 +290,7 @@ export class ReportsComponent implements OnInit, OnChanges {
     });
 
     doc.setFontSize(18);
-    doc.text(this.selectedReport.title ?? 'Report', margin, 20);
+    doc.text(this.selectedReport?.title ?? 'Report', margin, 20);
 
     const columnStyles: Record<number, { cellWidth: number }> = {};
     columns.forEach((_: any, i: number) => {
@@ -302,22 +335,20 @@ export class ReportsComponent implements OnInit, OnChanges {
       doc.text(timestamp, pageWidth - margin - doc.getTextWidth(timestamp), footerY);
     }
 
-    doc.save(`${(this.selectedReport.title ?? 'report').replace(/\s+/g, '_')}.pdf`);
+    doc.save(`${(this.selectedReport?.title ?? 'report').replace(/\s+/g, '_')}.pdf`);
   }
 
   exportToExcel() {
-    if (!this.reportData?.length || !this.selectedReport?.reportTemplateId?.table?.columns?.length) {
+    const template = this.getEffectiveTemplate();
+    if (!this.reportData?.length || !template?.table?.columns?.length) {
       return;
     }
 
     import('xlsx').then((XLSX) => {
-      const columns = this.selectedReport!.reportTemplateId!.table!.columns!;
+      const columns = template.table.columns!;
       const headers = columns.map((c: any) => c.header);
       const dataRows = this.reportData.map((row: any) =>
-        columns.map((col: any) => {
-          const val = this.getNestedValue(row, col.field);
-          return val != null ? val : '';
-        })
+        columns.map((col: any) => this.getExportCellDisplay(row, col))
       );
 
       const aoa = [headers, ...dataRows];
@@ -332,6 +363,64 @@ export class ReportsComponent implements OnInit, OnChanges {
     if (!obj || !path) return undefined;
     return path.split('.').reduce((current: any, prop: string) =>
       current && current[prop] !== undefined ? current[prop] : undefined, obj);
+  }
+
+  /** Export display string: applies `format.pipe` only (not maxWidth / layout). */
+  private getExportCellDisplay(row: any, column: any): string {
+    const value = this.getNestedValue(row, column.field);
+    const pipeConfig = column?.format?.pipe || column?.pipe;
+    const formatted = this.applyPipeForExport(value, pipeConfig);
+    if (formatted === null || formatted === undefined) {
+      return '';
+    }
+    return String(formatted);
+  }
+
+  private applyPipeForExport(value: any, pipeConfig: string | undefined): any {
+    if (!pipeConfig || value === null || value === undefined) {
+      return value;
+    }
+
+    const parts = pipeConfig.split(':').map((s) => s.trim());
+    const pipeName = parts[0];
+
+    try {
+      switch (pipeName.toLowerCase()) {
+        case 'number':
+        case 'decimal': {
+          const pipeArgs = parts.slice(1).join(':').trim();
+          const cleanArgs = pipeArgs.replace(/^['"]|['"]$/g, '');
+          return this.decimalPipe.transform(value, cleanArgs || undefined);
+        }
+        case 'date': {
+          const pipeArgs = parts.slice(1).join(':').trim();
+          const cleanArgs = pipeArgs.replace(/^['"]|['"]$/g, '');
+          return this.datePipe.transform(value, cleanArgs || undefined);
+        }
+        case 'currency': {
+          const argsString = parts.slice(1).join(':');
+          const quotedMatches = argsString.match(/(['"])(?:(?=(\\?))\2.)*?\1/g) || [];
+          const currencyParts = quotedMatches.map((m) => m.replace(/^['"]|['"]$/g, ''));
+          const currencyCode = currencyParts[0] || 'PHP';
+          const display = currencyParts[1] || 'symbol';
+          const digitsInfo = currencyParts[2] || undefined;
+          return this.currencyPipe.transform(value, currencyCode, display, digitsInfo);
+        }
+        case 'percent': {
+          const pipeArgs = parts.slice(1).join(':').trim();
+          const cleanArgs = pipeArgs.replace(/^['"]|['"]$/g, '');
+          return this.percentPipe.transform(value, cleanArgs || undefined);
+        }
+        case 'lowercase':
+          return this.lowerCasePipe.transform(value);
+        case 'uppercase':
+          return this.upperCasePipe.transform(value);
+        default:
+          return value;
+      }
+    } catch {
+      return value;
+    }
   }
 
   getControl(controlName: string): FormControl {

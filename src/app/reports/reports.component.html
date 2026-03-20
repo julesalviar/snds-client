@@ -48,28 +48,36 @@
   </aside>
 
   <section class="report-panel">
-    <div class="report-panel-content" #reportPanel>
-      <div class="export-button-container" *ngIf="reportData && reportData.length > 0 && !isLoading">
-        <span class="export-label">Export report:</span>
-        <button mat-icon-button matTooltip="Export to PDF" (click)="exportToPdf()" class="export-tool-btn">
-          <img src="assets/64px-PDF_file_icon.svg.png" alt="PDF" class="export-icon">
+    <div class="export-button-container" *ngIf="reportData && reportData.length > 0 && !isLoading">
+      <span class="export-label-text">Export</span>
+      <div class="export-actions" role="group" aria-label="Export report">
+        <button mat-stroked-button type="button" color="primary" (click)="exportToPdf()"
+                matTooltip="Download as PDF" aria-label="Export report as PDF file">
+          <img src="assets/64px-PDF_file_icon.svg.png" alt="" class="export-icon" width="20" height="20">
+          PDF
         </button>
-        <button mat-icon-button matTooltip="Export to Excel" (click)="exportToExcel()" class="export-tool-btn">
-          <img src="assets/64px-Microsoft_Office_Excel_(2019–2025).svg.png" alt="Excel" class="export-icon">
+        <button mat-stroked-button type="button" color="primary" (click)="exportToExcel()"
+                matTooltip="Download as Excel workbook" aria-label="Export report as Excel file">
+          <img src="assets/64px-Microsoft_Office_Excel_(2019–2025).svg.png" alt="" class="export-icon" width="20" height="20">
+          Excel
         </button>
       </div>
-      <div *ngIf="isLoading" class="loading-container">
-        <mat-spinner diameter="50" strokeWidth="4" color="primary"></mat-spinner>
-        <p class="loading-text">Generating report...</p>
-      </div>
-      <div *ngIf="!isLoading" #reportContent>
-        <ng-container *ngIf="getComponentType() as comp">
-          <ng-container *ngIf="componentKey !== null">
-            <ng-container *ngComponentOutlet="comp; injector: customInjector"></ng-container>
+    </div>
+    <div class="report-panel-scroll">
+      <div class="report-panel-content" #reportPanel>
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner diameter="50" strokeWidth="4" color="primary"></mat-spinner>
+          <p class="loading-text">Generating report...</p>
+        </div>
+        <div *ngIf="!isLoading" #reportContent>
+          <ng-container *ngIf="getComponentType() as comp">
+            <ng-container *ngIf="componentKey !== null">
+              <ng-container *ngComponentOutlet="comp; injector: customInjector"></ng-container>
+            </ng-container>
           </ng-container>
-        </ng-container>
-        <div *ngIf="!getComponentType()" class="no-report-message">
-          <p>Please select a report to view the report.</p>
+          <div *ngIf="!getComponentType()" class="no-report-message">
+            <p>Please select a report to view the report.</p>
+          </div>
         </div>
       </div>
     </div>
