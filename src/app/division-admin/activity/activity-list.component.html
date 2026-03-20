@@ -39,24 +39,24 @@
       <div class="skeleton-table">
         <div class="skeleton-table-header">
           <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 13%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
           <div class="skeleton skeleton-table-cell" style="width: 9%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
           <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
         </div>
         <div class="skeleton-table-row" *ngFor="let _ of [1,2,3,4,5,6,7]">
           <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 13%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
           <div class="skeleton skeleton-table-cell" style="width: 9%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 4%"></div>
-          <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
           <div class="skeleton skeleton-table-cell" style="width: 7%"></div>
         </div>
       </div>
@@ -76,6 +76,23 @@
           <td mat-cell *matCellDef="let row">
             <mat-icon *ngIf="row.type" class="activity-type-icon" [style.color]="getActivityTypeColor(row.type)" [matTooltip]="formatType(row.type)" matTooltipPosition="above">{{ getActivityTypeIcon(row.type) }}</mat-icon>
             <span *ngIf="!row.type">—</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="school">
+          <th mat-header-cell *matHeaderCellDef>School</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="school-cell-inner">
+              <div class="school-logo-wrap" aria-hidden="true">
+                <img
+                  *ngIf="getSchoolLogoUrl(row) && !hasLogoError(row)"
+                  [src]="getSchoolLogoUrl(row)"
+                  alt=""
+                  class="school-logo"
+                  (error)="onLogoError(row)">
+                <mat-icon *ngIf="!getSchoolLogoUrl(row) || hasLogoError(row)" class="school-logo-placeholder">school</mat-icon>
+              </div>
+              <div class="cell-content school-name" [matTooltip]="formatSchool(row)">{{ formatSchool(row) }}</div>
+            </div>
           </td>
         </ng-container>
         <ng-container matColumnDef="title">
@@ -98,21 +115,9 @@
           <th mat-header-cell *matHeaderCellDef>Venue</th>
           <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="row.location ?? '—'">{{ row.location ?? '—' }}</div></td>
         </ng-container>
-        <ng-container matColumnDef="schoolLogo">
-          <th mat-header-cell *matHeaderCellDef aria-label="School logo"></th>
-          <td mat-cell *matCellDef="let row" class="school-logo-cell">
-            <img
-              *ngIf="getSchoolLogoUrl(row) && !hasLogoError(row)"
-              [src]="getSchoolLogoUrl(row)"
-              alt=""
-              class="school-logo"
-              (error)="onLogoError(row)">
-            <mat-icon *ngIf="!getSchoolLogoUrl(row) || hasLogoError(row)" class="school-logo-placeholder">school</mat-icon>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="school">
-          <th mat-header-cell *matHeaderCellDef>School</th>
-          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatSchool(row)">{{ formatSchool(row) }}</div></td>
+        <ng-container matColumnDef="stakeholder">
+          <th mat-header-cell *matHeaderCellDef>Stakeholder</th>
+          <td mat-cell *matCellDef="let row"><div class="cell-content" [matTooltip]="formatStakeholder(row)">{{ formatStakeholder(row) }}</div></td>
         </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>

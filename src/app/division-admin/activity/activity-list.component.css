@@ -182,6 +182,7 @@ app-activity-list mat-card-title {
   padding: 16px;
   border-bottom: 1px solid #e0e0e0;
   background: #f5f5f5 !important;
+  vertical-align: middle;
 }
 
 .activity-table .mat-mdc-cell,
@@ -194,7 +195,7 @@ app-activity-list mat-card-title {
   background: #fff !important;
   max-height: 104px;
   overflow: hidden;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 /* Text overflow with ellipsis - allow up to 3 lines */
@@ -220,19 +221,20 @@ app-activity-list mat-card-title {
   padding-right: 12px !important;
 }
 
-/* Fixed width for school logo column - same as type column */
-.activity-table .mat-mdc-column-schoolLogo,
-.activity-table .mat-column-schoolLogo {
-  width: 48px;
-  min-width: 48px;
-  max-width: 48px;
-  padding-left: 12px !important;
-  padding-right: 12px !important;
+.activity-table .school-cell-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
-.activity-table .school-logo-cell {
-  text-align: center;
-  vertical-align: middle;
+.activity-table .school-logo-wrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .activity-table .school-logo {
@@ -241,7 +243,6 @@ app-activity-list mat-card-title {
   object-fit: cover;
   border-radius: 50%;
   display: block;
-  margin: 0 auto;
 }
 
 .activity-table .school-logo-placeholder {
@@ -249,8 +250,11 @@ app-activity-list mat-card-title {
   width: 24px;
   height: 24px;
   color: #9e9e9e;
-  display: block;
-  margin: 0 auto;
+}
+
+.activity-table .school-name.cell-content {
+  -webkit-line-clamp: 2;
+  max-height: 2.8em;
 }
 
 /* Middle columns - flexible with minimum widths so they don't shrink too much */
@@ -276,7 +280,7 @@ app-activity-list mat-card-title {
 }
 .activity-table .mat-mdc-column-school,
 .activity-table .mat-column-school {
-  min-width: 120px;
+  min-width: 160px;
 }
 
 .activity-type-icon {

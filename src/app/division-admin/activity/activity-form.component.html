@@ -56,7 +56,14 @@
               </mat-form-field>
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Title</mat-label>
-                <input matInput formControlName="title" placeholder="Activity title">
+                <mat-select *ngIf="form.get('type')?.value === ActivityType.PartnershipEngagement; else titleFreeText"
+                            formControlName="title"
+                            placeholder="Select title">
+                  <mat-option *ngFor="let opt of partnershipTitleOptions" [value]="opt">{{ opt }}</mat-option>
+                </mat-select>
+                <ng-template #titleFreeText>
+                  <input matInput formControlName="title" placeholder="Activity title">
+                </ng-template>
                 <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required.</mat-error>
               </mat-form-field>
               <mat-form-field appearance="outline" class="full-width">

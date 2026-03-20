@@ -27,6 +27,17 @@ import { Activity } from '../../common/model/activity.model';
 import { UserListItem } from '../../registration/user.model';
 import { ActivityType, getActivityTypeLabel } from '../../common/enums/activity-type.enum';
 
+/** Preset titles when activity type is Partnership Engagement. */
+const PARTNERSHIP_ENGAGEMENT_TITLES: readonly string[] = [
+  'Groundbreaking Ceremony',
+  'MOA Signing',
+  'Partnership Meeting',
+  'School Visit',
+  'PPA Monitoring & Evaluation',
+  "Stakeholders' Forum/Appreciation",
+  'Turnover Ceremony',
+];
+
 @Component({
     selector: 'app-activity-form',
     providers: [provideNativeDateAdapter()],
@@ -67,7 +78,11 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   readonly userSearchLimit = 50;
 
   readonly activityTypes = Object.values(ActivityType);
+  readonly ActivityType = ActivityType;
   readonly getActivityTypeLabel = getActivityTypeLabel;
+
+  /** API/custom titles not in the preset list (shown only for partnership type). */
+  private partnershipTitleExtras: string[] = [];
 
   get missingRequiredFields(): string[] {
     const fields: string[] = [];
@@ -85,6 +100,12 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       }
     }
     return fields;
+  }
+
+  get partnershipTitleOptions(): string[] {
+    const seen = new Set<string>(PARTNERSHIP_ENGAGEMENT_TITLES);
+    const extras = this.partnershipTitleExtras.filter((t) => t && !seen.has(t));
+    return [...PARTNERSHIP_ENGAGEMENT_TITLES, ...extras];
   }
 
   readonly isDialogMode: boolean;
@@ -129,6 +150,7 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
     }
     this.setupStakeholderSearch();
     this.setupStakeholderValidation();
+    this.setupPartnershipTitleMode();
     this.setupDateAndTimeOrderValidation();
     this.setupTimeDefaults();
     this.loadInitialData();
@@ -194,6 +216,20 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
     this.form.get('endTimeValue')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(triggerTimeValidation);
     this.form.get('hasTime')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(triggerTimeValidation);
     this.form.get('hasTimeRange')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(triggerTimeValidation);
+  }
+
+  private setupPartnershipTitleMode(): void {
+    this.form.get('type')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((type) => {
+      if (type === ActivityType.PartnershipEngagement) {
+        const raw = (this.form.get('title')?.value ?? '') as string;
+        const trimmed = raw.trim();
+        if (trimmed && !PARTNERSHIP_ENGAGEMENT_TITLES.includes(trimmed) && !this.partnershipTitleExtras.includes(trimmed)) {
+          this.partnershipTitleExtras = [...this.partnershipTitleExtras, trimmed];
+        }
+      } else {
+        this.partnershipTitleExtras = [];
+      }
+    });
   }
 
   private setupStakeholderValidation(): void {
@@ -373,9 +409,14 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
     const hasTime = activity.hasTime ?? false;
     const { startDate, endDate, startTimeValue, endTimeValue, hasTimeRange } = this.parseDatetimes(startVal, effectiveEndVal, hasTime);
     const normalizedType = this.normalizeActivityType(activity.type);
+    this.partnershipTitleExtras = [];
+    const titleRaw = (activity.title ?? '').trim();
+    if (normalizedType === ActivityType.PartnershipEngagement && titleRaw && !PARTNERSHIP_ENGAGEMENT_TITLES.includes(titleRaw)) {
+      this.partnershipTitleExtras = [titleRaw];
+    }
     this.form.patchValue({
       type: normalizedType,
-      title: activity.title,
+      title: titleRaw,
       description: activity.description ?? '',
       hasEndDate,
       startDate,

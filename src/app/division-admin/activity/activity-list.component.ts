@@ -18,6 +18,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivityService } from '../../common/services/activity.service';
 import { Activity } from '../../common/model/activity.model';
+import { UserListItem } from '../../registration/user.model';
 import { AuthService } from '../../auth/auth.service';
 import { UserType } from '../../registration/user-type.enum';
 import { formatDateString, formatDateTimeString, formatTimeString } from '../../common/date-utils';
@@ -53,13 +54,13 @@ export class ActivityListComponent implements OnInit, OnDestroy {
 
   readonly displayedColumns: string[] = [
     'type',
+    'school',
     'title',
     'description',
     'date',
     'time',
     'location',
-    'schoolLogo',
-    'school',
+    'stakeholder',
     'actions',
   ];
 
@@ -121,6 +122,16 @@ export class ActivityListComponent implements OnInit, OnDestroy {
     if (!raw) return '—';
     if (typeof raw === 'object' && raw !== null && 'schoolName' in raw) {
       return (raw as { schoolName?: string }).schoolName ?? '—';
+    }
+    return typeof raw === 'string' ? raw : '—';
+  }
+
+  formatStakeholder(activity: Activity): string {
+    const raw = activity.stakeholderId;
+    if (!raw) return '—';
+    if (typeof raw === 'object' && raw !== null) {
+      const item = raw as UserListItem;
+      return item.name ?? '—';
     }
     return typeof raw === 'string' ? raw : '—';
   }
