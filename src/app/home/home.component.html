@@ -78,64 +78,66 @@
       </div>
 
       <div class="column-second">
-        <aside *ngIf="shouldShowStats(state)" class="home-widget school-context-widget">
-          <h3 class="home-widget-title">
-            <mat-icon class="home-widget-icon">domain</mat-icon>
-            {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
-          </h3>
-          <div class="aip-status-header school-context-widget-body">
-            <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
-              <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
-              <img
-                *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
-                [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
-                alt="Logo"
-                class="school-logo"
-                (error)="onLogoError(state)" />
-              <mat-icon
-                *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && (!state.schoolLogoUrl || state.logoError)) || (isDivisionAdmin(state) && (!state.divisionLogoUrl || state.logoError)))"
-                class="school-icon">school</mat-icon>
-
-              <div
-                *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
-                #logoPreview class="logo-preview">
+        <div *ngIf="shouldShowStats(state)" class="home-stats-widgets-row">
+          <aside class="home-widget school-context-widget">
+            <h3 class="home-widget-title">
+              <mat-icon class="home-widget-icon">domain</mat-icon>
+              {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
+            </h3>
+            <div class="aip-status-header school-context-widget-body">
+              <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
+                <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
                 <img
+                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
                   [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
-                  alt="Logo Preview"
-                  class="logo-preview-image" />
+                  alt="Logo"
+                  class="school-logo"
+                  (error)="onLogoError(state)" />
+                <mat-icon
+                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && (!state.schoolLogoUrl || state.logoError)) || (isDivisionAdmin(state) && (!state.divisionLogoUrl || state.logoError)))"
+                  class="school-icon">school</mat-icon>
+
+                <div
+                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
+                  #logoPreview class="logo-preview">
+                  <img
+                    [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                    alt="Logo Preview"
+                    class="logo-preview-image" />
+                </div>
+              </div>
+              <div class="school-title-wrapper">
+                <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-title-bar" aria-hidden="true"></div>
+                <p *ngIf="!isHeaderLoading(state)" class="school-name-title">{{ getWelcomeHeaderName(state) | uppercase }}</p>
               </div>
             </div>
-            <div class="school-title-wrapper">
-              <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-title-bar" aria-hidden="true"></div>
-              <p *ngIf="!isHeaderLoading(state)" class="school-name-title">{{ getWelcomeHeaderName(state) | uppercase }}</p>
-            </div>
-          </div>
-        </aside>
+          </aside>
 
-        <aside *ngIf="shouldShowStats(state)" class="home-widget ppa-implementation-widget">
-          <h3 class="home-widget-title">
-            <mat-icon class="home-widget-icon">insights</mat-icon>
-            PPA Implementation Status
-          </h3>
-          <div class="aip-status-details ppa-implementation-widget-body" (click)="navigateToAip()" role="button" tabindex="0" (keydown.enter)="navigateToAip()">
-            <div class="aip-stats-cards-inline">
-              <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
-                <mat-card-content>
-                  <div class="status-title-inline">{{ status }}</div>
-                  <div *ngIf="state.loading.aipStats" class="skeleton-card-content" aria-hidden="true">
-                    <div class="skeleton skeleton-card-bar-sm"></div>
-                    <div class="skeleton skeleton-card-bar-lg"></div>
-                    <div class="skeleton skeleton-card-bar-xs"></div>
-                  </div>
-                  <div *ngIf="!state.loading.aipStats" class="aip-card-values">
-                    <div class="status-percentage-inline">{{ getStatusPercentage(state, status) }}%</div>
-                    <div class="status-count-inline">{{ getStatusCountFormatted(state, status) }}</div>
-                  </div>
-                </mat-card-content>
-              </mat-card>
+          <aside class="home-widget ppa-implementation-widget">
+            <h3 class="home-widget-title">
+              <mat-icon class="home-widget-icon">insights</mat-icon>
+              PPA Implementation Status
+            </h3>
+            <div class="aip-status-details ppa-implementation-widget-body" (click)="navigateToAip()" role="button" tabindex="0" (keydown.enter)="navigateToAip()">
+              <div class="aip-stats-cards-inline">
+                <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
+                  <mat-card-content>
+                    <div class="status-title-inline">{{ status }}</div>
+                    <div *ngIf="state.loading.aipStats" class="skeleton-card-content" aria-hidden="true">
+                      <div class="skeleton skeleton-card-bar-sm"></div>
+                      <div class="skeleton skeleton-card-bar-lg"></div>
+                      <div class="skeleton skeleton-card-bar-xs"></div>
+                    </div>
+                    <div *ngIf="!state.loading.aipStats" class="aip-card-values">
+                      <div class="status-percentage-inline">{{ getStatusPercentage(state, status) }}%</div>
+                      <div class="status-count-inline">{{ getStatusCountFormatted(state, status) }}</div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
 
         <aside *ngIf="canShowPartnershipActivitiesWidget(state)" class="partnership-activities-widget">
           <h3 class="partnership-activities-title">

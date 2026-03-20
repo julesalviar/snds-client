@@ -29,6 +29,27 @@
   gap: 16px;
 }
 
+.home-stats-widgets-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.home-stats-widgets-row > .school-context-widget {
+  flex: 4 1 0;
+  min-width: 0;
+  width: auto;
+}
+
+.home-stats-widgets-row > .ppa-implementation-widget {
+  flex: 6 1 0;
+  min-width: 0;
+  width: auto;
+}
+
 .expanded-node {
   font-weight: bold;
 }
@@ -537,6 +558,16 @@ span {
 }
 
 @media (max-width: 768px) {
+  .home-stats-widgets-row {
+    flex-direction: column;
+  }
+
+  .home-stats-widgets-row > .school-context-widget,
+  .home-stats-widgets-row > .ppa-implementation-widget {
+    flex: none;
+    width: 100%;
+  }
+
   .responsive-title {
     font-size: 18px;
     font-weight: bold;
@@ -594,7 +625,7 @@ span {
   }
 
   .status-percentage-inline {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .status-title-inline {
