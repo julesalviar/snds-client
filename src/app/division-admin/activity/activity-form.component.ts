@@ -351,7 +351,9 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   }
 
   private loadInitialData(): void {
-    const users$ = this.userService.getUsers({ page: 1, limit: 500 }).pipe(
+    const roles = [UserType.StakeHolder.toString()];
+    const includeReferenceAccounts = true;
+    const users$ = this.userService.getUsers({ page: 1, limit: 500, roles, includeReferenceAccounts }).pipe(
       map((res) => {
         this.users = res.data ?? [];
         this.filteredUsers = [...this.users];
