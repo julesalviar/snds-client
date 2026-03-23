@@ -26,6 +26,7 @@ import { AuthService } from '../../auth/auth.service';
 import { Activity } from '../../common/model/activity.model';
 import { UserListItem } from '../../registration/user.model';
 import { ActivityType, getActivityTypeLabel } from '../../common/enums/activity-type.enum';
+import {UserType} from "../../registration/user-type.enum";
 
 /** Preset titles when activity type is Partnership Engagement. */
 const PARTNERSHIP_ENGAGEMENT_TITLES: readonly string[] = [
@@ -37,6 +38,9 @@ const PARTNERSHIP_ENGAGEMENT_TITLES: readonly string[] = [
   "Stakeholders' Forum/Appreciation",
   'Turnover Ceremony',
 ];
+
+/** 24 hex chars — MongoDB ObjectId string format. */
+const MONGO_OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
 
 @Component({
     selector: 'app-activity-form',
@@ -90,6 +94,7 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       { control: 'type', label: 'Type', error: 'required' },
       { control: 'title', label: 'Title', error: 'required' },
       { control: 'stakeholderId', label: 'Stakeholder', error: 'required', when: () => this.form.get('type')?.value === ActivityType.PartnershipEngagement },
+      { control: 'stakeholderId', label: 'Stakeholder (valid id)', error: 'objectId', when: () => this.form.get('type')?.value === ActivityType.PartnershipEngagement },
       { control: 'startDate', label: 'Date', error: 'required' },
     ];
     for (const { control, label, error, when } of checks) {
@@ -233,20 +238,29 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   }
 
   private setupStakeholderValidation(): void {
-    this.form.get('type')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((type) => {
+    const applyStakeholderValidators = (type: ActivityType | string) => {
       const stakeholderCtrl = this.form.get('stakeholderId');
       if (type === ActivityType.PartnershipEngagement) {
-        stakeholderCtrl?.setValidators(Validators.required);
+        stakeholderCtrl?.setValidators([Validators.required, this.partnershipStakeholderObjectIdValidator()]);
       } else {
         stakeholderCtrl?.clearValidators();
       }
       stakeholderCtrl?.updateValueAndValidity({ emitEvent: false });
-    });
-    // Apply initial validation based on current type
-    const type = this.form.get('type')?.value;
-    if (type === ActivityType.PartnershipEngagement) {
-      this.form.get('stakeholderId')?.setValidators(Validators.required);
-    }
+    };
+    this.form.get('type')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((type) => applyStakeholderValidators(type));
+    applyStakeholderValidators(this.form.get('type')?.value as ActivityType);
+  }
+
+  /** When type is Partnership engagement, stakeholder must be a Mongo ObjectId string (picked from list), not typed search text. */
+  private partnershipStakeholderObjectIdValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const type = control.parent?.get('type')?.value;
+      if (type !== ActivityType.PartnershipEngagement) return null;
+      const raw = control.value;
+      const id = this.normalizeUserId(raw).trim();
+      if (!id) return null;
+      return MONGO_OBJECT_ID_RE.test(id) ? null : { objectId: true };
+    };
   }
 
   private setupStakeholderSearch(): void {
@@ -273,8 +287,10 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
 
   private performStakeholderSearch(searchTerm: string): void {
     if (searchTerm.length > 0) {
+      const roles = [UserType.StakeHolder.toString()];
+      const includeReferenceAccounts = true;
       this.userService
-        .getUsers({ page: 1, limit: this.userSearchLimit, search: searchTerm })
+        .getUsers({ page: 1, limit: this.userSearchLimit, search: searchTerm, roles, includeReferenceAccounts})
         .subscribe({
           next: (res) => {
             this.filteredUsers = res.data ?? [];

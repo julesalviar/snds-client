@@ -53,6 +53,9 @@
                   </mat-option>
                 </mat-autocomplete>
                 <mat-error *ngIf="form.get('stakeholderId')?.hasError('required')">Stakeholder is required.</mat-error>
+                <mat-error *ngIf="form.get('stakeholderId')?.hasError('objectId')">
+                  Choose a stakeholder from the dropdown suggestions and click on the stakeholder's name to select it.
+                </mat-error>
               </mat-form-field>
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Title</mat-label>
