@@ -1192,21 +1192,20 @@ span {
   border-bottom: none;
 }
 
+.partnership-activities-table .col-school,
 .partnership-activities-table .col-venue {
-  font-weight: 500;
   min-width: 120px;
   max-width: 200px;
 }
 
-.partnership-activities-table .col-title,
 .partnership-activities-table .col-date,
 .partnership-activities-table .col-time {
   white-space: nowrap;
 }
 
-.partnership-activities-table .col-school {
-  min-width: 100px;
-  max-width: 160px;
+.partnership-activities-table .col-title {
+  white-space: nowrap;
+  font-weight: 500;
 }
 
 .partnership-activities-table .col-stakeholder {
