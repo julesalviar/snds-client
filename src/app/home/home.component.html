@@ -1,40 +1,82 @@
 <ng-container *ngIf="homeState$ | async as state">
-  <div class="container">
-    <div class="sections-wrapper">
-      <div class="column-first">
+  <div class="container home-compact">
+    <div class="widget-section-row">
+      <div class="sections-wrapper">
+        <div class="column-first">
         <div class="welcome-section">
           <h2 class="welcome-title">Welcome {{ state.name?.trim() ? state.name : 'Partners' }}</h2>
         </div>
         <div class="ppa-features-section" *ngIf="shouldHideTreeSection(state)">
-          <h2>Available Features</h2>
-          <p>Use the navigation menu to access the following features:</p>
-          <div class="feature-cards">
-            <div class="feature-card">
-              <h3>PPA Plans</h3>
-              <p>Create, view, edit, and manage your Program Plans and Activities (PPA). Track implementation status, budgetary requirements, participants, and other plan details in one place.</p>
-              <a *ngIf="state.userRole === UserType.ProgramHolder" routerLink="/program-holder/ppa-plans" class="feature-link">Go to PPA Plans</a>
-              <a *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant" routerLink="/office-admin/ppa-plans" class="feature-link">Go to PPA Plans</a>
-            </div>
-            <div class="feature-card">
-              <h3>Calendar</h3>
-              <p>View your PPA plans in a monthly calendar format. See plans by date, select a day to view its plans in the sidebar, and add new plans directly from the calendar.</p>
-              <a *ngIf="state.userRole === UserType.ProgramHolder" routerLink="/program-holder/calendar" class="feature-link">Go to Calendar</a>
-              <a *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant" routerLink="/office-admin/calendar" class="feature-link">Go to Calendar</a>
-            </div>
-            <div class="feature-card" *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant">
-              <h3>Offices</h3>
-              <p>View and manage offices within your division. Browse office details, divisions, and related information.</p>
-              <a routerLink="/office-admin/offices" class="feature-link">Go to Offices</a>
+          <div class="home-widget-header-row">
+            <h2 class="home-collapsible-heading">Available Features</h2>
+            <button
+              mat-icon-button
+              type="button"
+              class="home-widget-toggle-btn"
+              [matTooltip]="homeWidgetToggleTooltip('ppaFeatures')"
+              matTooltipPosition="left"
+              [matTooltipShowDelay]="280"
+              (click)="toggleHomeWidget('ppaFeatures', $event)"
+              [attr.aria-expanded]="isHomeWidgetExpanded('ppaFeatures')"
+              aria-label="Show or hide Available Features">
+              <mat-icon>{{ isHomeWidgetExpanded('ppaFeatures') ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+          <div
+            class="home-widget-collapsible-body"
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('ppaFeatures')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('ppaFeatures')">
+            <p>Use the navigation menu to access the following features:</p>
+            <div class="feature-cards">
+              <div class="feature-card">
+                <h3>PPA Plans</h3>
+                <p>Create, view, edit, and manage your Program Plans and Activities (PPA). Track implementation status, budgetary requirements, participants, and other plan details in one place.</p>
+                <a *ngIf="state.userRole === UserType.ProgramHolder" routerLink="/program-holder/ppa-plans" class="feature-link">Go to PPA Plans</a>
+                <a *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant" routerLink="/office-admin/ppa-plans" class="feature-link">Go to PPA Plans</a>
+              </div>
+              <div class="feature-card">
+                <h3>Calendar</h3>
+                <p>View your PPA plans in a monthly calendar format. See plans by date, select a day to view its plans in the sidebar, and add new plans directly from the calendar.</p>
+                <a *ngIf="state.userRole === UserType.ProgramHolder" routerLink="/program-holder/calendar" class="feature-link">Go to Calendar</a>
+                <a *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant" routerLink="/office-admin/calendar" class="feature-link">Go to Calendar</a>
+              </div>
+              <div class="feature-card" *ngIf="state.userRole === UserType.OfficeAdmin || state.userRole === UserType.OfficeAdminAssistant">
+                <h3>Offices</h3>
+                <p>View and manage offices within your division. Browse office details, divisions, and related information.</p>
+                <a routerLink="/office-admin/offices" class="feature-link">Go to Offices</a>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="tree-section" *ngIf="!shouldHideTreeSection(state)">
-          <div class="second-message">
-            <p>All the needs of our schools are given in the menu categories below.</p>
+        <aside
+          class="home-widget home-widget--plain tree-section"
+          *ngIf="!shouldHideTreeSection(state)">
+          <div class="home-widget-header-row home-tree-widget-header-row">
+            <div class="home-tree-widget-header-text">
+              <div class="second-message">
+                <p>All the needs of our schools are given in the menu categories below.</p>
+              </div>
+              <h2 class="home-collapsible-heading">Menu of Education Investment</h2>
+            </div>
+            <button
+              mat-icon-button
+              type="button"
+              class="home-widget-toggle-btn"
+              [matTooltip]="homeWidgetToggleTooltip('tree')"
+              matTooltipPosition="left"
+              [matTooltipShowDelay]="280"
+              (click)="toggleHomeWidget('tree', $event)"
+              [attr.aria-expanded]="isHomeWidgetExpanded('tree')"
+              aria-label="Show or hide school needs menu">
+              <mat-icon>{{ isHomeWidgetExpanded('tree') ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
           </div>
-          <h2>Menu of Education Investment</h2>
 
+          <div
+            class="home-widget-collapsible-body"
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('tree')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('tree')">
           <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
             <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
             <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>
@@ -74,17 +116,35 @@
               </ul>
             </li>
           </ul>
-        </div>
+          </div>
+        </aside>
       </div>
 
       <div class="column-second">
         <div *ngIf="shouldShowStats(state)" class="home-stats-widgets-row">
           <aside class="home-widget school-context-widget">
-            <h3 class="home-widget-title">
-              <mat-icon class="home-widget-icon">domain</mat-icon>
-              {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
-            </h3>
-            <div class="school-context-widget-body">
+            <div class="home-widget-header-row">
+              <h3 class="home-widget-title">
+                <mat-icon class="home-widget-icon">domain</mat-icon>
+                {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
+              </h3>
+              <button
+                mat-icon-button
+                type="button"
+                class="home-widget-toggle-btn"
+                [matTooltip]="homeWidgetToggleTooltip('schoolContext')"
+                matTooltipPosition="left"
+                [matTooltipShowDelay]="280"
+                (click)="toggleHomeWidget('schoolContext', $event)"
+                [attr.aria-expanded]="isHomeWidgetExpanded('schoolContext')"
+                aria-label="Show or hide school or division summary">
+                <mat-icon>{{ isHomeWidgetExpanded('schoolContext') ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </div>
+            <div
+              class="school-context-widget-body home-widget-collapsible-body"
+              [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('schoolContext')"
+              [attr.aria-hidden]="!isHomeWidgetExpanded('schoolContext')">
               <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container school-context-logo logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
                 <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
                 <img
@@ -114,11 +174,32 @@
           </aside>
 
           <aside class="home-widget ppa-implementation-widget">
-            <h3 class="home-widget-title">
-              <mat-icon class="home-widget-icon">insights</mat-icon>
-              PPA Implementation Status
-            </h3>
-            <div class="aip-status-details ppa-implementation-widget-body" (click)="navigateToAip()" role="button" tabindex="0" (keydown.enter)="navigateToAip()">
+            <div class="home-widget-header-row">
+              <h3 class="home-widget-title">
+                <mat-icon class="home-widget-icon">insights</mat-icon>
+                PPA Implementation Status
+              </h3>
+              <button
+                mat-icon-button
+                type="button"
+                class="home-widget-toggle-btn"
+                [matTooltip]="homeWidgetToggleTooltip('ppaImplementation')"
+                matTooltipPosition="left"
+                [matTooltipShowDelay]="280"
+                (click)="toggleHomeWidget('ppaImplementation', $event)"
+                [attr.aria-expanded]="isHomeWidgetExpanded('ppaImplementation')"
+                aria-label="Show or hide PPA implementation status">
+                <mat-icon>{{ isHomeWidgetExpanded('ppaImplementation') ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </div>
+            <div
+              class="aip-status-details ppa-implementation-widget-body home-widget-collapsible-body"
+              [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('ppaImplementation')"
+              [attr.aria-hidden]="!isHomeWidgetExpanded('ppaImplementation')"
+              (click)="navigateToAip()"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="navigateToAip()">
               <div class="aip-stats-cards-inline">
                 <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
                   <mat-card-content>
@@ -138,12 +219,111 @@
             </div>
           </aside>
         </div>
+        <!--
+          Division admin — backend transition:
+          - state.loading.resourcePartnerBreakdown: true until API finishes (see loadResourcePartnerBreakdown$).
+          - state.resourcePartnerSchoolYear: school year filter (pass to API).
+          - state.resourceGenerationBreakdown: HomePieSlice[] → monetary pie (value = amount).
+          - state.partnersBreakdown: HomePieSlice[] → partners pie (value = % or count per API; UI uses percent labels).
+        -->
+        <aside *ngIf="isDivisionAdmin(state)" class="resource-partner-breakdown-widget">
+          <div class="home-widget-header-row">
+            <h3 class="resource-partner-breakdown-title">
+              <mat-icon class="resource-partner-breakdown-icon">pie_chart</mat-icon>
+              Resource and Partner Breakdown
+            </h3>
+            <button
+              mat-icon-button
+              type="button"
+              class="home-widget-toggle-btn"
+              [matTooltip]="homeWidgetToggleTooltip('resourcePartner')"
+              matTooltipPosition="left"
+              [matTooltipShowDelay]="280"
+              (click)="toggleHomeWidget('resourcePartner', $event)"
+              [attr.aria-expanded]="isHomeWidgetExpanded('resourcePartner')"
+              aria-label="Show or hide resource and partner breakdown charts">
+              <mat-icon>{{ isHomeWidgetExpanded('resourcePartner') ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+          <div
+            class="home-widget-collapsible-body"
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('resourcePartner')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('resourcePartner')">
+          <div class="resource-partner-breakdown-toolbar">
+            <label class="p-select-sm-label" for="home-resource-partner-sy">School Year</label>
+            <select
+              id="home-resource-partner-sy"
+              class="p-select-sm"
+              [value]="state.resourcePartnerSchoolYear"
+              [disabled]="state.loading.resourcePartnerBreakdown"
+              (change)="onResourcePartnerSchoolYearChange(state, $any($event.target).value)">
+              @for (sy of resourcePartnerSchoolYearOptions; track sy) {
+                <option [value]="sy">{{ sy }}</option>
+              }
+            </select>
+          </div>
+          @if (state.loading.resourcePartnerBreakdown) {
+            <div class="resource-partner-breakdown-skeleton-row" aria-hidden="true">
+              <div class="resource-partner-breakdown-skeleton-block">
+                <h4 class="resource-partner-breakdown-chart-heading">Resource generation</h4>
+                <div class="skeleton skeleton-breakdown-pie"></div>
+              </div>
+              <div class="resource-partner-breakdown-skeleton-block">
+                <h4 class="resource-partner-breakdown-chart-heading">Partners</h4>
+                <div class="skeleton skeleton-breakdown-pie"></div>
+              </div>
+            </div>
+          } @else if (!state.resourceGenerationBreakdown.length || !state.partnersBreakdown.length) {
+            <p class="resource-partner-breakdown-empty">No resource or partner breakdown data.</p>
+          } @else {
+            <div class="resource-partner-breakdown-row">
+              <div class="resource-partner-breakdown-chart-block">
+                <h4 class="resource-partner-breakdown-chart-heading">Resource generation</h4>
+                <div
+                  #resourcePieHost
+                  class="resource-partner-breakdown-echart"
+                  role="img"
+                  aria-label="Resource generation breakdown"></div>
+              </div>
+              <div class="resource-partner-breakdown-chart-block">
+                <h4 class="resource-partner-breakdown-chart-heading">Partners</h4>
+                <div
+                  #partnersPieHost
+                  class="resource-partner-breakdown-echart"
+                  role="img"
+                  aria-label="Partners breakdown"></div>
+              </div>
+            </div>
+          }
+          @if (!state.loading.resourcePartnerBreakdown) {
+            <a routerLink="/division-admin/generated-resources" class="resource-partner-breakdown-view-all">View all resources</a>
+          }
+          </div>
+        </aside>
 
         <aside *ngIf="canShowPartnershipActivitiesWidget(state)" class="partnership-activities-widget">
-          <h3 class="partnership-activities-title">
-            <mat-icon class="partnership-activities-icon">handshake</mat-icon>
-            Partnership Engagement Activities
-          </h3>
+          <div class="home-widget-header-row">
+            <h3 class="partnership-activities-title">
+              <mat-icon class="partnership-activities-icon">handshake</mat-icon>
+              Partnership Engagement Activities
+            </h3>
+            <button
+              mat-icon-button
+              type="button"
+              class="home-widget-toggle-btn"
+              [matTooltip]="homeWidgetToggleTooltip('partnershipActivities')"
+              matTooltipPosition="left"
+              [matTooltipShowDelay]="280"
+              (click)="toggleHomeWidget('partnershipActivities', $event)"
+              [attr.aria-expanded]="isHomeWidgetExpanded('partnershipActivities')"
+              aria-label="Show or hide partnership activities">
+              <mat-icon>{{ isHomeWidgetExpanded('partnershipActivities') ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+          <div
+            class="home-widget-collapsible-body"
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('partnershipActivities')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('partnershipActivities')">
           @if (state.loading.partnershipActivities) {
             <div class="partnership-activities-skeleton" aria-hidden="true">
               @for (_ of [1,2,3,4,5]; track $index) {
@@ -191,14 +371,33 @@
           <a *ngIf="getPartnershipActivitiesListRoute(state)"
              [routerLink]="getPartnershipActivitiesListRoute(state)!"
              class="partnership-activities-view-all">View all activities</a>
+          </div>
         </aside>
 
         <!-- Upcoming events: office-admin, assistant-office-admin, program-holders only -->
         <aside *ngIf="canShowUpcomingEventsWidget(state)" class="upcoming-events-widget">
-          <h3 class="upcoming-events-title">
-            <mat-icon class="upcoming-events-icon">event</mat-icon>
-            Upcoming Events
-          </h3>
+          <div class="home-widget-header-row">
+            <h3 class="upcoming-events-title">
+              <mat-icon class="upcoming-events-icon">event</mat-icon>
+              Upcoming Events
+            </h3>
+            <button
+              mat-icon-button
+              type="button"
+              class="home-widget-toggle-btn"
+              [matTooltip]="homeWidgetToggleTooltip('upcomingEvents')"
+              matTooltipPosition="left"
+              [matTooltipShowDelay]="280"
+              (click)="toggleHomeWidget('upcomingEvents', $event)"
+              [attr.aria-expanded]="isHomeWidgetExpanded('upcomingEvents')"
+              aria-label="Show or hide upcoming events">
+              <mat-icon>{{ isHomeWidgetExpanded('upcomingEvents') ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+          <div
+            class="home-widget-collapsible-body"
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('upcomingEvents')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('upcomingEvents')">
           @if (state.loading.upcomingPlans) {
             <div class="upcoming-events-skeleton" aria-hidden="true">
               @for (_ of [1,2,3,4,5,6,7,8,9]; track $index) {
@@ -234,8 +433,10 @@
             </ul>
           }
           <a [routerLink]="getCalendarRoute(state)" class="upcoming-events-view-all">View Calendar</a>
+          </div>
         </aside>
       </div>
+    </div>
     </div>
   </div>
 </ng-container>

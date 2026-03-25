@@ -427,3 +427,128 @@ mat-menu mat-divider::before,
   background-color: #0056b3 !important;
   border: 1px solid #004085 !important;
 }
+
+/* ----- Compact nav (matches home page density) ----- */
+nav.nav-compact {
+  padding: 0.4rem 0.55rem;
+}
+
+nav.nav-compact .nav-list li {
+  margin-right: 1.15rem;
+}
+
+nav.nav-compact .nav-list li a,
+nav.nav-compact .nav-list li span {
+  padding: 0.32rem 0.65rem;
+  font-size: 0.8125rem;
+}
+
+nav.nav-compact .nav-list .menu-trigger {
+  padding: 0.32rem 0.65rem !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.25 !important;
+  min-height: 2rem !important;
+}
+
+nav.nav-compact .nav-right {
+  gap: 0.08rem;
+}
+
+nav.nav-compact .nav-info {
+  gap: 0.35rem;
+}
+
+nav.nav-compact .user-name,
+nav.nav-compact .role-label {
+  font-size: 0.65rem;
+}
+
+nav.nav-compact .nav-info-separator {
+  font-size: 0.85rem;
+}
+
+nav.nav-compact .role-icon {
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+}
+
+nav.nav-compact .avatar-button {
+  width: 34px;
+  height: 34px;
+}
+
+nav.nav-compact .avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+nav.nav-compact .avatar-initials {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+nav.nav-compact .menu-toggle {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+nav.nav-compact .profile .login-button {
+  line-height: 1.25;
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 1024px) {
+  nav.nav-compact .nav-list li {
+    margin-right: 8px;
+  }
+}
+
+@media (max-width: 769px) {
+  nav.nav-compact {
+    padding: 0.38rem 0.45rem;
+  }
+
+  nav.nav-compact .menu-toggle {
+    font-size: 0.85rem;
+    padding: 0.32rem 0.6rem;
+  }
+
+  nav.nav-compact .nav-right {
+    margin-left: 0.65rem;
+  }
+
+  nav.nav-compact .nav-list li a,
+  nav.nav-compact .nav-list li span,
+  nav.nav-compact .nav-list .menu-trigger {
+    padding: 0.45rem 0.85rem !important;
+  }
+
+  nav.nav-compact .nav-list .menu-trigger {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  nav.nav-compact {
+    padding: 0.38rem 0.45rem;
+  }
+}
+
+@media (max-width: 415.98px) {
+  nav.nav-compact .avatar,
+  nav.nav-compact .avatar-button {
+    width: 30px;
+    height: 30px;
+  }
+
+  nav.nav-compact .avatar,
+  nav.nav-compact .avatar-initials {
+    font-size: 11px;
+  }
+}

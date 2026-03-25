@@ -29,4 +29,8 @@ export const API_ENDPOINT = {
   ppaPlan: `${environment.API_URL}/ppa-plan`,
   activity: `${environment.API_URL}/activity`,
   offices: `${environment.API_URL}/offices`,
+  widget: {
+    resourceGenerations: `${environment.API_URL}/widgets/resource-generations`,
+    partners: `${environment.API_URL}/widgets/partners`,
+  },
 }

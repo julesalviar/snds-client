@@ -1,4 +1,9 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import * as echarts from 'echarts/core';
+import type { EChartsCoreOption, EChartsType } from 'echarts/core';
+import { PieChart } from 'echarts/charts';
+import { LegendComponent, TooltipComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
 import {UserService} from '../common/services/user.service';
 import {CommonModule, DecimalPipe} from '@angular/common';
 import {MatBadgeModule} from '@angular/material/badge';
@@ -10,22 +15,30 @@ import {
   BehaviorSubject,
   catchError,
   defer,
+  filter,
   forkJoin,
   from,
   map,
   Observable,
   of,
   shareReplay,
+  Subscription,
   switchMap,
-  tap
-} from "rxjs";
+  tap,
+} from 'rxjs';
 import {MatIcon} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
-import {getSchoolYear} from "../common/date-utils";
+import {
+  getResourceBreakdownSchoolYearOptions,
+  getResourcePartnerBreakdownDefaultSchoolYear,
+  getSchoolYear,
+} from '../common/date-utils';
 import {AipService} from "../common/services/aip.service";
 import {AIP_STATUSES, AipStatus} from "../common/enums/aip-status.enum";
 import {UserType} from "../registration/user-type.enum";
+import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from "@angular/material/card";
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {SchoolInfo} from "../common/model/school.model";
 import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 import {PpaPlanService} from "../common/services/ppa-plan.service";
@@ -33,16 +46,33 @@ import {PpaPlan} from "../common/model/ppa-plan.model";
 import {CalendarNavigationService} from "../common/services/calendar-navigation.service";
 import { FieldCheckerService } from '../common/services/utils/field-checker.service';
 import { ActivityService } from '../common/services/activity.service';
+import {
+  ResourceGenerationsResponse,
+  WidgetService,
+  PartnersResponse,
+} from '../common/services/widget.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
 import { formatDateString, formatTimeString } from '../common/date-utils';
 import { UserListItem } from '../registration/user.model';
+import { pickRandomMaterialColors } from '../common/utils/material-chart-colors';
+
+echarts.use([LegendComponent, TooltipComponent, PieChart, CanvasRenderer]);
 
 interface TreeNode {
   name: string;
   children?: TreeNode[];
   expanded?: boolean;
   count?: number;
+}
+
+/**
+ * One pie segment for Resource / Partner breakdown.
+ * Map from backend fields (examples): `{ label: row.categoryName, value: row.amountPesos }`.
+ */
+export interface HomePieSlice {
+  label: string;
+  value: number;
 }
 
 const PROFILE_INCOMPLETE_MESSAGE = 'Please upload school logo and school profile, and input the school location coordinates to access other functions. Check Edit Profile.';
@@ -53,6 +83,8 @@ interface HomeLoadingState {
   aipStats: boolean;
   upcomingPlans: boolean;
   partnershipActivities: boolean;
+  /** Division-admin Resource & Partner breakdown pies (backend). */
+  resourcePartnerBreakdown: boolean;
 }
 
 /** Full home view state – single source for template; use with async pipe. */
@@ -71,21 +103,69 @@ export interface HomeState {
   totalAips: number;
   upcomingPlans: PpaPlan[];
   partnershipActivities: Activity[];
+  /** Backend: resource generation by category (monetary pie). */
+  resourceGenerationBreakdown: HomePieSlice[];
+  /** Backend: partner mix (percent pie). */
+  partnersBreakdown: HomePieSlice[];
+  /** School year filter for division-admin resource/partner breakdown (e.g. `2025-2026`). */
+  resourcePartnerSchoolYear: string;
 }
+
+type HomeWidgetId =
+  | 'ppaFeatures'
+  | 'tree'
+  | 'schoolContext'
+  | 'ppaImplementation'
+  | 'resourcePartner'
+  | 'partnershipActivities'
+  | 'upcomingEvents';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, MatBadgeModule, MatIcon, MatProgressBarModule, MatCardModule, RouterLink],
+  imports: [
+    CommonModule,
+    MatBadgeModule,
+    MatButtonModule,
+    MatIcon,
+    MatProgressBarModule,
+    MatCardModule,
+    MatTooltipModule,
+    RouterLink,
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   providers: [DecimalPipe]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('logoContainer') logoContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('logoPreview') logoPreview!: ElementRef<HTMLDivElement>;
+  @ViewChild('resourcePieHost') resourcePieHost?: ElementRef<HTMLDivElement>;
+  @ViewChild('partnersPieHost') partnersPieHost?: ElementRef<HTMLDivElement>;
 
   protected readonly UserType = UserType;
   protected readonly AIP_STATUSES = AIP_STATUSES;
+  /** Options for resource/partner breakdown school-year filter (2025-2026 … current year + 3). */
+  protected readonly resourcePartnerSchoolYearOptions = getResourceBreakdownSchoolYearOptions();
+
+  /** Accordion: when false, only the widget title row stays visible. */
+  private homeWidgetExpanded: Record<HomeWidgetId, boolean> = {
+    ppaFeatures: true,
+    tree: true,
+    schoolContext: true,
+    ppaImplementation: true,
+    resourcePartner: true,
+    partnershipActivities: true,
+    upcomingEvents: true,
+  };
+
+  private resourceBreakdownChart?: EChartsType;
+  private partnersBreakdownChart?: EChartsType;
+  private breakdownChartsResizeObserver?: ResizeObserver;
+  /** `resize()` during the opening animation cancels ECharts’ first-render animation. */
+  private breakdownChartsSuppressResizeUntil = 0;
+  private breakdownChartsPostAnimateResizeTimer?: ReturnType<typeof setTimeout>;
+  private breakdownChartsDomRetryCount = 0;
+  private divisionBreakdownChartsSub?: Subscription;
 
   /** Single stream for template – use with async pipe. No manual subscriptions. */
   readonly homeState$: Observable<HomeState>;
@@ -104,7 +184,8 @@ export class HomeComponent implements OnInit {
     private readonly calendarNavigationService: CalendarNavigationService,
     private readonly decimalPipe: DecimalPipe,
     private readonly fieldCheckerService: FieldCheckerService,
-    private readonly activityService: ActivityService
+    private readonly activityService: ActivityService,
+    private readonly widgetService: WidgetService,
   ) {
     const initial = this.getInitialState();
     this.homeStateSubject = new BehaviorSubject(initial);
@@ -117,9 +198,29 @@ export class HomeComponent implements OnInit {
       this.checkProfileCompleteness();
     }
 
+    this.divisionBreakdownChartsSub = this.homeState$
+      .pipe(
+        filter(
+          (s) =>
+            this.isDivisionAdmin(s) &&
+            !s.loading.resourcePartnerBreakdown &&
+            s.resourceGenerationBreakdown.length > 0 &&
+            s.partnersBreakdown.length > 0,
+        ),
+      )
+      .subscribe(() => {
+        queueMicrotask(() => requestAnimationFrame(() => this.initDivisionAdminBreakdownCharts()));
+      });
+
     this.buildLoadPipeline().subscribe({
       error: (err) => console.error('Home load error:', err),
     });
+  }
+
+  ngOnDestroy(): void {
+    this.divisionBreakdownChartsSub?.unsubscribe();
+    this.divisionBreakdownChartsSub = undefined;
+    this.disposeDivisionAdminBreakdownCharts();
   }
 
   private getInitialState(): HomeState {
@@ -128,8 +229,16 @@ export class HomeComponent implements OnInit {
     if (!name || !userRole) console.warn('User information is incomplete.');
     const aipStatusStats = new Map<AipStatus, number>();
     AIP_STATUSES.forEach((s) => aipStatusStats.set(s, 0));
+    const isDivisionAdmin = userRole === UserType.DivisionAdmin;
     return {
-      loading: {internalRefData: true, schoolNeeds: true, aipStats: true, upcomingPlans: true, partnershipActivities: true},
+      loading: {
+        internalRefData: true,
+        schoolNeeds: true,
+        aipStats: true,
+        upcomingPlans: true,
+        partnershipActivities: true,
+        resourcePartnerBreakdown: isDivisionAdmin,
+      },
       name,
       userRole,
       treeData: [],
@@ -143,6 +252,9 @@ export class HomeComponent implements OnInit {
       totalAips: 0,
       upcomingPlans: [],
       partnershipActivities: [],
+      resourceGenerationBreakdown: [],
+      partnersBreakdown: [],
+      resourcePartnerSchoolYear: getResourcePartnerBreakdownDefaultSchoolYear(),
     };
   }
 
@@ -152,6 +264,11 @@ export class HomeComponent implements OnInit {
       return of(initial).pipe(
         switchMap((s) =>
           this.loadInternalRefData$(s).pipe(
+            tap((result) => this.homeStateSubject.next(result)),
+          ),
+        ),
+        switchMap((s) =>
+          this.loadResourcePartnerBreakdown$(s).pipe(
             tap((result) => this.homeStateSubject.next(result)),
           ),
         ),
@@ -196,6 +313,72 @@ export class HomeComponent implements OnInit {
         return of({ ...state, loading: { ...state.loading, internalRefData: false } });
       }),
     );
+  }
+
+  /**
+   * Division-admin only: fetch resource + partner breakdown for pies.
+   * `GET /widgets/resource-generations` and `GET /widgets/partners` (optional `schoolYear` query).
+   */
+  private loadResourcePartnerBreakdown$(state: HomeState): Observable<HomeState> {
+    if (state.userRole !== UserType.DivisionAdmin) {
+      return of({
+        ...state,
+        loading: { ...state.loading, resourcePartnerBreakdown: false },
+      });
+    }
+    const schoolYear = state.resourcePartnerSchoolYear;
+    const emptyResource: ResourceGenerationsResponse = { success: false, data: [], meta: { count: 0, timestamp: '' } };
+    const emptyPartners: PartnersResponse = { success: false, data: [], meta: { count: 0, timestamp: '' } };
+
+    return forkJoin({
+      resource: this.widgetService.getResourceGenerations(schoolYear).pipe(
+        catchError((err) => {
+          console.error('Resource generations widget error:', err);
+          return of(emptyResource);
+        }),
+      ),
+      partners: this.widgetService.getPartners(schoolYear).pipe(
+        catchError((err) => {
+          console.error('Partners widget error:', err);
+          return of(emptyPartners);
+        }),
+      ),
+    }).pipe(
+      map(({ resource, partners }) => {
+        const resourceGenerationBreakdown: HomePieSlice[] =
+          resource.success && Array.isArray(resource.data)
+            ? resource.data.map((row) => ({ label: row.sector, value: row.totalAmount }))
+            : [];
+        const partnersBreakdown: HomePieSlice[] =
+          partners.success && Array.isArray(partners.data)
+            ? partners.data.map((row) => ({ label: row.sector, value: row.count }))
+            : [];
+        return {
+          ...state,
+          resourcePartnerSchoolYear: schoolYear,
+          resourceGenerationBreakdown,
+          partnersBreakdown,
+          loading: { ...state.loading, resourcePartnerBreakdown: false },
+        };
+      }),
+    );
+  }
+
+  onResourcePartnerSchoolYearChange(state: HomeState, schoolYear: string): void {
+    if (schoolYear === state.resourcePartnerSchoolYear || state.loading.resourcePartnerBreakdown) {
+      return;
+    }
+    this.disposeDivisionAdminBreakdownCharts();
+    this.homeStateSubject.next({
+      ...state,
+      resourcePartnerSchoolYear: schoolYear,
+      loading: { ...state.loading, resourcePartnerBreakdown: true },
+    });
+    const latest = this.homeStateSubject.getValue();
+    this.loadResourcePartnerBreakdown$(latest).subscribe({
+      next: (result) => this.homeStateSubject.next(result),
+      error: (err) => console.error('Resource partner breakdown load error:', err),
+    });
   }
 
   toggleChildren(state: HomeState, node: TreeNode): void {
@@ -619,6 +802,212 @@ export class HomeComponent implements OnInit {
 
   isDivisionAdmin(state: HomeState): boolean {
     return state.userRole === UserType.DivisionAdmin;
+  }
+
+  protected isHomeWidgetExpanded(id: HomeWidgetId): boolean {
+    return this.homeWidgetExpanded[id];
+  }
+
+  protected toggleHomeWidget(id: HomeWidgetId, event?: Event): void {
+    event?.stopPropagation();
+    const next = !this.homeWidgetExpanded[id];
+    this.homeWidgetExpanded[id] = next;
+    if (id === 'resourcePartner' && next) {
+      queueMicrotask(() =>
+        requestAnimationFrame(() => {
+          this.resourceBreakdownChart?.resize();
+          this.partnersBreakdownChart?.resize();
+        }),
+      );
+    }
+  }
+
+  private readonly homeWidgetSectionLabels: Record<HomeWidgetId, string> = {
+    ppaFeatures: 'Available Features',
+    tree: 'school needs menu',
+    schoolContext: 'school or division summary',
+    ppaImplementation: 'PPA implementation status',
+    resourcePartner: 'resource & partner breakdown',
+    partnershipActivities: 'partnership activities',
+    upcomingEvents: 'upcoming events',
+  };
+
+  /** Hover tooltip for the expand/collapse control. */
+  protected homeWidgetToggleTooltip(id: HomeWidgetId): string {
+    const label = this.homeWidgetSectionLabels[id];
+    return this.isHomeWidgetExpanded(id) ? `Collapse ${label}` : `Expand ${label}`;
+  }
+
+  /**
+   * Apache ECharts pie (see https://echarts.apache.org/examples/en/editor.html?c=pie-simple).
+   * Initialized only when division-admin hosts exist in the template.
+   */
+  private initDivisionAdminBreakdownCharts(): void {
+    if (this.resourceBreakdownChart) return;
+
+    const resEl = this.resourcePieHost?.nativeElement;
+    const partEl = this.partnersPieHost?.nativeElement;
+    if (!resEl || !partEl) {
+      if (
+        this.authService.getActiveRole() === UserType.DivisionAdmin &&
+        this.breakdownChartsDomRetryCount < 30
+      ) {
+        this.breakdownChartsDomRetryCount++;
+        setTimeout(() => this.initDivisionAdminBreakdownCharts(), 50);
+      }
+      return;
+    }
+    this.breakdownChartsDomRetryCount = 0;
+
+    const latest = this.homeStateSubject.getValue();
+    const resourceSlices = latest.resourceGenerationBreakdown;
+    const partnerSlices = latest.partnersBreakdown;
+    if (!resourceSlices.length || !partnerSlices.length) return;
+
+    /** Cover opening animation + stagger + partner delay (see buildBreakdownPieOption). */
+    const resizeUnfreezeMs = 1850;
+    this.breakdownChartsSuppressResizeUntil = performance.now() + resizeUnfreezeMs;
+    this.clearBreakdownChartsPostAnimateResizeTimer();
+
+    this.resourceBreakdownChart = echarts.init(resEl, undefined, { renderer: 'canvas' });
+    this.partnersBreakdownChart = echarts.init(partEl, undefined, { renderer: 'canvas' });
+    this.resourceBreakdownChart.setOption(
+      this.buildBreakdownPieOption(resourceSlices, 'Resource generation', { type: 'monetary' }, 0),
+    );
+    this.partnersBreakdownChart.setOption(
+      this.buildBreakdownPieOption(partnerSlices, 'Partners', { type: 'percent' }, 200),
+    );
+
+    this.breakdownChartsResizeObserver = new ResizeObserver(() => {
+      if (performance.now() < this.breakdownChartsSuppressResizeUntil) return;
+      this.resourceBreakdownChart?.resize();
+      this.partnersBreakdownChart?.resize();
+    });
+    this.breakdownChartsResizeObserver.observe(resEl);
+    this.breakdownChartsResizeObserver.observe(partEl);
+
+    this.breakdownChartsPostAnimateResizeTimer = setTimeout(() => {
+      this.breakdownChartsPostAnimateResizeTimer = undefined;
+      this.breakdownChartsSuppressResizeUntil = 0;
+      this.resourceBreakdownChart?.resize();
+      this.partnersBreakdownChart?.resize();
+    }, resizeUnfreezeMs);
+  }
+
+  private clearBreakdownChartsPostAnimateResizeTimer(): void {
+    if (this.breakdownChartsPostAnimateResizeTimer != null) {
+      clearTimeout(this.breakdownChartsPostAnimateResizeTimer);
+      this.breakdownChartsPostAnimateResizeTimer = undefined;
+    }
+  }
+
+  private disposeDivisionAdminBreakdownCharts(): void {
+    this.clearBreakdownChartsPostAnimateResizeTimer();
+    this.breakdownChartsSuppressResizeUntil = 0;
+    this.breakdownChartsResizeObserver?.disconnect();
+    this.breakdownChartsResizeObserver = undefined;
+    this.resourceBreakdownChart?.dispose();
+    this.partnersBreakdownChart?.dispose();
+    this.resourceBreakdownChart = undefined;
+    this.partnersBreakdownChart = undefined;
+  }
+
+  private buildBreakdownPieOption(
+    slices: readonly HomePieSlice[],
+    seriesName: string,
+    display: { type: 'monetary' } | { type: 'percent' },
+    animationBaseDelayMs = 0,
+  ): EChartsCoreOption {
+    const monetaryNumberFormat = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    type BreakdownPieParams = { name: string; value: number; percent: number };
+    /** Above this length, monetary value is shown on the next line (slice labels only). */
+    const monetaryNameWrapMinChars = 10;
+    const formatBreakdownItem = (p: BreakdownPieParams, lineSep: string): string => {
+      if (display.type === 'monetary') {
+        const amount = monetaryNumberFormat.format(p.value);
+        if (p.name.length > monetaryNameWrapMinChars) {
+          return `${p.name}${lineSep}${amount}`;
+        }
+        return `${p.name} ${amount}`;
+      }
+      return `${p.name}${lineSep}${Math.round(p.percent)}%`;
+    };
+
+    /** Tooltip: `name` / `value` (`percent`%). */
+    const formatBreakdownTooltip = (params: unknown): string => {
+      const p = params as { name: string; value: number | string; percent: number };
+      const raw = typeof p.value === 'number' ? p.value : Number(p.value);
+      const valueStr =
+        display.type === 'monetary' ? monetaryNumberFormat.format(raw) : `${raw}`;
+      const pct = Math.round(p.percent);
+      return `${p.name}<br/>${valueStr} (${pct}%)`;
+    };
+
+    const sliceStaggerMs = 95;
+    const initialDurationMs = 1000;
+    const chartColors = pickRandomMaterialColors(slices.length);
+
+    return {
+      color: chartColors,
+      animation: true,
+      animationDuration: initialDurationMs,
+      animationEasing: 'cubicOut',
+      tooltip: {
+        trigger: 'item',
+        triggerOn: 'mousemove|click',
+        formatter: formatBreakdownTooltip,
+      },
+      legend: {
+        bottom: '0%',
+        left: 'center',
+        itemWidth: 10,
+        itemHeight: 10,
+        textStyle: { color: '#333', fontSize: 11 },
+        selectedMode: false,
+      },
+      series: [
+        {
+          name: seriesName,
+          type: 'pie',
+          radius: '50%',
+          center: ['50%', '46%'],
+          avoidLabelOverlap: true,
+          itemStyle: {
+            borderRadius: 2,
+            borderColor: '#fff',
+            borderWidth: 1,
+          },
+          label: {
+            show: true,
+            color: '#333',
+            fontSize: 11,
+            formatter: (params: unknown) => formatBreakdownItem(params as BreakdownPieParams, '\n'),
+          },
+          labelLine: {
+            show: true,
+            length: 12,
+            length2: 8,
+            lineStyle: { color: '#999', width: 1 },
+          },
+          animationType: 'expansion',
+          animationDuration: initialDurationMs,
+          animationEasing: 'cubicOut',
+          animationDelay: (dataIndex: number) => animationBaseDelayMs + dataIndex * sliceStaggerMs,
+          data: slices.map((s) => ({ value: s.value, name: s.label })),
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 12,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.28)',
+            },
+          },
+        },
+      ],
+    };
   }
 
   shouldShowStats(state: HomeState): boolean {

@@ -1,7 +1,14 @@
 .container {
   display: flex;
   flex-direction: column;
+  gap: 20px;
   padding: 20px;
+}
+
+.widget-section-row {
+  display: block;
+  width: 100%;
+  min-width: 0;
 }
 
 
@@ -70,6 +77,14 @@ h4 {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+.home-widget.home-widget--plain {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
 .home-widget-title {
   display: flex;
   align-items: center;
@@ -84,6 +99,125 @@ h4 {
   font-size: 20px;
   width: 20px;
   height: 20px;
+}
+
+/* Collapsible widget chrome (title row + expand/collapse) */
+.home-widget-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.home-widget-header-row .home-widget-title {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.home-widget-header-row .resource-partner-breakdown-title,
+.home-widget-header-row .partnership-activities-title,
+.home-widget-header-row .upcoming-events-title {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.home-widget-toggle-btn {
+  flex-shrink: 0;
+  margin: -4px -10px -4px 0;
+  color: #28a745;
+  cursor: pointer;
+  border-radius: 50%;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home-widget-toggle-btn mat-icon {
+  transition: transform 0.18s ease;
+}
+
+.home-widget-toggle-btn:hover,
+.home-widget-toggle-btn:focus-visible {
+  background-color: rgba(40, 167, 69, 0.11);
+  color: #1e7e34;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+}
+
+.home-widget-toggle-btn:hover mat-icon,
+.home-widget-toggle-btn:focus-visible mat-icon {
+  transform: scale(1.07);
+}
+
+.home-widget-toggle-btn:active {
+  background-color: rgba(40, 167, 69, 0.2);
+  box-shadow: 0 1px 4px rgba(40, 167, 69, 0.18);
+}
+
+.home-widget-toggle-btn:active mat-icon {
+  transform: scale(0.94);
+}
+
+.home-widget-toggle-btn:focus-visible {
+  outline: 2px solid rgba(40, 167, 69, 0.45);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-widget-toggle-btn,
+  .home-widget-toggle-btn mat-icon {
+    transition: none;
+  }
+
+  .home-widget-toggle-btn:hover mat-icon,
+  .home-widget-toggle-btn:focus-visible mat-icon,
+  .home-widget-toggle-btn:active mat-icon {
+    transform: none;
+  }
+}
+
+.home-widget-collapsible-body--collapsed {
+  display: none !important;
+}
+
+/* Mobile / narrow viewports: no collapse control — content always visible */
+@media (max-width: 768px) {
+  .home-widget-toggle-btn {
+    display: none !important;
+  }
+
+  .home-widget-collapsible-body.home-widget-collapsible-body--collapsed {
+    display: block !important;
+  }
+
+  .school-context-widget .school-context-widget-body.home-widget-collapsible-body--collapsed {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    text-align: center;
+  }
+}
+
+.home-collapsible-heading {
+  margin-left: 0 !important;
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.home-tree-widget-header-row {
+  align-items: flex-start;
+}
+
+.home-tree-widget-header-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .school-context-widget .school-context-widget-body {
@@ -145,11 +279,6 @@ h4 {
   outline: 2px solid rgba(40, 167, 69, 0.5);
   outline-offset: 2px;
   border-radius: 4px;
-}
-
-.tree-section {
-  flex: 1;
-  min-height: 0;
 }
 
 .ppa-features-section {
@@ -219,7 +348,9 @@ h2.welcome-title {
 }
 
 .welcome-section {
-  margin-bottom: 0px;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 0;
 }
 
 .welcome-title {
@@ -1108,6 +1239,211 @@ span {
   }
 }
 
+/* ----- Resource and Partner Breakdown (division admin only) ----- */
+.resource-partner-breakdown-widget {
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Shared with .resource-partner-breakdown-echart and .skeleton-breakdown-pie */
+  --breakdown-chart-h: 280px;
+}
+
+.resource-partner-breakdown-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+}
+
+.resource-partner-breakdown-toolbar {
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  line-height: 1;
+}
+
+/*
+ * PrimeNG Select `size="small"` look-alike (Lara-style surface / border / focus).
+ * See https://primeng.org/select — no PrimeNG dependency.
+ */
+.resource-partner-breakdown-toolbar .p-select-sm-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.resource-partner-breakdown-toolbar .p-select-sm {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  min-width: 6.85rem;
+  max-width: 7.5rem;
+  min-height: 1.75rem;
+  padding: 0.3125rem 1.75rem 0.3125rem 0.5625rem;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #334155;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%2364748b' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  background-size: 0.7rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.resource-partner-breakdown-toolbar .p-select-sm:hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+
+.resource-partner-breakdown-toolbar .p-select-sm:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 0 0 2px rgba(59, 130, 246, 0.18);
+}
+
+.resource-partner-breakdown-toolbar .p-select-sm:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background-color: #f8fafc;
+}
+
+.resource-partner-breakdown-toolbar .p-select-sm option {
+  font-size: 0.8125rem;
+  padding: 0.25rem;
+}
+
+.resource-partner-breakdown-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.resource-partner-breakdown-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.resource-partner-breakdown-chart-block {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.resource-partner-breakdown-chart-heading {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555;
+}
+
+.resource-partner-breakdown-skeleton-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.resource-partner-breakdown-skeleton-block {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.skeleton-breakdown-pie {
+  box-sizing: border-box;
+  /* Disk a touch smaller than chart box — matches in-plot pie + legend gap */
+  width: min(calc(var(--breakdown-chart-h, 280px) * 0.54), 100%);
+  aspect-ratio: 1;
+  height: auto;
+  max-width: 100%;
+  border-radius: 50%;
+  margin: 14px auto 0;
+}
+
+.resource-partner-breakdown-empty {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.resource-partner-breakdown-view-all {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #28a745;
+  text-decoration: none;
+}
+
+.resource-partner-breakdown-view-all:hover {
+  text-decoration: underline;
+}
+
+.resource-partner-breakdown-echart {
+  width: 100%;
+  height: var(--breakdown-chart-h);
+  min-height: 240px;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .resource-partner-breakdown-widget {
+    padding: 14px;
+  }
+
+  .resource-partner-breakdown-row,
+  .resource-partner-breakdown-skeleton-row {
+    flex-direction: column;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .resource-partner-breakdown-widget {
+    --breakdown-chart-h: 260px;
+    padding: 12px;
+  }
+
+  .resource-partner-breakdown-title {
+    font-size: 13px;
+  }
+
+  .resource-partner-breakdown-echart {
+    min-height: 220px;
+  }
+}
+
 /* ----- Partnership engagement activities (school admin, division admin, stakeholder) ----- */
 .partnership-activities-widget {
   flex-shrink: 0;
@@ -1247,5 +1583,308 @@ span {
   .partnership-activities-table {
     font-size: 12px;
     min-width: 520px;
+  }
+}
+
+/* ----- Compact home layout (denser widgets & spacing) ----- */
+.container.home-compact {
+  gap: 12px;
+  padding: 12px;
+}
+
+.home-compact .sections-wrapper {
+  gap: 12px;
+}
+
+.home-compact .column-first,
+.home-compact .column-second {
+  gap: 10px;
+}
+
+.home-compact .home-stats-widgets-row {
+  gap: 10px;
+}
+
+.home-compact .home-widget {
+  padding: 11px;
+}
+
+.home-compact .home-widget-title {
+  font-size: 13px;
+  margin: 0 0 8px 0;
+}
+
+.home-compact .home-widget-header-row .home-widget-title {
+  margin-bottom: 0;
+}
+
+.home-compact .home-widget-header-row {
+  margin-bottom: 8px;
+}
+
+.home-compact .home-widget-icon,
+.home-compact .resource-partner-breakdown-icon,
+.home-compact .upcoming-events-icon,
+.home-compact .partnership-activities-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.home-compact .welcome-title {
+  font-size: 16px;
+  margin: 0 0 6px 0;
+}
+
+.home-compact h2.home-collapsible-heading {
+  font-size: 17px;
+}
+
+.home-compact .ppa-features-section h2 {
+  margin-bottom: 8px;
+}
+
+.home-compact .feature-cards {
+  gap: 10px;
+}
+
+.home-compact .feature-card {
+  padding: 12px;
+}
+
+.home-compact .feature-card h3 {
+  font-size: 15px;
+  margin: 0 0 6px 0;
+}
+
+.home-compact .feature-card p {
+  font-size: 13px;
+  margin: 0 0 8px 0;
+  line-height: 1.45;
+}
+
+.home-compact .feature-link {
+  font-size: 13px;
+}
+
+.home-compact .school-context-widget .school-context-logo {
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  min-height: 60px;
+}
+
+.home-compact .school-context-widget .school-context-logo .school-icon {
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.home-compact .school-context-widget .skeleton-logo {
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  min-height: 60px;
+}
+
+.home-compact .school-context-widget .school-context-widget-body {
+  gap: 8px;
+}
+
+.home-compact .school-context-name {
+  font-size: 12px;
+}
+
+.home-compact .aip-stats-cards-inline {
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+}
+
+.home-compact .aip-status-card-inline {
+  min-height: 62px;
+}
+
+.home-compact .aip-status-card-inline mat-card-content {
+  padding: 8px 6px;
+  gap: 2px;
+}
+
+.home-compact .status-percentage-inline {
+  font-size: 17px;
+}
+
+.home-compact .second-message {
+  padding: 0 0 8px 0;
+}
+
+.home-compact .second-message p {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.home-compact li {
+  margin: 0 12px;
+  line-height: 1.25;
+}
+
+.home-compact .skeleton-tree {
+  margin: 12px 0 0 16px;
+}
+
+.home-compact .skeleton-tree li {
+  margin-bottom: 8px;
+  height: 18px;
+}
+
+.home-compact .upcoming-events-widget,
+.home-compact .partnership-activities-widget {
+  padding: 11px;
+}
+
+.home-compact .upcoming-events-title,
+.home-compact .partnership-activities-title {
+  font-size: 13px;
+  margin: 0 0 8px 0;
+}
+
+.home-compact .upcoming-events-skeleton,
+.home-compact .partnership-activities-skeleton {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.home-compact .skeleton-upcoming-item {
+  height: 32px;
+}
+
+.home-compact .upcoming-events-empty,
+.home-compact .partnership-activities-empty {
+  padding: 8px 0;
+  font-size: 12px;
+}
+
+.home-compact .upcoming-events-list {
+  gap: 8px;
+  margin: 0 0 8px 0;
+}
+
+.home-compact .upcoming-event-link {
+  padding: 9px 8px;
+  min-height: 40px;
+}
+
+.home-compact .resource-partner-breakdown-widget {
+  padding: 11px;
+  --breakdown-chart-h: 248px;
+}
+
+.home-compact .resource-partner-breakdown-title {
+  font-size: 13px;
+  margin: 0 0 10px 0;
+}
+
+.home-compact .resource-partner-breakdown-toolbar {
+  margin: 0 0 2px;
+}
+
+.home-compact .resource-partner-breakdown-row,
+.home-compact .resource-partner-breakdown-skeleton-row {
+  gap: 12px;
+}
+
+.home-compact .resource-partner-breakdown-chart-heading {
+  margin: 0 0 6px 0;
+}
+
+.home-compact .resource-partner-breakdown-echart {
+  min-height: 210px;
+}
+
+.home-compact .resource-partner-breakdown-view-all {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.home-compact .skeleton-breakdown-pie {
+  margin: 12px auto 0;
+}
+
+.home-compact .partnership-activities-table-wrap {
+  margin-bottom: 8px;
+}
+
+.home-compact .partnership-activities-table thead th {
+  padding: 6px 8px 6px 0;
+  font-size: 10px;
+}
+
+.home-compact .partnership-activities-table tbody td {
+  padding: 7px 8px 7px 0;
+  font-size: 12px;
+}
+
+.home-compact .partnership-activities-view-all,
+.home-compact .upcoming-events-view-all {
+  font-size: 12px;
+}
+
+@media (max-width: 1024px) {
+  .container.home-compact {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .home-compact .home-widget,
+  .home-compact .upcoming-events-widget,
+  .home-compact .partnership-activities-widget,
+  .home-compact .resource-partner-breakdown-widget {
+    padding: 10px;
+  }
+
+  .home-compact .welcome-title {
+    font-size: 15px;
+  }
+
+  .home-compact .aip-stats-cards-inline {
+    gap: 8px;
+  }
+
+  .home-compact .aip-status-card-inline {
+    min-height: 76px;
+  }
+
+  .home-compact .aip-status-card-inline mat-card-content {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-compact .aip-status-card-inline {
+    min-height: 72px;
+  }
+
+  .home-compact .aip-status-card-inline mat-card-content {
+    padding: 10px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container.home-compact {
+    padding: 8px;
+  }
+
+  .home-compact .resource-partner-breakdown-widget {
+    --breakdown-chart-h: 232px;
+  }
+
+  .home-compact .resource-partner-breakdown-echart {
+    min-height: 198px;
+  }
+
+  .home-compact .home-widget,
+  .home-compact .upcoming-events-widget,
+  .home-compact .partnership-activities-widget,
+  .home-compact .resource-partner-breakdown-widget {
+    padding: 9px;
   }
 }
