@@ -973,8 +973,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         {
           name: seriesName,
           type: 'pie',
-          radius: '50%',
-          center: ['50%', '46%'],
+          radius: '57%',
+          center: ['50%', '44%'],
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 2,

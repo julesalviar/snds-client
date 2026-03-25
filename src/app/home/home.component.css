@@ -1250,7 +1250,7 @@ span {
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   /* Shared with .resource-partner-breakdown-echart and .skeleton-breakdown-pie */
-  --breakdown-chart-h: 280px;
+  --breakdown-chart-h: 352px;
 }
 
 .resource-partner-breakdown-title {
@@ -1383,7 +1383,7 @@ span {
 .skeleton-breakdown-pie {
   box-sizing: border-box;
   /* Disk a touch smaller than chart box — matches in-plot pie + legend gap */
-  width: min(calc(var(--breakdown-chart-h, 280px) * 0.54), 100%);
+  width: min(calc(var(--breakdown-chart-h, 352px) * 0.54), 100%);
   aspect-ratio: 1;
   height: auto;
   max-width: 100%;
@@ -1413,7 +1413,7 @@ span {
 .resource-partner-breakdown-echart {
   width: 100%;
   height: var(--breakdown-chart-h);
-  min-height: 240px;
+  min-height: 304px;
   min-width: 0;
 }
 
@@ -1431,7 +1431,7 @@ span {
 
 @media (max-width: 480px) {
   .resource-partner-breakdown-widget {
-    --breakdown-chart-h: 260px;
+    --breakdown-chart-h: 322px;
     padding: 12px;
   }
 
@@ -1440,7 +1440,7 @@ span {
   }
 
   .resource-partner-breakdown-echart {
-    min-height: 220px;
+    min-height: 278px;
   }
 }
 
@@ -1775,7 +1775,7 @@ span {
 
 .home-compact .resource-partner-breakdown-widget {
   padding: 11px;
-  --breakdown-chart-h: 248px;
+  --breakdown-chart-h: 312px;
 }
 
 .home-compact .resource-partner-breakdown-title {
@@ -1797,7 +1797,7 @@ span {
 }
 
 .home-compact .resource-partner-breakdown-echart {
-  min-height: 210px;
+  min-height: 268px;
 }
 
 .home-compact .resource-partner-breakdown-view-all {
@@ -1874,11 +1874,11 @@ span {
   }
 
   .home-compact .resource-partner-breakdown-widget {
-    --breakdown-chart-h: 232px;
+    --breakdown-chart-h: 296px;
   }
 
   .home-compact .resource-partner-breakdown-echart {
-    min-height: 198px;
+    min-height: 254px;
   }
 
   .home-compact .home-widget,
