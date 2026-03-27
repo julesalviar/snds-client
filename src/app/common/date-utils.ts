@@ -15,28 +15,26 @@ export function getSchoolYear(offset: number = 0): string {
   return `${startYear}-${endYear}`;
 }
 
-/** Lowest start year in the home resource-breakdown school-year filter (inclusive). */
-export const RESOURCE_BREAKDOWN_SCHOOL_YEAR_MIN_START = 2025;
+export const SCHOOL_YEAR_MIN_START = 2025;
 
 /**
- * School year labels for that filter: `2025-2026` … `(currentYear + 3)-(currentYear + 4)`.
- * Uses calendar year for the upper bound, same label shape as `getSchoolYear`.
+ * School year labels from `2025-2026` through `(currentYear + 3)-(currentYear + 4)`.
+ * Same label shape as `getSchoolYear`.
  */
-export function getResourceBreakdownSchoolYearOptions(now: Date = new Date()): string[] {
+export function getSchoolYearOptions(now: Date = new Date()): string[] {
   const maxStartYear = now.getFullYear() + 3;
   const out: string[] = [];
-  for (let y = RESOURCE_BREAKDOWN_SCHOOL_YEAR_MIN_START; y <= maxStartYear; y++) {
+  for (let y = SCHOOL_YEAR_MIN_START; y <= maxStartYear; y++) {
     out.push(`${y}-${y + 1}`);
   }
   return out;
 }
 
-/** Prefer current SY from `getSchoolYear(0)` when it appears in the breakdown filter list; otherwise first option. */
-export function getResourcePartnerBreakdownDefaultSchoolYear(now: Date = new Date()): string {
-  const options = getResourceBreakdownSchoolYearOptions(now);
+export function getDefaultSchoolYear(now: Date = new Date()): string {
+  const options = getSchoolYearOptions(now);
   const current = getSchoolYear(0);
   if (options.includes(current)) return current;
-  return options[0] ?? `${RESOURCE_BREAKDOWN_SCHOOL_YEAR_MIN_START}-${RESOURCE_BREAKDOWN_SCHOOL_YEAR_MIN_START + 1}`;
+  return options[0] ?? `${SCHOOL_YEAR_MIN_START}-${SCHOOL_YEAR_MIN_START + 1}`;
 }
 
 export function formatDateString(value: string | MongoDate | undefined) {

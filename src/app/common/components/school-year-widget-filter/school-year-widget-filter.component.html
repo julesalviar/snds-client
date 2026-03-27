@@ -1,0 +1,15 @@
+<div
+  class="school-year-widget-filter-toolbar"
+  [class.school-year-widget-filter-toolbar--align-start]="!alignEnd">
+  <label class="p-select-sm-label" [attr.for]="resolvedControlId">School Year</label>
+  <select
+    [id]="resolvedControlId"
+    class="p-select-sm"
+    [value]="schoolYear"
+    [disabled]="disabled"
+    (change)="onSelectChange($any($event.target).value)">
+    @for (sy of options; track sy) {
+      <option [value]="sy">{{ sy }}</option>
+    }
+  </select>
+</div>

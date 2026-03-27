@@ -13,9 +13,9 @@ import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { UserService } from '../common/services/user.service';
-import {forkJoin, lastValueFrom, map, Observable, of, Subject, switchMap, takeUntil, catchError} from "rxjs";
+import {catchError, distinctUntilChanged, forkJoin, map, Observable, of, startWith, Subject, switchMap, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../common/services/school-need.service";
-import {getSchoolYear} from "../common/date-utils";
+import {getSchoolYear, getSchoolYearOptions} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
 import {Aip} from "../common/model/aip.model";
 import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
@@ -60,7 +60,11 @@ import {UserType} from "../registration/user-type.enum";
 export class SchoolAdminComponent implements OnInit, OnDestroy {
   schoolNeedsForm: FormGroup;
   schoolNeedsData: SchoolNeed[] = [];
+  /** PPA rows for the school; dropdown shows those matching form school year. */
+  private allProjectsData: Aip[] = [];
   projectsData: Aip[] = [];
+  /** False after first PPA fetch completes (success or error). */
+  isLoadingPpaProjects = true;
   schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
 
@@ -73,7 +77,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'unit', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
   pillars: string[] = [];
-  schoolYears: string[] = ['2025-2026'];
+  schoolYears: string[] = getSchoolYearOptions();
   units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
   selectedContribution: any;
@@ -129,14 +133,17 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadAllSchoolNeeds();
-    this.loadCurrentProjects();
-    this.loadContributionData();
-    this.loadPillarsAndUnits();
-    this.userService.projectTitles$.pipe(takeUntil(this.destroy$)).subscribe(titles => {
-      this.aipProjects = titles;
+    let isFirstSchoolYearEmit = true;
+    this.userService.schoolYear$.pipe(takeUntil(this.destroy$)).subscribe(sy => {
+      this.selectedSchoolYear = sy;
+      this.schoolNeedsForm.patchValue({ schoolYear: sy });
+      if (!isFirstSchoolYearEmit) {
+        this.pageIndex = 0;
+        this.loadAllSchoolNeeds();
+      }
+      isFirstSchoolYearEmit = false;
     });
-    this.userService.currentContribution.pipe(takeUntil(this.destroy$)).subscribe(data => {
+    this.userService.currentContribution$.pipe(takeUntil(this.destroy$)).subscribe(data => {
       if (data) {
         this.selectedContribution = data;
         this.schoolNeedsForm.patchValue({
@@ -144,7 +151,19 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
           contributionType: data.name
         });
         this.previousContributionType = data.name;
+        this.onContributionTypeChange(data.name ?? '');
       }
+    });
+    this.loadAllSchoolNeeds();
+    this.loadCurrentProjects();
+    this.loadContributionData();
+    this.loadPillarsAndUnits();
+    this.schoolNeedsForm
+      .get('schoolYear')!
+      .valueChanges.pipe(startWith(this.schoolNeedsForm.get('schoolYear')!.value), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => this.refreshPpaProjectsForFormSchoolYear());
+    this.userService.projectTitles$.pipe(takeUntil(this.destroy$)).subscribe(titles => {
+      this.aipProjects = titles;
     });
   }
 
@@ -356,14 +375,54 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   private loadCurrentProjects(): void {
+    this.isLoadingPpaProjects = true;
     this.fetchProjects().subscribe({
       next: (projects) => {
-        this.projectsData = projects;
+        this.allProjectsData = projects;
+        this.refreshPpaProjectsForFormSchoolYear();
+        this.isLoadingPpaProjects = false;
       },
       error: (err) => {
         console.error('Error fetching projects:', err);
+        this.isLoadingPpaProjects = false;
       }
     });
+  }
+
+  /**
+   * Normalize AIP `schoolYear` (number start year or `YYYY-YYYY` string) to `YYYY-YYYY` for comparison with the form.
+   */
+  private normalizeAipSchoolYearValue(raw: unknown): string {
+    if (raw == null || raw === '') return '';
+    const s = String(raw).trim();
+    if (s.includes('-')) return s;
+    const n = Number(s);
+    if (!Number.isNaN(n)) return `${n}-${n + 1}`;
+    return s;
+  }
+
+  private aipMatchesFormSchoolYear(aip: Aip, formSchoolYear: string): boolean {
+    if (!formSchoolYear?.trim()) return false;
+    return this.normalizeAipSchoolYearValue(aip.schoolYear) === formSchoolYear;
+  }
+
+  private refreshPpaProjectsForFormSchoolYear(): void {
+    const sy = this.schoolNeedsForm.get('schoolYear')?.value as string | undefined;
+    if (!sy?.trim()) {
+      this.projectsData = [];
+    } else {
+      this.projectsData = this.allProjectsData.filter((p) => this.aipMatchesFormSchoolYear(p, sy));
+    }
+    this.pruneSelectedProjectsToCurrentPpaOptions();
+  }
+
+  private pruneSelectedProjectsToCurrentPpaOptions(): void {
+    const allowed = new Set(this.projectsData.map((p) => p._id));
+    const next = this.selectedProjectIds.filter((id) => allowed.has(id));
+    if (next.length !== this.selectedProjectIds.length) {
+      this.selectedProjectIds = next;
+      this.schoolNeedsForm.get('ppaName')?.setValue(this.selectedProjectIds);
+    }
   }
 
   private loadContributionData(): void {
@@ -418,7 +477,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     page = 1,
     size = 1000,
   ): Observable<any[]> {
-    return this.aipService.getAips(page, size).pipe(
+    const schoolId = this.authService.getSchoolId();
+    return this.aipService.getAips(page, size, schoolId || undefined).pipe(
       map(response => response.data)
     );
   }
@@ -520,7 +580,8 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   protected getProjectTitle(projectId: string): string {
-    const project = this.projectsData.find(p => p._id === projectId);
+    const project =
+      this.allProjectsData.find((p) => p._id === projectId) ?? this.projectsData.find((p) => p._id === projectId);
     return project ? `${project.apn} - ${project.title}` : projectId;
   }
 

@@ -29,9 +29,8 @@ import {
 import {MatIcon} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {
-  getResourceBreakdownSchoolYearOptions,
-  getResourcePartnerBreakdownDefaultSchoolYear,
-  getSchoolYear,
+  getSchoolYearOptions,
+  getDefaultSchoolYear,
 } from '../common/date-utils';
 import {AipService} from "../common/services/aip.service";
 import {AIP_STATUSES, AipStatus} from "../common/enums/aip-status.enum";
@@ -56,6 +55,7 @@ import { ActivityType } from '../common/enums/activity-type.enum';
 import { formatDateString, formatTimeString } from '../common/date-utils';
 import { UserListItem } from '../registration/user.model';
 import { pickRandomMaterialColors } from '../common/utils/material-chart-colors';
+import { SchoolYearWidgetFilterComponent } from '../common/components/school-year-widget-filter/school-year-widget-filter.component';
 
 echarts.use([LegendComponent, TooltipComponent, PieChart, CanvasRenderer]);
 
@@ -109,6 +109,8 @@ export interface HomeState {
   partnersBreakdown: HomePieSlice[];
   /** School year filter for division-admin resource/partner breakdown (e.g. `2025-2026`). */
   resourcePartnerSchoolYear: string;
+  /** School year for the home tree filter; passed to school-needs API for tree counts. */
+  treeSchoolYear: string;
 }
 
 type HomeWidgetId =
@@ -131,6 +133,7 @@ type HomeWidgetId =
     MatCardModule,
     MatTooltipModule,
     RouterLink,
+    SchoolYearWidgetFilterComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
@@ -145,7 +148,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   protected readonly UserType = UserType;
   protected readonly AIP_STATUSES = AIP_STATUSES;
   /** Options for resource/partner breakdown school-year filter (2025-2026 … current year + 3). */
-  protected readonly resourcePartnerSchoolYearOptions = getResourceBreakdownSchoolYearOptions();
+  protected readonly resourcePartnerSchoolYearOptions = getSchoolYearOptions();
 
   /** Accordion: when false, only the widget title row stays visible. */
   private homeWidgetExpanded: Record<HomeWidgetId, boolean> = {
@@ -254,7 +257,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       partnershipActivities: [],
       resourceGenerationBreakdown: [],
       partnersBreakdown: [],
-      resourcePartnerSchoolYear: getResourcePartnerBreakdownDefaultSchoolYear(),
+      resourcePartnerSchoolYear: getDefaultSchoolYear(),
+      treeSchoolYear: getDefaultSchoolYear(),
     };
   }
 
@@ -364,6 +368,30 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
+  onTreeSchoolYearChange(state: HomeState, schoolYear: string): void {
+    if (schoolYear === state.treeSchoolYear || state.loading.schoolNeeds) {
+      return;
+    }
+    if (
+      state.userRole === UserType.ProgramHolder ||
+      state.userRole === UserType.OfficeAdmin ||
+      state.userRole === UserType.OfficeAdminAssistant
+    ) {
+      this.homeStateSubject.next({ ...state, treeSchoolYear: schoolYear });
+      return;
+    }
+    this.homeStateSubject.next({
+      ...state,
+      treeSchoolYear: schoolYear,
+      loading: { ...state.loading, schoolNeeds: true },
+    });
+    const latest = this.homeStateSubject.getValue();
+    this.loadSchoolNeeds$(latest).subscribe({
+      next: (result) => this.homeStateSubject.next(result),
+      error: (err) => console.error('School needs reload error:', err),
+    });
+  }
+
   onResourcePartnerSchoolYearChange(state: HomeState, schoolYear: string): void {
     if (schoolYear === state.resourcePartnerSchoolYear || state.loading.resourcePartnerBreakdown) {
       return;
@@ -400,6 +428,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   async onChildClick(child: TreeNode, state: HomeState): Promise<void> {
     const parentName = state.treeData.find((node) => node.children?.includes(child))?.name;
     this.userService.setContribution({ name: parentName, specificContribution: child.name });
+    this.userService.setSchoolYear(state.treeSchoolYear);
     let path: string;
     const queryParams: Record<string, string> = {};
     const role = state.userRole;
@@ -408,21 +437,26 @@ export class HomeComponent implements OnInit, OnDestroy {
         const { isComplete } = await this.checkProfileCompleteness();
         if (!isComplete) return;
         path = '/school-admin/school-needs';
+        console.log('Navigating to:', path, queryParams);
         break;
       }
       case UserType.DivisionAdmin:
         path = '/division-admin/school-needs';
+        console.log('Navigating to:', path, queryParams);
         break;
       case UserType.StakeHolder:
         path = '/stakeholder/school-needs';
         queryParams['selectedContribution'] = child.name;
+        console.log('Navigating to:', path, queryParams);
         break;
       default:
         path = '/guest/school-needs';
         queryParams['selectedContribution'] = child.name;
+        console.log('Navigating to:', path, queryParams);
         if (role) console.warn(`Unknown or undefined role: ${role}`);
         break;
     }
+    console.log('to:', path, queryParams);
     this.router.navigate([path], { queryParams });
 }
 
@@ -436,7 +470,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     return forkJoin({
       tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
-      needs: this.fetchAllSchoolNeedsData(),
+      needs: this.fetchAllSchoolNeedsData(state.treeSchoolYear),
     }).pipe(
       map(({ tree, needs }) => {
         const treeWithCounts = this.mapCountsToTreeData(tree, needs.data);
@@ -458,6 +492,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private fetchAllSchoolNeedsData(
+    schoolYear: string,
     page = 1,
     size = 10000,
     acc: any[] = [],
@@ -465,7 +500,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     schoolInfo: SchoolInfo | null = null,
   ): Observable<{ data: any[]; schoolName: string; schoolInfo: SchoolInfo | null }> {
     return this.schoolNeedService
-      .getSchoolNeeds(page, size, getSchoolYear(), undefined, undefined, true)
+      .getSchoolNeeds(page, size, schoolYear, undefined, undefined, true)
       .pipe(
         switchMap((res) => {
           const currentData = res?.data ?? [];
@@ -475,7 +510,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           if (currentData.length < size) {
             return of({ data: allData, schoolName: sn, schoolInfo: si });
           }
-          return this.fetchAllSchoolNeedsData(page + 1, size, allData, sn, si);
+          return this.fetchAllSchoolNeedsData(schoolYear, page + 1, size, allData, sn, si);
         }),
       );
   }

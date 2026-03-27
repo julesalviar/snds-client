@@ -15,14 +15,21 @@ import {AuthService} from "../../auth/auth.service";
 
 export class UserService {
   private readonly projectTitlesSubject = new BehaviorSubject<string[]>([]);
+  private readonly schoolYearSubject = new BehaviorSubject<string>('2025-2026');
   private readonly contributionData = new BehaviorSubject<any>(null);
   projectTitles$ = this.projectTitlesSubject.asObservable();
+  schoolYear$ = this.schoolYearSubject.asObservable();
+  currentContribution$ = this.contributionData.asObservable();
 
   constructor(private readonly httpService: HttpService) { }
-  currentContribution = this.contributionData.asObservable();
 
   setContribution(data: any) {
     this.contributionData.next(data);
+  }
+
+  setSchoolYear(schoolYear: string) {
+    console.log('Setting school year:', schoolYear);
+    this.schoolYearSubject.next(schoolYear);
   }
 
   register(userData: any) {

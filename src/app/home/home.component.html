@@ -77,6 +77,15 @@
             class="home-widget-collapsible-body"
             [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('tree')"
             [attr.aria-hidden]="!isHomeWidgetExpanded('tree')">
+          <div class="tree-section-school-year-filter">
+            <school-year-widget-filter
+              controlId="home-tree-school-year"
+              [schoolYear]="state.treeSchoolYear"
+              [options]="resourcePartnerSchoolYearOptions"
+              [disabled]="state.loading.schoolNeeds"
+              [alignEnd]="false"
+              (schoolYearChange)="onTreeSchoolYearChange(state, $event)" />
+          </div>
           <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
             <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
             <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>
@@ -219,13 +228,6 @@
             </div>
           </aside>
         </div>
-        <!--
-          Division admin — backend transition:
-          - state.loading.resourcePartnerBreakdown: true until API finishes (see loadResourcePartnerBreakdown$).
-          - state.resourcePartnerSchoolYear: school year filter (pass to API).
-          - state.resourceGenerationBreakdown: HomePieSlice[] → monetary pie (value = amount).
-          - state.partnersBreakdown: HomePieSlice[] → partners pie (value = % or count per API; UI uses percent labels).
-        -->
         <aside *ngIf="isDivisionAdmin(state)" class="resource-partner-breakdown-widget">
           <div class="home-widget-header-row">
             <h3 class="resource-partner-breakdown-title">
@@ -249,19 +251,12 @@
             class="home-widget-collapsible-body"
             [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('resourcePartner')"
             [attr.aria-hidden]="!isHomeWidgetExpanded('resourcePartner')">
-          <div class="resource-partner-breakdown-toolbar">
-            <label class="p-select-sm-label" for="home-resource-partner-sy">School Year</label>
-            <select
-              id="home-resource-partner-sy"
-              class="p-select-sm"
-              [value]="state.resourcePartnerSchoolYear"
-              [disabled]="state.loading.resourcePartnerBreakdown"
-              (change)="onResourcePartnerSchoolYearChange(state, $any($event.target).value)">
-              @for (sy of resourcePartnerSchoolYearOptions; track sy) {
-                <option [value]="sy">{{ sy }}</option>
-              }
-            </select>
-          </div>
+          <school-year-widget-filter
+            controlId="home-resource-partner-sy"
+            [schoolYear]="state.resourcePartnerSchoolYear"
+            [options]="resourcePartnerSchoolYearOptions"
+            [disabled]="state.loading.resourcePartnerBreakdown"
+            (schoolYearChange)="onResourcePartnerSchoolYearChange(state, $event)" />
           @if (state.loading.resourcePartnerBreakdown) {
             <div class="resource-partner-breakdown-skeleton-row" aria-hidden="true">
               <div class="resource-partner-breakdown-skeleton-block">
