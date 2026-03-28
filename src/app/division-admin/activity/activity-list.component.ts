@@ -95,6 +95,15 @@ export class ActivityListComponent implements OnInit, OnDestroy {
   get canCreateActivity(): boolean {
     const role = this.activeRole;
     return role === UserType.SchoolAdmin || role === UserType.DivisionAdmin;
+}
+
+
+get canCreateActivityEnabled(): boolean {
+  return this.isSchoolAdmin;
+}
+
+get isDivisionAdmin(): boolean {
+  return this.activeRole === UserType.DivisionAdmin;
   }
 
   canEditActivity(row: Activity): boolean {
@@ -224,6 +233,10 @@ export class ActivityListComponent implements OnInit, OnDestroy {
   }
 
   onCreate(): void {
+    if (!this.canCreateActivityEnabled) {
+    return;
+  }
+
     const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
     const schoolId = this.authService.getSchoolId() || undefined;
     const dialogRef = this.dialog.open(ActivityFormComponent, {
