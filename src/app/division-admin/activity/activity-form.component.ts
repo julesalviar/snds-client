@@ -409,7 +409,21 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  private schoolIdFromActivity(activity: Activity): string | undefined {
+    const raw = activity.schoolId;
+    if (!raw) return undefined;
+    if (typeof raw === 'string') {
+      const t = raw.trim();
+      return t || undefined;
+    }
+    const obj = raw as { _id?: string; schoolId?: string | number };
+    const id = obj._id ?? (obj.schoolId != null ? String(obj.schoolId) : '');
+    const t = id.trim();
+    return t || undefined;
+  }
+
   private populateFormFromActivity(activity: Activity): void {
+    this.loadedSchoolId = activity.schoolId ? this.schoolIdFromActivity(activity) : undefined;
     const stakeholderRaw = activity.stakeholderId;
     const stakeholderId = this.normalizeUserId(stakeholderRaw);
     if (stakeholderRaw && typeof stakeholderRaw === 'object' && '_id' in stakeholderRaw) {
