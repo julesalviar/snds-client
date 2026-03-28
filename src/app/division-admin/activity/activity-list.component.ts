@@ -94,7 +94,7 @@ export class ActivityListComponent implements OnInit, OnDestroy {
 
   get canCreateActivity(): boolean {
     const role = this.activeRole;
-    return role === UserType.SchoolAdmin || role === UserType.DivisionAdmin;
+    return role === UserType.SchoolAdmin;
 }
 
 
