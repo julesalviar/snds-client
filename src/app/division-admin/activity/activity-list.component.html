@@ -2,11 +2,14 @@
   <mat-card-title>Activities</mat-card-title>
 
   <div class="top-actions" *ngIf="canCreateActivity">
-    <button mat-raised-button color="primary" (click)="onCreate()">
-      <mat-icon>add</mat-icon>
-      Create Activity
-    </button>
-  </div>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onCreate()">
+    <mat-icon>add</mat-icon>
+    Create Activity
+  </button>
+</div>
 
   <div class="table-wrapper">
     <div class="filter-container">
