@@ -1,0 +1,39 @@
+<div class="dialog-header">
+  <h2>Contribution Details of {{ data.stakeholder.name }}<br> Contribution Type - {{ data.stakeholder.contribution }}</h2>      
+  <button mat-icon-button aria-label="Close dialog" (click)="closeDialog()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<div class="table-scroll">
+<table mat-table [dataSource]="contributions" class="mat-elevation-z2 full-table">
+  <ng-container matColumnDef="schoolYear">
+    <th mat-header-cell *matHeaderCellDef>School Year</th>
+    <td mat-cell *matCellDef="let item">{{ item.schoolYear }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="school" *ngIf="displayedColumns.includes('school')">
+    <th mat-header-cell *matHeaderCellDef>School</th>
+    <td mat-cell *matCellDef="let item">{{ item.school }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="specificContribution">
+    <th mat-header-cell *matHeaderCellDef>Specific Contribution</th>
+    <td mat-cell *matCellDef="let item">{{ item.specificContribution }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="amount">
+    <th mat-header-cell *matHeaderCellDef>Amount</th>
+    <td mat-cell *matCellDef="let item">{{ item.amount }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="movs">
+    <th mat-header-cell *matHeaderCellDef>MOVs</th>
+    <td mat-cell *matCellDef="let item">{{ item.movs }}</td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+</div>
+

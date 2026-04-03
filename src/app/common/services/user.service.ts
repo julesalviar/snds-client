@@ -8,6 +8,7 @@ import {HttpService} from "./http.service";
 import {SchoolNeed} from "../model/school-need.model";
 import {MyContributionsResponse} from "../model/my-contribution.model";
 import {AuthService} from "../../auth/auth.service";
+import { UserType } from '../../registration/user-type.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,7 @@ export class UserService {
   projectTitles$ = this.projectTitlesSubject.asObservable();
   schoolYear$ = this.schoolYearSubject.asObservable();
   currentContribution$ = this.contributionData.asObservable();
-
+ 
   constructor(private readonly httpService: HttpService) { }
 
   setContribution(data: any) {

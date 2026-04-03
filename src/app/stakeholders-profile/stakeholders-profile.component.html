@@ -1,0 +1,78 @@
+<div class="filter-bar">
+  <mat-form-field appearance="outline" class="filter-field">
+    <mat-label>Select School Year</mat-label>
+    <mat-select [(ngModel)]="selectedSchoolYear">
+      <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="filter-field">
+    <mat-label>Sector</mat-label>
+    <mat-select [(ngModel)]="selectedSector">
+      <mat-option *ngFor="let s of sectorOptions" [value]="s">{{ s }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-radio-group class="engagement-radio" [(ngModel)]="selectedEngagement">
+    <mat-radio-button value="Engaged">Engaged</mat-radio-button>
+    <mat-radio-button value="Not Engaged">Not Engage</mat-radio-button>
+    <mat-radio-button value="All">All</mat-radio-button>
+  </mat-radio-group>
+
+  <button mat-raised-button color="primary" (click)="applyFilter()">Query</button>
+  <button mat-button (click)="resetFilters()">Clear</button>
+</div>
+
+  <div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-label">Engaged Stakeholders:</span>
+    <span class="stat-value">{{ engagedCount }}</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">Not Engaged Stakeholders:</span>
+    <span class="stat-value">{{ notEngagedCount }}</span>
+  </div>
+</div>
+<div class="table-wrapper">
+<mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+  <ng-container matColumnDef="contribution">
+  <mat-header-cell *matHeaderCellDef> Contribution </mat-header-cell>
+  <mat-cell *matCellDef="let row">
+    <button mat-button color="primary" (click)="openContributionDialog(row)">
+      View Contribution
+    </button>
+  </mat-cell>
+</ng-container>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+    <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="contactNumber">
+    <mat-header-cell *matHeaderCellDef>Contact Number</mat-header-cell>
+    <mat-cell *matCellDef="let row">{{ row.contactNumber }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="address">
+    <mat-header-cell *matHeaderCellDef>Address</mat-header-cell>
+    <mat-cell *matCellDef="let row">{{ row.address }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="engagementStatus">
+    <mat-header-cell *matHeaderCellDef>Engagement Status</mat-header-cell>
+    <mat-cell *matCellDef="let row">{{ row.engagementStatus }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>
+</div>
+
+<mat-paginator
+  [pageSize]="pageSize"
+  [pageIndex]="pageIndex"
+  [pageSizeOptions]="[2, 5, 10, 25, 50, 100]"
+  showFirstLastButtons>
+</mat-paginator>
+
