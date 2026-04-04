@@ -1,0 +1,101 @@
+<div class="dialog-header">
+  <h2 class="green-title">{{ data.title }}</h2>
+  <div class="header-controls">
+    <mat-form-field appearance="outline" class="view-selector">
+      <mat-label>Mode</mat-label>
+      <mat-select [(value)]="viewMode">
+        <mat-option value="auto">Auto</mat-option>
+        <mat-option value="landscape">Landscape</mat-option>
+        <mat-option value="portrait">Portrait</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-icon-button aria-label="Close dialog" (click)="closeDialog()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>
+
+<div class="dialog-content">
+  <div *ngIf="!hasImages" class="no-documents">
+    <mat-icon class="no-docs-icon">folder_open</mat-icon>
+    <p>No documents available</p>
+  </div>
+
+  <div *ngIf="hasImages" class="document-viewer" [class.landscape-mode]="viewMode === 'landscape'" [class.portrait-mode]="viewMode === 'portrait'">
+    <!-- Image Counter -->
+    <div class="image-counter">
+      <span>Image {{ currentImageIndex + 1 }} of {{ totalImages }}</span>
+    </div>
+
+    <!-- Main Image Display -->
+    <div class="image-container" [class]="getImageContainerClass()">
+      <img 
+        *ngIf="currentImage" 
+        [src]="currentImage.originalUrl" 
+        [alt]="'Document ' + (currentImageIndex + 1)"
+        class="main-image"
+        [class]="getImageClass()"
+        (load)="isLoading = false"
+        (error)="isLoading = false"
+        (loadstart)="isLoading = true">
+      
+      <div *ngIf="isLoading" class="loading-overlay">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="navigation-controls">
+      <button 
+        mat-icon-button 
+        (click)="previousImage()" 
+        [disabled]="currentImageIndex === 0"
+        matTooltip="Previous image">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      <div class="image-actions">
+        <button 
+          mat-icon-button 
+          (click)="viewFullImage(currentImage!)"
+          matTooltip="View full size">
+          <mat-icon>fullscreen</mat-icon>
+        </button>
+        <button 
+          mat-icon-button 
+          (click)="downloadImage(currentImage!)"
+          matTooltip="Download image">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button 
+          mat-icon-button 
+          (click)="rotateImage()"
+          matTooltip="Rotate image">
+          <mat-icon>rotate_right</mat-icon>
+        </button>
+      </div>
+
+      <button 
+        mat-icon-button 
+        (click)="nextImage()" 
+        [disabled]="currentImageIndex === totalImages - 1"
+        matTooltip="Next image">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+    <!-- Thumbnail Strip -->
+    <div class="thumbnail-strip" *ngIf="totalImages > 1">
+      <div 
+        *ngFor="let image of data.images; let i = index" 
+        class="thumbnail-item"
+        [class.active]="i === currentImageIndex"
+        (click)="currentImageIndex = i">
+        <img 
+          [src]="image.thumbnailUrl" 
+          [alt]="'Thumbnail ' + (i + 1)"
+          class="thumbnail-image">
+      </div>
+    </div>
+  </div>
+</div>
