@@ -87,82 +87,28 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
   ) { }
 
   openContributionDialog(row: StakeholderProfile): void {
+    const schoolYearFilter = row.schoolYear === 'All School Year' || row.schoolYear === getDefaultSchoolYear() ? undefined : row.schoolYear;
+    
     this.engagementService.getAllEngagement(
       1,
       100, // Get up to 100 contributions
       row._id, // stakeholderUserId
-      undefined, // schoolYear
+      schoolYearFilter, // schoolYear - use stakeholder's school year/specific year
       undefined, // specificContribution
       undefined, // schoolId
       undefined, // startDate
       undefined, // endDate
-      row.sector // sector
+      undefined // sector 
     ).subscribe({
       next: (engagementResponse) => {
-        if (!engagementResponse || !engagementResponse.data || engagementResponse.data.length === 0) {
-          this.engagementService.getAllEngagement(
-            1,
-            100,
-            row._id,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined // no sector filter
-          ).subscribe({
-            next: (responseWithoutSector) => {
-              if (responseWithoutSector?.data?.length > 0) {
-                const contributions = responseWithoutSector.data.map((engagement: Engagement) => ({
-                  schoolYear: engagement.schoolYear || 'N/A',
-                  school: this.getSchoolName(engagement.schoolId),
-                  specificContribution: engagement.specificContribution || 'N/A',
-                  amount: engagement.amount ? `₱${engagement.amount.toLocaleString()}` : '₱0',
-                  movs: 'View Documents',
-                  images: this.getImagesFromEngagement(engagement)
-                }));
-
-                this.dialog.open(ContributionDialogComponent, {
-                  width: '95vw',
-                  height: '50vh',
-                  maxWidth: '95vw',
-                  maxHeight: '50vh',
-                  panelClass: 'full-screen-dialog',
-                  data: { stakeholder: row, contributions }
-                });
-              } else {
-                this.dialog.open(ContributionDialogComponent, {
-                  width: '95vw',
-                  height: '50vh',
-                  maxWidth: '95vw',
-                  maxHeight: '50vh',
-                  panelClass: 'full-screen-dialog',
-                  data: { stakeholder: row, contributions: [] }
-                });
-              }
-            },
-            error: (error) => {
-              this.dialog.open(ContributionDialogComponent, {
-                width: '95vw',
-                height: '50vh',
-                maxWidth: '95vw',
-                maxHeight: '50vh',
-                panelClass: 'full-screen-dialog',
-                data: { stakeholder: row, contributions: [] }
-              });
-            }
-          });
-          return;
-        }
-
-        const contributions = engagementResponse.data.map((engagement: Engagement) => ({
+        const contributions = engagementResponse?.data?.map((engagement: Engagement) => ({
           schoolYear: engagement.schoolYear || 'N/A',
           school: this.getSchoolName(engagement.schoolId),
           specificContribution: engagement.specificContribution || 'N/A',
           amount: engagement.amount ? `₱${engagement.amount.toLocaleString()}` : '₱0',
           movs: 'View Documents',
           images: this.getImagesFromEngagement(engagement)
-        }));
+        })) || [];
 
         this.dialog.open(ContributionDialogComponent, {
           width: '95vw',
@@ -185,22 +131,24 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
       }
     });
 }
-// get the school name propery (schoolName)
+// get school name propery (schoolName)
 private getSchoolName(schoolId: any): string {
   if (!schoolId) {
     return 'No School ID';
   }
   
   if (typeof schoolId === 'string') {
-    return schoolId;
+    return 'School Name Not Available';
   }
   
   if (typeof schoolId === 'object') {
-    if (schoolId.schoolName) {
-      return schoolId.schoolName;
+    if (schoolId.schoolName && typeof schoolId.schoolName === 'string' && schoolId.schoolName.trim()) {
+      return schoolId.schoolName.trim();
     }
-    if (schoolId.name) {
-      return schoolId.name;
+    
+    // Fallback to division if school name is not available
+    if (schoolId.division && typeof schoolId.division === 'string' && schoolId.division.trim()) {
+      return schoolId.division.trim();
     }
   }
   
@@ -209,9 +157,12 @@ private getSchoolName(schoolId: any): string {
 
 // get images from engagement data
 private getImagesFromEngagement(engagement: Engagement): any[] {
+
   if (engagement.schoolNeedId && typeof engagement.schoolNeedId === 'object' && engagement.schoolNeedId.images) {
+    console.log('Found images:', engagement.schoolNeedId.images);
     return engagement.schoolNeedId.images;
   }
+  console.log('No images found');
   return [];
 }
 // load stakeholders data
@@ -223,25 +174,23 @@ loadStakeholders(): void {
     next: (stakeholders) => {
       let filteredStakeholders = stakeholders;
       
-      // If user is school admin, filter stakeholders to only show those relevant on that school
+      // If user is school admin, filter stakeholders by their school
       if (activeRole === 'schoolAdmin' && schoolId) {
-        // For school admins, show all stakeholders belong to the school admin account only
-        
-        // Get all stakeholders engaged with this school admin's school
+        // For school admins,get stakeholders that have engagements with their school
         this.engagementService.getAllEngagement(
-          1,
-          1000, // Get a large number to get all engagements
+          this.pageIndex + 1, 
+          this.pageSize, // pageSize - use pagination variable
           undefined, // stakeholderUserId (don't filter by stakeholder)
           undefined, // schoolYear
           undefined, // specificContribution
           schoolId, // schoolId - filter by school admin's school
-          undefined, // startDate
-          undefined, // endDate
+          undefined, // startDate from engage
+          undefined, // endDate from engage
           undefined // sector
         ).subscribe({
           next: (engagementResponse) => {
             if (engagementResponse && engagementResponse.data) {
-              // Get unique stakeholder IDs from engagements with this school
+              // Get unique stakeholder IDs from engagements
               const engagedStakeholderIds = new Set(
                 engagementResponse.data.map((engagement: Engagement) => {
                   if (typeof engagement.stakeholderUserId === 'string') {
@@ -253,16 +202,23 @@ loadStakeholders(): void {
                 }).filter(Boolean)
               );
               
-              filteredStakeholders = stakeholders.filter((stakeholder: any) => {
-                return engagedStakeholderIds.has(stakeholder._id);
-              });
+              // Filter stakeholders to only include those engaged with this school
+              filteredStakeholders = stakeholders.filter((stakeholder: any) => 
+                engagedStakeholderIds.has(stakeholder._id)
+              );
             }
             
             this.processStakeholders(filteredStakeholders);
           },
           error: (error) => {
-            // If there's an error getting engagements, show all stakeholders for school admin
-            this.processStakeholders(stakeholders);
+            // If there's an error getting engagements, show empty list for school admin
+            if (activeRole === 'schoolAdmin') {
+              this.allRecords = [];
+              this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
+            } else {
+              
+              this.processStakeholders(stakeholders);
+            }
           }
         });
       } else {
@@ -301,7 +257,6 @@ private checkEngagementStatusForAllStakeholders(): void {
 
   if (totalStakeholders === 0) {
     this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-    if (this.paginator) {this.dataSource.paginator = this.paginator;}
     this.applyFilter();
     return;
   }
@@ -309,7 +264,7 @@ private checkEngagementStatusForAllStakeholders(): void {
   this.allRecords.forEach((stakeholder, index) => {
     this.engagementService.getAllEngagement(
       1,
-      1, // Just need to know if at least one engagement exists
+      1, // at least one engagement exists
       stakeholder._id,
       undefined,
       undefined,
@@ -327,7 +282,6 @@ private checkEngagementStatusForAllStakeholders(): void {
         if (completedChecks === totalStakeholders) {
           // All checks completed, update data source
           this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-          if (this.paginator) {this.dataSource.paginator = this.paginator;}
           this.applyFilter();
         }
       },
@@ -336,22 +290,11 @@ private checkEngagementStatusForAllStakeholders(): void {
         if (completedChecks === totalStakeholders) {
           // All checks completed, update data source
           this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-          if (this.paginator) {this.dataSource.paginator = this.paginator;}
           this.applyFilter();
         }
       }
     });
   });
-}
-
-private determineEngagementStatus(stakeholder: any): 'Engaged' | 'Not Engaged' {
-  
-  // Check if the stakeholder object has any engagement-related data
-  if (stakeholder.engagementStatus) {
-    return stakeholder.engagementStatus;
-  }
-  
-  return 'Not Engaged';
 }
 
   dataSource = new MatTableDataSource<StakeholderProfile>([]);
@@ -372,7 +315,75 @@ private determineEngagementStatus(stakeholder: any): 'Engaged' | 'Not Engaged' {
     this.notEngagedCount = this.dataSource.data.filter(r => r.engagementStatus === 'Not Engaged').length;
     
     if (this.paginator) {this.paginator.pageIndex = 0;}
-    if (this.paginator) {this.dataSource.paginator = this.paginator;}
+    
+    // Reload stakeholders data when filters are applied to get fresh data
+    this.reloadStakeholders();
+  }
+
+  reloadStakeholders(): void {
+    const activeRole = this.authService.getActiveRole();
+    const schoolId = this.authService.getSchoolId();
+    
+    this.userService.getUsersByRole('stakeholder').subscribe({
+      next: (stakeholders) => {
+        let filteredStakeholders = stakeholders;
+        
+        // If user is school admin or division admin, filter stakeholders by their school
+        if ((activeRole === 'schoolAdmin' || activeRole === 'divisionAdmin') && schoolId) {
+          // For school admins,get stakeholders that have engagements with their school
+          this.engagementService.getAllEngagement(
+            this.pageIndex + 1, 
+            this.pageSize, 
+            undefined, // stakeholderUserId (don't filter by stakeholder)
+            this.selectedSchoolYear === 'All School Year' ? undefined : this.selectedSchoolYear,
+            undefined, // specificContribution
+            schoolId, // schoolId - filter by school admin's school
+            undefined, // startDate from engage
+            undefined, // endDate from engage
+            this.selectedSector === 'All Sectors' ? undefined : this.selectedSector // sector
+          ).subscribe({
+            next: (engagementResponse) => {
+              if (engagementResponse && engagementResponse.data) {
+                // Get unique stakeholder IDs from engagements
+                const engagedStakeholderIds = new Set(
+                  engagementResponse.data.map((engagement: Engagement) => {
+                    if (typeof engagement.stakeholderUserId === 'string') {
+                      return engagement.stakeholderUserId;
+                    } else if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
+                      return engagement.stakeholderUserId._id;
+                    }
+                    return null;
+                  }).filter(Boolean)
+                );
+                
+                // Filter stakeholders to only include those engaged with this school
+                filteredStakeholders = stakeholders.filter((stakeholder: any) => 
+                  engagedStakeholderIds.has(stakeholder._id)
+                );
+              }
+              
+              this.processStakeholders(filteredStakeholders);
+            },
+            error: (error) => {
+              // If there's an error getting engagements, show empty list for school admin or division admin
+              if (activeRole === 'schoolAdmin' || activeRole === 'divisionAdmin') {
+                this.allRecords = [];
+                this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
+              } else {
+                
+                this.processStakeholders(stakeholders);
+              }
+            }
+          });
+        } else {
+          this.processStakeholders(stakeholders);
+        }
+      },
+      error: (error) => {
+        this.allRecords = [];
+        this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
+      }
+    });
   }
 
   resetFilters(): void {
