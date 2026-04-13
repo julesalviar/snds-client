@@ -76,6 +76,7 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
 
   displayedColumns: string[] = ['contribution', 'name', 'contactNumber', 'address', 'engagementStatus'];
   allRecords: StakeholderProfile[] = [];
+  totalRecords: StakeholderProfile[] = []; // Store all records for accurate counts
   pageIndex: number = 0;
   pageSize: number = 25;
 
@@ -181,12 +182,12 @@ loadStakeholders(): void {
           this.pageIndex + 1, 
           this.pageSize, // pageSize - use pagination variable
           undefined, // stakeholderUserId (don't filter by stakeholder)
-          undefined, // schoolYear
+          this.selectedSchoolYear === 'All School Year' ? undefined : this.selectedSchoolYear, 
           undefined, // specificContribution
           schoolId, // schoolId - filter by school admin's school
           undefined, // startDate from engage
           undefined, // endDate from engage
-          undefined // sector
+          this.selectedSector === 'All Sectors' ? undefined : this.selectedSector 
         ).subscribe({
           next: (engagementResponse) => {
             if (engagementResponse && engagementResponse.data) {
@@ -222,7 +223,7 @@ loadStakeholders(): void {
           }
         });
       } else {
-        // For non-school admin roles, show all stakeholders
+        // For division admin roles, show all stakeholders
         this.processStakeholders(stakeholders);
       }
     },
@@ -235,7 +236,7 @@ loadStakeholders(): void {
 
 private processStakeholders(stakeholders: any[]): void {
   // Map stakeholders and check engagement status for each
-  this.allRecords = stakeholders.map((stakeholder: any) => ({
+  this.totalRecords = stakeholders.map((stakeholder: any) => ({
     ...stakeholder,
     contribution: stakeholder.sector || 'Unknown',
     name: stakeholder.name || '',
@@ -253,15 +254,16 @@ private processStakeholders(stakeholders: any[]): void {
 //checks all records for engage or not engage
 private checkEngagementStatusForAllStakeholders(): void {
   let completedChecks = 0;
-  const totalStakeholders = this.allRecords.length;
+  const totalStakeholders = this.totalRecords.length;
 
   if (totalStakeholders === 0) {
+    this.allRecords = [];
     this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-    this.applyFilter();
+    this.applyFiltersDirectly();
     return;
   }
 
-  this.allRecords.forEach((stakeholder, index) => {
+  this.totalRecords.forEach((stakeholder, index) => {
     this.engagementService.getAllEngagement(
       1,
       1, // at least one engagement exists
@@ -270,27 +272,28 @@ private checkEngagementStatusForAllStakeholders(): void {
       undefined,
       undefined,
       undefined,
-      undefined,
       undefined
     ).subscribe({
       next: (engagementResponse) => {
         if (engagementResponse && engagementResponse.data && engagementResponse.data.length > 0) {
-          this.allRecords[index].engagementStatus = 'Engaged';
+          this.totalRecords[index].engagementStatus = 'Engaged';
         }
         
         completedChecks++;
         if (completedChecks === totalStakeholders) {
-          // All checks completed, update data source
+          // All checks completed, copy to allRecords and apply filters
+          this.allRecords = [...this.totalRecords];
           this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-          this.applyFilter();
+          this.applyFiltersDirectly();
         }
       },
       error: (error) => {
         completedChecks++;
         if (completedChecks === totalStakeholders) {
-          // All checks completed, update data source
+          // All checks completed, copy to allRecords and apply filters
+          this.allRecords = [...this.totalRecords];
           this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-          this.applyFilter();
+          this.applyFiltersDirectly();
         }
       }
     });
@@ -299,23 +302,40 @@ private checkEngagementStatusForAllStakeholders(): void {
 
   dataSource = new MatTableDataSource<StakeholderProfile>([]);
 
-  applyFilter(): void {
+  // Helper method to apply filters without triggering reload
+  private applyFiltersDirectly(): void {
     const year = this.selectedSchoolYear;
     const sector = this.selectedSector;
     const engagement = this.selectedEngagement;
 
-    this.dataSource.data = this.allRecords.filter((row) => {
+    // Filter all records for display
+    const filteredRecords = this.totalRecords.filter((row) => {
       const matchYear = year === 'All School Year' || row.schoolYear === year;
       const matchSector = sector === 'All Sectors' || row.sector === sector;
       const matchEngagement = engagement === 'All' || row.engagementStatus === engagement;
 
       return matchYear && matchSector && matchEngagement;
     });
-    this.engagedCount = this.dataSource.data.filter(r => r.engagementStatus === 'Engaged').length;
-    this.notEngagedCount = this.dataSource.data.filter(r => r.engagementStatus === 'Not Engaged').length;
+
+    // Calculate counts from all filtered records (not just current page)
+    this.engagedCount = filteredRecords.filter(r => r.engagementStatus === 'Engaged').length;
+    this.notEngagedCount = filteredRecords.filter(r => r.engagementStatus === 'Not Engaged').length;
+
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.allRecords = filteredRecords.slice(startIndex, endIndex);
     
-    if (this.paginator) {this.paginator.pageIndex = 0;}
+    this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
     
+    if (this.paginator) {
+      this.paginator.length = filteredRecords.length;
+      this.paginator.pageIndex = this.pageIndex;
+      this.paginator.pageSize = this.pageSize;
+    }
+  }
+
+  applyFilter(): void {
+    this.applyFiltersDirectly();
     // Reload stakeholders data when filters are applied to get fresh data
     this.reloadStakeholders();
   }
@@ -328,8 +348,8 @@ private checkEngagementStatusForAllStakeholders(): void {
       next: (stakeholders) => {
         let filteredStakeholders = stakeholders;
         
-        // If user is school admin or division admin, filter stakeholders by their school
-        if ((activeRole === 'schoolAdmin' || activeRole === 'divisionAdmin') && schoolId) {
+        // If user is school admin, filter stakeholders by their school
+        if (activeRole === 'schoolAdmin' && schoolId) {
           // For school admins,get stakeholders that have engagements with their school
           this.engagementService.getAllEngagement(
             this.pageIndex + 1, 
@@ -365,8 +385,8 @@ private checkEngagementStatusForAllStakeholders(): void {
               this.processStakeholders(filteredStakeholders);
             },
             error: (error) => {
-              // If there's an error getting engagements, show empty list for school admin or division admin
-              if (activeRole === 'schoolAdmin' || activeRole === 'divisionAdmin') {
+              // If there's an error getting engagements, show empty list for school admin
+              if (activeRole === 'schoolAdmin') {
                 this.allRecords = [];
                 this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
               } else {
@@ -376,6 +396,7 @@ private checkEngagementStatusForAllStakeholders(): void {
             }
           });
         } else {
+          // For division admin, show all stakeholders
           this.processStakeholders(stakeholders);
         }
       },
@@ -397,6 +418,7 @@ private checkEngagementStatusForAllStakeholders(): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     
+    this.applyFiltersDirectly();
   }
 }
 
