@@ -40,6 +40,7 @@ import { PpaPlanFormComponent } from './division-admin/ppa-plan/ppa-plan-form.co
 import { ActivityListComponent } from './division-admin/activity/activity-list.component';
 import { ActivityFormComponent } from './division-admin/activity/activity-form.component';
 import { OfficeListComponent } from './division-admin/office/office-list.component';
+import { StakeholdersProfileComponent } from './stakeholders-profile/stakeholders-profile.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -78,7 +79,7 @@ export const routes: Routes = [
       {path: 'generated-resources', component: GeneratedResourcesComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'aip/:schoolId', component: AipComponent},
-      {path: 'office-table', component: OfficeTableComponent}
+      {path: 'office-table', component: OfficeTableComponent},
     ]
   },
 
@@ -102,6 +103,7 @@ export const routes: Routes = [
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: GeneratedResourcesComponent},
       {path: 'reports', component: ReportsComponent},
+      {path: 'stakeholders-profile', component: StakeholdersProfileComponent},
       {path: 'activities', component: ActivityListComponent},
       {path: 'activities/create', component: ActivityFormComponent},
       {path: 'activities/edit/:id', component: ActivityFormComponent},
@@ -130,6 +132,7 @@ export const routes: Routes = [
       {path: 'close-registration', component: DivisionAdminComponent},
       {path: 'create-partnership-link', component: DivisionAdminComponent},
       {path: 'generated-resources', component: GeneratedResourcesComponent},
+      {path: 'stakeholders-profile', component: StakeholdersProfileComponent},
     ]
   },
   { // System Admin routes

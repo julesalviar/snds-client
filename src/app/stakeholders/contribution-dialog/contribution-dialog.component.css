@@ -1,0 +1,28 @@
+.full-table {
+  width: 80%;
+  border-radius: 4px !important;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 12px;
+}
+
+.dialog-header h2 {
+  margin-left: 20px;
+  margin-top: 10px;
+  color:green;
+  font-size: 1rem;
+}
+ mat-icon{
+    color: green;
+ }
+
+.table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}

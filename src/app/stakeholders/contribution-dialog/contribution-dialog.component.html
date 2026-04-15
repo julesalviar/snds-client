@@ -1,0 +1,57 @@
+<div class="dialog-header">
+  <h2>Contribution Details of {{ data.stakeholder.name }} <br> Sector Type - {{ data.stakeholder.contribution }}</h2>      
+  <button mat-icon-button aria-label="Close dialog" (click)="closeDialog()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<div class="dialog-content">
+  <div *ngIf="!dataSource || dataSource.data.length === 0" class="loading-container" style="text-align: center; padding: 40px; color: #666;">
+    <mat-spinner *ngIf="!dataSource"></mat-spinner>
+    <p *ngIf="dataSource && dataSource.data.length === 0">No contributions found for this stakeholder.</p>
+    <p *ngIf="dataSource && dataSource.data.length === 0">Not Engaged</p>
+  </div>
+
+  <div *ngIf="dataSource && dataSource.data.length > 0">
+    <div class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 full-table">
+        <ng-container matColumnDef="schoolYear">
+          <th mat-header-cell *matHeaderCellDef>School Year</th>
+          <td mat-cell *matCellDef="let item">{{ item.schoolYear }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="school" *ngIf="displayedColumns.includes('school')">
+          <th mat-header-cell *matHeaderCellDef>School</th>
+          <td mat-cell *matCellDef="let item">{{ item.school }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="specificContribution">
+          <th mat-header-cell *matHeaderCellDef>Specific Contribution</th>
+          <td mat-cell *matCellDef="let item">{{ item.specificContribution }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let item">{{ item.amount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="movs">
+          <th mat-header-cell *matHeaderCellDef>MOVs</th>
+          <td mat-cell *matCellDef="let item">
+            <button 
+              mat-button 
+              color="primary" 
+              (click)="viewDocuments(item)"
+              [disabled]="!item.images || item.images.length === 0"
+              matTooltip="View documents">
+              View Documents
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </div>
+</div>
