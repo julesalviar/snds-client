@@ -77,12 +77,8 @@ export class ContributionDialogComponent implements OnInit {
   }
 
   viewDocuments(item: ContributionItem): void {
-    console.log('View Documents clicked for item:', item);
-    console.log('Images:', item.images);
-    console.log('Images length:', item.images?.length);
-    
+  
     if (!item.images || item.images.length === 0) {
-      console.log('No images found, returning');
       return;
     }
 
