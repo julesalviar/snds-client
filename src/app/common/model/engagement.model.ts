@@ -51,3 +51,23 @@ export interface EngagementsResponse {
   meta: EngagementMeta;
 }
 
+export interface EngagementStatisticsQuery {
+  schoolYear?: string;
+  sector?: string;
+  schoolId?: string;
+}
+
+export interface EngagementStatisticsData {
+  engaged: number;
+  notEngaged: number;
+  filters?: Record<string, unknown>;
+}
+
+export interface EngagementStatisticsResponse {
+  success: boolean;
+  data: EngagementStatisticsData;
+  meta?: {
+    timestamp?: string | Date;
+  };
+}
+

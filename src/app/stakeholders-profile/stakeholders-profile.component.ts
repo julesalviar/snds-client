@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -12,7 +12,7 @@ import { ContributionDialogComponent } from '../stakeholders/contribution-dialog
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { getSchoolYearOptions, getDefaultSchoolYear } from '../common/date-utils';
-import { UserService } from '../common/services/user.service';
+import { UserService, GetUsersByRoleParams } from '../common/services/user.service';
 import { EngagementService } from '../common/services/engagement.service';
 import { Engagement } from '../common/model/engagement.model';
 import { AuthService } from '../auth/auth.service';
@@ -35,6 +35,7 @@ interface StakeholderProfile {
   schoolYear: string;
   sector: 'Private Sector' | 'Public Sector' | 'Civil Society Organization' | 'International';
   contributions: ContributionItem[];
+  engagements?: Engagement[];
 }
 
 @Component({
@@ -55,11 +56,8 @@ interface StakeholderProfile {
     MatDialogModule
   ]
 })
-export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
+export class StakeholdersProfileComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  ngAfterViewInit(): void {
-  this.dataSource.paginator = this.paginator;
-  }
 
   ngOnInit(): void {
     this.loadStakeholders();
@@ -67,6 +65,8 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
   engagedCount = 0;
   notEngagedCount = 0;
   totalCount = 0;
+
+  stakeholderDirectoryTotalItems = 0;
   schoolYearOptions = ['All School Year', ...getSchoolYearOptions()];
   sectorOptions = ['All Sectors', 'Private Sector', 'Public Sector', 'Civil Society Organization', 'International'];
   engagementOptions = ['All', 'Engaged', 'Not Engaged'];
@@ -79,7 +79,7 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
   allRecords: StakeholderProfile[] = [];
   totalRecords: StakeholderProfile[] = []; // Store all records for accurate counts
   pageIndex: number = 0;
-  pageSize: number = 25;
+  pageSize: number = 5;
 
   constructor(
     private dialog: MatDialog,
@@ -89,48 +89,32 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
   ) { }
 
   openContributionDialog(row: StakeholderProfile): void {
-    const schoolYearFilter = row.schoolYear === 'All School Year' || row.schoolYear === getDefaultSchoolYear() ? undefined : row.schoolYear;
+    const schoolYearFilter =
+      row.schoolYear === 'All School Year' || row.schoolYear === getDefaultSchoolYear()
+        ? undefined
+        : row.schoolYear;
 
-    this.engagementService.getAllEngagement(
-      1, // page
-      1000, // limit
-      row._id, // stakeholderUserId
-      schoolYearFilter, // schoolYear - use stakeholder's school year/specific year
-      undefined, // specificContribution
-      undefined, // schoolId
-      undefined, // startDate
-      undefined, // endDate
-      undefined // sector
-    ).subscribe({
-      next: (engagementResponse) => {
-        const contributions = engagementResponse?.data?.map((engagement: Engagement) => ({
-          schoolYear: engagement.schoolYear || 'N/A',
-          school: this.getSchoolName(engagement.schoolId),
-          specificContribution: engagement.specificContribution || 'N/A',
-          amount: engagement.amount ? `₱${engagement.amount.toLocaleString()}` : '₱0',
-          movs: 'View Documents',
-          images: this.getImagesFromEngagement(engagement)
-        })) || [];
+    const source = row.engagements ?? [];
+    const filtered = schoolYearFilter
+      ? source.filter((e) => e.schoolYear === schoolYearFilter)
+      : source;
 
-        this.dialog.open(ContributionDialogComponent, {
-          width: '95vw',
-          height: '50vh',
-          maxWidth: '95vw',
-          maxHeight: '50vh',
-          panelClass: 'full-screen-dialog',
-          data: { stakeholder: row, contributions }
-        });
-      },
-      error: (error) => {
-        this.dialog.open(ContributionDialogComponent, {
-          width: '95vw',
-          height: '50vh',
-          maxWidth: '95vw',
-          maxHeight: '50vh',
-          panelClass: 'full-screen-dialog',
-          data: { stakeholder: row, contributions: [] }
-        });
-      }
+    const contributions = filtered.map((engagement: Engagement) => ({
+      schoolYear: engagement.schoolYear || 'N/A',
+      school: this.getSchoolName(engagement.schoolId),
+      specificContribution: engagement.specificContribution || 'N/A',
+      amount: engagement.amount ? `₱${engagement.amount.toLocaleString()}` : '₱0',
+      movs: 'View Documents',
+      images: this.getImagesFromEngagement(engagement),
+    }));
+
+    this.dialog.open(ContributionDialogComponent, {
+      width: '95vw',
+      height: '50vh',
+      maxWidth: '95vw',
+      maxHeight: '50vh',
+      panelClass: 'full-screen-dialog',
+      data: { stakeholder: row, contributions },
     });
   }
 
@@ -167,64 +151,64 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
     return [];
   }
 
+  private getStakeholderUsersByRoleParams(): GetUsersByRoleParams {
+    const params: GetUsersByRoleParams = {
+      page: this.pageIndex + 1,
+      limit: this.pageSize,
+      stakeholderInfo: true,
+    };
+    if (this.selectedEngagement === 'Engaged') {
+      params.engaged = true;
+    } else if (this.selectedEngagement === 'Not Engaged') {
+      params.engaged = false;
+    }
+    return params;
+  }
+
+  private filterStakeholdersForSchoolAdmin(stakeholders: any[], schoolId: string): any[] {
+    const schoolYear =
+      this.selectedSchoolYear === 'All School Year' ? undefined : this.selectedSchoolYear;
+    const sector = this.selectedSector === 'All Sectors' ? undefined : this.selectedSector;
+
+    return stakeholders.filter((stakeholder: any) => {
+      if (sector && stakeholder.sector !== sector) {
+        return false;
+      }
+      const engagements: Engagement[] = stakeholder.engagements ?? [];
+      return engagements.some((e) => {
+        const sid =
+          typeof e.schoolId === 'string' ? e.schoolId : (e.schoolId as { _id?: string })?._id;
+        if (sid !== schoolId) {
+          return false;
+        }
+        if (schoolYear && e.schoolYear !== schoolYear) {
+          return false;
+        }
+        return true;
+      });
+    });
+  }
+
   // load stakeholders data
   loadStakeholders(): void {
     const activeRole = this.authService.getActiveRole();
     const schoolId = this.authService.getSchoolId();
 
-    this.userService.getUsersByRole('stakeholder').subscribe({
-      next: (stakeholders) => {
+    this.userService
+      .getUsersByRole('stakeholder', this.getStakeholderUsersByRoleParams())
+      .subscribe({
+      next: ({ data: stakeholders, meta }) => {
+        this.stakeholderDirectoryTotalItems = meta.totalItems;
         let filteredStakeholders = stakeholders;
 
-        // If user is school admin, filter stakeholders by their school
         if (activeRole === 'schoolAdmin' && schoolId) {
-          // For school admins,get stakeholders that have engagements with their school
-          this.engagementService.getAllEngagement(
-            1, // page
-            1000, // limit
-            undefined, // stakeholderUserId (don't filter by stakeholder)
-            this.selectedSchoolYear === 'All School Year' ? undefined : this.selectedSchoolYear,
-            undefined, // specificContribution
-            schoolId, // schoolId - filter by school admin's school
-            undefined, // startDate from engage
-            undefined, // endDate from engage
-            this.selectedSector === 'All Sectors' ? undefined : this.selectedSector // sector
-          ).subscribe({
-            next: (engagementResponse) => {
-              if (engagementResponse && engagementResponse.data) {
-                // Get unique stakeholder IDs from engagements
-                const engagedStakeholderIds = new Set(
-                  engagementResponse.data.map((engagement: Engagement) => {
-                    if (typeof engagement.stakeholderUserId === 'string') {
-                      return engagement.stakeholderUserId;
-                    } else if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
-                      return engagement.stakeholderUserId._id;
-                    }
-                    return null;
-                  }).filter(Boolean)
-                );
-
-                // Filter stakeholders to only include those engaged with this school
-                filteredStakeholders = stakeholders.filter((stakeholder: any) =>
-                  engagedStakeholderIds.has(stakeholder._id)
-                );
-              }
-
-              this.processStakeholders(filteredStakeholders);
-            },
-            error: (error) => {
-              // If there's an error getting engagements, show empty list
-              this.allRecords = [];
-              this.totalCount = 0;
-              this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-            }
-          });
-        } else {
-          // For division admin roles, show all stakeholders
-          this.processStakeholders(stakeholders);
+          filteredStakeholders = this.filterStakeholdersForSchoolAdmin(stakeholders, schoolId);
         }
+
+        this.processStakeholders(filteredStakeholders);
       },
       error: (error) => {
+        this.stakeholderDirectoryTotalItems = 0;
         this.allRecords = [];
         this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
       }
@@ -232,71 +216,26 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
   }
 
   private processStakeholders(stakeholders: any[]): void {
-    // Map stakeholders and check engagement status for each
-    this.totalRecords = stakeholders.map((stakeholder: any) => ({
-      ...stakeholder,
-      contribution: stakeholder.sector || 'Unknown',
-      name: stakeholder.name || '',
-      contactNumber: stakeholder.contactNumber || '',
-      address: stakeholder.address || '',
-      engagementStatus: 'Not Engaged',
-      schoolYear: stakeholder.schoolYear || getDefaultSchoolYear(),
-      sector: stakeholder.sector || 'Unknown',
-      contributions: []
-    }));
-
-    // check engagement status for each stakeholder
-    this.checkEngagementStatusForAllStakeholders();
-  }
-
-  //checks all records for engage or not engage
-  private checkEngagementStatusForAllStakeholders(): void {
-    let completedChecks = 0;
-    const totalStakeholders = this.totalRecords.length;
-
-    if (totalStakeholders === 0) {
-      this.allRecords = [];
-      this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-      this.applyFiltersDirectly();
-      return;
-    }
-
-    this.totalRecords.forEach((stakeholder, index) => {
-      this.engagementService.getAllEngagement(
-        this.pageIndex + 1,
-        this.pageSize,
-        stakeholder._id,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      ).subscribe({
-        next: (engagementResponse) => {
-          if (engagementResponse && engagementResponse.data && engagementResponse.data.length > 0) {
-            this.totalRecords[index].engagementStatus = 'Engaged';
-          }
-
-          completedChecks++;
-          if (completedChecks === totalStakeholders) {
-            // All checks completed, copy to allRecords and apply filters
-            this.allRecords = [...this.totalRecords];
-            this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-            this.applyFiltersDirectly();
-          }
-        },
-        error: (error) => {
-          completedChecks++;
-          if (completedChecks === totalStakeholders) {
-            // All checks completed, copy to allRecords and apply filters
-            this.allRecords = [...this.totalRecords];
-            this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-            this.applyFiltersDirectly();
-          }
-        }
-      });
+    this.totalRecords = stakeholders.map((stakeholder: any) => {
+      const engagements: Engagement[] = stakeholder.engagements ?? [];
+      const hasEngagement = engagements.length > 0;
+      return {
+        ...stakeholder,
+        contribution: stakeholder.sector || 'Unknown',
+        name: stakeholder.name || '',
+        contactNumber: stakeholder.contactNumber || '',
+        address: stakeholder.address || '',
+        engagementStatus: hasEngagement ? 'Engaged' : 'Not Engaged',
+        schoolYear: stakeholder.schoolYear || getDefaultSchoolYear(),
+        sector: stakeholder.sector || 'Unknown',
+        contributions: [],
+        engagements,
+      } as StakeholderProfile;
     });
+
+    this.allRecords = [...this.totalRecords];
+    this.dataSource = new MatTableDataSource<StakeholderProfile>(this.totalRecords);
+    this.applyFiltersDirectly();
   }
 
   dataSource = new MatTableDataSource<StakeholderProfile>([]);
@@ -316,26 +255,47 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
       return matchYear && matchSector && matchEngagement;
     });
 
-    // Calculate counts from all filtered records (not just current page)
-    this.engagedCount = filteredRecords.filter(r => r.engagementStatus === 'Engaged').length;
-    this.notEngagedCount = filteredRecords.filter(r => r.engagementStatus === 'Not Engaged').length;
-
-    const startIndex = this.pageIndex * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.allRecords = filteredRecords.slice(startIndex, endIndex);
-
+    this.allRecords = filteredRecords;
     this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
 
     if (this.paginator) {
-      this.paginator.length = filteredRecords.length;
+      this.paginator.length = this.stakeholderDirectoryTotalItems;
       this.paginator.pageIndex = this.pageIndex;
       this.paginator.pageSize = this.pageSize;
     }
+
+    this.refreshEngagementStatistics();
+  }
+
+  private refreshEngagementStatistics(): void {
+    const activeRole = this.authService.getActiveRole();
+    const schoolId = this.authService.getSchoolId();
+
+    this.engagementService
+      .getEngagementStatistics({
+        schoolYear: this.selectedSchoolYear === 'All School Year' ? undefined : this.selectedSchoolYear,
+        sector: this.selectedSector === 'All Sectors' ? undefined : this.selectedSector,
+        schoolId: activeRole === 'schoolAdmin' && schoolId ? schoolId : undefined,
+      })
+      .subscribe({
+        next: (res) => {
+          if (res?.success && res.data) {
+            this.engagedCount = res.data.engaged ?? 0;
+            this.notEngagedCount = res.data.notEngaged ?? 0;
+          }
+        },
+        error: () => {
+          this.engagedCount = 0;
+          this.notEngagedCount = 0;
+        },
+      });
   }
 
   applyFilter(): void {
-    this.applyFiltersDirectly();
-    // Reload stakeholders data when filters are applied to get fresh data
+    this.pageIndex = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
     this.reloadStakeholders();
   }
 
@@ -343,63 +303,21 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
     const activeRole = this.authService.getActiveRole();
     const schoolId = this.authService.getSchoolId();
 
-    this.userService.getUsersByRole('stakeholder').subscribe({
-      next: (stakeholders) => {
+    this.userService
+      .getUsersByRole('stakeholder', this.getStakeholderUsersByRoleParams())
+      .subscribe({
+      next: ({ data: stakeholders, meta }) => {
+        this.stakeholderDirectoryTotalItems = meta.totalItems;
         let filteredStakeholders = stakeholders;
 
-        // If user is school admin, filter stakeholders by their school
         if (activeRole === 'schoolAdmin' && schoolId) {
-          // For school admins,get stakeholders that have engagements with their school
-          this.engagementService.getAllEngagement(
-            1, // page
-            1000, // limit
-            undefined, // stakeholderUserId (don't filter by stakeholder)
-            this.selectedSchoolYear === 'All School Year' ? undefined : this.selectedSchoolYear,
-            undefined, // specificContribution
-            schoolId, // schoolId - filter by school admin's school
-            undefined, // startDate from engage
-            undefined, // endDate from engage
-            this.selectedSector === 'All Sectors' ? undefined : this.selectedSector // sector
-          ).subscribe({
-            next: (engagementResponse) => {
-              if (engagementResponse && engagementResponse.data) {
-                // Get unique stakeholder IDs from engagements
-                const engagedStakeholderIds = new Set(
-                  engagementResponse.data.map((engagement: Engagement) => {
-                    if (typeof engagement.stakeholderUserId === 'string') {
-                      return engagement.stakeholderUserId;
-                    } else if (engagement.stakeholderUserId && typeof engagement.stakeholderUserId === 'object') {
-                      return engagement.stakeholderUserId._id;
-                    }
-                    return null;
-                  }).filter(Boolean)
-                );
-                
-                // Filter stakeholders to only include those engaged with this school
-                filteredStakeholders = stakeholders.filter((stakeholder: any) => 
-                  engagedStakeholderIds.has(stakeholder._id)
-                );
-              }
-              
-              this.processStakeholders(filteredStakeholders);
-            },
-            error: (error) => {
-              // If there's an error getting engagements, show empty list for school admin
-              if (activeRole === 'schoolAdmin') {
-                this.allRecords = [];
-                this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
-              } else {
-                
-                this.processStakeholders(stakeholders);
-              }
-            }
-          });
-        } else {
-          // For division admin, show all stakeholders
-          this.processStakeholders(stakeholders);
+          filteredStakeholders = this.filterStakeholdersForSchoolAdmin(stakeholders, schoolId);
         }
+
+        this.processStakeholders(filteredStakeholders);
       },
       error: (error) => {
+        this.stakeholderDirectoryTotalItems = 0;
         this.allRecords = [];
         this.dataSource = new MatTableDataSource<StakeholderProfile>(this.allRecords);
       }
@@ -416,8 +334,8 @@ export class StakeholdersProfileComponent implements AfterViewInit, OnInit{
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    
-    this.applyFiltersDirectly();
+
+    this.reloadStakeholders();
   }
 }
 

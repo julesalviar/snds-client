@@ -1,14 +1,58 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, catchError, map, Observable, of} from 'rxjs';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
-import {TenantService} from "../../config/tenant.service";
 import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
-import {SchoolNeed} from "../model/school-need.model";
-import {MyContributionsResponse} from "../model/my-contribution.model";
-import {AuthService} from "../../auth/auth.service";
-import { UserType } from '../../registration/user-type.enum';
+
+export interface UsersByRoleMeta {
+  count: number;
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  role?: string;
+  search?: string;
+}
+
+export interface UsersByRoleResponse {
+  data: any[];
+  meta: UsersByRoleMeta;
+}
+
+export interface GetUsersByRoleParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  stakeholderInfo?: boolean;
+  engaged?: boolean;
+}
+
+function normalizeUsersByRoleResponse(res: any): UsersByRoleResponse {
+  if (Array.isArray(res)) {
+    const len = res.length;
+    return {
+      data: res,
+      meta: {
+        count: len,
+        totalItems: len,
+        currentPage: 1,
+        totalPages: len > 0 ? 1 : 0,
+      },
+    };
+  }
+  const data = Array.isArray(res?.data) ? res.data : [];
+  const m = res?.meta;
+  return {
+    data,
+    meta: {
+      count: m?.count ?? data.length,
+      totalItems: m?.totalItems ?? data.length,
+      currentPage: m?.currentPage ?? 1,
+      totalPages: m?.totalPages ?? (data.length > 0 ? 1 : 0),
+      role: m?.role,
+      search: m?.search,
+    },
+  };
+}
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +65,7 @@ export class UserService {
   projectTitles$ = this.projectTitlesSubject.asObservable();
   schoolYear$ = this.schoolYearSubject.asObservable();
   currentContribution$ = this.contributionData.asObservable();
- 
+
   constructor(private readonly httpService: HttpService) { }
 
   setContribution(data: any) {
@@ -39,23 +83,32 @@ export class UserService {
     return this.httpService.post(API_ENDPOINT.auth.register, userData);
   }
 
-  getUsersByRole(role: string, search?: string, limit?: number) {
+  getUsersByRole(role: string, params?: GetUsersByRoleParams): Observable<UsersByRoleResponse> {
     let url = `${environment.API_URL}/users/by-role/${role}`;
-    const params: string[] = [];
+    const p = params ?? {};
+    const query: string[] = [];
 
-    if (search) {
-      params.push(`search=${encodeURIComponent(search)}`);
+    if (p.page != null && p.page >= 1) {
+      query.push(`page=${Math.floor(p.page)}`);
+    }
+    if (p.limit != null && p.limit >= 1) {
+      query.push(`limit=${Math.floor(p.limit)}`);
+    }
+    if (p.search != null && String(p.search).trim() !== '') {
+      query.push(`search=${encodeURIComponent(String(p.search).trim())}`);
+    }
+    if (p.stakeholderInfo !== undefined) {
+      query.push(`stakeholderInfo=${p.stakeholderInfo ? 'true' : 'false'}`);
+    }
+    if (p.engaged != undefined) {
+      query.push(`engaged=${p.engaged ? 'true' : 'false'}`);
     }
 
-    if (limit) {
-      params.push(`limit=${limit}`);
+    if (query.length > 0) {
+      url += `?${query.join('&')}`;
     }
 
-    if (params.length > 0) {
-      url += `?${params.join('&')}`;
-    }
-
-    return this.httpService.get<any[]>(url);
+    return this.httpService.get<any>(url).pipe(map(normalizeUsersByRoleResponse));
   }
 
   /**

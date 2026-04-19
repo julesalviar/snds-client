@@ -133,8 +133,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   loadStakeholders(): void {
-    this.userService.getUsersByRole('stakeholder', undefined, this.STAKEHOLDER_LIMIT).subscribe({
-      next: (stakeholders) => {
+    this.userService.getUsersByRole('stakeholder', { limit: this.STAKEHOLDER_LIMIT }).subscribe({
+      next: ({ data: stakeholders }) => {
         this.stakeholders = stakeholders;
         this.filteredStakeholders = stakeholders;
       },
@@ -212,8 +212,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
 
   performSearch(searchTerm: string): void {
     if (searchTerm && searchTerm.length > 0) {
-      this.userService.getUsersByRole('stakeholder', searchTerm, this.STAKEHOLDER_LIMIT).subscribe({
-        next: (stakeholders) => {
+      this.userService.getUsersByRole('stakeholder', { search: searchTerm, limit: this.STAKEHOLDER_LIMIT }).subscribe({
+        next: ({ data: stakeholders }) => {
           this.filteredStakeholders = stakeholders;
         },
         error: (error) => {
