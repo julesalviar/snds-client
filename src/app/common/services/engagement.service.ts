@@ -1,7 +1,11 @@
 import {Injectable} from "@angular/core";
 import {catchError, Observable} from "rxjs";
 import {MyContributionsResponse} from "../model/my-contribution.model";
-import {EngagementsResponse} from "../model/engagement.model";
+import {
+  EngagementsResponse,
+  EngagementStatisticsQuery,
+  EngagementStatisticsResponse,
+} from "../model/engagement.model";
 import {API_ENDPOINT} from "../api-endpoints";
 import {AuthService} from "../../auth/auth.service";
 import {HttpService} from "./http.service";
@@ -86,6 +90,32 @@ export class EngagementService {
     url += `?${params.join('&')}`;
 
     return this.httpService.get<EngagementsResponse>(url).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  getEngagementStatistics(
+    query?: EngagementStatisticsQuery
+  ): Observable<EngagementStatisticsResponse> {
+    let url = `${API_ENDPOINT.engagements}/statistics`;
+    const params: string[] = [];
+    const q = query ?? {};
+
+    if (q.schoolYear) {
+      params.push(`schoolYear=${encodeURIComponent(q.schoolYear)}`);
+    }
+    if (q.sector) {
+      params.push(`sector=${encodeURIComponent(q.sector)}`);
+    }
+    if (q.schoolId) {
+      params.push(`schoolId=${encodeURIComponent(q.schoolId)}`);
+    }
+
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
+    }
+
+    return this.httpService.get<EngagementStatisticsResponse>(url).pipe(
       catchError(this.httpService.handleError)
     );
   }

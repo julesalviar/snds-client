@@ -37,7 +37,7 @@
   <div *ngIf="dataSource.data.length === 0" class="no-data-message" style="text-align: center; padding: 40px; color: #666;">
     <p>...Loading table</p>
   </div>
-  
+
   <div *ngIf="dataSource.data.length > 0">
     <mat-table [dataSource]="dataSource" class="mat-elevation-z8">
       <ng-container matColumnDef="contribution">
@@ -76,10 +76,10 @@
 </div>
 
 <mat-paginator
-  [length]="dataSource.data.length"
+  [length]="stakeholderDirectoryTotalItems"
   [pageSize]="pageSize"
   [pageIndex]="pageIndex"
-  [pageSizeOptions]="[2, 5, 10, 25, 50, 100]"
+  [pageSizeOptions]="[5, 10, 25, 50, 100]"
   showFirstLastButtons
   (page)="onPageChange($event)">
 </mat-paginator>
