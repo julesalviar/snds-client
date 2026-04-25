@@ -50,6 +50,7 @@ export class AipEditComponent implements OnInit {
     this.aipForm = this.fb.group({
       apn: [''],
       schoolYear: ['', Validators.required],
+      problemStatement: ['', Validators.required],
       title: ['', Validators.required],
       objectives: ['', [Validators.required, Validators.maxLength(500)]],
       intermediateOutcome: ['', Validators.required],
@@ -86,6 +87,7 @@ export class AipEditComponent implements OnInit {
         this.aipForm.patchValue({
           apn: project.apn,
           schoolYear: project.schoolYear,
+          problemStatement: project.problemStatement,
           title: project.title,
           objectives: project.objectives,
           intermediateOutcome: project.pillars,

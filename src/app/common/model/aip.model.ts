@@ -3,6 +3,7 @@ import { AipStatus } from '../enums/aip-status.enum';
 export interface Aip {
   apn: string;
   schoolYear: number;
+  problemStatement: string;
   title: string;
   objectives: string[];
   pillars: string;

@@ -59,6 +59,7 @@ export class AipComponent implements OnInit {
   ) {
     this.aipForm = this.fb.group({
       schoolYear: [getSchoolYear(), Validators.required],
+      problemStatement: ['', [Validators.required, Validators.maxLength(500)]],
       title: ['', Validators.required],
       objectives: ['', [Validators.required, Validators.maxLength(500)]],
       intermediateOutcome: ['', Validators.required],
