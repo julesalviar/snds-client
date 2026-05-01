@@ -5,7 +5,7 @@
     <mat-card-content>
       <ul class="project-details">
         <li><strong>APN:</strong> {{ data.apn }}</li>
-        <li><strong>School Year for the Project:</strong> {{ data.schoolYear }}</li>
+        <li><strong>School year(s) for the project:</strong> {{ formatAipSchoolYearsDisplay(data.schoolYear) }}</li>
         <li><strong>Project Title:</strong> {{ data.title }}</li>
         <li><strong>Objectives of the Project:</strong> {{ data.objectives }}</li>
         <li><strong>Intermediate Outcome (Pillars):</strong> {{ data.pillars }}</li>

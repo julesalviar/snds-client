@@ -37,6 +37,41 @@ export function getDefaultSchoolYear(now: Date = new Date()): string {
   return options[0] ?? `${SCHOOL_YEAR_MIN_START}-${SCHOOL_YEAR_MIN_START + 1}`;
 }
 
+const SCHOOL_YEAR_LABEL = /^\d{4}-\d{4}$/;
+
+/**
+ * Normalize AIP `schoolYear` from the API (`YYYY-YYYY` string, array of those, or legacy numeric start year) into labels.
+ */
+export function aipSchoolYearsAsArray(raw: unknown): string[] {
+  if (raw == null) return [];
+  if (Array.isArray(raw)) {
+    return raw.flatMap((item) => aipSchoolYearsAsArray(item));
+  }
+  const s = String(raw).trim();
+  if (!s) return [];
+  if (SCHOOL_YEAR_LABEL.test(s)) return [s];
+  const n = Number(s);
+  if (!Number.isNaN(n) && String(n) === s) return [`${n}-${n + 1}`];
+  return [s];
+}
+
+/** Comma-separated school years for tables and dialogs. */
+export function formatAipSchoolYearsDisplay(raw: unknown): string {
+  const labels = aipSchoolYearsAsArray(raw);
+  return labels.length ? labels.join(', ') : '—';
+}
+
+/**
+ * Payload value for create/update: backend accepts one `YYYY-YYYY` or a non-empty array.
+ * Call only when at least one year is selected (validated by the form).
+ */
+export function aipSchoolYearPayloadFromSelection(selected: string[]): string | string[] {
+  const years = [...new Set(selected.map((y) => y.trim()).filter(Boolean))];
+  if (years.length === 0) return '';
+  if (years.length === 1) return years[0];
+  return years;
+}
+
 export function formatDateString(value: string | MongoDate | undefined) {
   if (value == null) return '—';
   const str = typeof value === 'string' ? value : (value as { $date?: string })?.$date;

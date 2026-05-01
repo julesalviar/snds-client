@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 import { UserService } from '../common/services/user.service';
 import {catchError, distinctUntilChanged, forkJoin, map, Observable, of, startWith, Subject, switchMap, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../common/services/school-need.service";
-import {getSchoolYear, getSchoolYearOptions} from "../common/date-utils";
+import {aipSchoolYearsAsArray, getSchoolYear, getSchoolYearOptions} from "../common/date-utils";
 import {AipService} from "../common/services/aip.service";
 import {Aip} from "../common/model/aip.model";
 import {SchoolNeed, SchoolNeedImage} from "../common/model/school-need.model";
@@ -389,21 +389,10 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Normalize AIP `schoolYear` (number start year or `YYYY-YYYY` string) to `YYYY-YYYY` for comparison with the form.
-   */
-  private normalizeAipSchoolYearValue(raw: unknown): string {
-    if (raw == null || raw === '') return '';
-    const s = String(raw).trim();
-    if (s.includes('-')) return s;
-    const n = Number(s);
-    if (!Number.isNaN(n)) return `${n}-${n + 1}`;
-    return s;
-  }
-
   private aipMatchesFormSchoolYear(aip: Aip, formSchoolYear: string): boolean {
     if (!formSchoolYear?.trim()) return false;
-    return this.normalizeAipSchoolYearValue(aip.schoolYear) === formSchoolYear;
+    const years = aipSchoolYearsAsArray(aip.schoolYear);
+    return years.includes(formSchoolYear.trim());
   }
 
   private refreshPpaProjectsForFormSchoolYear(): void {
