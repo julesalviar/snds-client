@@ -65,15 +65,18 @@ export class StakeholdersProfileComponent implements OnInit {
   engagedCount = 0;
   notEngagedCount = 0;
   totalCount = 0;
+  
+  // Check if user is school admin for mat-radio-button display hide
+  isSchoolAdmin = this.authService.getActiveRole() === 'schoolAdmin';
 
   stakeholderDirectoryTotalItems = 0;
   schoolYearOptions = ['All School Year', ...getSchoolYearOptions()];
   sectorOptions = ['All Sectors', 'Private Sector', 'Public Sector', 'Civil Society Organization', 'International'];
-  engagementOptions = ['All', 'Engaged', 'Not Engaged'];
+  engagementOptions = ['All', 'Engaged', 'Not Engaged']; 
 
   selectedSchoolYear = getDefaultSchoolYear();
   selectedSector = 'All Sectors';
-  selectedEngagement = 'All';
+  selectedEngagement = 'All'; //hide if user is schoolAdmin
 
   displayedColumns: string[] = ['contribution', 'name', 'contactNumber', 'address', 'engagementStatus'];
   allRecords: StakeholderProfile[] = [];
