@@ -1,0 +1,39 @@
+.dialog-body {
+  min-width: min(100%, 520px);
+  max-height: 70vh;
+  padding-top: 12px;
+}
+
+.dialog-field-contribution-type {
+  margin-top: 10px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.chips-container {
+  margin-bottom: 12px;
+}
+
+.form-field--subscript-gap ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  margin-bottom: 4px;
+}
+
+.ppa-select-empty-hint {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+mat-dialog-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  position: relative;
+}
+
+.save-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}

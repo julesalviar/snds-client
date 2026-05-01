@@ -1,0 +1,464 @@
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatNativeDateModule, MatOption } from '@angular/material/core';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  distinctUntilChanged,
+  map,
+  Observable,
+  startWith,
+  Subject,
+  takeUntil,
+} from 'rxjs';
+import { UserService } from '../../common/services/user.service';
+import { SchoolNeedService } from '../../common/services/school-need.service';
+import {
+  aipSchoolYearsAsArray,
+  getSchoolYear,
+  getSchoolYearOptions,
+} from '../../common/date-utils';
+import { AipService } from '../../common/services/aip.service';
+import { Aip } from '../../common/model/aip.model';
+import { SchoolNeed } from '../../common/model/school-need.model';
+import { AuthService } from '../../auth/auth.service';
+import { ReferenceDataService } from '../../common/services/reference-data.service';
+import { InvalidContributionTypeDialogComponent } from '../invalid-contribution-type-dialog.component';
+import { InvalidSpecificContributionDialogComponent } from '../invalid-specific-contribution-dialog.component';
+
+@Component({
+  selector: 'app-school-need-create-dialog',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatDatepickerModule,
+    MatAutocompleteModule,
+    MatOption,
+    MatProgressBarModule,
+    MatIconModule,
+    MatChipsModule,
+  ],
+  templateUrl: './school-need-create-dialog.component.html',
+  styleUrl: './school-need-create-dialog.component.css',
+})
+export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, OnDestroy {
+  /**
+   * Disables autocomplete panels until after first paint so prefilled fields do not
+   * open suggestion lists on dialog open (see MatAutocompleteTrigger._handleFocus).
+   */
+  autocompleteSuppressed = true;
+
+  schoolNeedsForm: FormGroup;
+  private allProjectsData: Aip[] = [];
+  projectsData: Aip[] = [];
+  isLoadingPpaProjects = true;
+  isSaving = false;
+
+  schoolYears: string[] = getSchoolYearOptions();
+  units: string[] = [];
+
+  contributionTypes: string[] = [];
+  specificContributions: string[] = [];
+  filteredContributionTypes: string[] = [];
+  filteredSpecificContributions: string[] = [];
+  contributionTreeData: any[] = [];
+  previousContributionType = '';
+
+  selectedProjectIds: string[] = [];
+  pillars: string[] = [];
+
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private readonly dialogRef: MatDialogRef<SchoolNeedCreateDialogComponent, boolean>,
+    private readonly fb: FormBuilder,
+    private readonly userService: UserService,
+    private readonly schoolNeedService: SchoolNeedService,
+    private readonly aipService: AipService,
+    private readonly authService: AuthService,
+    private readonly referenceDataService: ReferenceDataService,
+    private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog,
+  ) {
+    this.schoolNeedsForm = this.fb.group({
+      contributionType: ['', [Validators.required]],
+      specificContribution: ['', [Validators.required]],
+      schoolYear: [getSchoolYear(), [Validators.required]],
+      ppaName: [[], [Validators.required, Validators.minLength(1)]],
+      intermediateOutcome: ['', [Validators.required]],
+      quantityNeeded: [0, [Validators.required, Validators.min(1)]],
+      unit: ['', [Validators.required]],
+      estimatedCost: [0, [Validators.required, Validators.min(0)]],
+      beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
+      beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
+      targetDate: ['', [Validators.required]],
+      description: ['', [Validators.maxLength(2000), Validators.required]],
+    });
+  }
+
+  ngOnInit(): void {
+    // Load reference data before UserService subscriptions so contributionType / filters resolve correctly.
+    this.loadContributionData();
+    this.loadPillarsAndUnits();
+    this.userService.currentContribution$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
+      if (data) {
+        this.schoolNeedsForm.patchValue({
+          specificContribution: data.specificContribution,
+          contributionType: data.name,
+        });
+        this.previousContributionType = data.name ?? '';
+        this.onContributionTypeChange(data.name ?? '');
+      }
+    });
+    this.userService.schoolYear$.pipe(takeUntil(this.destroy$)).subscribe((sy) => {
+      if (sy != null && String(sy).trim() !== '') {
+        this.schoolNeedsForm.patchValue({ schoolYear: sy });
+      }
+    });
+    this.loadCurrentProjects();
+    this.schoolNeedsForm
+      .get('schoolYear')!
+      .valueChanges.pipe(
+        startWith(this.schoolNeedsForm.get('schoolYear')!.value),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.refreshPpaProjectsForFormSchoolYear());
+  }
+
+  ngAfterViewInit(): void {
+    queueMicrotask(() => {
+      this.autocompleteSuppressed = false;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onDismiss(): void {
+    this.dialogRef.close(false);
+  }
+
+  async onSubmit(): Promise<void> {
+    if (this.schoolNeedsForm.invalid) {
+      this.markFormGroupTouched();
+      this.showFormValidationErrors();
+      return;
+    }
+
+    const contributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    if (contributionType && !this.validateContributionType(contributionType)) {
+      this.showErrorNotification(
+        'The contribution type you entered is not available. Please select from the available options.',
+      );
+      this.showInvalidContributionTypeDialog();
+      return;
+    }
+
+    const specificContribution = this.schoolNeedsForm.get('specificContribution')?.value;
+    if (specificContribution && !this.validateSpecificContribution(specificContribution)) {
+      const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+      const errorMessage = selectedContributionType
+        ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
+        : 'Please select a contribution type first before entering a specific contribution.';
+      this.showErrorNotification(errorMessage);
+      this.showInvalidSpecificContributionDialog();
+      return;
+    }
+
+    this.isSaving = true;
+    try {
+      const newNeed: SchoolNeed = {
+        specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
+        contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+        projectId: this.selectedProjectIds,
+        quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
+        unit: this.schoolNeedsForm.get('unit')?.value,
+        estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
+        studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+        personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+        description: this.schoolNeedsForm.get('description')?.value,
+        schoolId: this.authService.getSchoolId(),
+        images: [],
+        targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+        schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
+      };
+
+      this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.showSuccessNotification('School need saved successfully!');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error('Error creating school need:', err);
+          this.isSaving = false;
+          let errorMessage = 'Failed to save school need. Please try again.';
+          if (err?.error?.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMessage = err.error.message.join('\n• ');
+              if (err.error.message.length > 1) {
+                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+              }
+            } else if (typeof err.error.message === 'string') {
+              errorMessage = err.error.message;
+            }
+          } else if (err?.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
+          }
+          this.showErrorNotification(errorMessage);
+        },
+      });
+    } catch (error: any) {
+      console.error('Error during form submission:', error);
+      this.isSaving = false;
+      this.showErrorNotification('An unexpected error occurred. Please try again.');
+    }
+  }
+
+  private loadCurrentProjects(): void {
+    this.isLoadingPpaProjects = true;
+    this.fetchProjects().subscribe({
+      next: (projects) => {
+        this.allProjectsData = projects;
+        this.refreshPpaProjectsForFormSchoolYear();
+        this.isLoadingPpaProjects = false;
+      },
+      error: (err) => {
+        console.error('Error fetching projects:', err);
+        this.isLoadingPpaProjects = false;
+      },
+    });
+  }
+
+  private aipMatchesFormSchoolYear(aip: Aip, formSchoolYear: string): boolean {
+    if (!formSchoolYear?.trim()) return false;
+    const years = aipSchoolYearsAsArray(aip.schoolYear);
+    return years.includes(formSchoolYear.trim());
+  }
+
+  private refreshPpaProjectsForFormSchoolYear(): void {
+    const sy = this.schoolNeedsForm.get('schoolYear')?.value as string | undefined;
+    if (!sy?.trim()) {
+      this.projectsData = [];
+    } else {
+      this.projectsData = this.allProjectsData.filter((p) => this.aipMatchesFormSchoolYear(p, sy));
+    }
+    this.pruneSelectedProjectsToCurrentPpaOptions();
+  }
+
+  private pruneSelectedProjectsToCurrentPpaOptions(): void {
+    const allowed = new Set(this.projectsData.map((p) => p._id));
+    const next = this.selectedProjectIds.filter((id) => allowed.has(id));
+    if (next.length !== this.selectedProjectIds.length) {
+      this.selectedProjectIds = next;
+      this.schoolNeedsForm.get('ppaName')?.setValue(this.selectedProjectIds);
+    }
+  }
+
+  private loadContributionData(): void {
+    const treeData = this.referenceDataService.get<any[]>('contributionTree');
+    if (treeData) {
+      this.contributionTreeData = treeData;
+      this.contributionTypes = treeData.map((node) => node.name);
+      this.specificContributions = treeData.flatMap((node) =>
+        node.children ? node.children.map((child: any) => child.name) : [],
+      );
+      this.filteredContributionTypes = [...this.contributionTypes];
+      this.filteredSpecificContributions = [...this.specificContributions];
+    }
+  }
+
+  private loadPillarsAndUnits(): void {
+    const pillarsData = this.referenceDataService.get<string[]>('pillars');
+    if (pillarsData) {
+      this.pillars = pillarsData;
+    }
+    const unitsData = this.referenceDataService.get<string[]>('units');
+    if (unitsData) {
+      this.units = unitsData;
+    }
+  }
+
+  private fetchProjects(page = 1, size = 1000): Observable<Aip[]> {
+    const schoolId = this.authService.getSchoolId();
+    return this.aipService.getAips(page, size, schoolId || undefined).pipe(map((response) => response.data));
+  }
+
+  protected filterContributionTypes(value: string): void {
+    const filterValue = value.toLowerCase();
+    this.filteredContributionTypes = this.contributionTypes.filter((option) =>
+      option.toLowerCase().includes(filterValue),
+    );
+  }
+
+  protected filterSpecificContributions(value: string): void {
+    const filterValue = value.toLowerCase();
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    let available = this.specificContributions;
+    if (selectedContributionType) {
+      available = this.getSpecificContributionsForType(selectedContributionType);
+    }
+    this.filteredSpecificContributions = available.filter((option) =>
+      option.toLowerCase().includes(filterValue),
+    );
+  }
+
+  protected onContributionTypeChange(selectedType: string): void {
+    if (this.previousContributionType !== selectedType) {
+      this.schoolNeedsForm.get('specificContribution')?.setValue('');
+    }
+    this.previousContributionType = selectedType;
+    if (selectedType) {
+      this.specificContributions = this.getSpecificContributionsForType(selectedType);
+    } else {
+      this.specificContributions = this.contributionTreeData.flatMap((node) =>
+        node.children ? node.children.map((child: any) => child.name) : [],
+      );
+    }
+    this.filteredSpecificContributions = [...this.specificContributions];
+  }
+
+  protected onContributionTypeInput(value: string): void {
+    if (!value || value.trim() === '') {
+      this.onContributionTypeChange('');
+    } else {
+      this.previousContributionType = value;
+    }
+  }
+
+  private getSpecificContributionsForType(contributionType: string): string[] {
+    return (
+      this.contributionTreeData
+        .find((node) => node.name === contributionType)
+        ?.children?.map((child: any) => child.name) ?? []
+    );
+  }
+
+  protected addProject(projectId: string): void {
+    if (projectId && !this.selectedProjectIds.includes(projectId)) {
+      this.selectedProjectIds.push(projectId);
+      this.schoolNeedsForm.get('ppaName')?.setValue(this.selectedProjectIds);
+      this.schoolNeedsForm.get('ppaName')?.markAsTouched();
+    }
+  }
+
+  protected removeProject(projectId: string): void {
+    const index = this.selectedProjectIds.indexOf(projectId);
+    if (index >= 0) {
+      this.selectedProjectIds.splice(index, 1);
+      this.schoolNeedsForm.get('ppaName')?.setValue(this.selectedProjectIds);
+    }
+  }
+
+  protected getProjectTitle(projectId: string): string {
+    const project =
+      this.allProjectsData.find((p) => p._id === projectId) ??
+      this.projectsData.find((p) => p._id === projectId);
+    return project ? `${project.apn} - ${project.title}` : projectId;
+  }
+
+  private validateContributionType(value: string): boolean {
+    return this.contributionTypes.includes(value);
+  }
+
+  private validateSpecificContribution(value: string): boolean {
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    if (!selectedContributionType) {
+      return false;
+    }
+    return this.getSpecificContributionsForType(selectedContributionType).includes(value);
+  }
+
+  private showInvalidContributionTypeDialog(): void {
+    this.dialog.open(InvalidContributionTypeDialogComponent, {
+      width: '400px',
+      position: { top: '20vh' },
+      data: {
+        message: 'The contribution type you entered is not available. Please select from the available options.',
+      },
+    });
+  }
+
+  private showInvalidSpecificContributionDialog(): void {
+    const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
+    const message = selectedContributionType
+      ? `The specific contribution you entered does not belong to "${selectedContributionType}". Please select from the available options.`
+      : 'Please select a contribution type first before entering a specific contribution.';
+    this.dialog.open(InvalidSpecificContributionDialogComponent, {
+      width: '400px',
+      position: { top: '20vh' },
+      data: { message },
+    });
+  }
+
+  private markFormGroupTouched(): void {
+    Object.keys(this.schoolNeedsForm.controls).forEach((key) => {
+      this.schoolNeedsForm.get(key)?.markAsTouched();
+    });
+  }
+
+  private showFormValidationErrors(): void {
+    let invalidFieldCount = 0;
+    Object.keys(this.schoolNeedsForm.controls).forEach((key) => {
+      const control = this.schoolNeedsForm.get(key);
+      if (control && control.invalid && control.errors) {
+        invalidFieldCount++;
+      }
+    });
+    if (invalidFieldCount > 0) {
+      const errorMessage =
+        invalidFieldCount === 1
+          ? 'Invalid data:Please check the form field and try again.'
+          : `Invalid data: Please check the ${invalidFieldCount} form fields and try again.`;
+      this.showErrorNotification(errorMessage);
+    }
+  }
+
+  private showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar'],
+    });
+  }
+
+  private showErrorNotification(message: string): void {
+    const duration = message.includes('\n') ? 8000 : 5000;
+    this.snackBar.open(message, 'Close', {
+      duration,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar'],
+    });
+  }
+}

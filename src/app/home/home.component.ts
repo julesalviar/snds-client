@@ -436,7 +436,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       case UserType.SchoolAdmin: {
         const { isComplete } = await this.checkProfileCompleteness();
         if (!isComplete) return;
-        path = '/school-admin/school-needs';
+        path = '/school-admin/list-of-school-needs';
+        queryParams['openCreate'] = '1';
         console.log('Navigating to:', path, queryParams);
         break;
       }

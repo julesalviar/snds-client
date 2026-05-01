@@ -340,6 +340,16 @@ h4 {
   text-decoration: underline;
 }
 
+.home-school-needs-list-link-wrap {
+  margin: 8px 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.home-school-needs-list-hint {
+  color: #666;
+  font-weight: 400;
+}
 
 h2 {
   color: green;

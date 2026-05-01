@@ -1,21 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
-import {MatMenu, MatMenuModule} from '@angular/material/menu';
-import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import { MatMenu, MatMenuModule } from '@angular/material/menu';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDialog } from '@angular/material/dialog';
-import { SharedDataService } from '../../common/services/shared-data.service';
-import {Router, RouterModule} from "@angular/router";
-import {MatIconButton} from "@angular/material/button";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {MatProgressBarModule} from "@angular/material/progress-bar";
-import {SchoolNeed} from "../../common/model/school-need.model"
-import {SchoolNeedService} from "../../common/services/school-need.service";
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { MatButtonModule, MatIconButton } from '@angular/material/button';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { SchoolNeed } from '../../common/model/school-need.model';
+import { SchoolNeedService } from '../../common/services/school-need.service';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
+import { SchoolNeedCreateDialogComponent } from '../school-need-create-dialog/school-need-create-dialog.component';
+import { SchoolNeedComponent } from '../school-need/school-need.component';
 
 @Component({
   selector: 'app-list-of-school-needs',
@@ -30,14 +32,16 @@ import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/c
     MatMenuModule,
     RouterModule,
     MatIconButton,
+    MatButtonModule,
     MatPaginator,
-    MatProgressBarModule,
-    MatBadgeModule
+    MatBadgeModule,
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
-export class ListOfSchoolNeedsComponent implements OnInit {
+export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
   displayedColumns: string[] = [
     'code',
     'engaged',
@@ -61,15 +65,34 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   isLoading: boolean = true;
 
   constructor(
-    private readonly sharedDataService: SharedDataService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly snackBar: MatSnackBar,
-    private readonly dialog: MatDialog
+    private readonly dialog: MatDialog,
+    private readonly breakpointObserver: BreakpointObserver,
   ) {}
 
   ngOnInit(): void {
     this.loadSchoolNeeds();
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const open = params['openCreate'];
+      if (open !== '1' && open !== 'true') {
+        return;
+      }
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { openCreate: undefined },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+      queueMicrotask(() => this.onCreate());
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   navigateToEngage(code: string): void {
@@ -79,8 +102,41 @@ export class ListOfSchoolNeedsComponent implements OnInit {
   view(need: SchoolNeed): void {
   this.router.navigate(['/school-admin/school-need-view/', need.code]);
 }
+  onCreate(): void {
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const ref = this.dialog.open(SchoolNeedCreateDialogComponent, {
+      width: isMobile ? '100vw' : 'min(640px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      disableClose: false,
+      autoFocus: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    ref.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadSchoolNeeds();
+      }
+    });
+  }
+
   edit(need: SchoolNeed): void {
-    this.router.navigate(['/school-admin/school-need/', need.code]);
+    if (!need.code) {
+      return;
+    }
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const ref = this.dialog.open(SchoolNeedComponent, {
+      width: isMobile ? '100vw' : 'min(720px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+      data: { needCode: need.code },
+    });
+    ref.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadSchoolNeeds();
+      }
+    });
   }
 
   delete(need: SchoolNeed): void {

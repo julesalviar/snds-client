@@ -1,0 +1,170 @@
+<h2 mat-dialog-title>Create School Need</h2>
+
+<mat-dialog-content class="dialog-body">
+  <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline" class="full-width dialog-field-contribution-type">
+      <mat-label>Contribution Type</mat-label>
+      <input
+        matInput
+        #contributionTypeInput
+        formControlName="contributionType"
+        [matAutocomplete]="contributionTypeAuto"
+        [matAutocompleteDisabled]="autocompleteSuppressed"
+        (input)="filterContributionTypes(contributionTypeInput.value); onContributionTypeInput(contributionTypeInput.value)">
+      <mat-autocomplete #contributionTypeAuto="matAutocomplete" (optionSelected)="onContributionTypeChange($event.option.value)">
+        <mat-option *ngFor="let option of filteredContributionTypes" [value]="option">
+          {{ option }}
+        </mat-option>
+      </mat-autocomplete>
+      <mat-error *ngIf="schoolNeedsForm.get('contributionType')?.invalid && schoolNeedsForm.get('contributionType')?.touched">
+        Contribution Type is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Specific Contribution</mat-label>
+      <input
+        matInput
+        #specificContributionInput
+        formControlName="specificContribution"
+        [matAutocomplete]="specificContributionAuto"
+        [matAutocompleteDisabled]="autocompleteSuppressed"
+        (input)="filterSpecificContributions(specificContributionInput.value)">
+      <mat-autocomplete #specificContributionAuto="matAutocomplete">
+        <mat-option *ngFor="let option of filteredSpecificContributions" [value]="option">
+          {{ option }}
+        </mat-option>
+      </mat-autocomplete>
+      <mat-error *ngIf="schoolNeedsForm.get('specificContribution')?.invalid && schoolNeedsForm.get('specificContribution')?.touched">
+        Specific Contribution is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>School Year for the Project</mat-label>
+      <mat-select formControlName="schoolYear">
+        <mat-option *ngFor="let year of schoolYears" [value]="year">{{ year }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="schoolNeedsForm.get('schoolYear')?.invalid && schoolNeedsForm.get('schoolYear')?.touched">
+        School year is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field
+      appearance="outline"
+      class="full-width"
+      [class.form-field--subscript-gap]="!isLoadingPpaProjects && projectsData.length === 0">
+      <mat-label>Select PPA Name</mat-label>
+      <mat-select
+        #projectSelect
+        [disabled]="isLoadingPpaProjects"
+        (selectionChange)="addProject(projectSelect.value); projectSelect.value = ''">
+        <mat-option *ngIf="isLoadingPpaProjects" disabled>Loading PPA plans…</mat-option>
+        <mat-option *ngIf="!isLoadingPpaProjects && projectsData.length === 0" disabled class="ppa-select-empty-option">
+          No PPA plans for this school year
+        </mat-option>
+        <mat-option *ngFor="let project of projectsData" [value]="project._id" [disabled]="selectedProjectIds.includes(project._id)">
+          {{ project.apn }} - {{ project.title }}
+        </mat-option>
+      </mat-select>
+      <mat-hint *ngIf="isLoadingPpaProjects">Loading PPA plans…</mat-hint>
+      <mat-hint *ngIf="!isLoadingPpaProjects && projectsData.length === 0" class="ppa-select-empty-hint">
+        No PPA plans match this school year. Add or open plans under PPA, or choose another school year above.
+      </mat-hint>
+      <mat-error *ngIf="schoolNeedsForm.get('ppaName')?.invalid && schoolNeedsForm.get('ppaName')?.touched">
+        At least one PPA Name is required
+      </mat-error>
+    </mat-form-field>
+
+    <div *ngIf="selectedProjectIds.length > 0" class="chips-container">
+      <mat-chip-set aria-label="Selected Projects">
+        <mat-chip *ngFor="let projectId of selectedProjectIds" (removed)="removeProject(projectId)" [title]="getProjectTitle(projectId)">
+          {{ getProjectTitle(projectId) }}
+          <button matChipRemove type="button">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Intermediate Outcome (Pillars)</mat-label>
+      <mat-select formControlName="intermediateOutcome">
+        <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Quantity Needed</mat-label>
+      <input matInput formControlName="quantityNeeded" type="number">
+      <mat-error *ngIf="schoolNeedsForm.get('quantityNeeded')?.invalid && schoolNeedsForm.get('quantityNeeded')?.touched">
+        <span *ngIf="schoolNeedsForm.get('quantityNeeded')?.errors?.['required']">Quantity is required</span>
+        <span *ngIf="schoolNeedsForm.get('quantityNeeded')?.errors?.['min']">Quantity must be at least 1</span>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Unit (Box, pieces, sack, roll etc.)</mat-label>
+      <mat-select formControlName="unit">
+        <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="schoolNeedsForm.get('unit')?.invalid && schoolNeedsForm.get('unit')?.touched">
+        Unit is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Estimated Cost (numbers only)</mat-label>
+      <input matInput formControlName="estimatedCost" type="number">
+      <mat-error *ngIf="schoolNeedsForm.get('estimatedCost')?.invalid && schoolNeedsForm.get('estimatedCost')?.touched">
+        <span *ngIf="schoolNeedsForm.get('estimatedCost')?.errors?.['required']">Estimated Cost is required</span>
+        <span *ngIf="schoolNeedsForm.get('estimatedCost')?.errors?.['min']">Estimated Cost must be 0 or greater</span>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>No. of Beneficiary Students</mat-label>
+      <input matInput formControlName="beneficiaryStudents" type="number" min="0">
+      <mat-error *ngIf="schoolNeedsForm.get('beneficiaryStudents')?.invalid && schoolNeedsForm.get('beneficiaryStudents')?.touched">
+        <span *ngIf="schoolNeedsForm.get('beneficiaryStudents')?.errors?.['required']">Number of Beneficiary Students is required</span>
+        <span *ngIf="schoolNeedsForm.get('beneficiaryStudents')?.errors?.['min']">Number must be 0 or greater</span>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>No. of Beneficiary Personnel</mat-label>
+      <input matInput formControlName="beneficiaryPersonnel" type="number">
+      <mat-error *ngIf="schoolNeedsForm.get('beneficiaryPersonnel')?.invalid && schoolNeedsForm.get('beneficiaryPersonnel')?.touched">
+        <span *ngIf="schoolNeedsForm.get('beneficiaryPersonnel')?.errors?.['required']">Number of Beneficiary Personnel is required</span>
+        <span *ngIf="schoolNeedsForm.get('beneficiaryPersonnel')?.errors?.['min']">Number must be 0 or greater</span>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Target Date of Implementation</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="targetDate">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="schoolNeedsForm.get('targetDate')?.invalid && schoolNeedsForm.get('targetDate')?.touched">
+        Target Date is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description of the Project</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+      <mat-error *ngIf="schoolNeedsForm.get('description')?.invalid && schoolNeedsForm.get('description')?.touched">
+        PPA Description/Information must not exceed 2000 characters
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <mat-progress-bar *ngIf="isSaving" mode="indeterminate" class="save-progress-bar"></mat-progress-bar>
+  <button mat-button type="button" (click)="onDismiss()" [disabled]="isSaving">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving">
+    <mat-icon>save</mat-icon>
+    {{ isSaving ? 'Saving…' : 'Save' }}
+  </button>
+</mat-dialog-actions>
