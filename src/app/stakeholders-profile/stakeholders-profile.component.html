@@ -13,7 +13,7 @@
     </mat-select>
   </mat-form-field>
 
-  <mat-radio-group class="engagement-radio" [(ngModel)]="selectedEngagement">
+  <mat-radio-group class="engagement-radio" [(ngModel)]="selectedEngagement" *ngIf="!isSchoolAdmin">
     <mat-radio-button value="Engaged">Engaged</mat-radio-button>
     <mat-radio-button value="Not Engaged">Not Engage</mat-radio-button>
     <mat-radio-button value="All">All</mat-radio-button>
@@ -35,7 +35,7 @@
 </div>
 <div class="table-wrapper">
   <div *ngIf="dataSource.data.length === 0" class="no-data-message" style="text-align: center; padding: 40px; color: #666;">
-    <p>...Loading table</p>
+    <p>...No data found</p>
   </div>
 
   <div *ngIf="dataSource.data.length > 0">
