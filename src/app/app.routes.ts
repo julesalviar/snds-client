@@ -41,6 +41,8 @@ import { ActivityListComponent } from './division-admin/activity/activity-list.c
 import { ActivityFormComponent } from './division-admin/activity/activity-form.component';
 import { OfficeListComponent } from './division-admin/office/office-list.component';
 import { StakeholdersProfileComponent } from './stakeholders-profile/stakeholders-profile.component';
+import { ConfirmEmailComponent } from './confirm-email/confirm-email.component';
+import { EmailActivatedComponent } from './email-activated/email-activated.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -49,6 +51,8 @@ export const routes: Routes = [
   {path: 'open-registration', component: OpenRegistrationComponent},
   {path: 'close-registration', component: CloseRegistrationComponent},
   {path: 'reset-password', component: ResetPasswordComponent},
+  {path: 'confirm-email', component: ConfirmEmailComponent},
+  {path: 'email-activated', component: EmailActivatedComponent},
   {
     path: 'home',
     component: HomeComponent,

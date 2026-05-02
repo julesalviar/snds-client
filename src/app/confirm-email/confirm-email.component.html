@@ -1,0 +1,15 @@
+<mat-card class="confirm-email-card">
+  <mat-card-title>Confirm email</mat-card-title>
+
+  <div *ngIf="viewState === 'verifying'" class="centered">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Confirming your email address…</p>
+  </div>
+
+  <div *ngIf="viewState === 'missing-token' || viewState === 'error'" class="message-block">
+    <p class="error-text">{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" type="button" (click)="goToSignIn()">
+      Go to sign in
+    </button>
+  </div>
+</mat-card>

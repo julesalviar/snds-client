@@ -21,6 +21,14 @@ export class AuthGuard implements CanActivate {
       return false;
     }
 
+    if (!this.authService.isEmailVerifiedForAccess()) {
+      this.authService.logout();
+      this.router.navigate(['/sign-in'], {
+        queryParams: { returnUrl: url, needEmailVerification: '1' },
+      });
+      return false;
+    }
+
     const roleType = route.data['roleType'];
     const allowedRoles = route.data['allowedRoles'] || (roleType ? [roleType] : null);
 

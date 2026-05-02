@@ -1,0 +1,36 @@
+.activated-card {
+  max-width: 440px;
+  margin: 48px auto;
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+
+.success-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 32px;
+  line-height: 56px;
+  font-weight: bold;
+}
+
+mat-card-title {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+mat-card-content p {
+  margin: 0;
+  line-height: 1.5;
+  color: #424242;
+  text-align: left;
+}
+
+mat-card-actions.actions-row {
+  margin-top: 20px;
+  padding: 0;
+  justify-content: center;
+}
