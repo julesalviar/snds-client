@@ -13,6 +13,7 @@ import {SchoolNeedService} from "../../common/services/school-need.service";
 import {AipService} from "../../common/services/aip.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {SchoolNeed} from "../../common/model/school-need.model";
+import {Aip} from "../../common/model/aip.model";
 import {CurrencyPipe, DatePipe, DecimalPipe, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
 import {MatDialog} from "@angular/material/dialog";
 import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
@@ -67,7 +68,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   deletingEngagementId: string | null = null;
 
   // Project-related properties
-  projectsData: any[] = [];
+  projectsData: Aip[] = [];
   selectedProjectIds: string[] = [];
 
   constructor(
@@ -89,9 +90,6 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
       this.displayedColumns.push('action');
     }
 
-    // Load projects data
-    this.loadProjects();
-
     if (this.code) {
       this.loadSchoolNeed(this.code);
     } else {
@@ -105,20 +103,6 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadProjects(): void {
-    this.fetchProjects().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (projects) => {
-        this.projectsData = projects;
-      },
-    });
-  }
-
-  private fetchProjects(): Observable<any[]> {
-    return this.aipService.getAips(1, 1000).pipe(
-      map(response => response.data)
-    );
-  }
-
   private loadSchoolNeed(needCode: string): void {
     this.schoolNeedService.getSchoolNeedByCode(needCode).pipe(takeUntil(this.destroy$)).subscribe({
       next: (need) => {
@@ -127,8 +111,8 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
         
         // Extract project IDs from the school need
         if (need.projectId) {
-          this.selectedProjectIds = need.projectId.map(project =>
-            typeof project === 'object' ? project._id : project
+          this.selectedProjectIds = need.projectId.map(p => 
+            typeof p === 'string' ? p : p._id
           );
         }
         
@@ -262,8 +246,10 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   }
 
   protected getProjectTitle(projectId: string): string {
-    const project = this.projectsData.find(p => p._id === projectId);
-    return project ? `${project.apn} - ${project.title}` : projectId;
+    const projectInfo = this.schoolNeed?.projectId?.find(p => 
+      (typeof p === 'string' ? p : p._id) === projectId
+    );
+    return (projectInfo && typeof projectInfo !== 'string') ? projectInfo.title : 'Project';
   }
 
   protected viewProjectDetails(projectId: string): void {
