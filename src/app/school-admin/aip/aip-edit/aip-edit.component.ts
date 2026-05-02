@@ -15,6 +15,11 @@ import { AuthService } from '../../../auth/auth.service';
 import { UserType } from '../../../registration/user-type.enum';
 import { ReferenceDataService } from '../../../common/services/reference-data.service';
 import { AIP_STATUSES } from '../../../common/enums/aip-status.enum';
+import {
+  aipSchoolYearPayloadFromSelection,
+  aipSchoolYearsAsArray,
+  getSchoolYearOptions,
+} from '../../../common/date-utils';
 
 @Component({
   selector: 'app-aip-edit',
@@ -37,6 +42,7 @@ export class AipEditComponent implements OnInit {
   isLoading: boolean = true;
   pillars: string[] = [];
   statuses: readonly string[] = AIP_STATUSES;
+  readonly schoolYearOptions = getSchoolYearOptions();
 
   constructor(
     private readonly fb: FormBuilder,
@@ -49,8 +55,7 @@ export class AipEditComponent implements OnInit {
   ) {
     this.aipForm = this.fb.group({
       apn: [''],
-      schoolYear: ['', Validators.required],
-      problemStatement: ['', Validators.required],
+      schoolYear: [[], Validators.required],
       title: ['', Validators.required],
       objectives: ['', [Validators.required, Validators.maxLength(500)]],
       intermediateOutcome: ['', Validators.required],
@@ -86,8 +91,7 @@ export class AipEditComponent implements OnInit {
         console.log(project);
         this.aipForm.patchValue({
           apn: project.apn,
-          schoolYear: project.schoolYear,
-          problemStatement: project.problemStatement,
+          schoolYear: aipSchoolYearsAsArray(project.schoolYear),
           title: project.title,
           objectives: project.objectives,
           intermediateOutcome: project.pillars,
@@ -116,10 +120,11 @@ export class AipEditComponent implements OnInit {
     }
 
     if (this.aipForm.valid) {
-      const { intermediateOutcome, apn, ...filteredValues } = this.aipForm.value;
+      const { intermediateOutcome, apn, schoolYear, ...rest } = this.aipForm.value;
       const updatedProject: Partial<Aip> = {
         pillars: intermediateOutcome,
-        ...filteredValues,
+        ...rest,
+        schoolYear: aipSchoolYearPayloadFromSelection(schoolYear as string[]),
       };
 
       this.aipService.updateAip(this.projectId, updatedProject).subscribe({

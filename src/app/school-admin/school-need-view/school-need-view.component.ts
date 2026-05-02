@@ -94,7 +94,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
       this.loadSchoolNeed(this.code);
     } else {
       this.showErrorNotification('School need code not provided');
-      this.router.navigate(['/school-admin/school-needs']);
+      this.router.navigate(['/school-admin/list-of-school-needs']);
     }
   }
 
@@ -121,7 +121,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error fetching school need:', err);
         this.showErrorNotification('Failed to load school need');
-        this.router.navigate(['/school-admin/school-needs']);
+        this.router.navigate(['/school-admin/list-of-school-needs']);
       }
     });
   }

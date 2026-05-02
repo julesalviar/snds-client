@@ -12,6 +12,7 @@ import { API_ENDPOINT } from '../../common/api-endpoints';
 import { catchError, tap, throwError } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthResponse } from '../../auth/auth-response.model';
 
 export interface SwitchRoleDialogData {
   roles: string[];
@@ -57,7 +58,7 @@ export class SwitchRoleDialogComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.httpService.post<{ access_token: string }>(
+    this.httpService.post<AuthResponse>(
       API_ENDPOINT.auth.switchRole,
       { role: this.selectedRole }
     ).pipe(

@@ -315,7 +315,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
             this.showSuccessNotification('Engagement saved successfully!');
             // Navigate back to the previous page after a short delay to show the notification
             setTimeout(() => {
-              this.router.navigate(['/school-admin/school-needs']);
+              this.router.navigate(['/school-admin/list-of-school-needs']);
             }, 1500);
           },
           error: (error) => {

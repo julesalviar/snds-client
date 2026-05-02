@@ -6,8 +6,13 @@
         <form [formGroup]="aipForm" (ngSubmit)="onSubmit()">
 
           <mat-form-field appearance="fill">
-            <mat-label>School Year for the Project</mat-label>
-            <input matInput formControlName="schoolYear" readonly>
+            <mat-label>School year(s) for the project</mat-label>
+            <mat-select formControlName="schoolYear" multiple>
+              <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="aipForm.get('schoolYear')?.invalid && (aipForm.get('schoolYear')?.touched || aipForm.get('schoolYear')?.dirty)">
+              Select at least one school year.
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="fill">
@@ -136,7 +141,7 @@
               <!-- School Year Column -->
               <ng-container matColumnDef="schoolYear">
                 <mat-header-cell *matHeaderCellDef> Year </mat-header-cell>
-                <mat-cell *matCellDef="let project"> {{ project.schoolYear }} </mat-cell>
+                <mat-cell *matCellDef="let project"> {{ formatAipSchoolYearsDisplay(project.schoolYear) }} </mat-cell>
               </ng-container>
               <!-- Status Column -->
               <ng-container matColumnDef="status">

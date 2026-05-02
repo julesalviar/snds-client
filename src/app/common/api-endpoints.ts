@@ -21,6 +21,8 @@ export const API_ENDPOINT = {
   userInvites: `${environment.API_URL}/user-invites`,
   engagements: `${environment.API_URL}/engagements`,
   mail: {
+    confirmEmail: `${environment.API_URL}/mail/confirm-email`,
+    confirmEmailVerify: `${environment.API_URL}/mail/confirm-email/verify`,
     resetPassword: `${environment.API_URL}/mail/reset-password`,
     resetPasswordVerify: `${environment.API_URL}/mail/reset-password/verify`,
     invite: `${environment.API_URL}/mail/invite`,

@@ -17,7 +17,12 @@ import {AipService} from "../../common/services/aip.service";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {Aip} from "../../common/model/aip.model";
-import {getSchoolYear} from "../../common/date-utils";
+import {
+  aipSchoolYearPayloadFromSelection,
+  formatAipSchoolYearsDisplay,
+  getSchoolYear,
+  getSchoolYearOptions,
+} from "../../common/date-utils";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "../../auth/auth.service";
 import {UserType} from "../../registration/user-type.enum";
@@ -44,6 +49,8 @@ export class AipComponent implements OnInit {
   dataSource = new MatTableDataSource<Aip>();
   totalItems: number = 0;
   isLoading: boolean = true;
+  readonly schoolYearOptions = getSchoolYearOptions();
+  readonly formatAipSchoolYearsDisplay = formatAipSchoolYearsDisplay;
 
   protected readonly UserType = UserType;
 
@@ -58,8 +65,7 @@ export class AipComponent implements OnInit {
     private readonly referenceDataService: ReferenceDataService,
   ) {
     this.aipForm = this.fb.group({
-      schoolYear: [getSchoolYear(), Validators.required],
-      problemStatement: ['', [Validators.required, Validators.maxLength(500)]],
+      schoolYear: [[getSchoolYear()], Validators.required],
       title: ['', Validators.required],
       objectives: ['', [Validators.required, Validators.maxLength(500)]],
       intermediateOutcome: ['', Validators.required],
@@ -82,13 +88,13 @@ export class AipComponent implements OnInit {
       const {intermediateOutcome, schoolYear, ...filteredValues} = this.aipForm.value;
       const newProject: Aip = {
         pillars: intermediateOutcome,
-        schoolYear: `${schoolYear}`,
+        schoolYear: aipSchoolYearPayloadFromSelection(schoolYear as string[]),
         ...filteredValues,
       };
       this.aipService.createAip(newProject).subscribe({
         next: (res) => {
           this.aipForm.reset({
-            schoolYear: getSchoolYear()
+            schoolYear: [getSchoolYear()],
           }, { emitEvent: false });
 
           this.aipForm.markAsPristine();
