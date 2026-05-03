@@ -246,10 +246,8 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   }
 
   protected getProjectTitle(projectId: string): string {
-    const projectInfo = this.schoolNeed?.projectId?.find(p => 
-      (typeof p === 'string' ? p : p._id) === projectId
-    );
-    return (projectInfo && typeof projectInfo !== 'string') ? projectInfo.title : 'Project';
+    const project = this.schoolNeed?.projectId?.[0];
+    return (typeof project === 'object' && project?.title) ? project.title : 'no attached aip';
   }
 
   protected viewProjectDetails(projectId: string): void {
