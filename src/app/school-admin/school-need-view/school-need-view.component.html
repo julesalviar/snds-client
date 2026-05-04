@@ -81,6 +81,28 @@
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
         </div>
+        
+        <div class="projectDescription">
+          <h4>Dear Partners</h4>
+          <p>Warm greetings of gratitude and partnership! </p>
+           <p>Fulfilling this specific needs will enable us to achieve our program/
+              project/activities. Please click the link below to view the details.
+          </p>
+
+          <div *ngIf="selectedProjectIds.length > 0" class="chips-container">
+            <mat-chip-set aria-label="Selected Projects">
+              <mat-chip *ngFor="let projectId of selectedProjectIds" 
+              [title]="getProjectTitle(projectId)" 
+              (click)="viewProjectDetails(projectId)" 
+              class="project-chip-btn">
+                {{ getProjectTitle(projectId) }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <p>We are hopeful and eager to collaborate with you soon to achieve our shared goals!</p>
+          <p>Thank you so much!</p>
+        </div>
 
         <h3 class="project-description">Description of the Project</h3>
         <p class="project-description">{{ schoolNeed?.description }}</p>

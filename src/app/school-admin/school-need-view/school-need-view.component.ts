@@ -7,12 +7,17 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {Subject, takeUntil} from "rxjs";
+import { MatChipsModule } from '@angular/material/chips';
+import {map, Observable, Subject, takeUntil} from "rxjs";
 import {SchoolNeedService} from "../../common/services/school-need.service";
+import {AipService} from "../../common/services/aip.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {SchoolNeed} from "../../common/model/school-need.model";
+import {Aip} from "../../common/model/aip.model";
 import {CurrencyPipe, DatePipe, DecimalPipe, NgForOf, NgIf, UpperCasePipe} from "@angular/common";
 import {MatDialog} from "@angular/material/dialog";
+import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
+
 import {ConfirmDialogComponent, ConfirmDialogData} from "../../common/components/confirm-dialog/confirm-dialog.component";
 import {EngagementService} from "../../common/services/engagement.service";
 import {AuthService} from "../../auth/auth.service";
@@ -33,6 +38,7 @@ interface ImplementationStatus {
     MatProgressBarModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
+    MatChipsModule,
     DecimalPipe,
     NgForOf,
     NgIf,
@@ -61,9 +67,14 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
   // Track which engagement is being deleted
   deletingEngagementId: string | null = null;
 
+  // Project-related properties
+  projectsData: Aip[] = [];
+  selectedProjectIds: string[] = [];
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly schoolNeedService: SchoolNeedService,
+    private readonly aipService: AipService,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
     private readonly dialog: MatDialog,
@@ -97,6 +108,14 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
       next: (need) => {
         console.log('Received school need data:', need);
         this.schoolNeed = need;
+        
+        // Extract project IDs from the school need
+        if (need.projectId) {
+          this.selectedProjectIds = need.projectId.map(p => 
+            typeof p === 'string' ? p : p._id
+          );
+        }
+        
         this.isLoading = false;
       },
       error: (err) => {
@@ -224,5 +243,19 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
 
   isSchoolAdmin(): boolean {
     return this.authService.getActiveRole() === UserType.SchoolAdmin;
+  }
+
+  protected getProjectTitle(projectId: string): string {
+    const project = this.schoolNeed?.projectId?.[0];
+    return (typeof project === 'object' && project?.title) ? project.title : 'no attached aip';
+  }
+
+  protected viewProjectDetails(projectId: string): void {
+    const project = this.projectsData.find(p => p._id === projectId);
+    if (project) {
+      this.dialog.open(AipDetailViewComponent, {
+        data: project,
+      });
+    }
   }
 }

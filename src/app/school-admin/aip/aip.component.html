@@ -16,6 +16,14 @@
           </mat-form-field>
 
           <mat-form-field appearance="fill">
+            <mat-label>Problem Statement (From project Plan & Matrix) (max 500 letters)</mat-label>
+            <textarea matInput formControlName="problemStatement" rows="4" maxlength="500"></textarea>
+            <mat-error *ngIf="aipForm.get('problemStatement')?.invalid && (aipForm.get('problemStatement')?.touched || aipForm.get('problemStatement')?.dirty)">
+              Problem Statement is required and must be less than 500 letters.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
             <mat-label>Enter Project Title</mat-label>
             <input matInput formControlName="title">
             <mat-error *ngIf="aipForm.get('title')?.invalid && (aipForm.get('title')?.touched || aipForm.get('title')?.dirty)">
