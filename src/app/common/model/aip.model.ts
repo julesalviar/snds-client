@@ -4,6 +4,7 @@ export interface Aip {
   apn: string;
   schoolYear: string | string[];
   title: string;
+  problemStatement?: string;
   objectives: string;
   pillars: string;
   responsiblePerson: string;
