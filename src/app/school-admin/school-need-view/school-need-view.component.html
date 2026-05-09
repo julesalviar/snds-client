@@ -81,7 +81,7 @@
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
         </div>
-        
+
         <div class="projectDescription">
           <h4>Dear Partners</h4>
           <p>Warm greetings of gratitude and partnership! </p>
@@ -89,13 +89,21 @@
               project/activities. Please click the link below to view the details.
           </p>
 
-          <div *ngIf="selectedProjectIds.length > 0" class="chips-container">
-            <mat-chip-set aria-label="Selected Projects">
-              <mat-chip *ngFor="let projectId of selectedProjectIds" 
-              [title]="getProjectTitle(projectId)" 
-              (click)="viewProjectDetails(projectId)" 
-              class="project-chip-btn">
-                {{ getProjectTitle(projectId) }}
+          <div *ngIf="aipChips.length > 0" class="chips-container">
+            <mat-chip-set role="group" aria-label="Selected projects">
+              <mat-chip
+                *ngFor="let aip of aipChips; trackBy: trackByAipId"
+                [removable]="false"
+                class="project-chip-btn">
+                <span class="chip-hit-area-sizer" aria-hidden="true">{{ getProjectTitle(aip) }}</span>
+                <button
+                  type="button"
+                  class="project-chip-action-btn"
+                  [title]="getProjectTitle(aip)"
+                  [attr.aria-label]="'View project details: ' + getProjectTitle(aip)"
+                  (click)="onProjectChipClick($event, aip)">
+                  {{ getProjectTitle(aip) }}
+                </button>
               </mat-chip>
             </mat-chip-set>
           </div>
@@ -107,7 +115,6 @@
         <h3 class="project-description">Description of the Project</h3>
         <p class="project-description">{{ schoolNeed?.description }}</p>
 
-        <!-- Image Carousel -->
         <div class="image-carousel" *ngIf="schoolNeed && schoolNeed.images && schoolNeed.images.length > 0">
           <h4 class="carousel-title">Project Images</h4>
           <div class="carousel-container">

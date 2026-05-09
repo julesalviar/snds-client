@@ -9,7 +9,15 @@ export class SchoolNeedService {
   constructor(private readonly httpService: HttpService) {
   }
 
-  getSchoolNeeds(page: number, limit: number, schoolYear?: string, specificContribution?: string, schoolId?: string, withEngagements?: boolean): Observable<any> {
+  getSchoolNeeds(
+    page: number,
+    limit: number,
+    schoolYear?: string,
+    specificContribution?: string,
+    schoolId?: string,
+    withEngagements?: boolean,
+    expandProjectId?: boolean,
+  ): Observable<any> {
     let url = `${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}`;
 
     if (schoolYear) {
@@ -28,6 +36,10 @@ export class SchoolNeedService {
       url += `&withEngagements=true`;
     }
 
+    if (expandProjectId) {
+      url += `&expandProjectId=true`;
+    }
+
     return this.httpService.get<any>(url).pipe(
       catchError(this.httpService.handleError)
     )
@@ -39,8 +51,9 @@ export class SchoolNeedService {
     );
   }
 
-  getSchoolNeedByCode(code: string): Observable<SchoolNeed> {
-    return this.httpService.get<any>(`${API_ENDPOINT.schoolNeed}/${code}`).pipe(
+  getSchoolNeedByCode(code: string, expandProjectId = false): Observable<SchoolNeed> {
+    const query = expandProjectId ? '?expandProjectId=true' : '';
+    return this.httpService.get<any>(`${API_ENDPOINT.schoolNeed}/${code}${query}`).pipe(
       map((response: any) => response.data),
       catchError(this.httpService.handleError)
     );

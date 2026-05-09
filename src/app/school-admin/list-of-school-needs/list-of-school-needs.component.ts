@@ -10,14 +10,20 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, distinctUntilChanged, map, skip, takeUntil } from 'rxjs';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { SchoolNeed } from '../../common/model/school-need.model';
 import { SchoolNeedService } from '../../common/services/school-need.service';
+import { getDefaultSchoolYear, getSchoolYearOptions } from '../../common/date-utils';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 import { SchoolNeedCreateDialogComponent } from '../school-need-create-dialog/school-need-create-dialog.component';
 import { SchoolNeedComponent } from '../school-need/school-need.component';
+
+/** Matches backend `school-need.controller` validation for `schoolYear` query param. */
+const SCHOOL_YEAR_QUERY = /^\d{4}-\d{4}$/;
 
 @Component({
   selector: 'app-list-of-school-needs',
@@ -35,6 +41,8 @@ import { SchoolNeedComponent } from '../school-need/school-need.component';
     MatButtonModule,
     MatPaginator,
     MatBadgeModule,
+    MatFormFieldModule,
+    MatSelectModule,
   ],
   templateUrl: './list-of-school-needs.component.html',
   styleUrls: ['./list-of-school-needs.component.css'],
@@ -64,6 +72,9 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   totalItems: number = 0;
   isLoading: boolean = true;
 
+  readonly schoolYearOptions: string[] = getSchoolYearOptions();
+  selectedSchoolYear: string = getDefaultSchoolYear();
+
   constructor(
     private readonly router: Router,
     private readonly route: ActivatedRoute,
@@ -74,7 +85,17 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    const initialYear = this.route.snapshot.queryParamMap.get('schoolYear');
+    if (
+      initialYear &&
+      SCHOOL_YEAR_QUERY.test(initialYear) &&
+      this.schoolYearOptions.includes(initialYear)
+    ) {
+      this.selectedSchoolYear = initialYear;
+    }
+
     this.loadSchoolNeeds();
+
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const open = params['openCreate'];
       if (open !== '1' && open !== 'true') {
@@ -88,6 +109,26 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
       });
       queueMicrotask(() => this.onCreate());
     });
+
+    this.route.queryParamMap
+      .pipe(
+        map((p) => p.get('schoolYear')),
+        distinctUntilChanged(),
+        skip(1),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((syParam) => {
+        const valid =
+          !!syParam &&
+          SCHOOL_YEAR_QUERY.test(syParam) &&
+          this.schoolYearOptions.includes(syParam);
+        const next = valid ? syParam! : getDefaultSchoolYear();
+        if (next !== this.selectedSchoolYear) {
+          this.selectedSchoolYear = next;
+          this.pageIndex = 0;
+          this.loadSchoolNeeds();
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -219,11 +260,45 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
     this.loadSchoolNeeds();
   }
 
+  onSchoolYearFilterChange(year: string): void {
+    if (year === this.selectedSchoolYear) {
+      return;
+    }
+    this.selectedSchoolYear = year;
+    this.pageIndex = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { schoolYear: year },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    this.loadSchoolNeeds();
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.selectedSchoolYear !== getDefaultSchoolYear();
+  }
+
+  clearFilters(): void {
+    const def = getDefaultSchoolYear();
+    this.selectedSchoolYear = def;
+    this.pageIndex = 0;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { schoolYear: def },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    this.loadSchoolNeeds();
+  }
+
   loadSchoolNeeds(): void {
     this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, undefined, undefined, true).subscribe({
+    this.schoolNeedService
+      .getSchoolNeeds(page, this.pageSize, this.selectedSchoolYear, undefined, undefined, true)
+      .subscribe({
       next: (response) => {
         this.schoolName = response.school?.schoolName;
         this.schoolLogoUrl = response.school?.logoUrl || null;

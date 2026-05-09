@@ -29,6 +29,30 @@
   </div>
 
   <div class="table-wrapper">
+    <div class="filter-container">
+      <div class="filter-fields">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>School year</mat-label>
+          <mat-select
+            [value]="selectedSchoolYear"
+            (selectionChange)="onSchoolYearFilterChange($event.value)"
+            aria-label="Filter by school year">
+            <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button
+          *ngIf="hasActiveFilters"
+          mat-button
+          color="warn"
+          type="button"
+          (click)="clearFilters()"
+          class="clear-button">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
     <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
       <div class="skeleton-table">
         <div class="skeleton-table-header">
@@ -62,7 +86,9 @@
 
     <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
       <p class="empty-state-title">No school needs found</p>
-      <p class="empty-state-message">Create a school need using the button above.</p>
+      <p class="empty-state-message">
+        Create a school need using the button above, or adjust your filters.
+      </p>
     </div>
 
     <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">

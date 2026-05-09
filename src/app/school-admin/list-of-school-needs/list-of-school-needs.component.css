@@ -18,6 +18,35 @@ app-list-of-school-needs mat-card-title {
   margin-bottom: 16px;
 }
 
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  gap: 10px;
+}
+
+.filter-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-field {
+  width: 250px;
+  min-width: 200px;
+}
+
+.clear-button {
+  margin-left: 0;
+}
+
 .table-wrapper {
   margin-top: 15px;
   padding: 2px;
