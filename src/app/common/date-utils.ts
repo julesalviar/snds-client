@@ -15,6 +15,8 @@ export function getSchoolYear(offset: number = 0): string {
   return `${startYear}-${endYear}`;
 }
 
+export const getCurrentSchoolYear = () => getSchoolYear();
+
 export const SCHOOL_YEAR_MIN_START = 2025;
 
 /**

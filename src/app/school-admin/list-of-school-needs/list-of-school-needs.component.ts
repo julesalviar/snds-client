@@ -17,7 +17,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { SchoolNeed } from '../../common/model/school-need.model';
 import { SchoolNeedService } from '../../common/services/school-need.service';
-import { getDefaultSchoolYear, getSchoolYearOptions } from '../../common/date-utils';
+import {
+  getCurrentSchoolYear,
+  getDefaultSchoolYear,
+  getSchoolYearOptions,
+} from '../../common/date-utils';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 import { SchoolNeedCreateDialogComponent } from '../school-need-create-dialog/school-need-create-dialog.component';
 import { SchoolNeedComponent } from '../school-need/school-need.component';
@@ -73,7 +77,14 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   isLoading: boolean = true;
 
   readonly schoolYearOptions: string[] = getSchoolYearOptions();
-  selectedSchoolYear: string = getDefaultSchoolYear();
+  /** Default filter matches backend `getCurrentSchoolYear()` / list query when `schoolYear` is omitted. */
+  selectedSchoolYear: string = ListOfSchoolNeedsComponent.initialSchoolYearFromCalendar();
+
+  private static initialSchoolYearFromCalendar(): string {
+    const cur = getCurrentSchoolYear();
+    const opts = getSchoolYearOptions();
+    return opts.includes(cur) ? cur : getDefaultSchoolYear();
+  }
 
   constructor(
     private readonly router: Router,
@@ -122,7 +133,9 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
           !!syParam &&
           SCHOOL_YEAR_QUERY.test(syParam) &&
           this.schoolYearOptions.includes(syParam);
-        const next = valid ? syParam! : getDefaultSchoolYear();
+        const next = valid
+          ? syParam!
+          : ListOfSchoolNeedsComponent.initialSchoolYearFromCalendar();
         if (next !== this.selectedSchoolYear) {
           this.selectedSchoolYear = next;
           this.pageIndex = 0;
@@ -276,11 +289,14 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   }
 
   get hasActiveFilters(): boolean {
-    return this.selectedSchoolYear !== getDefaultSchoolYear();
+    return (
+      this.selectedSchoolYear !==
+      ListOfSchoolNeedsComponent.initialSchoolYearFromCalendar()
+    );
   }
 
   clearFilters(): void {
-    const def = getDefaultSchoolYear();
+    const def = ListOfSchoolNeedsComponent.initialSchoolYearFromCalendar();
     this.selectedSchoolYear = def;
     this.pageIndex = 0;
     this.router.navigate([], {
