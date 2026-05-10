@@ -330,7 +330,7 @@ export class StakeholdersProfileComponent implements OnInit {
   resetFilters(): void {
     this.selectedSchoolYear = getDefaultSchoolYear();
     this.selectedSector = 'All Sectors';
-    this.selectedEngagement = 'All';
+    this.selectedEngagement = this.isSchoolAdmin ? 'Engaged' : 'All';
     this.applyFilter();
   }
 
