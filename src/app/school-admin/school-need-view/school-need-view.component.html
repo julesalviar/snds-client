@@ -112,8 +112,10 @@
           <p>Thank you so much!</p>
         </div>
 
-        <h3 class="project-description">Description of the Project</h3>
-        <p class="project-description">{{ schoolNeed?.description }}</p>
+        <h3 class="project-description">Note:</h3>
+        <p class="project-description">
+          {{ schoolNeed?.description || 'No notes available' }}
+        </p>
 
         <div class="image-carousel" *ngIf="schoolNeed && schoolNeed.images && schoolNeed.images.length > 0">
           <h4 class="carousel-title">Project Images</h4>

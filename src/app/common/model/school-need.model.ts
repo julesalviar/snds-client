@@ -27,7 +27,7 @@ export { SchoolInfo } from './school.model';
 export interface SchoolNeed {
   _id?: string;
   code?: string;
-  description: string;
+  description?: string;
   specificContribution: string;
   contributionType: string,
   quantity: number;
