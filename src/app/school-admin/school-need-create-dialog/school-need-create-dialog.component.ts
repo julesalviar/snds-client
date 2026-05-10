@@ -114,7 +114,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
       beneficiaryStudents: [0, [Validators.required, Validators.min(0)]],
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
-      description: ['', [Validators.maxLength(2000), Validators.required]],
+      description: ['', [Validators.maxLength(2000)]],
     });
   }
 

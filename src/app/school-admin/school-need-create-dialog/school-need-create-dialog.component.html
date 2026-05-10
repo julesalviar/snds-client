@@ -151,10 +151,10 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Description of the Project</mat-label>
+      <mat-label>Note to Description of the Project (Optional)</mat-label>
       <textarea matInput formControlName="description" rows="3"></textarea>
       <mat-error *ngIf="schoolNeedsForm.get('description')?.invalid && schoolNeedsForm.get('description')?.touched">
-        PPA Description/Information must not exceed 2000 characters
+        PPA Note to Description/Information must not exceed 2000 characters
       </mat-error>
     </mat-form-field>
   </form>
