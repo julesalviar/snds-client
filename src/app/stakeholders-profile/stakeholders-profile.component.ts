@@ -76,7 +76,7 @@ export class StakeholdersProfileComponent implements OnInit {
 
   selectedSchoolYear = getDefaultSchoolYear();
   selectedSector = 'All Sectors';
-  selectedEngagement = 'All'; //hide if user is schoolAdmin
+  selectedEngagement = this.isSchoolAdmin ? 'Engaged' : 'All'; //hide if user is schoolAdmin
 
   displayedColumns: string[] = ['contribution', 'name', 'contactNumber', 'address', 'engagementStatus'];
   allRecords: StakeholderProfile[] = [];
@@ -330,7 +330,7 @@ export class StakeholdersProfileComponent implements OnInit {
   resetFilters(): void {
     this.selectedSchoolYear = getDefaultSchoolYear();
     this.selectedSector = 'All Sectors';
-    this.selectedEngagement = 'All';
+    this.selectedEngagement = this.isSchoolAdmin ? 'Engaged' : 'All';
     this.applyFilter();
   }
 
