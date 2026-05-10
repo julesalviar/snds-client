@@ -13,7 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatNativeDateModule, MatOption } from '@angular/material/core';
+import { MatOption, provideNativeDateAdapter } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -44,11 +44,11 @@ import { InvalidSpecificContributionDialogComponent } from '../invalid-specific-
 
 @Component({
   selector: 'app-school-need-create-dialog',
+  providers: [provideNativeDateAdapter()],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
-    MatNativeDateModule,
     MatButtonModule,
     MatSelectModule,
     MatInputModule,

@@ -365,13 +365,14 @@ app-list-of-school-needs mat-card-title {
   display: block;
 }
 
-table {
+app-list-of-school-needs table {
   width: 100%;
   min-width: 1200px;
   border-collapse: collapse;
 }
 
-.mat-header-cell, .mat-cell {
+app-list-of-school-needs .mat-header-cell,
+app-list-of-school-needs .mat-cell {
   padding: 16px;
   text-align: left;
   border: 1px solid #ddd;
@@ -404,12 +405,12 @@ table {
 .school-needs-table tr.mat-row:hover {
   background-color: rgba(69, 160, 73, 0.08);
 }
-mat-icon {
+app-list-of-school-needs mat-icon {
   color: #45a049;
   cursor: pointer;
 }
 
-mat-icon-button {
+app-list-of-school-needs mat-icon-button {
   justify-content: space-between;
 }
 
@@ -417,16 +418,16 @@ mat-icon-button {
   margin-left: 10px;
 }
 
-td.mat-cell button {
+app-list-of-school-needs td.mat-cell button {
   margin-right: 5px;
 }
 
-.mat-menu-item {
+app-list-of-school-needs .mat-menu-item {
   display: flex;
   align-items: center;
 }
 
-.mat-menu-item mat-icon {
+app-list-of-school-needs .mat-menu-item mat-icon {
   margin-right: 8px;
 }
 
@@ -534,7 +535,8 @@ td.mat-cell button {
     margin: 5px 0;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     padding: 12px;
     font-size: 14px;
   }
@@ -548,11 +550,12 @@ td.mat-cell button {
     margin: 5px 0;
   }
 
-  table {
+  app-list-of-school-needs table {
     min-width: 1000px;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     font-size: 12px;
     padding: 8px;
   }
@@ -572,11 +575,12 @@ td.mat-cell button {
     width: calc(100% + 16px);
   }
 
-  table {
+  app-list-of-school-needs table {
     min-width: 900px;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     font-size: 11px;
     padding: 6px;
   }
@@ -592,7 +596,8 @@ td.mat-cell button {
     padding: 15px;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     padding: 10px;
     font-size: 12px;
   }
@@ -616,12 +621,12 @@ td.mat-cell button {
   }
 }
 
-.mat-header-cell {
+app-list-of-school-needs .mat-header-cell {
   background-color: #f4f4f4;
   font-weight: bold;
 }
 
-tr:hover {
+app-list-of-school-needs tr:hover {
   background-color: rgba(128, 128, 128, 0.2);
 }
 
@@ -630,11 +635,11 @@ tr:hover {
   overflow: hidden;
 }
 
-mat-icon {
+app-list-of-school-needs mat-icon {
   font-size: 24px;
 }
 
-.mat-menu-item {
+app-list-of-school-needs .mat-menu-item {
   padding: 10px;
 }
 
@@ -712,15 +717,15 @@ mat-icon {
 }
 
 /* Ensure specific cells and rows allow overflow for badges/popups */
-.mat-row {
+app-list-of-school-needs .mat-row {
   overflow: visible !important;
 }
 
-.mat-table {
+app-list-of-school-needs .mat-table {
   overflow: visible !important;
 }
 
-table {
+app-list-of-school-needs table {
   overflow: visible !important;
 }
 

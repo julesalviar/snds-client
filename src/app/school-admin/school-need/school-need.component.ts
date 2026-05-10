@@ -6,7 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatNativeDateModule, MatOption } from '@angular/material/core';
+import { MatOption, provideNativeDateAdapter } from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
@@ -28,8 +28,8 @@ import {MatChipsModule} from '@angular/material/chips';
 
 @Component({
   selector: 'app-school-need',
+  providers: [provideNativeDateAdapter()],
   imports: [
-    MatNativeDateModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatSelectModule,

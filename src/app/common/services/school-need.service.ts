@@ -17,6 +17,10 @@ export class SchoolNeedService {
     schoolId?: string,
     withEngagements?: boolean,
     expandProjectId?: boolean,
+    targetDateFrom?: string,
+    targetDateTo?: string,
+    /** Backend omits school-year filter when `implementationDate`. */
+    filterBy?: 'schoolYear' | 'implementationDate',
   ): Observable<any> {
     let url = `${API_ENDPOINT.schoolNeed}?page=${page}&limit=${limit}`;
 
@@ -38,6 +42,18 @@ export class SchoolNeedService {
 
     if (expandProjectId) {
       url += `&expandProjectId=true`;
+    }
+
+    if (targetDateFrom) {
+      url += `&targetDateFrom=${encodeURIComponent(targetDateFrom)}`;
+    }
+
+    if (targetDateTo) {
+      url += `&targetDateTo=${encodeURIComponent(targetDateTo)}`;
+    }
+
+    if (filterBy === 'implementationDate') {
+      url += `&filterBy=implementationDate`;
     }
 
     return this.httpService.get<any>(url).pipe(

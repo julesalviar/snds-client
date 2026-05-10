@@ -31,7 +31,18 @@
   <div class="table-wrapper">
     <div class="filter-container">
       <div class="filter-fields">
-        <mat-form-field appearance="outline" class="filter-field">
+        <mat-form-field appearance="outline" class="filter-field filter-field--mode">
+          <mat-label>Search by</mat-label>
+          <mat-select
+            [value]="filterMode"
+            (selectionChange)="onFilterModeChange($event.value)"
+            aria-label="Choose whether to filter by school year or implementation date">
+            <mat-option value="schoolYear">School year</mat-option>
+            <mat-option value="implementationDate">Implementation date</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field *ngIf="filterMode === 'schoolYear'" appearance="outline" class="filter-field">
           <mat-label>School year</mat-label>
           <mat-select
             [value]="selectedSchoolYear"
@@ -40,6 +51,45 @@
             <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <ng-container *ngIf="filterMode === 'implementationDate'">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Range</mat-label>
+            <mat-select
+              [value]="targetDatePreset"
+              (selectionChange)="onTargetDatePresetChange($event.value)"
+              aria-label="Filter by an implementation-date preset">
+              <mat-option *ngFor="let p of presetOptions" [value]="p.value">{{ p.label }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Implementation date from</mat-label>
+            <input
+              matInput
+              [matDatepicker]="targetDateFromPicker"
+              [value]="targetDateFrom"
+              (dateChange)="onTargetDateFromChange($event.value)"
+              aria-label="Filter implementation date from"
+              readonly />
+            <mat-datepicker-toggle matIconSuffix [for]="targetDateFromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #targetDateFromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Implementation date to</mat-label>
+            <input
+              matInput
+              [matDatepicker]="targetDateToPicker"
+              [min]="targetDateFrom"
+              [value]="targetDateTo"
+              (dateChange)="onTargetDateToChange($event.value)"
+              aria-label="Filter implementation date to"
+              readonly />
+            <mat-datepicker-toggle matIconSuffix [for]="targetDateToPicker"></mat-datepicker-toggle>
+            <mat-datepicker #targetDateToPicker></mat-datepicker>
+          </mat-form-field>
+        </ng-container>
 
         <button
           *ngIf="hasActiveFilters"
