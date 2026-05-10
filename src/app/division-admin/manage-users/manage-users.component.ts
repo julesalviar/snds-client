@@ -31,6 +31,7 @@ import { getRoleIcon, getRoleColor } from '../../registration/user-type-icons';
 import { formatDateString, formatDateTimeString } from '../../common/date-utils';
 import { InviteUserDialogComponent } from './invite-user-dialog/invite-user-dialog.component';
 import { ManageRolesDialogComponent } from './manage-roles-dialog/manage-roles-dialog.component';
+import { UpdateUserEmailDialogComponent } from './update-user-email-dialog/update-user-email-dialog.component';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -348,6 +349,18 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     });
     dialogRef.afterClosed().subscribe((saved) => {
       if (saved) {
+        this.loadUsers();
+      }
+    });
+  }
+
+  onUpdateEmail(row: UserListItem): void {
+    const dialogRef = this.dialog.open(UpdateUserEmailDialogComponent, {
+      width: '400px',
+      data: { user: row },
+    });
+    dialogRef.afterClosed().subscribe((updated) => {
+      if (updated) {
         this.loadUsers();
       }
     });

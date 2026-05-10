@@ -1,0 +1,24 @@
+mat-dialog-content {
+  padding-top: 8px;
+  min-width: 320px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.submitting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-spinner {
+  display: inline-block;
+}
