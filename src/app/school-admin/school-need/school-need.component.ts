@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, Optional, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -6,7 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatNativeDateModule, MatOption } from '@angular/material/core';
+import { MatOption, provideNativeDateAdapter } from '@angular/material/core';
 import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
@@ -20,17 +20,16 @@ import { SchoolNeed, SchoolNeedImage } from "../../common/model/school-need.mode
 import { AuthService } from "../../auth/auth.service";
 import { MatProgressBar } from "@angular/material/progress-bar";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { HttpService } from "../../common/services/http.service";
 import { API_ENDPOINT } from "../../common/api-endpoints";
 import { ReferenceDataService } from "../../common/services/reference-data.service";
-import {NavigationService} from "../../common/services/navigation.service";
 import {MatChipsModule} from '@angular/material/chips';
 
 @Component({
   selector: 'app-school-need',
+  providers: [provideNativeDateAdapter()],
   imports: [
-    MatNativeDateModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatSelectModule,
@@ -44,11 +43,17 @@ import {MatChipsModule} from '@angular/material/chips';
     MatIcon,
     MatProgressBar,
     MatChipsModule,
+    MatDialogModule,
   ],
   templateUrl: './school-need.component.html',
   styleUrl: './school-need.component.css',
 })
 export class SchoolNeedComponent implements OnInit, OnDestroy {
+  /** When opened via MatDialog, need code comes from MAT_DIALOG_DATA. */
+  get isDialog(): boolean {
+    return this.dialogRef != null;
+  }
+
   schoolNeedsForm: FormGroup;
   schoolNeed: SchoolNeed | null = null;
   projectsData: Aip[] = [];
@@ -90,7 +95,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly navigationService: NavigationService,
+    @Optional() private readonly dialogRef: MatDialogRef<SchoolNeedComponent, boolean> | null,
+    @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: { needCode?: string } | null,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -115,14 +121,17 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     this.loadCurrentProjects();
     this.loadPillarsAndUnits();
 
-    // Get school need code from route params
-    const needCode = this.route.snapshot.paramMap.get('code');
-    console.log('Route param code:', needCode);
+    const needCode = this.dialogData?.needCode ?? this.route.snapshot.paramMap.get('code');
+    console.log('School need code:', needCode);
     if (needCode) {
       this.loadSchoolNeed(needCode);
     } else {
       this.showErrorNotification('School need code not provided');
-      this.router.navigate(['/school-admin/school-needs']);
+      if (this.dialogRef) {
+        this.dialogRef.close(false);
+      } else {
+        this.router.navigate(['/school-admin/list-of-school-needs']);
+      }
     }
   }
 
@@ -164,7 +173,11 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
         next: () => {
           this.isSaving = false;
           this.showSuccessNotification('School need updated successfully!');
-          this.router.navigate(['/school-admin/school-needs']);
+          if (this.dialogRef) {
+            this.dialogRef.close(true);
+          } else {
+            this.router.navigate(['/school-admin/list-of-school-needs']);
+          }
         },
         error: (err) => {
           console.error('Error updating school need:', err);
@@ -180,16 +193,11 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    const prevUrl = this.navigationService.getPreviousUrl();
-
-    // Remove query parameters and fragments to get the base path
-    const basePath = prevUrl.split('?')[0].split('#')[0];
-
-    if (basePath === '/school-admin/school-needs' || basePath.endsWith('/school-admin/school-needs')) {
-      this.router.navigate(['/school-admin/school-needs']);
-    } else {
-      this.router.navigate(['/school-admin/list-of-school-needs']);
+    if (this.dialogRef) {
+      this.dialogRef.close(false);
+      return;
     }
+    this.router.navigate(['/school-admin/list-of-school-needs']);
   }
 
   private showSuccessNotification(message: string): void {
@@ -221,7 +229,11 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error fetching school need:', err);
         this.showErrorNotification('Failed to load school need');
-        this.router.navigate(['/school-admin/school-needs']);
+        if (this.dialogRef) {
+          this.dialogRef.close(false);
+        } else {
+          this.router.navigate(['/school-admin/list-of-school-needs']);
+        }
       }
     });
   }

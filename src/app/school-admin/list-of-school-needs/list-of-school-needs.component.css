@@ -1,20 +1,201 @@
-mat-card {
+app-list-of-school-needs mat-card.mat-mdc-card {
   margin: 20px;
   padding: 20px;
-  box-shadow: 0 4px 20px green;
+  box-shadow: 0 0;
   border-radius: 8px;
-  border-color: green;
-  border: 1px solid;
+  border: 1px solid green;
   background-color: rgba(255, 255, 255, 0.5);
-  overflow-x: hidden;
-  overflow-y: visible;
 }
 
-mat-card-title {
+app-list-of-school-needs mat-card-title {
   margin-bottom: 20px;
   margin-left: 5px;
   font-size: 20px;
   color: #45a049;
+}
+
+.top-actions {
+  margin-bottom: 16px;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  gap: 10px;
+}
+
+.filter-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-field {
+  width: 250px;
+  min-width: 200px;
+}
+
+.clear-button {
+  margin-left: 0;
+}
+
+.table-wrapper {
+  margin-top: 15px;
+  padding: 2px;
+  border-radius: 12px;
+  border: 1px solid green;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e8e8e8 0%, #f5f5f5 50%, #e8e8e8 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-table-wrapper {
+  overflow-x: auto;
+  min-width: 0;
+  padding: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.skeleton-table {
+  display: table;
+  min-width: 1200px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.skeleton-table-header {
+  display: table-row;
+  background: #f5f5f5;
+}
+
+.skeleton-table-header .skeleton-table-cell {
+  display: table-cell;
+  padding: 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-table-row {
+  display: table-row;
+  background: #fff;
+}
+
+.skeleton-table-row .skeleton-table-cell {
+  display: table-cell;
+  padding: 10px 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px dashed #e0e0e0;
+}
+
+.empty-state-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #424242;
+}
+
+.empty-state-message {
+  margin: 0;
+  font-size: 14px;
+  color: #757575;
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  min-width: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.school-needs-table {
+  width: 100%;
+  min-width: 1200px;
+  background: #fff !important;
+}
+
+.school-needs-table .mat-mdc-header-row,
+.school-needs-table .mat-header-row {
+  background: #f5f5f5 !important;
+}
+
+.school-needs-table .mat-mdc-header-cell,
+.school-needs-table .mat-header-cell {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #424242;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5 !important;
+}
+
+.school-needs-table .mat-mdc-cell,
+.school-needs-table .mat-cell {
+  font-size: 0.875rem;
+  color: #212121;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff !important;
+  vertical-align: top;
+}
+
+.school-needs-table .mat-mdc-cell .cell-content,
+.school-needs-table .mat-cell .cell-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: 5.6em;
+  word-break: break-word;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.actions-cell .mat-mdc-icon-button,
+.actions-cell .mat-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
 }
 
 .mat-elevation-z8 {
@@ -184,13 +365,14 @@ mat-card-title {
   display: block;
 }
 
-table {
+app-list-of-school-needs table {
   width: 100%;
   min-width: 1200px;
   border-collapse: collapse;
 }
 
-.mat-header-cell, .mat-cell {
+app-list-of-school-needs .mat-header-cell,
+app-list-of-school-needs .mat-cell {
   padding: 16px;
   text-align: left;
   border: 1px solid #ddd;
@@ -219,27 +401,16 @@ table {
   transform: translate(-6px, 6px) !important;
 }
 
-tr:hover {
-  background-color: #e4a0a089;
-  color: white;
+.school-needs-table tr.mat-mdc-row:hover,
+.school-needs-table tr.mat-row:hover {
+  background-color: rgba(69, 160, 73, 0.08);
 }
-.table-scroll {
-  overflow-x: auto;
-  overflow-y: visible;
-  margin: 0 -20px;
-  background-color: green;
-  border-radius: 6px;
-  padding: 2px;
-  -webkit-overflow-scrolling: touch;
-  width: calc(100% + 40px);
-  display: block;
-}
-mat-icon {
+app-list-of-school-needs mat-icon {
   color: #45a049;
   cursor: pointer;
 }
 
-mat-icon-button {
+app-list-of-school-needs mat-icon-button {
   justify-content: space-between;
 }
 
@@ -247,16 +418,16 @@ mat-icon-button {
   margin-left: 10px;
 }
 
-td.mat-cell button {
+app-list-of-school-needs td.mat-cell button {
   margin-right: 5px;
 }
 
-.mat-menu-item {
+app-list-of-school-needs .mat-menu-item {
   display: flex;
   align-items: center;
 }
 
-.mat-menu-item mat-icon {
+app-list-of-school-needs .mat-menu-item mat-icon {
   margin-right: 8px;
 }
 
@@ -364,7 +535,8 @@ td.mat-cell button {
     margin: 5px 0;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     padding: 12px;
     font-size: 14px;
   }
@@ -378,11 +550,12 @@ td.mat-cell button {
     margin: 5px 0;
   }
 
-  table {
+  app-list-of-school-needs table {
     min-width: 1000px;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     font-size: 12px;
     padding: 8px;
   }
@@ -402,11 +575,12 @@ td.mat-cell button {
     width: calc(100% + 16px);
   }
 
-  table {
+  app-list-of-school-needs table {
     min-width: 900px;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     font-size: 11px;
     padding: 6px;
   }
@@ -422,7 +596,8 @@ td.mat-cell button {
     padding: 15px;
   }
 
-  .mat-header-cell, .mat-cell {
+  app-list-of-school-needs .mat-header-cell,
+  app-list-of-school-needs .mat-cell {
     padding: 10px;
     font-size: 12px;
   }
@@ -446,12 +621,12 @@ td.mat-cell button {
   }
 }
 
-.mat-header-cell {
+app-list-of-school-needs .mat-header-cell {
   background-color: #f4f4f4;
   font-weight: bold;
 }
 
-tr:hover {
+app-list-of-school-needs tr:hover {
   background-color: rgba(128, 128, 128, 0.2);
 }
 
@@ -460,11 +635,11 @@ tr:hover {
   overflow: hidden;
 }
 
-mat-icon {
+app-list-of-school-needs mat-icon {
   font-size: 24px;
 }
 
-.mat-menu-item {
+app-list-of-school-needs .mat-menu-item {
   padding: 10px;
 }
 
@@ -542,15 +717,15 @@ mat-icon {
 }
 
 /* Ensure specific cells and rows allow overflow for badges/popups */
-.mat-row {
+app-list-of-school-needs .mat-row {
   overflow: visible !important;
 }
 
-.mat-table {
+app-list-of-school-needs .mat-table {
   overflow: visible !important;
 }
 
-table {
+app-list-of-school-needs table {
   overflow: visible !important;
 }
 

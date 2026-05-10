@@ -76,7 +76,7 @@ export class StakeholdersProfileComponent implements OnInit {
 
   selectedSchoolYear = getDefaultSchoolYear();
   selectedSector = 'All Sectors';
-  selectedEngagement = this.isSchoolAdmin ? 'Engaged' : 'All'; //hide if user is schoolAdmin
+  selectedEngagement = 'All'; //hide if user is schoolAdmin
 
   displayedColumns: string[] = ['contribution', 'name', 'contactNumber', 'address', 'engagementStatus'];
   allRecords: StakeholderProfile[] = [];

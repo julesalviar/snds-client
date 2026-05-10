@@ -4,6 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardTitle, MatCard, MatCardContent } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import {Aip} from "../../../../common/model/aip.model";
+import { formatAipSchoolYearsDisplay } from "../../../../common/date-utils";
 
 
 @Component({
@@ -13,6 +14,8 @@ import {Aip} from "../../../../common/model/aip.model";
   styleUrl: './aip-detail-view.component.css',
 })
 export class AipDetailViewComponent {
+  readonly formatAipSchoolYearsDisplay = formatAipSchoolYearsDisplay;
+
   constructor(
     private dialogRef: MatDialogRef<AipDetailViewComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Aip

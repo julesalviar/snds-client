@@ -1,9 +1,10 @@
 .container {
   padding: 20px;
-  height: 100vh;
+  min-height: calc(100vh - 120px);
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  flex: 1;
 }
 
 .card-wrapper {
@@ -17,20 +18,24 @@
   flex: 1;
   margin: 10px;
   min-width: 400px;
+  max-height: 80vh;
   border: 2px solid #4caf50;
   border-radius: 7px;
   background-color: rgba(255, 255, 255, 0.685);
   box-shadow: 6px 8px 8px rgba(30, 227, 15, 0.889);
+  overflow-y: auto;
 }
 
 .description-card {
   flex: 0 0 45%;
   margin: 10px;
   min-width: 400px;
+  max-height: 80vh;
   border: 2px solid #4caf50;
   border-radius: 7px;
   background-color: rgba(255, 255, 255, 0.685);
   box-shadow: 6px 8px 8px rgba(30, 227, 15, 0.889);
+  overflow-y: auto;
 }
 
 .binding {
@@ -38,25 +43,77 @@
 }
 
 .mat-progress-bar {
-  margin: 20px 10px;
+  margin: 10px 10px;
 }
 
 .custom-progress-bar {
-  height: 30px;
-  background-color: rgba(0, 128, 0, 0.3);
-  border-radius: 15px;
+  height: 32px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8f5e8 100%);
+  border-radius: 16px;
   overflow: hidden;
-  margin: 20px 0; 
+  margin: 1cqb 0;
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.15),
+    0 3px 12px rgba(76, 175, 80, 0.25);
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  position: relative;
+}
+
+.custom-progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
 }
 
 .custom-progress-bar .mat-progress-bar-fill {
-  background-color: #4caf50;
-  border-radius: 15px;
+  background: linear-gradient(90deg,
+    #2e7d32 0%,
+    #4caf50 25%,
+    #66bb6a 75%,
+    #4caf50 100%
+  );
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  animation: shimmer 2s infinite linear;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    0 2px 8px rgba(46, 125, 50, 0.3);
+}
+
+.custom-progress-bar .mat-progress-bar-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: progress-shine 3s infinite;
+}
+
+.custom-progress-bar .mat-progress-bar-buffer {
+  background: linear-gradient(90deg,
+    rgba(76, 175, 80, 0.1) 0%,
+    rgba(76, 175, 80, 0.2) 100%
+  );
 }
 
 .progress-container {
   position: relative;
-  margin: 20px 0;
+  margin: 25px 0;
+  padding: 10px 0;
 }
 
 .progress-label {
@@ -64,25 +121,60 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 16px;
-  text-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.8),
-    -1px -1px 2px rgba(0, 0, 0, 0.6);
-  letter-spacing: 0.5px;
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 4px 16px;
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
+  color: #1b5e20;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  padding: 6px 18px;
+  border-radius: 25px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  backdrop-filter: blur(8px);
   white-space: nowrap;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.progress-label:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes progress-shine {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .description-title {
   position: relative;
   display: inline-block;
-  font-size: 24px; 
-  margin-bottom: 20px; 
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
 .description-title::after {
@@ -90,10 +182,10 @@
   position: absolute;
   left: 0;
   bottom: 0;
-  height: 3px; 
+  height: 3px;
   width: 100%;
-  background-color: green; 
-  animation: slide 3s infinite; 
+  background-color: green;
+  animation: slide 3s infinite;
 }
 
 @keyframes slide {
@@ -138,25 +230,88 @@ mat-card-title {
   color: #2e7d32;
 }
 
-@media (max-width: 568px) {
+/* Tablet Styles */
+@media (max-width: 1024px) {
   .card-wrapper {
-    flex-direction: column;
-    align-items: center;
+    gap: 20px;
   }
 
   .school-info-card,
   .description-card {
-    max-width: 90%; 
-    margin: 10px 0;
-    max-height: 400px; 
+    min-width: 350px;
   }
 
-  .mat-card-title {
-    font-size: 0.8em; 
+  .custom-progress-bar {
+    height: 28px;
+  }
+
+  .progress-label {
+    font-size: 13px;
+    padding: 5px 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .card-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .school-info-card,
+  .description-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+    margin: 0 0 20px 0;
+    max-height: 60vh;
+  }
+
+  .custom-progress-bar {
+    height: 26px;
+    margin: 15px 0;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  mat-card-title {
+    font-size: 20px;
+  }
+
+  .description-title {
+    font-size: 20px;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 568px) {
+  .container {
+    min-height: calc(100vh - 80px);
+    padding: 12px;
+  }
+
+  .card-wrapper {
+    gap: 15px;
+  }
+
+  .school-info-card,
+  .description-card {
+    max-width: 100%;
+    margin: 0 0 15px 0;
+    max-height: 50vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(30, 227, 15, 0.7);
   }
 
   .mat-card-content {
-    padding: 10px;
+    padding: 12px;
   }
 
   .mat-progress-bar-title,
@@ -165,14 +320,113 @@ mat-card-title {
   }
 
   .binding {
-    margin-left: 5px; 
+    margin-left: 3px;
     display: inline-block;
   }
 
+  .custom-progress-bar {
+    height: 24px;
+    margin: 12px 0;
+    border-radius: 12px;
+  }
+
+  .custom-progress-bar .mat-progress-bar-fill {
+    border-radius: 12px;
+  }
+
   .progress-label {
+    font-size: 11px;
+    padding: 3px 10px;
+    letter-spacing: 0.2px;
+    border-radius: 20px;
+  }
+
+  mat-card-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .description-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .project-description {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .progress-container {
+    margin: 20px 0;
+    padding: 8px 0;
+  }
+
+  .image-carousel {
+    margin-top: 20px;
+    padding-top: 15px;
+  }
+
+  .carousel-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .carousel-item {
+    width: 90px;
+    height: 90px;
+    border-radius: 6px;
+  }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  .school-info-card,
+  .description-card {
+    max-height: 45vh;
+    border-radius: 6px;
+  }
+
+  .mat-card-content {
+    padding: 10px;
+  }
+
+  .custom-progress-bar {
+    height: 22px;
+    margin: 10px 0;
+  }
+
+  .progress-label {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  mat-card-title {
+    font-size: 16px;
+  }
+
+  .description-title {
+    font-size: 16px;
+  }
+
+  .project-description {
     font-size: 13px;
-    padding: 3px 12px;
-    letter-spacing: 0.3px;
+  }
+
+  .carousel-item {
+    width: 80px;
+    height: 80px;
+  }
+
+  .chips-container {
+    margin: 10px 0;
+  }
+
+  .chips-container mat-chip-set {
+    gap: 6px;
   }
 }
 
@@ -402,4 +656,133 @@ mat-card-title {
 
 .delete-engagement-button mat-spinner {
   --mdc-circular-progress-active-indicator-color: #d32f2f;
+}
+
+.chips-container {
+  position: relative;
+  z-index: 2;
+  margin: 15px 0;
+  max-width: 100%;
+}
+
+.chips-container mat-chip-set .mdc-evolution-chip-set__chips {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px;
+}
+
+.chips-container mat-chip {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 32px !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: stretch !important;
+  box-sizing: border-box !important;
+}
+
+.chips-container mat-chip.mat-mdc-standard-chip {
+  --mdc-chip-container-height: auto;
+}
+
+.chips-container mat-chip .mdc-evolution-chip__cell--primary {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: visible !important;
+  overflow: hidden !important;
+}
+
+.chips-container mat-chip .mdc-evolution-chip__action--primary {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.chips-container mat-chip .mdc-evolution-chip__text-label,
+.chips-container mat-chip .mat-mdc-chip-action-label {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.project-chip-btn {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.chips-container mat-chip .chip-hit-area-sizer {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 12px;
+  width: 100%;
+  line-height: 1.35;
+  font: inherit;
+  letter-spacing: inherit;
+  word-break: break-word;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.project-chip-action-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 12px;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1.35;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  border-radius: inherit;
+  pointer-events: auto;
+}
+
+.project-chip-action-btn:focus {
+  outline: none;
+}
+
+.project-chip-action-btn:focus-visible {
+  outline: 2px solid var(--mat-sys-primary, #2e7d32);
+  outline-offset: 2px;
+}
+
+.project-chip-btn:hover {
+  transform: scale(1.02) !important;
+  background-color: rgba(52, 219, 52, 0.455) !important;
+}
+
+@media (max-width: 568px) {
+  .chips-container mat-chip {
+    font-size: 0.9em !important;
+  }
 }

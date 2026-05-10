@@ -166,6 +166,19 @@ body {
   z-index: 2001 !important;
 }
 
+/*
+ * Defensive: keep the Material datepicker calendar table at its intended size
+ * even when a component-scoped stylesheet (especially one using
+ * `ViewEncapsulation.None`) leaks an unscoped rule like
+ *   `table { min-width: 1200px; ... }`
+ * into the global stylesheet. The calendar renders inside a CDK overlay at the
+ * document root, so any unscoped `table` rule will inflate it without this.
+ */
+.cdk-overlay-pane .mat-calendar-table {
+  min-width: 0;
+  width: 100%;
+}
+
 /* Tree structure spacing fixes - replaces Material theme spacing */
 ul {
   line-height: 1.3;

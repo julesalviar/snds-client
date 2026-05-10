@@ -1,0 +1,38 @@
+.dialog-body {
+  min-width: min(100%, 520px);
+  max-height: 70vh;
+  /* Extra top/side inset so outline floating labels are not clipped by dialog overflow */
+  padding: 24px 12px 12px;
+  box-sizing: border-box;
+}
+
+.dialog-field-school-year {
+  margin-top: 4px;
+}
+
+/* MDC outline: keep label notch visible inside scrollable dialog */
+:host ::ng-deep .dialog-field-school-year .mat-mdc-text-field-wrapper {
+  overflow: visible;
+}
+
+:host ::ng-deep .dialog-field-school-year .mat-mdc-form-field-infix {
+  min-height: 56px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  position: relative;
+}
+
+.save-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}

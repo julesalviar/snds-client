@@ -86,6 +86,10 @@
               [alignEnd]="false"
               (schoolYearChange)="onTreeSchoolYearChange(state, $event)" />
           </div>
+          <p *ngIf="isSchoolAdmin(state)" class="home-school-needs-list-link-wrap">
+            <a routerLink="/school-admin/list-of-school-needs" class="feature-link">List of school needs</a>
+            <span class="home-school-needs-list-hint"> — create and manage entries from the table view.</span>
+          </p>
           <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
             <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
             <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>

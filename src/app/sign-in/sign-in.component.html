@@ -1,5 +1,28 @@
 <mat-card>
   <mat-card-title>Sign In</mat-card-title>
+  <div
+    *ngIf="sessionEmailVerificationMessage"
+    class="email-activation-message"
+    role="alert"
+  >
+    <p class="activation-main">{{ sessionEmailVerificationMessage }}</p>
+    <p class="activation-expiry-note">
+      Confirmation links stay valid for <strong>{{ emailConfirmationTtlHours }} hours</strong> after they are sent.
+    </p>
+    <div class="activation-resend-row">
+      <button
+        mat-button
+        type="button"
+        class="resend-link-button"
+        (click)="onResendConfirmationEmail()"
+        [disabled]="resendBusy || signInForm.get('email')?.invalid"
+      >
+        {{ resendBusy ? 'Sending…' : 'Resend confirmation email' }}
+      </button>
+    </div>
+    <p *ngIf="resendSuccess" class="resend-success">A new confirmation email has been sent.</p>
+    <p *ngIf="resendError" class="resend-error">{{ resendError }}</p>
+  </div>
   <form [formGroup]="signInForm" (ngSubmit)="onSubmit()">
     <mat-form-field appearance="fill">
       <mat-label>Email</mat-label>
@@ -30,6 +53,44 @@
       <button mat-button href="javascript:void(0);" (click)="onSignUp()">Sign Up</button>
     </div>
 
-    <div *ngIf="isError" class="error-message">{{ errorMessage }}</div>
+    <div
+      *ngIf="isError"
+      [ngClass]="isEmailActivationError ? 'email-activation-message' : 'error-message'"
+      role="alert"
+    >
+      <ng-container *ngIf="isEmailActivationError; else genericLoginError">
+        <p class="activation-main">{{ errorMessage }}</p>
+        <p *ngIf="emailConfirmationTokenExpired" class="activation-expired-banner">
+          Your confirmation link has expired.
+        </p>
+        <p *ngIf="emailConfirmationExpiresAt" class="activation-expiry">
+          <ng-container *ngIf="emailConfirmationTokenExpired">It expired on</ng-container>
+          <ng-container *ngIf="!emailConfirmationTokenExpired">It expires on</ng-container>
+          <strong>{{ emailConfirmationExpiresAt | date : 'medium' }}</strong>
+          (local time shown in your browser’s timezone).
+        </p>
+        <p *ngIf="!emailConfirmationExpiresAt" class="activation-expiry-note">
+          No active confirmation link is on file yet, or it has no expiry date. New links stay valid for
+          <strong>{{ emailConfirmationTtlHours }} hours</strong> after they are sent.
+        </p>
+        <p *ngIf="emailConfirmationExpiresAt && !emailConfirmationTokenExpired" class="activation-expiry-note">
+          After that time, use <strong>Resend confirmation email</strong> to get a new link (also valid {{ emailConfirmationTtlHours }} hours).
+        </p>
+        <div class="activation-resend-row">
+          <button
+            mat-button
+            type="button"
+            class="resend-link-button"
+            (click)="onResendConfirmationEmail()"
+            [disabled]="resendBusy || signInForm.get('email')?.invalid"
+          >
+            {{ resendBusy ? 'Sending…' : 'Resend confirmation email' }}
+          </button>
+        </div>
+        <p *ngIf="resendSuccess" class="resend-success">A new confirmation email has been sent.</p>
+        <p *ngIf="resendError" class="resend-error">{{ resendError }}</p>
+      </ng-container>
+      <ng-template #genericLoginError>{{ errorMessage }}</ng-template>
+    </div>
   </form>
 </mat-card>

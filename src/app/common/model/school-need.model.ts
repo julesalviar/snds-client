@@ -7,10 +7,17 @@ export interface SchoolNeedImage {
 
 export interface ProjectInfo {
   _id: string;
-  schoolYear: string;
-  title: string;
-  objectives: string;
-  pillars: string;
+  schoolYear?: string | string[];
+  title?: string;
+  objectives?: string;
+  pillars?: string;
+  /** Included when API is called with `expandProjectId=true`. */
+  apn?: string | number;
+  responsiblePerson?: string;
+  materialsNeeded?: string;
+  totalBudget?: string;
+  budgetSource?: string;
+  status?: string;
 }
 
 import { SchoolInfo } from './school.model';

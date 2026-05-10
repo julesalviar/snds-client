@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>Update email</h2>
+<mat-dialog-content>
+  <div class="fields">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Old email</mat-label>
+      <input matInput [value]="oldEmail" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>New email</mat-label>
+      <input matInput type="email" name="newEmail" [(ngModel)]="newEmail" placeholder="user@example.com" />
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onUpdate()"
+    [disabled]="isSubmitting">
+    <span *ngIf="!isSubmitting">Update</span>
+    <span *ngIf="isSubmitting" class="submitting">
+      <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+      Updating…
+    </span>
+  </button>
+</mat-dialog-actions>

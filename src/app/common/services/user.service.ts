@@ -153,6 +153,13 @@ export class UserService {
     );
   }
 
+  /** Division/system admin: update a user's email and login username. PATCH /users/:id/email */
+  updateManagedUserEmail(userId: string, email: string): Observable<{ success: boolean }> {
+    return this.httpService
+      .patch<{ success: boolean }>(`${API_ENDPOINT.users.list}/${userId}/email`, { email })
+      .pipe(catchError(this.httpService.handleError));
+  }
+
   /**
    * Update a user's roles and optional school/office assignment.
    * POST /auth/users/:userId/assign-roles with body { roles, schoolId?, officeIds?, sector?, subsector? }

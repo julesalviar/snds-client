@@ -133,6 +133,11 @@
                       (click)="onAssignRole(row)">
                 <mat-icon>manage_accounts</mat-icon> Manage Roles
               </button>
+              <button mat-menu-item
+                      *ngIf="canAssignRole"
+                      (click)="onUpdateEmail(row)">
+                <mat-icon>mail</mat-icon> Update email
+              </button>
             </mat-menu>
           </td>
         </ng-container>

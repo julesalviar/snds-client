@@ -39,6 +39,61 @@
     margin-top: 15px;
     text-align: center;
   }
+
+  .email-activation-message {
+    color: #1565c0;
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.45;
+    margin-top: 15px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+
+  .email-activation-message .activation-main {
+    margin: 0 0 10px 0;
+  }
+
+  .email-activation-message .activation-expired-banner {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    color: #c62828;
+  }
+
+  .email-activation-message .activation-expiry {
+    margin: 0 0 8px 0;
+  }
+
+  .email-activation-message .activation-expiry-note {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    opacity: 0.95;
+  }
+
+  .email-activation-message .activation-resend-row {
+    margin-top: 8px;
+  }
+
+  .email-activation-message .resend-link-button {
+    padding: 0;
+    min-width: 0;
+    text-decoration: underline;
+    color: #0d47a1;
+  }
+
+  .email-activation-message .resend-success {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #2e7d32;
+  }
+
+  .email-activation-message .resend-error {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #c62828;
+  }
   
   .custom-signin {
     width: 100%;

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {HttpService} from "../common/services/http.service";
-import {catchError, map, Observable, tap, throwError} from "rxjs";
+import {catchError, Observable, tap, throwError} from "rxjs";
 import {AuthResponse} from "./auth-response.model";
 import {JwtPayload} from "../common/model/jwt-payload.model";
 
@@ -13,10 +13,15 @@ export class AuthService {
   constructor(private readonly httpService: HttpService) {
   }
 
-  login(credentials: { userName: string; password: string }): Observable<void> {
+  login(credentials: { userName: string; password: string }): Observable<AuthResponse> {
+    const screen = this.buildLoginScreenContext();
+    const body = {
+      ...credentials,
+      ...(screen ? { clientContext: screen } : {}),
+    };
     return this.httpService.post<AuthResponse>(
       API_ENDPOINT.auth.login,
-      credentials
+      body
     ).pipe(
       tap(authResponse => {
         const token = authResponse?.access_token ?? (authResponse as unknown as Record<string, string>)?.['accessToken'];
@@ -25,7 +30,6 @@ export class AuthService {
         }
         localStorage.setItem('token', token);
       }),
-      map(() => void 0), // Not exposing the token here
       catchError(error => {
         return throwError(() => error);
       })
@@ -34,6 +38,21 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('token');
+  }
+
+  /**
+   * Whether the current JWT allows API access for email verification.
+   * Matches backend JwtAuthGuard: `false` blocks; `true` or omitted (legacy token) allows.
+   */
+  isEmailVerifiedForAccess(): boolean {
+    const payload = this.getTokenPayload();
+    if (!this.isTokenValid(payload)) {
+      return false;
+    }
+    if (payload?.emailVerified === false) {
+      return false;
+    }
+    return true;
   }
 
   isLoggedIn(): boolean {
@@ -100,5 +119,20 @@ export class AuthService {
 
     const now = Math.floor(Date.now() / 1000);
     return token.exp > now;
+  }
+
+  /** Screen dimensions for login audit (`${width}x${height}` on server). */
+  private buildLoginScreenContext():
+    | { screenWidth: number; screenHeight: number }
+    | undefined {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const w = window.screen?.width;
+    const h = window.screen?.height;
+    if (w == null || h == null || w <= 0 || h <= 0) {
+      return undefined;
+    }
+    return { screenWidth: w, screenHeight: h };
   }
 }

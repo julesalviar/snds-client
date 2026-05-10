@@ -1,126 +1,165 @@
-import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule} from '@angular/forms';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AIPProject } from '../../interfaces/aip.model';
-import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ConfirmDeleteDialogComponent } from '../../table-button-dialog/confirm-delete-dialog/confirm-delete-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
-import {AipService} from "../../common/services/aip.service";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {MatProgressBarModule} from "@angular/material/progress-bar";
-import {Aip} from "../../common/model/aip.model";
-import {getSchoolYear} from "../../common/date-utils";
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {AuthService} from "../../auth/auth.service";
-import {UserType} from "../../registration/user-type.enum";
-import {ActivatedRoute, Router} from "@angular/router";
-import {ReferenceDataService} from "../../common/services/reference-data.service";
-import {AIP_STATUSES} from "../../common/enums/aip-status.enum";
+import { AipService } from '../../common/services/aip.service';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { Aip } from '../../common/model/aip.model';
+import {
+  formatAipSchoolYearsDisplay,
+  getCurrentSchoolYear,
+  getDefaultSchoolYear,
+  getSchoolYearOptions,
+} from '../../common/date-utils';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../auth/auth.service';
+import { UserType } from '../../registration/user-type.enum';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil, map, distinctUntilChanged, skip } from 'rxjs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { AipFormComponent } from '../aip-form/aip-form.component';
+import { AIP_STATUSES } from '../../common/enums/aip-status.enum';
 
 @Component({
   selector: 'app-aip',
-  imports: [MatFormField, CommonModule, MatFormFieldModule, MatTooltipModule, MatInputModule, MatSelectModule, MatButtonModule, MatCardModule, ReactiveFormsModule, MatIconButton, MatTableModule, MatIcon, MatPaginator, MatProgressBarModule],
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatTooltipModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconButton,
+    MatTableModule,
+    MatIcon,
+    MatPaginator,
+  ],
   templateUrl: './aip.component.html',
   styleUrls: ['./aip.component.css'],
   providers: [MatDialog],
 })
-export class AipComponent implements OnInit {
+export class AipComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
   schoolId: string = '';
-  aipForm: FormGroup;
-  displayedColumns: string[] = [ 'apn', 'title', 'totalBudget', 'schoolYear', 'status', 'actions'];
+  displayedColumns: string[] = [
+    'apn',
+    'title',
+    'totalBudget',
+    'schoolYear',
+    'status',
+    'actions',
+  ];
   projects: AIPProject[] = [];
-  pillars: string[] = [];
-  statuses: readonly string[] = AIP_STATUSES;
   pageIndex: number = 0;
   pageSize: number = 25;
   dataSource = new MatTableDataSource<Aip>();
   totalItems: number = 0;
   isLoading: boolean = true;
+  readonly schoolYearOptions = getSchoolYearOptions();
+  readonly formatAipSchoolYearsDisplay = formatAipSchoolYearsDisplay;
+  /** Default filter matches calendar school year when present in options. */
+  selectedSchoolYear: string = AipComponent.initialSchoolYearFromCalendar();
+  /** Empty string = all statuses. */
+  selectedStatus: string = '';
+  readonly aipStatusOptions: readonly string[] = AIP_STATUSES;
 
   protected readonly UserType = UserType;
 
+  private static initialSchoolYearFromCalendar(): string {
+    const cur = getCurrentSchoolYear();
+    const opts = getSchoolYearOptions();
+    return opts.includes(cur) ? cur : getDefaultSchoolYear();
+  }
+
   constructor(
-    private readonly fb: FormBuilder,
     protected dialog: MatDialog,
     private readonly aipService: AipService,
     private readonly snackBar: MatSnackBar,
     private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly referenceDataService: ReferenceDataService,
-  ) {
-    this.aipForm = this.fb.group({
-      schoolYear: [getSchoolYear(), Validators.required],
-      title: ['', Validators.required],
-      objectives: ['', [Validators.required, Validators.maxLength(500)]],
-      intermediateOutcome: ['', Validators.required],
-      responsiblePerson: ['', Validators.required],
-      materialsNeeded: ['', Validators.required],
-      totalBudget: [100, [Validators.required, Validators.min(1)]],
-      budgetSource: ['', Validators.required],
-      status: ['', Validators.required],
-    });
-  }
+    private readonly breakpointObserver: BreakpointObserver,
+  ) {}
 
   ngOnInit() {
     this.schoolId = this.route.snapshot.params['schoolId'];
-    this.loadPillars();
+    const statusParam = this.route.snapshot.queryParamMap.get('status');
+    if (
+      statusParam &&
+      (AIP_STATUSES as readonly string[]).includes(statusParam)
+    ) {
+      this.selectedStatus = statusParam;
+    }
     this.loadAips(this.schoolId);
-  }
 
-  onSubmit() {
-    if (this.aipForm.valid) {
-      const {intermediateOutcome, schoolYear, ...filteredValues} = this.aipForm.value;
-      const newProject: Aip = {
-        pillars: intermediateOutcome,
-        schoolYear: `${schoolYear}`,
-        ...filteredValues,
-      };
-      this.aipService.createAip(newProject).subscribe({
-        next: (res) => {
-          this.aipForm.reset({
-            schoolYear: getSchoolYear()
-          }, { emitEvent: false });
-
-          this.aipForm.markAsPristine();
-          this.aipForm.markAsUntouched();
+    this.route.queryParamMap
+      .pipe(
+        map((p) => p.get('status') ?? ''),
+        distinctUntilChanged(),
+        skip(1),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((statusFromUrl) => {
+        const valid =
+          statusFromUrl === '' ||
+          (AIP_STATUSES as readonly string[]).includes(statusFromUrl);
+        const next = valid && statusFromUrl ? statusFromUrl : '';
+        if (next !== this.selectedStatus) {
+          this.selectedStatus = next;
+          this.pageIndex = 0;
           this.loadAips(this.schoolId);
-          this.showSuccessNotification('AIP project saved successfully!');
-        },
-        error: (err) => {
-          console.error('Error creating AIP project:', err);
-
-          let errorMessage = 'Failed to save AIP project. Please try again.';
-
-          if (err?.error?.message) {
-            if (Array.isArray(err.error.message)) {
-              errorMessage = err.error.message.join('\n• ');
-              if (err.error.message.length > 1) {
-                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-              }
-            } else if (typeof err.error.message === 'string') {
-              errorMessage = err.error.message;
-            }
-          } else if (err?.error && typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else if (err?.message) {
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          }
-
-          this.showErrorNotification(errorMessage);
         }
       });
-    }
+
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const open = params['openCreate'];
+      if (open !== '1' && open !== 'true') {
+        return;
+      }
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { openCreate: undefined },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+      queueMicrotask(() => {
+        if (this.userRole === UserType.SchoolAdmin) {
+          this.onCreate();
+        }
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onCreate(): void {
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const ref = this.dialog.open(AipFormComponent, {
+      width: isMobile ? '100vw' : 'min(640px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      disableClose: false,
+      autoFocus: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+    });
+    ref.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadAips(this.schoolId);
+      }
+    });
   }
 
   viewProject(project: Aip): void {
@@ -151,11 +190,11 @@ export class AipComponent implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDeleteDialogComponent, {
       data: {
         title: 'Delete AIP Project',
-        message: `Are you sure you want to delete the project "${project.title}"? This action cannot be undone.`
-      }
+        message: `Are you sure you want to delete the project "${project.title}"? This action cannot be undone.`,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Double-check authorization before API call
         if (this.userRole !== UserType.SchoolAdmin) {
@@ -192,7 +231,7 @@ export class AipComponent implements OnInit {
             }
 
             this.showErrorNotification(errorMessage);
-          }
+          },
         });
       } else {
         console.log('Deletion canceled');
@@ -203,38 +242,46 @@ export class AipComponent implements OnInit {
   loadAips(schoolId?: string): void {
     this.isLoading = true;
     const page = this.pageIndex + 1;
-    this.aipService.getAips(page, this.pageSize, schoolId).subscribe({
-      next: (response) => {
-        this.dataSource.data = response.data;
-        this.totalItems = response.meta.totalItems;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching AIP projects:', err);
-        this.isLoading = false;
+    this.aipService
+      .getAips(
+        page,
+        this.pageSize,
+        schoolId,
+        this.selectedSchoolYear,
+        this.selectedStatus || undefined,
+      )
+      .subscribe({
+        next: (response) => {
+          this.dataSource.data = response.data;
+          this.totalItems = response.meta.totalItems;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error fetching AIP projects:', err);
+          this.isLoading = false;
 
-        let errorMessage = 'Failed to load AIP projects. Please try again.';
+          let errorMessage = 'Failed to load AIP projects. Please try again.';
 
-        if (err?.error?.message) {
-          if (Array.isArray(err.error.message)) {
-            errorMessage = err.error.message.join('\n• ');
-            if (err.error.message.length > 1) {
-              errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+          if (err?.error?.message) {
+            if (Array.isArray(err.error.message)) {
+              errorMessage = err.error.message.join('\n• ');
+              if (err.error.message.length > 1) {
+                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
+              }
+            } else if (typeof err.error.message === 'string') {
+              errorMessage = err.error.message;
             }
-          } else if (typeof err.error.message === 'string') {
-            errorMessage = err.error.message;
+          } else if (err?.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
           }
-        } else if (err?.error && typeof err.error === 'string') {
-          errorMessage = err.error;
-        } else if (err?.message) {
-          errorMessage = err.message;
-        } else if (typeof err === 'string') {
-          errorMessage = err;
-        }
 
-        this.showErrorNotification(errorMessage);
-      }
-    });
+          this.showErrorNotification(errorMessage);
+        },
+      });
   }
 
   onPageChange(event: PageEvent) {
@@ -243,12 +290,54 @@ export class AipComponent implements OnInit {
     this.loadAips(this.schoolId);
   }
 
-  get userRole(): string {
-    return this.authService.getActiveRole();
+  onSchoolYearFilterChange(year: string): void {
+    if (year === this.selectedSchoolYear) {
+      return;
+    }
+    this.selectedSchoolYear = year;
+    this.pageIndex = 0;
+    this.syncFilterQueryParams();
+    this.loadAips(this.schoolId);
   }
 
-  get showCreateForm(): boolean {
-    return this.userRole === UserType.SchoolAdmin;
+  onStatusFilterChange(status: string): void {
+    if (status === this.selectedStatus) {
+      return;
+    }
+    this.selectedStatus = status;
+    this.pageIndex = 0;
+    this.syncFilterQueryParams();
+    this.loadAips(this.schoolId);
+  }
+
+  get hasActiveFilters(): boolean {
+    return (
+      this.selectedSchoolYear !== AipComponent.initialSchoolYearFromCalendar() ||
+      this.selectedStatus !== ''
+    );
+  }
+
+  clearFilters(): void {
+    this.selectedSchoolYear = AipComponent.initialSchoolYearFromCalendar();
+    this.selectedStatus = '';
+    this.pageIndex = 0;
+    this.syncFilterQueryParams();
+    this.loadAips(this.schoolId);
+  }
+
+  private syncFilterQueryParams(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        status: this.selectedStatus || undefined,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  get userRole(): string {
+    return this.authService.getActiveRole();
   }
 
   private showErrorNotification(message: string): void {
@@ -258,7 +347,7 @@ export class AipComponent implements OnInit {
       duration: duration,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: ['error-snackbar']
+      panelClass: ['error-snackbar'],
     });
   }
 
@@ -267,14 +356,7 @@ export class AipComponent implements OnInit {
       duration: 4000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
-      panelClass: ['success-snackbar']
+      panelClass: ['success-snackbar'],
     });
-  }
-
-  private loadPillars(): void {
-    const pillarsData = this.referenceDataService.get<string[]>('pillars');
-    if (pillarsData) {
-      this.pillars = pillarsData;
-    }
   }
 }
