@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -7,10 +7,21 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import {ActivatedRoute, Router} from '@angular/router';
-import {SchoolNeed} from "../common/model/school-need.model";
-import {SchoolNeedService} from "../common/services/school-need.service";
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, distinctUntilChanged, map, skip, take, takeUntil } from 'rxjs';
+import { SchoolNeed } from '../common/model/school-need.model';
+import { SchoolNeedService } from '../common/services/school-need.service';
+import { UserService } from '../common/services/user.service';
+import {
+  getCurrentSchoolYear,
+  getDefaultSchoolYear,
+  getSchoolYearOptions,
+} from '../common/date-utils';
+
+/** Matches backend `school-need.controller` validation for `schoolYear` query param. */
+const SCHOOL_YEAR_QUERY = /^\d{4}-\d{4}$/;
 
 @Component({
   selector: 'app-stakeholders',
@@ -24,13 +35,17 @@ import {SchoolNeedService} from "../common/services/school-need.service";
     MatMenuModule,
     MatIconButton,
     MatPaginator,
-    MatProgressBarModule,
-    MatButton
+    MatButton,
+    MatFormFieldModule,
+    MatSelectModule,
   ],
   templateUrl: './stakeholders.component.html',
-  styleUrl: './stakeholders.component.css'
+  styleUrl: './stakeholders.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
-export class StakeholdersComponent implements OnInit {
+export class StakeholdersComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
   displayedColumns: string[] = [
     'school',
     'specificContribution',
@@ -40,7 +55,7 @@ export class StakeholdersComponent implements OnInit {
     'beneficiaryStudents',
     'beneficiaryPersonnel',
     'implementationStatus',
-    'actions'
+    'actions',
   ];
 
   schoolNeeds: SchoolNeed[] = [];
@@ -54,29 +69,112 @@ export class StakeholdersComponent implements OnInit {
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   totalQuantity: number = 0;
+  totalCompleted: number = 0;
   totalBySchool: number = 0;
   selectedContribution: string | null = null;
   schoolId: string | null = null;
   isLoading: boolean = true;
 
+  readonly schoolYearOptions: string[] = getSchoolYearOptions();
+  selectedSchoolYear: string = StakeholdersComponent.initialSchoolYearFromCalendar();
+
+  /** Quantity still ongoing (total − completed). */
+  get ongoingQuantity(): number {
+    return Math.max(0, this.totalQuantity - this.totalCompleted);
+  }
+
   constructor(
     private readonly router: Router,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly route: ActivatedRoute,
+    private readonly userService: UserService,
   ) {}
 
   ngOnInit(): void {
-    // Get the selectedContribution and schoolId from query parameters
-    this.route.queryParams.subscribe(params => {
-      this.selectedContribution = params['selectedContribution'] ?? null;
-      this.schoolId = params['schoolId'] ?? null;
+    this.initSchoolYear(() => {
+      this.selectedContribution =
+        this.route.snapshot.queryParamMap.get('selectedContribution') ?? null;
+      this.schoolId = this.route.snapshot.queryParamMap.get('schoolId') ?? null;
       this.updateDisplayedColumns();
+
+      this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+        const contribution = params['selectedContribution'] ?? null;
+        const schoolId = params['schoolId'] ?? null;
+        const contributionChanged = contribution !== this.selectedContribution;
+        const schoolIdChanged = schoolId !== this.schoolId;
+
+        this.selectedContribution = contribution;
+        this.schoolId = schoolId;
+
+        if (contributionChanged || schoolIdChanged) {
+          this.updateDisplayedColumns();
+          this.pageIndex = 0;
+          this.loadSchoolNeeds();
+        }
+      });
+
+      this.route.queryParamMap
+        .pipe(
+          map((p) => p.get('schoolYear')),
+          distinctUntilChanged(),
+          skip(1),
+          takeUntil(this.destroy$),
+        )
+        .subscribe((syParam) => {
+          const next = this.resolveSchoolYear(syParam);
+          if (next !== this.selectedSchoolYear) {
+            this.selectedSchoolYear = next;
+            this.pageIndex = 0;
+            this.loadSchoolNeeds();
+          }
+        });
+
       this.loadSchoolNeeds();
     });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private static initialSchoolYearFromCalendar(): string {
+    const cur = getCurrentSchoolYear();
+    const opts = getSchoolYearOptions();
+    return opts.includes(cur) ? cur : getDefaultSchoolYear();
+  }
+
+  private resolveSchoolYear(param: string | null): string {
+    if (
+      param &&
+      SCHOOL_YEAR_QUERY.test(param) &&
+      this.schoolYearOptions.includes(param)
+    ) {
+      return param;
+    }
+    return StakeholdersComponent.initialSchoolYearFromCalendar();
+  }
+
+  private initSchoolYear(done: () => void): void {
+    const syParam = this.route.snapshot.queryParamMap.get('schoolYear');
+    if (
+      syParam &&
+      SCHOOL_YEAR_QUERY.test(syParam) &&
+      this.schoolYearOptions.includes(syParam)
+    ) {
+      this.selectedSchoolYear = syParam;
+      done();
+      return;
+    }
+    this.userService.schoolYear$
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe((sy) => {
+        this.selectedSchoolYear = this.resolveSchoolYear(sy);
+        done();
+      });
+  }
+
   updateDisplayedColumns(): void {
-    // Hide school column when viewing a specific school's needs
     if (this.schoolId) {
       this.displayedColumns = [
         'specificContribution',
@@ -86,7 +184,7 @@ export class StakeholdersComponent implements OnInit {
         'beneficiaryStudents',
         'beneficiaryPersonnel',
         'implementationStatus',
-        'actions'
+        'actions',
       ];
     } else {
       this.displayedColumns = [
@@ -98,14 +196,51 @@ export class StakeholdersComponent implements OnInit {
         'beneficiaryStudents',
         'beneficiaryPersonnel',
         'implementationStatus',
-        'actions'
+        'actions',
       ];
     }
   }
 
-  onPageChange(event: PageEvent) {
+  onPageChange(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
+    this.loadSchoolNeeds();
+  }
+
+  onSchoolYearFilterChange(year: string): void {
+    if (year === this.selectedSchoolYear) {
+      return;
+    }
+    this.selectedSchoolYear = year;
+    this.pageIndex = 0;
+    this.userService.setSchoolYear(year);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { schoolYear: year },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    this.loadSchoolNeeds();
+  }
+
+  get hasActiveFilters(): boolean {
+    return (
+      this.selectedSchoolYear !==
+      StakeholdersComponent.initialSchoolYearFromCalendar()
+    );
+  }
+
+  clearFilters(): void {
+    const def = StakeholdersComponent.initialSchoolYearFromCalendar();
+    this.selectedSchoolYear = def;
+    this.pageIndex = 0;
+    this.userService.setSchoolYear(def);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { schoolYear: def },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
     this.loadSchoolNeeds();
   }
 
@@ -113,34 +248,33 @@ export class StakeholdersComponent implements OnInit {
     this.isLoading = true;
     const page = this.pageIndex + 1;
 
-    this.schoolNeedService.getSchoolNeeds(page, this.pageSize, undefined, this.selectedContribution ?? undefined, this.schoolId ?? undefined).subscribe({
-      next: (response) => {
-        this.schoolName = response.school?.schoolName;
-        this.schoolLocation = response.school?.location;
-        this.profileDocUrl = response.school?.profileDocUrl || null;
-        this.schoolLogoUrl = response.school?.logoUrl || null;
-        this.logoError = false;
-        this.dataSource.data = response.data;
-        this.totalItems = response.meta.totalItems;
-        this.totalQuantity = response.meta.totalQuantity;
-        this.totalBySchool = response.meta.totalBySchool;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching school needs:', err);
-        this.isLoading = false;
-      }
-    });
-  }
-
-  viewDetails(schoolNeed: SchoolNeed): void {
-    console.log('View details for:', schoolNeed);
-    // Implement view details logic
-  }
-
-  editSchoolNeed(schoolNeed: SchoolNeed): void {
-    console.log('Edit school need:', schoolNeed);
-    // Implement edit logic
+    this.schoolNeedService
+      .getSchoolNeeds(
+        page,
+        this.pageSize,
+        this.selectedSchoolYear,
+        this.selectedContribution ?? undefined,
+        this.schoolId ?? undefined,
+      )
+      .subscribe({
+        next: (response) => {
+          this.schoolName = response.school?.schoolName;
+          this.schoolLocation = response.school?.location;
+          this.profileDocUrl = response.school?.profileDocUrl || null;
+          this.schoolLogoUrl = response.school?.logoUrl || null;
+          this.logoError = false;
+          this.dataSource.data = response.data;
+          this.totalItems = response.meta.totalItems;
+          this.totalQuantity = response.meta.totalQuantity ?? 0;
+          this.totalCompleted = response.meta.totalCompleted ?? 0;
+          this.totalBySchool = response.meta.totalBySchool ?? 0;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error fetching school needs:', err);
+          this.isLoading = false;
+        },
+      });
   }
 
   viewSchoolNeed(schoolNeed: SchoolNeed): void {
@@ -151,7 +285,7 @@ export class StakeholdersComponent implements OnInit {
     console.log('Delete school need:', schoolNeed);
   }
 
-  viewAnnualImplementationPlan() {
+  viewAnnualImplementationPlan(): void {
     this.router.navigate(['/stakeholder/aip/', this.schoolId]);
   }
 

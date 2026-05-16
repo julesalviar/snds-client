@@ -1,98 +1,172 @@
-
 <mat-card>
-  <mat-card-title class="title">Schools' Needs</mat-card-title>
-  <div class="summary-text">
-    <ng-container *ngIf="selectedContribution; else schoolSpecificView">
-      <p>Total School Needs: <strong>{{ totalQuantity | number }}</strong></p>
-      <p>Schools in Need: <strong>{{ totalBySchool | number }}</strong></p>
-    </ng-container>
-    <ng-template #schoolSpecificView>
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <div *ngIf="schoolName" class="school-header">
-          <div class="school-logo-container logo-preview-wrapper">
-            <img
-              *ngIf="schoolLogoUrl && !logoError"
-              [src]="schoolLogoUrl"
-              alt="School Logo"
-              class="school-logo"
-              (error)="onLogoError()" />
-            <mat-icon *ngIf="!schoolLogoUrl || logoError" class="school-icon">school</mat-icon>
+  <mat-card-title>
+    Schools' Needs<ng-container *ngIf="selectedContribution"> — {{ selectedContribution }}</ng-container>
+  </mat-card-title>
 
-            <!-- Logo Preview on Hover (Desktop Only) -->
-            <div *ngIf="schoolLogoUrl && !logoError" class="logo-preview">
-              <img
-                [src]="schoolLogoUrl"
-                alt="Logo Preview"
-                class="logo-preview-image" />
-            </div>
-          </div>
-          <span class="school-name">{{ schoolName | uppercase }}</span>
+  <div class="summary-text" *ngIf="selectedContribution && !schoolId">
+    <div class="summary-metrics-row">
+      <p class="summary-row">
+        <mat-icon class="summary-icon" aria-hidden="true">inventory_2</mat-icon>
+        <span>Total: <strong>{{ totalQuantity | number }}</strong></span>
+      </p>
+      <p class="summary-row">
+        <mat-icon class="summary-icon" aria-hidden="true">check_circle</mat-icon>
+        <span>Completed: <strong>{{ totalCompleted | number }}</strong></span>
+      </p>
+      <p class="summary-row">
+        <mat-icon class="summary-icon" aria-hidden="true">schedule</mat-icon>
+        <span>Ongoing: <strong>{{ ongoingQuantity | number }}</strong></span>
+      </p>
+    </div>
+    <p class="summary-row">
+      <mat-icon class="summary-icon" aria-hidden="true">school</mat-icon>
+      <span>Schools in Need: <strong>{{ totalBySchool | number }}</strong></span>
+    </p>
+  </div>
+
+  <div *ngIf="schoolId" class="school-specific-header">
+    <div class="school-header" *ngIf="schoolName">
+      <div class="school-logo-container logo-preview-wrapper">
+        <img
+          *ngIf="schoolLogoUrl && !logoError"
+          [src]="schoolLogoUrl"
+          alt="School Logo"
+          class="school-logo"
+          (error)="onLogoError()" />
+        <mat-icon *ngIf="!schoolLogoUrl || logoError" class="school-icon">school</mat-icon>
+
+        <div *ngIf="schoolLogoUrl && !logoError" class="logo-preview">
+          <img
+            [src]="schoolLogoUrl"
+            alt="Logo Preview"
+            class="logo-preview-image" />
         </div>
+      </div>
+      <span class="school-name">{{ schoolName | uppercase }}</span>
+    </div>
 
-        <button mat-button [matMenuTriggerFor]="menu">
+    <button mat-button type="button" [matMenuTriggerFor]="menu">
       SEE MORE <mat-icon>arrow_drop_down</mat-icon>
     </button>
 
     <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="viewAnnualImplementationPlan()">
+      <button mat-menu-item type="button" (click)="viewAnnualImplementationPlan()">
         <mat-icon>visibility</mat-icon> View Annual Implementation Plan
       </button>
-      <button mat-menu-item (click)="seeSchoolLocation()" [disabled]="!schoolLocation">
+      <button mat-menu-item type="button" (click)="seeSchoolLocation()" [disabled]="!schoolLocation">
         <mat-icon>location_on</mat-icon> See School Location
       </button>
-      <button mat-menu-item (click)="downloadSchoolProfile()" [disabled]="!profileDocUrl">
+      <button mat-menu-item type="button" (click)="downloadSchoolProfile()" [disabled]="!profileDocUrl">
         <mat-icon>download</mat-icon> Download School Profile
       </button>
     </mat-menu>
   </div>
-</ng-template>
-  </div>
-  <div class="table-scroll">
-    <div class="table-container">
-      <div *ngIf="isLoading" class="loading-container">
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        <p>Loading school needs...</p>
-      </div>
 
-      <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+  <div class="table-wrapper">
+    <div class="filter-container">
+      <div class="filter-fields">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>School year</mat-label>
+          <mat-select
+            [value]="selectedSchoolYear"
+            (selectionChange)="onSchoolYearFilterChange($event.value)"
+            aria-label="Filter by school year">
+            <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button
+          *ngIf="hasActiveFilters"
+          mat-button
+          color="warn"
+          type="button"
+          (click)="clearFilters()"
+          class="clear-button">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
+      <div class="skeleton-table">
+        <div class="skeleton-table-header">
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 18%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+        </div>
+        <div class="skeleton-table-row" *ngFor="let _ of [1,2,3,4,5,6,7]">
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 18%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 14%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+      <p class="empty-state-title">No school needs found</p>
+      <p class="empty-state-message">
+        Try another school year or adjust your filters.
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="school-needs-table mat-elevation-z2">
 
         <ng-container matColumnDef="school">
-          <th mat-header-cell *matHeaderCellDef> School </th>
-          <td mat-cell *matCellDef="let need"> {{ need.school?.schoolName | uppercase }} </td>
+          <th mat-header-cell *matHeaderCellDef>School</th>
+          <td mat-cell *matCellDef="let need">
+            <div class="cell-content" [matTooltip]="need.school?.schoolName">{{ need.school?.schoolName | uppercase }}</div>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="specificContribution">
-          <th mat-header-cell *matHeaderCellDef> Specific Contribution </th>
-          <td mat-cell *matCellDef="let need"> {{ need.specificContribution }} </td>
+          <th mat-header-cell *matHeaderCellDef>Specific Contribution</th>
+          <td mat-cell *matCellDef="let need">
+            <div class="cell-content" [matTooltip]="need.specificContribution">{{ need.specificContribution }}</div>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="quantity">
-          <th mat-header-cell *matHeaderCellDef> Quantity </th>
-          <td mat-cell *matCellDef="let need"> {{ need.quantity | number: '1.0-2' }} </td>
+          <th mat-header-cell *matHeaderCellDef>Quantity</th>
+          <td mat-cell *matCellDef="let need">{{ need.quantity | number: '1.0-2' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="unit">
-          <th mat-header-cell *matHeaderCellDef> Unit </th>
-          <td mat-cell *matCellDef="let need"> {{ need.unit }} </td>
+          <th mat-header-cell *matHeaderCellDef>Unit</th>
+          <td mat-cell *matCellDef="let need">
+            <div class="cell-content" [matTooltip]="need.unit">{{ need.unit }}</div>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef> Amount </th>
-          <td mat-cell *matCellDef="let need"> {{ need.estimatedCost | currency: 'PHP' }} </td>
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let need">{{ need.estimatedCost | currency: 'PHP' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="beneficiaryStudents">
-          <th mat-header-cell *matHeaderCellDef> No. of Beneficiary Students </th>
-          <td mat-cell *matCellDef="let need"> {{ need.studentBeneficiaries | number: '1.0-2' }} </td>
+          <th mat-header-cell *matHeaderCellDef class="narrow-column">No. of Beneficiary Students</th>
+          <td mat-cell *matCellDef="let need" class="narrow-column">{{ need.studentBeneficiaries | number: '1.0-2' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="beneficiaryPersonnel">
-          <th mat-header-cell *matHeaderCellDef> No. of Beneficiary Personnel </th>
-          <td mat-cell *matCellDef="let need"> {{ need.personnelBeneficiaries | number: '1.0-2' }} </td>
+          <th mat-header-cell *matHeaderCellDef>No. of Beneficiary Personnel</th>
+          <td mat-cell *matCellDef="let need">{{ need.personnelBeneficiaries | number: '1.0-2' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="implementationStatus">
-          <th mat-header-cell *matHeaderCellDef> Status of Implementation </th>
+          <th mat-header-cell *matHeaderCellDef>Status of Implementation</th>
           <td mat-cell *matCellDef="let need">
             <span *ngIf="getEngagementStatus(need) === 'Looking for partner'"
                   class="status-badge looking-for-partner">
@@ -113,12 +187,12 @@
         </ng-container>
 
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef> Actions </th>
-          <td mat-cell *matCellDef="let need" style="white-space: nowrap;">
-            <button mat-icon-button (click)="viewSchoolNeed(need)" matTooltip="View">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let need" class="actions-cell">
+            <button mat-icon-button type="button" (click)="viewSchoolNeed(need)" matTooltip="View">
               <mat-icon>visibility</mat-icon>
             </button>
-            <button mat-icon-button (click)="deleteSchoolNeed(need)" matTooltip="Delete" disabled>
+            <button mat-icon-button type="button" (click)="deleteSchoolNeed(need)" matTooltip="Delete" disabled>
               <mat-icon>delete</mat-icon>
             </button>
           </td>
@@ -127,9 +201,16 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
-      <mat-paginator *ngIf="!isLoading" [length]="totalItems" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[5, 10, 25, 50, 100]"
-                     (page)="onPageChange($event)">
-      </mat-paginator>
     </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="[5, 10, 25, 50, 100]"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
   </div>
 </mat-card>

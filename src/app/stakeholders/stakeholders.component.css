@@ -1,13 +1,13 @@
-mat-card {
+app-stakeholders mat-card.mat-mdc-card {
   margin: 20px;
   padding: 20px;
-  box-shadow: 0 4px 20px green;
+  box-shadow: 0 0;
   border-radius: 8px;
   border: 1px solid green;
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-mat-card-title {
+app-stakeholders mat-card-title {
   margin-bottom: 20px;
   margin-left: 5px;
   font-size: 20px;
@@ -22,14 +22,43 @@ mat-card-title {
   border-left: 4px solid #45a049;
 }
 
-.summary-text p {
-  margin: 0 0 4px 0;
+.summary-text p,
+.summary-text .summary-row {
+  margin: 0 0 8px 0;
   font-size: 14px;
   color: #333;
   font-weight: 500;
 }
 
-.summary-text p:last-child {
+.summary-metrics-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  margin-bottom: 8px;
+}
+
+.summary-metrics-row .summary-row {
+  margin-bottom: 0;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
+  color: #45a049;
+  cursor: default;
+}
+
+.summary-text > .summary-row:last-child {
   margin-bottom: 0;
 }
 
@@ -38,86 +67,12 @@ mat-card-title {
   font-weight: 600;
 }
 
-.download-button {
-  background: whitesmoke;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  text-transform: none; 
-  font-size: 15px;
-  transition: 0.3s ease;
-  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.4);
-}
-
-.download-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(46, 204, 113, 0.5);
-}
-
-.download-button:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.4);
-}
-
-.download-button[disabled] {
-  background: #b8e6c6 !important;
-  color: #f8f8f8 !important;
-  box-shadow: none !important;
-  cursor: not-allowed;
-}
-
-/* Icon styling */
-.download-icon {
-  margin-right: 8px;
-  font-size: 20px;
-}
-
-
-/* Disabled button styling */
-button[mat-icon-button][disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-button[mat-icon-button][disabled] mat-icon {
-  color: #999 !important;
-}
-
-/* Column width constraints */
-.mat-column-implementationStatus {
-  max-width: 180px;
-  min-width: 190px;
-}
-
-/* Adjust table cell alignment for status column */
-.mat-column-implementationStatus .mat-cell {
-  vertical-align: middle !important;
-  text-align: center !important;
-}
-
-.mat-column-beneficiaryPersonnel {
-  max-width: 100px;
-  min-width: 100px;
-}
-
-.mat-column-beneficiaryStudents {
-  max-width: 100px;
-  min-width: 100px;
-}
-
-.mat-column-amount {
-  max-width: 100px;
-  min-width: 100px;
-}
-
-.mat-column-quantity {
-  max-width: 80px;
-  min-width: 80px;
-}
-
-.mat-elevation-z8 {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+.school-specific-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .school-header {
@@ -126,6 +81,191 @@ button[mat-icon-button][disabled] mat-icon {
   justify-content: flex-start;
   gap: 12px;
   margin: 0;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  gap: 10px;
+}
+
+.filter-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-field {
+  width: 250px;
+  min-width: 200px;
+}
+
+.clear-button {
+  margin-left: 0;
+}
+
+.table-wrapper {
+  margin-top: 15px;
+  padding: 2px;
+  border-radius: 12px;
+  border: 1px solid green;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e8e8e8 0%, #f5f5f5 50%, #e8e8e8 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-table-wrapper {
+  overflow-x: auto;
+  min-width: 0;
+  padding: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.skeleton-table {
+  display: table;
+  min-width: 1000px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.skeleton-table-header {
+  display: table-row;
+  background: #f5f5f5;
+}
+
+.skeleton-table-header .skeleton-table-cell {
+  display: table-cell;
+  padding: 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-table-row {
+  display: table-row;
+  background: #fff;
+}
+
+.skeleton-table-row .skeleton-table-cell {
+  display: table-cell;
+  padding: 10px 16px;
+  height: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px dashed #e0e0e0;
+}
+
+.empty-state-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #424242;
+}
+
+.empty-state-message {
+  margin: 0;
+  font-size: 14px;
+  color: #757575;
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  min-width: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.school-needs-table {
+  width: 100%;
+  min-width: 1000px;
+  background: #fff !important;
+}
+
+.school-needs-table .mat-mdc-header-row,
+.school-needs-table .mat-header-row {
+  background: #f5f5f5 !important;
+}
+
+.school-needs-table .mat-mdc-header-cell,
+.school-needs-table .mat-header-cell {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #424242;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5 !important;
+}
+
+.school-needs-table .mat-mdc-cell,
+.school-needs-table .mat-cell {
+  font-size: 0.875rem;
+  color: #212121;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff !important;
+  vertical-align: top;
+}
+
+.school-needs-table .mat-mdc-cell .cell-content,
+.school-needs-table .mat-cell .cell-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: 5.6em;
+  word-break: break-word;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.actions-cell .mat-mdc-icon-button,
+.actions-cell .mat-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.school-needs-table tr.mat-mdc-row:hover,
+.school-needs-table tr.mat-row:hover {
+  background-color: rgba(69, 160, 73, 0.08);
 }
 
 .school-logo-container {
@@ -165,7 +305,6 @@ button[mat-icon-button][disabled] mat-icon {
   height: 20px;
 }
 
-/* Logo Preview on Hover (Desktop Only) */
 .logo-preview {
   position: absolute;
   top: 50%;
@@ -226,7 +365,6 @@ button[mat-icon-button][disabled] mat-icon {
   border-radius: 8px;
 }
 
-/* Show preview only on desktop screens */
 @media (min-width: 769px) {
   .logo-preview {
     display: block;
@@ -237,7 +375,7 @@ button[mat-icon-button][disabled] mat-icon {
   .logo-preview {
     display: none !important;
   }
-  
+
   .school-logo-container {
     overflow: hidden;
   }
@@ -254,113 +392,107 @@ button[mat-icon-button][disabled] mat-icon {
   line-height: 1;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 16px;
-  margin-left: 20px;
+.mat-column-implementationStatus {
+  max-width: 180px;
+  min-width: 190px;
 }
 
-
-.download-button {
-  margin-left: auto;
-  margin-right: 25px;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  color: #45a049;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.mat-column-beneficiaryPersonnel.narrow-column,
+.mat-column-beneficiaryStudents.narrow-column {
+  max-width: 100px;
+  min-width: 100px;
 }
 
-.download-button:hover {
-  background-color: #45a049;
-  transform: translateY(-2px);
-  color: white;
+.mat-column-amount {
+  max-width: 100px;
+  min-width: 100px;
 }
 
-.table-container {
-  overflow-x: auto;
-  margin: 10px 0;
+.mat-column-quantity {
+  max-width: 80px;
+  min-width: 80px;
 }
 
-.table-container {
-  min-width: 950px;
+button[mat-icon-button][disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+button[mat-icon-button][disabled] mat-icon {
+  color: #999 !important;
 }
 
-.mat-header-cell, .mat-cell {
-  padding: 16px;
-  text-align: left;
-  border: 1px solid #ddd;
-}
-
-tr:hover {
-  background-color: #e4a0a089;
-  color: black;
-}
-.table-scroll {
-  overflow-x: auto;
-  margin-top: 15px;
-  background-color: green;
-  border-radius: 6px;
-  padding: 2px;
-}
-.table-scroll {
-  overflow-x: auto;
-  margin: 5px 0;
-}
-mat-icon {
+app-stakeholders mat-icon {
   color: #45a049;
   cursor: pointer;
 }
 
-mat-icon-button {
-  justify-content: space-between;
-}
-
-.ellipsis-button {
-  margin-left: 10px;
-}
-
-td.mat-cell button {
-  margin-right: 5px;
-}
-
-.mat-menu-item {
-  display: flex;
+.status-badge {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
-.mat-menu-item mat-icon {
-  margin-right: 8px;
+.status-badge mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+}
+
+.status-badge.looking-for-partner {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffb74d;
+}
+
+.status-badge.looking-for-partner mat-icon {
+  color: #e65100;
+}
+
+.status-badge.completed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #66bb6a;
+}
+
+.status-badge.completed mat-icon {
+  color: #2e7d32;
+}
+
+.status-badge.in-progress {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #64b5f6;
+}
+
+.status-badge.in-progress mat-icon {
+  color: #1565c0;
 }
 
 @media (max-width: 1024px) {
-  mat-card {
+  app-stakeholders mat-card {
     width: 95%;
     margin: 10px auto;
     padding: 15px;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
-  mat-card-title {
+  .table-scroll {
+    margin: 0 -15px;
+    width: calc(100% + 30px);
+  }
+
+  app-stakeholders mat-card-title {
     font-size: 18px;
-  }
-
-  .download-button {
-    margin-right: 15px;
-    padding: 8px;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .school-logo-container {
@@ -374,24 +506,28 @@ td.mat-cell button {
     font-size: 18px;
     width: 18px;
     height: 18px;
-    margin-bottom: 0;
-    margin-top: 0;
   }
 
   .school-name {
     font-size: 18px;
-    margin: 0;
   }
 }
 
 @media (max-width: 767px) {
-  mat-card {
-    width: 100%;
+  app-stakeholders mat-card {
+    width: calc(100% - 10px);
     margin: 5px;
     padding: 10px;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
-  mat-card-title {
+  .table-scroll {
+    margin: 0 -10px;
+    width: calc(100% + 20px);
+  }
+
+  app-stakeholders mat-card-title {
     font-size: 16px;
   }
 
@@ -406,259 +542,16 @@ td.mat-cell button {
     font-size: 16px;
     width: 16px;
     height: 16px;
-    padding: 0;
-    margin: 0;
-  }
-
-  .download-button {
-    width: 100%;
-    margin: 10px 0;
-  }
-
-  .school-name {
-    font-size: 18px;
-    margin: 0;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-
-@media (max-width: 1024px) {
-  .table-container {
-    margin: 5px 0;
-  }
-
-  .mat-header-cell, .mat-cell {
-    padding: 12px;
-    font-size: 14px;
-  }
-
-  .download-button {
-    padding: 8px;
-  }
-}
-@media (max-width: 767px) {
-  .table-scroll {
-    margin: 5px 0;
-  }
-
-  .table-container {
-    min-width: 800px;
-  }
-
-  .mat-header-cell, .mat-cell {
-    font-size: 12px;
-    padding: 8px;
-  }
-}
-
-@media (max-width: 435px) {
-  .table-scroll {
-    margin: 5px 0;
-  }
-
-  .table-container {
-    min-width: 950px;
-  }
-
-  .mat-header-cell, .mat-cell {
-    font-size: 12px;
-    padding: 8px;
-  }
-}
-
-@media (max-width: 767px) {
-  .header {
-    margin-left: 0;
-    margin-bottom: 10px;
-  }
-
-  .school-icon {
-    padding: 0;
-  }
-
-  .mat-header-cell, .mat-cell {
-    padding: 10px;
-    font-size: 12px;
   }
 
   .school-name {
     font-size: 16px;
-    margin: 0;
   }
 
-  mat-card-title {
-    font-size: 14px;
+  .school-needs-table {
+    min-width: 900px;
   }
 
-  .download-button {
-    margin: 10px 0;
-  }
-
-  td.mat-cell button {
-    width: 100%;
-    margin-right: 0;
-  }
-}
-
-.mat-header-cell {
-  background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-tr:hover {
-  background-color: rgba(128, 128, 128, 0.2);
-}
-
-.table-container {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-mat-icon {
-  font-size: 24px;
-}
-
-.mat-menu-item {
-  padding: 10px;
-}
-
-.mat-menu-item mat-icon {
-  margin-right: 10px;
-}
-
-.mat-action-buttons {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  margin-top: 10px;
-}
-
-.mat-action-buttons button {
-  padding: 8px;
-  font-size: 14px;
-  border-radius: 4px;
-  margin-right: 10px;
-}
-
-@media (max-width: 767px) {
-  .mat-action-buttons {
-    flex-direction: row;
-    justify-content: flex-start;
-    overflow-x: auto;
-  }
-
-  .mat-action-buttons button {
-    margin-bottom: 0;
-    margin-right: 10px;
-    min-width: 100px;
-  }
-
-  .download-button {
-    width: auto;
-    margin: 10px 0;
-  }
-}
-
-@media (max-width: 430px) {
-  .mat-action-buttons {
-    flex-direction: row;
-    justify-content: flex-start;
-    overflow-x: auto;
-  }
-}
-
-.loading-container {
-  text-align: center;
-  padding: 40px;
-}
-
-.loading-container p {
-  margin-top: 16px;
-  color: #666;
-}
-
-
-/* Status Badge Styling */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  vertical-align: middle;
-  margin-top: 0;
-}
-
-.status-badge mat-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  line-height: 16px !important;
-}
-
-/* Adjust table cell alignment for status column */
-.mat-column-implementationStatus .mat-cell {
-  vertical-align: middle !important;
-  text-align: center !important;
-}
-
-/* Looking for Partner */
-.status-badge.looking-for-partner {
-  background-color: #fff3e0;
-  color: #e65100;
-  border: 1px solid #ffb74d;
-}
-
-.status-badge.looking-for-partner mat-icon {
-  color: #e65100;
-}
-
-/* Completed */
-.status-badge.completed {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #66bb6a;
-}
-
-.status-badge.completed mat-icon {
-  color: #2e7d32;
-}
-
-/* In Progress */
-.status-badge.in-progress {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border: 1px solid #64b5f6;
-}
-
-.status-badge.in-progress mat-icon {
-  color: #1565c0;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .status-badge {
-    font-size: 12px;
-    padding: 5px 10px;
-  }
-
-  .status-badge mat-icon {
-    font-size: 16px !important;
-    width: 16px !important;
-    height: 16px !important;
-  }
-}
-
-@media (max-width: 767px) {
   .status-badge {
     font-size: 11px;
     padding: 4px 8px;
