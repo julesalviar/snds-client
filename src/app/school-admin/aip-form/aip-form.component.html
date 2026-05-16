@@ -1,16 +1,68 @@
-<h2 mat-dialog-title>Create PPA</h2>
+<h2 mat-dialog-title>{{ dialogTitle }}</h2>
 
 <mat-dialog-content class="dialog-body">
-  <form [formGroup]="aipForm" (ngSubmit)="onSubmit()">
-    <mat-form-field appearance="outline" class="full-width dialog-field-school-year">
-      <mat-label>School year(s) for the project</mat-label>
-      <mat-select formControlName="schoolYear" multiple>
-        <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
-      </mat-select>
-      <mat-error *ngIf="aipForm.get('schoolYear')?.invalid && (aipForm.get('schoolYear')?.touched || aipForm.get('schoolYear')?.dirty)">
-        Select at least one school year.
-      </mat-error>
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="load-progress-bar"></mat-progress-bar>
+  <form [formGroup]="aipForm" (ngSubmit)="onSubmit()" [class.form-loading]="isLoading">
+    <mat-form-field *ngIf="isEdit" appearance="outline" class="full-width">
+      <mat-label>APN (Project Number)</mat-label>
+      <input matInput formControlName="apn" readonly>
     </mat-form-field>
+
+    <div
+      class="school-year-field-group full-width"
+      [class.school-year-field-group--invalid]="aipForm.get('schoolYear')?.invalid && (aipForm.get('schoolYear')?.touched || aipForm.get('schoolYear')?.dirty)">
+      <span class="school-year-field-group__label">School year(s) for the project</span>
+
+      <div class="school-year-field-group__body">
+        <div
+          *ngIf="selectedSchoolYears.length > 0"
+          class="school-year-field-group__chips chips-container"
+          aria-label="Selected school years">
+          <mat-chip-set>
+            <mat-chip
+              *ngFor="let year of selectedSchoolYears"
+              (removed)="removeSchoolYear(year)"
+              [title]="year">
+              {{ year }}
+              <button matChipRemove type="button">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <div class="school-year-field-group__picker">
+          <button
+            *ngIf="availableSchoolYearOptions.length > 0"
+            type="button"
+            class="school-year-add-action"
+            (click)="openSchoolYearSelect(schoolYearSelect)">
+            <mat-icon class="school-year-add-action__icon" aria-hidden="true">add_circle_outline</mat-icon>
+            <span class="school-year-add-action__text">Click to add a school year</span>
+          </button>
+          <p
+            *ngIf="availableSchoolYearOptions.length === 0"
+            class="school-year-add-action school-year-add-action--disabled">
+            All school years selected
+          </p>
+
+          <mat-select
+            #schoolYearSelect
+            class="school-year-hidden-select"
+            aria-label="Choose a school year to add"
+            [disabled]="availableSchoolYearOptions.length === 0"
+            (selectionChange)="addSchoolYear(schoolYearSelect.value); schoolYearSelect.value = ''">
+            <mat-option *ngFor="let y of availableSchoolYearOptions" [value]="y">{{ y }}</mat-option>
+          </mat-select>
+        </div>
+      </div>
+
+      <p
+        *ngIf="aipForm.get('schoolYear')?.invalid && (aipForm.get('schoolYear')?.touched || aipForm.get('schoolYear')?.dirty)"
+        class="school-year-field-group__error">
+        Select at least one school year.
+      </p>
+    </div>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Problem Statement (From project Plan &amp; Matrix) (max 500 letters)</mat-label>
@@ -93,8 +145,8 @@
 <mat-dialog-actions align="end">
   <mat-progress-bar *ngIf="isSaving" mode="indeterminate" class="save-progress-bar"></mat-progress-bar>
   <button mat-button type="button" (click)="onDismiss()" [disabled]="isSaving">Cancel</button>
-  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving">
+  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving || isLoading">
     <mat-icon>save</mat-icon>
-    {{ isSaving ? 'Saving…' : 'Save' }}
+    {{ submitLabel }}
   </button>
 </mat-dialog-actions>

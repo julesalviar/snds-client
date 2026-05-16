@@ -111,24 +111,50 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let project" class="actions-cell">
-              <button mat-icon-button type="button" (click)="viewProject(project)" matTooltip="View the project details">
+              <button
+                mat-icon-button
+                type="button"
+                class="action-icon-button"
+                (click)="viewProject(project)"
+                matTooltip="View the project details"
+                aria-label="View project">
                 <mat-icon>visibility</mat-icon>
               </button>
-              <button mat-icon-button
-                      type="button"
-                      [disabled]="userRole !== UserType.SchoolAdmin"
-                      (click)="editProject(project)"
-                      [matTooltip]="userRole === UserType.SchoolAdmin ? 'Edit this project' : 'Only School Admins can edit'">
+              <button
+                mat-icon-button
+                type="button"
+                class="action-icon-button"
+                [disabled]="userRole !== UserType.SchoolAdmin"
+                (click)="editProject(project)"
+                [matTooltip]="userRole === UserType.SchoolAdmin ? 'Edit this project' : 'Only School Admins can edit'"
+                aria-label="Edit project">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button mat-icon-button
-                      type="button"
-                      class="delete-button"
-                      [disabled]="userRole !== UserType.SchoolAdmin"
-                      (click)="deleteProject(project)"
-                      [matTooltip]="userRole === UserType.SchoolAdmin ? 'Delete this project' : 'Only School Admins can delete'">
-                <mat-icon>delete</mat-icon>
+              <button
+                mat-icon-button
+                type="button"
+                class="action-icon-button ellipsis-button"
+                [matMenuTriggerFor]="actionMenu"
+                matTooltip="More actions"
+                aria-label="More actions"
+                aria-haspopup="menu">
+                <mat-icon aria-hidden="true">more_vert</mat-icon>
               </button>
+              <mat-menu #actionMenu="matMenu" class="aip-actions-menu">
+                <button mat-menu-item type="button" (click)="onDuplicate(project)">
+                  <mat-icon>content_copy</mat-icon>
+                  Duplicate
+                </button>
+                <button
+                  mat-menu-item
+                  type="button"
+                  class="delete-menu-item"
+                  [disabled]="userRole !== UserType.SchoolAdmin"
+                  (click)="deleteProject(project)">
+                  <mat-icon>delete</mat-icon>
+                  Delete
+                </button>
+              </mat-menu>
             </td>
           </ng-container>
 

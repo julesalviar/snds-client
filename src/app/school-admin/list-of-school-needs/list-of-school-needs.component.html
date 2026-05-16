@@ -227,6 +227,9 @@
             <button mat-icon-button type="button" (click)="navigateToEngage(need.code)" matTooltip="Engage">
               <mat-icon>person</mat-icon>
             </button>
+            <button mat-icon-button type="button" (click)="onDuplicate(need)" matTooltip="Duplicate">
+              <mat-icon>content_copy</mat-icon>
+            </button>
             <button class="ellipsis-button" mat-icon-button type="button" [matMenuTriggerFor]="actionMenu" matTooltip="More Actions">
               <mat-icon>more_vert</mat-icon>
             </button>

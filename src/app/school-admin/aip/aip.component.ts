@@ -6,6 +6,7 @@ import { AIPProject } from '../../interfaces/aip.model';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { ConfirmDeleteDialogComponent } from '../../table-button-dialog/confirm-delete-dialog/confirm-delete-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AipDetailViewComponent } from '../../table-button-dialog/confirm-delete-dialog/view button/aip-detail-view/aip-detail-view.component';
@@ -35,6 +36,7 @@ import { AIP_STATUSES } from '../../common/enums/aip-status.enum';
     CommonModule,
     MatFormFieldModule,
     MatTooltipModule,
+    MatMenuModule,
     MatSelectModule,
     MatButtonModule,
     MatCardModule,
@@ -123,19 +125,33 @@ export class AipComponent implements OnInit, OnDestroy {
 
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const open = params['openCreate'];
-      if (open !== '1' && open !== 'true') {
+      if (open === '1' || open === 'true') {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { openCreate: undefined },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+        queueMicrotask(() => {
+          if (this.userRole === UserType.SchoolAdmin) {
+            this.onCreate();
+          }
+        });
+        return;
+      }
+
+      const editId = params['editId'];
+      if (!editId || this.userRole !== UserType.SchoolAdmin) {
         return;
       }
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: { openCreate: undefined },
+        queryParams: { editId: undefined },
         queryParamsHandling: 'merge',
         replaceUrl: true,
       });
       queueMicrotask(() => {
-        if (this.userRole === UserType.SchoolAdmin) {
-          this.onCreate();
-        }
+        this.openAipFormDialog({ projectId: editId, isEdit: true });
       });
     });
   }
@@ -146,14 +162,26 @@ export class AipComponent implements OnInit, OnDestroy {
   }
 
   onCreate(): void {
+    this.openAipFormDialog();
+  }
+
+  private openAipFormDialog(
+    data?: {
+      projectId?: string;
+      isDuplicate?: boolean;
+      isEdit?: boolean;
+      sourceProject?: Aip;
+    },
+  ): void {
     const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
     const ref = this.dialog.open(AipFormComponent, {
-      width: isMobile ? '100vw' : 'min(640px, 95vw)',
+      width: isMobile ? '100vw' : data?.isEdit ? 'min(720px, 95vw)' : 'min(640px, 95vw)',
       maxWidth: isMobile ? '100vw' : '95vw',
       maxHeight: isMobile ? '100vh' : '90vh',
       disableClose: false,
       autoFocus: false,
       panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+      data,
     });
     ref.afterClosed().subscribe((saved) => {
       if (saved) {
@@ -168,15 +196,18 @@ export class AipComponent implements OnInit, OnDestroy {
     });
   }
 
-  editProject(project: Aip) {
-    // Security check: Only School Admins can edit
+  editProject(project: Aip): void {
     if (this.userRole !== UserType.SchoolAdmin) {
       this.showErrorNotification('Unauthorized: Only School Admins can edit projects.');
       console.warn('Unauthorized edit attempt by user role:', this.userRole);
       return;
     }
 
-    this.router.navigate(['/school-admin/aip/edit', project._id]);
+    this.openAipFormDialog({
+      projectId: project._id,
+      isEdit: true,
+      sourceProject: project,
+    });
   }
 
   deleteProject(project: Aip): void {
@@ -236,6 +267,14 @@ export class AipComponent implements OnInit, OnDestroy {
       } else {
         console.log('Deletion canceled');
       }
+    });
+  }
+
+  onDuplicate(project: Aip): void {
+    this.openAipFormDialog({
+      projectId: project._id,
+      isDuplicate: true,
+      sourceProject: project,
     });
   }
 

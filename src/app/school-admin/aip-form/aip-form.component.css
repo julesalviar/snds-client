@@ -1,26 +1,237 @@
+:host {
+  --aip-green: #4caf50;
+  --aip-green-dark: #45a049;
+  --aip-green-muted: rgba(76, 175, 80, 0.12);
+  --aip-green-surface: rgba(76, 175, 80, 0.06);
+}
+
 .dialog-body {
   min-width: min(100%, 520px);
   max-height: 70vh;
-  /* Extra top/side inset so outline floating labels are not clipped by dialog overflow */
-  padding: 24px 12px 12px;
+  /* Top inset leaves room for the school-year floating label above the group border */
+  padding: 40px 12px 12px;
   box-sizing: border-box;
+  overflow-x: visible;
+  overflow-y: auto;
 }
 
-.dialog-field-school-year {
-  margin-top: 4px;
-}
-
-/* MDC outline: keep label notch visible inside scrollable dialog */
-:host ::ng-deep .dialog-field-school-year .mat-mdc-text-field-wrapper {
-  overflow: visible;
-}
-
-:host ::ng-deep .dialog-field-school-year .mat-mdc-form-field-infix {
-  min-height: 56px;
+:host ::ng-deep h2.mat-mdc-dialog-title {
+  margin-bottom: 4px;
+  color: var(--aip-green-dark);
 }
 
 .full-width {
   width: 100%;
+}
+
+/* Unified school-year control: chips on top, dropdown below, single outline */
+form > .school-year-field-group:first-child {
+  margin-top: 12px;
+}
+
+.school-year-field-group {
+  position: relative;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  padding: 20px 12px 4px;
+  border: 1px solid green;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.school-year-field-group:focus-within {
+  border-color: var(--aip-green-dark);
+  border-width: 2px;
+  padding: 19px 11px 3px;
+  box-shadow: 0 0 0 1px rgba(69, 160, 73, 0.2);
+}
+
+.school-year-field-group--invalid {
+  border-color: var(--mat-sys-error, #f44336);
+}
+
+.school-year-field-group--invalid:focus-within {
+  border-color: var(--mat-sys-error, #f44336);
+}
+
+.school-year-field-group__label {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  z-index: 1;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: rgba(0, 0, 0, 0.6);
+  background-color: #fff;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.school-year-field-group:focus-within .school-year-field-group__label {
+  color: var(--aip-green-dark);
+}
+
+.school-year-field-group--invalid .school-year-field-group__label {
+  color: var(--mat-sys-error, #f44336);
+}
+
+.school-year-field-group__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.school-year-field-group__chips.chips-container {
+  margin: 0 0 4px;
+  padding: 8px 4px 10px;
+  min-height: 40px;
+  background-color: var(--aip-green-surface);
+  border: none;
+  border-bottom: 1px solid rgba(76, 175, 80, 0.35);
+  border-radius: 4px 4px 0 0;
+}
+
+.school-year-field-group__chips mat-chip-set {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.school-year-field-group__error {
+  margin: 4px 12px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--mat-sys-error, #f44336);
+}
+
+.school-year-field-group__picker {
+  position: relative;
+  min-height: 48px;
+}
+
+.school-year-add-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px dashed var(--aip-green);
+  border-radius: 4px;
+  background: var(--aip-green-surface);
+  color: var(--aip-green-dark);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.school-year-add-action:hover {
+  background: var(--aip-green-muted);
+  border-color: var(--aip-green-dark);
+  border-style: solid;
+  box-shadow: 0 1px 3px rgba(69, 160, 73, 0.2);
+}
+
+.school-year-add-action:active {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.school-year-add-action:focus-visible {
+  outline: 2px solid var(--aip-green-dark);
+  outline-offset: 2px;
+}
+
+.school-year-add-action__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  color: var(--aip-green);
+}
+
+.school-year-add-action__text {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--aip-green-dark);
+}
+
+.school-year-add-action--disabled {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  margin: 0;
+  padding: 8px 12px;
+  color: rgba(0, 0, 0, 0.38);
+  font-size: 14px;
+  background: transparent;
+}
+
+/* Hidden select used only to open the options panel */
+:host ::ng-deep .school-year-hidden-select {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+:host ::ng-deep .school-year-hidden-select .mat-mdc-select-trigger {
+  height: 1px;
+  min-height: 0;
+}
+
+:host ::ng-deep .chips-container mat-chip {
+  max-width: 435px !important;
+  margin: 4px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  cursor: default !important;
+  background-color: #4caf50 !important;
+  transition: all 0.2s ease !important;
+  padding: 8px 12px !important;
+  min-height: 36px !important;
+  font-size: 14px !important;
+}
+
+:host ::ng-deep .chips-container mat-chip:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16) !important;
+  background-color: #45a049 !important;
+}
+
+:host ::ng-deep .chips-container mat-chip .mdc-evolution-chip__cell,
+:host ::ng-deep .chips-container mat-chip .mdc-evolution-chip__action,
+:host ::ng-deep .chips-container mat-chip .mat-mdc-chip-action-label,
+:host ::ng-deep .chips-container mat-chip .mdc-evolution-chip__graphic,
+:host ::ng-deep .chips-container mat-chip .mdc-evolution-chip__text-label {
+  background-color: transparent !important;
+  color: white !important;
+}
+
+:host ::ng-deep .chips-container mat-chip .mdc-evolution-chip__text-label,
+:host ::ng-deep .chips-container mat-chip .mat-mdc-chip-action-label {
+  max-width: 295px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+:host ::ng-deep .chips-container mat-chip button mat-icon {
+  color: white !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 mat-dialog-actions {
@@ -28,6 +239,15 @@ mat-dialog-actions {
   gap: 8px;
   padding-top: 8px;
   position: relative;
+}
+
+:host ::ng-deep mat-dialog-actions .mat-mdc-raised-button.mat-primary {
+  background-color: var(--aip-green) !important;
+  color: #fff !important;
+}
+
+:host ::ng-deep mat-dialog-actions .mat-mdc-raised-button.mat-primary:hover {
+  background-color: var(--aip-green-dark) !important;
 }
 
 .save-progress-bar {

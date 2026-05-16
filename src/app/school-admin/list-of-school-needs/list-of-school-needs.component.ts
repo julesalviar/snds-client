@@ -544,6 +544,24 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
     });
   }
 
+  onDuplicate(need: SchoolNeed): void {
+    if (!need.code) return;
+    const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
+    const ref = this.dialog.open(SchoolNeedComponent, {
+      width: isMobile ? '100vw' : 'min(720px, 95vw)',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: isMobile ? '100vh' : '90vh',
+      disableClose: false,
+      panelClass: isMobile ? 'ppa-plan-dialog-mobile' : 'ppa-plan-dialog',
+      data: { needCode: need.code, isDuplicate: true },
+    });
+    ref.afterClosed().subscribe((saved) => {
+      if (saved) {
+        this.loadSchoolNeeds();
+      }
+    });
+  }
+
   delete(need: SchoolNeed): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',

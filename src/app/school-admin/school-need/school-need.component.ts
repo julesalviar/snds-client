@@ -13,7 +13,7 @@ import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, lastValueFrom, map, Observable, Subject, takeUntil } from "rxjs";
 import { SchoolNeedService } from "../../common/services/school-need.service";
-import { getSchoolYear } from "../../common/date-utils";
+import { getSchoolYear, getSchoolYearOptions } from "../../common/date-utils";
 import { AipService } from "../../common/services/aip.service";
 import { Aip } from "../../common/model/aip.model";
 import { SchoolNeed, SchoolNeedImage } from "../../common/model/school-need.model";
@@ -77,6 +77,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   previousContributionType: string = '';
 
   selectedProjectIds: string[] = [];
+  isDuplicate: boolean = false;
+  schoolYearOptions: string[] = getSchoolYearOptions();
 
   private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
     const unit = this.schoolNeedsForm?.get('unit')?.value;
@@ -96,8 +98,9 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     @Optional() private readonly dialogRef: MatDialogRef<SchoolNeedComponent, boolean> | null,
-    @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: { needCode?: string } | null,
+    @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: { needCode?: string; isDuplicate?: boolean } | null,
   ) {
+    this.isDuplicate = !!this.dialogData?.isDuplicate;
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
@@ -153,38 +156,73 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
         ? await this.uploadImages('school-needs')
         : [];
 
-      const updatedNeed: any = {
-        ...this.schoolNeed!,
-        specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
-        contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.selectedProjectIds,
-        schoolId: this.schoolNeed!.schoolId,
-        quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
-        unit: this.schoolNeedsForm.get('unit')?.value,
-        estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
-        studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
-        personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-        description: this.schoolNeedsForm.get('description')?.value,
-        targetDate: this.schoolNeedsForm.get('targetDate')?.value,
-        images: [...this.schoolNeed!.images, ...uploadedImages],
-      };
+      if (this.isDuplicate) {
+        const newNeed: SchoolNeed = {
+          specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
+          contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+          projectId: this.selectedProjectIds,
+          quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
+          unit: this.schoolNeedsForm.get('unit')?.value,
+          estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
+          studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+          personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+          description: this.schoolNeedsForm.get('description')?.value,
+          targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+          schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
+          schoolId: this.schoolNeed?.schoolId ?? '',
+          images: uploadedImages,
+        };
 
-      this.schoolNeedService.updateSchoolNeed(this.schoolNeed!._id!, updatedNeed).pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => {
-          this.isSaving = false;
-          this.showSuccessNotification('School need updated successfully!');
-          if (this.dialogRef) {
-            this.dialogRef.close(true);
-          } else {
-            this.router.navigate(['/school-admin/list-of-school-needs']);
+        this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.isSaving = false;
+            this.showSuccessNotification('School need duplicated successfully!');
+            if (this.dialogRef) {
+              this.dialogRef.close(true);
+            } else {
+              this.router.navigate(['/school-admin/list-of-school-needs']);
+            }
+          },
+          error: (err) => {
+            console.error('Error duplicating school need:', err);
+            this.isSaving = false;
+            this.showErrorNotification('Failed to duplicate school need. Please try again.');
           }
-        },
-        error: (err) => {
-          console.error('Error updating school need:', err);
-          this.isSaving = false;
-          this.showErrorNotification('Failed to update school need. Please try again.');
-        }
-      });
+        });
+      } else {
+        const updatedNeed: any = {
+          ...this.schoolNeed!,
+          specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
+          contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+          projectId: this.selectedProjectIds,
+          schoolId: this.schoolNeed!.schoolId,
+          quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
+          unit: this.schoolNeedsForm.get('unit')?.value,
+          estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
+          studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+          personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+          description: this.schoolNeedsForm.get('description')?.value,
+          targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+          images: [...this.schoolNeed!.images, ...uploadedImages],
+        };
+
+        this.schoolNeedService.updateSchoolNeed(this.schoolNeed!._id!, updatedNeed).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.isSaving = false;
+            this.showSuccessNotification('School need updated successfully!');
+            if (this.dialogRef) {
+              this.dialogRef.close(true);
+            } else {
+              this.router.navigate(['/school-admin/list-of-school-needs']);
+            }
+          },
+          error: (err) => {
+            console.error('Error updating school need:', err);
+            this.isSaving = false;
+            this.showErrorNotification('Failed to update school need. Please try again.');
+          }
+        });
+      }
     } catch (error) {
       console.error('Error during form submission:', error);
       this.isSaving = false;

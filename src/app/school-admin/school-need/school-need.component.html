@@ -1,5 +1,5 @@
 <div class="container" [class.school-need-dialog-root]="isDialog">
-  <h2 mat-dialog-title *ngIf="isDialog" class="school-need-dialog-title">Edit School Need</h2>
+  <h2 mat-dialog-title *ngIf="isDialog" class="school-need-dialog-title">{{ isDuplicate ? 'Duplicate School Need' : 'Edit School Need' }}</h2>
 
   <div class="header" *ngIf="!isDialog && schoolName">
     <mat-icon class="school-icon">school</mat-icon>
@@ -52,7 +52,9 @@
 
         <mat-form-field appearance="fill">
           <mat-label>School Year for the Project</mat-label>
-          <input matInput formControlName="schoolYear" readonly>
+          <mat-select formControlName="schoolYear" [disabled]="!isDuplicate">
+            <mat-option *ngFor="let year of schoolYearOptions" [value]="year">{{ year }}</mat-option>
+          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
@@ -186,7 +188,7 @@
               <mat-icon>cancel</mat-icon> CANCEL
             </button>
             <button mat-raised-button type="button" (click)="onSubmit()" [disabled]="isSaving">
-              <mat-icon>save</mat-icon> {{ isSaving ? 'UPDATING...' : 'UPDATE' }}
+              <mat-icon>save</mat-icon> {{ isSaving ? (isDuplicate ? 'DUPLICATING...' : 'UPDATING...') : (isDuplicate ? 'SAVE' : 'UPDATE') }}
             </button>
           </div>
         </div>
