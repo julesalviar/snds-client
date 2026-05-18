@@ -18,6 +18,11 @@ import { Engagement, PopulatedStakeholderUser, PopulatedSchoolNeed } from '../..
 import { getSchoolYear } from '../../common/date-utils';
 import { SchoolInfo } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
+import { ReferenceDataService } from '../../common/services/reference-data.service';
+import {
+  getSectorNames,
+  SECTOR_REF_DATA_KEY,
+} from '../../common/utils/sector-reference-data.util';
 
 const COLUMN_STORAGE_KEY = 'dpds-data-table-columns';
 
@@ -87,12 +92,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   customStartDate: Date | null = null;
   customEndDate: Date | null = null;
 
-  sectorOptions = [
-    { value: 'Private Sector', label: 'Private Sector' },
-    { value: 'Public Sector', label: 'Public Sector' },
-    { value: 'Civil Society Organization', label: 'Civil Society Organization' },
-    { value: 'International', label: 'International' }
-  ];
+  sectorOptions: { value: string; label: string }[] = [];
 
   selectedSector: string[] = [];
 
@@ -142,15 +142,25 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   constructor(
     private readonly engagementService: EngagementService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly referenceDataService: ReferenceDataService,
   ) {
     this.schoolYears = this.generateSchoolYears();
     this.selectedSchoolYear = getSchoolYear();
   }
 
   ngOnInit(): void {
+    void this.loadSectorOptions();
     this.loadColumnPreferences();
     this.loadEngagements();
+  }
+
+  private async loadSectorOptions(): Promise<void> {
+    await this.referenceDataService.initialize();
+    const names = getSectorNames(
+      this.referenceDataService.get(SECTOR_REF_DATA_KEY),
+    );
+    this.sectorOptions = names.map((name) => ({ value: name, label: name }));
   }
 
   toggleColumnVisibility(column: ColumnConfig): void {

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {
   AbstractControl,
@@ -24,6 +24,12 @@ import {DEFAULT_PASSWORD} from "../config";
 import {User} from "./user.model";
 import {controlHasErrorAndTouched} from "../common/form-utils";
 import {UserType} from "./user-type.enum";
+import {ReferenceDataService} from '../common/services/reference-data.service';
+import {
+  parseSectorReferenceData,
+  SectorCategory,
+  SECTOR_REF_DATA_KEY,
+} from '../common/utils/sector-reference-data.util';
 
 export function passwordMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -51,7 +57,7 @@ export function passwordMatchValidator(): ValidatorFn {
     MatIconModule,
   ]
 })
-export class RegistrationComponent {
+export class RegistrationComponent implements OnInit {
 
   protected readonly ErrorName = ErrorName;
 
@@ -60,56 +66,14 @@ export class RegistrationComponent {
   success: boolean = false;
   availableOptions: string[] = [];
   showPassword: boolean = false;
-  sectors = [
-    {
-      category: 'Private Sector',
-      options: [
-        'Alumni Association',
-        'Corporate Foundation',
-        'Private Company',
-        'Private Individual',
-        'Private School',
-        'PTA',
-      ]
-    },
-    {
-      category: 'Public Sector',
-      options: [
-        'Congress',
-        'Government-Owned and Controlled Corporation',
-        'LGU - Barangay',
-        'LGU - City',
-        'LGU - Municipality',
-        'LGU - Province',
-        'Senate',
-        'State University',
-      ]
-    },
-    {
-      category: 'Civil Society Organization',
-      options: [
-        'Cooperative',
-        'Faith-Based Organization',
-        'Media Association',
-        'Non-Government Organization',
-        'Peoples Organization',
-        'Professional Association',
-        'Trade Unions',
-      ]
-    },
-    {
-      category: 'International',
-      options: [
-        'Foreign Government',
-        'International Non-Government Organization',
-      ]
-    }
-  ];
+  sectors: SectorCategory[] = [];
 
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly router: Router,
-    private readonly userService: UserService) {
+    private readonly userService: UserService,
+    private readonly referenceDataService: ReferenceDataService,
+  ) {
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
       sector: ['', Validators.required],
@@ -120,6 +84,13 @@ export class RegistrationComponent {
       password: [DEFAULT_PASSWORD, [Validators.required, Validators.minLength(6)]],
       confirmPassword: [DEFAULT_PASSWORD, Validators.required]
     }, {validators: passwordMatchValidator()});
+  }
+
+  async ngOnInit(): Promise<void> {
+    await this.referenceDataService.initialize();
+    this.sectors = parseSectorReferenceData(
+      this.referenceDataService.get(SECTOR_REF_DATA_KEY),
+    );
   }
 
   controlHasErrorAndTouched(controlName: string, errorName: string): boolean {

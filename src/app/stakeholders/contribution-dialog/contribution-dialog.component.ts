@@ -26,7 +26,7 @@ interface StakeholderProfile {
   address: string;
   engagementStatus: 'Engaged' | 'Not Engaged';
   schoolYear: string;
-  sector: 'Private Sector' | 'Public Sector' | 'Civil Society Organization' | 'International';
+  sector: string;
   contributions: ContributionItem[];
 }
 

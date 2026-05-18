@@ -16,6 +16,11 @@ import { UserService, GetUsersByRoleParams } from '../common/services/user.servi
 import { EngagementService } from '../common/services/engagement.service';
 import { Engagement } from '../common/model/engagement.model';
 import { AuthService } from '../auth/auth.service';
+import { ReferenceDataService } from '../common/services/reference-data.service';
+import {
+  getSectorNames,
+  SECTOR_REF_DATA_KEY,
+} from '../common/utils/sector-reference-data.util';
 interface ContributionItem {
   schoolYear: string;
   school: string;
@@ -33,7 +38,7 @@ interface StakeholderProfile {
   address: string;
   engagementStatus: 'Engaged' | 'Not Engaged';
   schoolYear: string;
-  sector: 'Private Sector' | 'Public Sector' | 'Civil Society Organization' | 'International';
+  sector: string;
   contributions: ContributionItem[];
   engagements?: Engagement[];
 }
@@ -60,7 +65,16 @@ export class StakeholdersProfileComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   ngOnInit(): void {
+    void this.loadSectorOptions();
     this.loadStakeholders();
+  }
+
+  private async loadSectorOptions(): Promise<void> {
+    await this.referenceDataService.initialize();
+    const names = getSectorNames(
+      this.referenceDataService.get(SECTOR_REF_DATA_KEY),
+    );
+    this.sectorOptions = ['All Sectors', ...names];
   }
   engagedCount = 0;
   notEngagedCount = 0;
@@ -71,7 +85,7 @@ export class StakeholdersProfileComponent implements OnInit {
 
   stakeholderDirectoryTotalItems = 0;
   schoolYearOptions = ['All School Year', ...getSchoolYearOptions()];
-  sectorOptions = ['All Sectors', 'Private Sector', 'Public Sector', 'Civil Society Organization', 'International'];
+  sectorOptions: string[] = ['All Sectors'];
   engagementOptions = ['All', 'Engaged', 'Not Engaged']; 
 
   selectedSchoolYear = getDefaultSchoolYear();
@@ -88,7 +102,8 @@ export class StakeholdersProfileComponent implements OnInit {
     private dialog: MatDialog,
     private userService: UserService,
     private engagementService: EngagementService,
-    private authService: AuthService
+    private authService: AuthService,
+    private readonly referenceDataService: ReferenceDataService,
   ) { }
 
   openContributionDialog(row: StakeholderProfile): void {
