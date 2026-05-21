@@ -11,9 +11,9 @@ import { CommonModule } from '@angular/common';
 import { MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, lastValueFrom, map, Observable, Subject, takeUntil } from "rxjs";
+import { distinctUntilChanged, forkJoin, lastValueFrom, map, Observable, startWith, Subject, takeUntil } from "rxjs";
 import { SchoolNeedService } from "../../common/services/school-need.service";
-import { getSchoolYear, getSchoolYearOptions } from "../../common/date-utils";
+import { aipSchoolYearsAsArray, getSchoolYear, getSchoolYearOptions } from "../../common/date-utils";
 import { AipService } from "../../common/services/aip.service";
 import { Aip } from "../../common/model/aip.model";
 import { SchoolNeed, SchoolNeedImage } from "../../common/model/school-need.model";
@@ -56,6 +56,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
   schoolNeedsForm: FormGroup;
   schoolNeed: SchoolNeed | null = null;
+  allProjectsData: Aip[] = [];
   projectsData: Aip[] = [];
   schoolName: string = '';
   private readonly destroy$ = new Subject<void>();
@@ -123,6 +124,14 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     this.loadContributionData();
     this.loadCurrentProjects();
     this.loadPillarsAndUnits();
+    this.schoolNeedsForm
+      .get('schoolYear')!
+      .valueChanges.pipe(
+        startWith(this.schoolNeedsForm.get('schoolYear')!.value),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.refreshProjectsForFormSchoolYear());
 
     const needCode = this.dialogData?.needCode ?? this.route.snapshot.paramMap.get('code');
     console.log('School need code:', needCode);
@@ -203,6 +212,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
           personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
           description: this.schoolNeedsForm.get('description')?.value,
           targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+          schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
           images: [...this.schoolNeed!.images, ...uploadedImages],
         };
 
@@ -296,7 +306,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     this.schoolNeedsForm.patchValue({
       contributionType: this.schoolNeed.contributionType,
       specificContribution: this.schoolNeed.specificContribution,
-      schoolYear: getSchoolYear(),
+      schoolYear: this.schoolNeed.schoolYear ?? getSchoolYear(),
       projectName: this.selectedProjectIds,
       intermediateOutcome: intermediateOutcome,
       quantityNeeded: this.schoolNeed.quantity,
@@ -311,14 +321,43 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
     this.isOtherSelected = this.schoolNeed.unit === 'Others (pls. specify)';
     this.schoolNeedsForm.get('otherUnit')?.updateValueAndValidity();
+    this.refreshProjectsForFormSchoolYear();
 
     console.log('Form populated successfully. Form value:', this.schoolNeedsForm.value);
+  }
+
+  private aipMatchesFormSchoolYear(aip: Aip, formSchoolYear: string): boolean {
+    if (!formSchoolYear?.trim()) return false;
+    const years = aipSchoolYearsAsArray(aip.schoolYear);
+    return years.includes(formSchoolYear.trim());
+  }
+
+  private refreshProjectsForFormSchoolYear(): void {
+    const sy = this.schoolNeedsForm.get('schoolYear')?.value as string | undefined;
+    if (!sy?.trim()) {
+      this.projectsData = [];
+    } else {
+      this.projectsData = this.allProjectsData.filter((p) =>
+        this.aipMatchesFormSchoolYear(p, sy),
+      );
+    }
+    this.pruneSelectedProjectsToCurrentOptions();
+  }
+
+  private pruneSelectedProjectsToCurrentOptions(): void {
+    const allowed = new Set(this.projectsData.map((p) => p._id));
+    const next = this.selectedProjectIds.filter((id) => allowed.has(id));
+    if (next.length !== this.selectedProjectIds.length) {
+      this.selectedProjectIds = next;
+      this.schoolNeedsForm.get('projectName')?.setValue(this.selectedProjectIds);
+    }
   }
 
   private loadCurrentProjects(): void {
     this.fetchProjects().subscribe({
       next: (projects) => {
-        this.projectsData = projects;
+        this.allProjectsData = projects;
+        this.refreshProjectsForFormSchoolYear();
       },
       error: (err) => {
         console.error('Error fetching projects:', err);
