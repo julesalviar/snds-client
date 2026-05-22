@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnDestroy, OnInit, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -21,6 +21,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import {
   distinctUntilChanged,
+  filter,
+  forkJoin,
   map,
   Observable,
   startWith,
@@ -41,6 +43,12 @@ import { AuthService } from '../../auth/auth.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
 import { InvalidContributionTypeDialogComponent } from '../invalid-contribution-type-dialog.component';
 import { InvalidSpecificContributionDialogComponent } from '../invalid-specific-contribution-dialog.component';
+
+export interface SchoolNeedCreateDialogData {
+  /** Prefill from an existing need, then submit as POST create (never update). */
+  isDuplicate?: boolean;
+  sourceNeedCode?: string | number;
+}
 
 @Component({
   selector: 'app-school-need-create-dialog',
@@ -91,6 +99,14 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
 
   private readonly destroy$ = new Subject<void>();
 
+  get isDuplicate(): boolean {
+    return !!this.dialogData?.isDuplicate;
+  }
+
+  get dialogTitle(): string {
+    return this.isDuplicate ? 'Duplicate School Need' : 'Create School Need';
+  }
+
   constructor(
     private readonly dialogRef: MatDialogRef<SchoolNeedCreateDialogComponent, boolean>,
     private readonly fb: FormBuilder,
@@ -101,6 +117,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
+    @Optional() @Inject(MAT_DIALOG_DATA) private readonly dialogData: SchoolNeedCreateDialogData | null,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -119,25 +136,8 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   }
 
   ngOnInit(): void {
-    // Load reference data before UserService subscriptions so contributionType / filters resolve correctly.
-    this.loadContributionData();
-    this.loadPillarsAndUnits();
-    this.userService.currentContribution$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-      if (data) {
-        this.schoolNeedsForm.patchValue({
-          specificContribution: data.specificContribution,
-          contributionType: data.name,
-        });
-        this.previousContributionType = data.name ?? '';
-        this.onContributionTypeChange(data.name ?? '');
-      }
-    });
-    this.userService.schoolYear$.pipe(takeUntil(this.destroy$)).subscribe((sy) => {
-      if (sy != null && String(sy).trim() !== '') {
-        this.schoolNeedsForm.patchValue({ schoolYear: sy });
-      }
-    });
-    this.loadCurrentProjects();
+    void this.bootstrapDialog();
+
     this.schoolNeedsForm
       .get('schoolYear')!
       .valueChanges.pipe(
@@ -146,6 +146,44 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
         takeUntil(this.destroy$),
       )
       .subscribe(() => this.refreshPpaProjectsForFormSchoolYear());
+  }
+
+  private async bootstrapDialog(): Promise<void> {
+    await this.referenceDataService.initialize();
+    this.loadContributionData();
+    this.loadPillarsAndUnits();
+
+    if (this.isDuplicate && this.dialogData?.sourceNeedCode != null) {
+      this.loadDuplicatePrefill(this.dialogData.sourceNeedCode);
+      return;
+    }
+
+    const contribution = this.userService.getContributionSnapshot();
+    if (contribution) {
+      this.patchContributionFields(
+        contribution.name ?? '',
+        contribution.specificContribution ?? '',
+      );
+    }
+    this.userService.currentContribution$
+      .pipe(
+        filter((data) => !!data),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((data) => {
+        this.patchContributionFields(data.name ?? '', data.specificContribution ?? '');
+      });
+
+    const schoolYear = this.userService.getSchoolYearSnapshot();
+    if (schoolYear?.trim()) {
+      this.schoolNeedsForm.patchValue({ schoolYear });
+    }
+    this.userService.schoolYear$.pipe(takeUntil(this.destroy$)).subscribe((sy) => {
+      if (sy != null && String(sy).trim() !== '') {
+        this.schoolNeedsForm.patchValue({ schoolYear: sy });
+      }
+    });
+    this.loadCurrentProjects();
   }
 
   ngAfterViewInit(): void {
@@ -192,26 +230,16 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
 
     this.isSaving = true;
     try {
-      const newNeed: SchoolNeed = {
-        specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
-        contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-        projectId: this.selectedProjectIds,
-        quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
-        unit: this.schoolNeedsForm.get('unit')?.value,
-        estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
-        studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
-        personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-        description: this.schoolNeedsForm.get('description')?.value,
-        schoolId: this.authService.getSchoolId(),
-        images: [],
-        targetDate: this.schoolNeedsForm.get('targetDate')?.value,
-        schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
-      };
+      const newNeed = this.buildCreatePayload();
 
       this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.isSaving = false;
-          this.showSuccessNotification('School need saved successfully!');
+          this.showSuccessNotification(
+            this.isDuplicate
+              ? 'School need duplicated successfully!'
+              : 'School need saved successfully!',
+          );
           this.dialogRef.close(true);
         },
         error: (err) => {
@@ -242,6 +270,79 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
       this.isSaving = false;
       this.showErrorNotification('An unexpected error occurred. Please try again.');
     }
+  }
+
+  /** POST /school-needs only — never includes _id, code, or images from a duplicated source need. */
+  private buildCreatePayload(): SchoolNeed {
+    return {
+      specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
+      contributionType: this.schoolNeedsForm.get('contributionType')?.value,
+      projectId: this.selectedProjectIds,
+      quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
+      unit: this.schoolNeedsForm.get('unit')?.value,
+      estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
+      studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
+      personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
+      description: this.schoolNeedsForm.get('description')?.value,
+      schoolId: this.authService.getSchoolId(),
+      images: [],
+      targetDate: this.schoolNeedsForm.get('targetDate')?.value,
+      schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
+    };
+  }
+
+  private loadDuplicatePrefill(sourceNeedCode: string | number): void {
+    this.isLoadingPpaProjects = true;
+    forkJoin({
+      projects: this.fetchProjects(),
+      need: this.schoolNeedService.getSchoolNeedByCode(String(sourceNeedCode)),
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ projects, need }) => {
+          this.allProjectsData = projects;
+          this.refreshPpaProjectsForFormSchoolYear();
+          this.patchFormFromSchoolNeed(need);
+          this.isLoadingPpaProjects = false;
+        },
+        error: (err) => {
+          console.error('Error loading school need to duplicate:', err);
+          this.isLoadingPpaProjects = false;
+          this.showErrorNotification('Failed to load school need. Please try again.');
+          this.dialogRef.close(false);
+        },
+      });
+  }
+
+  /** Duplicate prefill: form fields only — source images are never shown or submitted. */
+  private patchFormFromSchoolNeed(need: SchoolNeed): void {
+    this.selectedProjectIds = need.projectId.map((project) =>
+      typeof project === 'object' ? project._id : project,
+    );
+
+    const firstProject = need.projectId[0];
+    const intermediateOutcome =
+      firstProject && typeof firstProject === 'object' ? (firstProject.pillars ?? '') : '';
+
+    this.patchContributionFields(
+      need.contributionType ?? '',
+      need.specificContribution ?? '',
+    );
+
+    this.schoolNeedsForm.patchValue({
+      schoolYear: need.schoolYear ?? getSchoolYear(),
+      ppaName: this.selectedProjectIds,
+      intermediateOutcome,
+      quantityNeeded: need.quantity,
+      unit: need.unit,
+      estimatedCost: need.estimatedCost,
+      beneficiaryStudents: need.studentBeneficiaries,
+      beneficiaryPersonnel: need.personnelBeneficiaries,
+      targetDate: need.targetDate ? new Date(need.targetDate) : '',
+      description: need.description ?? '',
+    });
+
+    this.refreshPpaProjectsForFormSchoolYear();
   }
 
   private loadCurrentProjects(): void {
@@ -295,6 +396,31 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
       this.filteredContributionTypes = [...this.contributionTypes];
       this.filteredSpecificContributions = [...this.specificContributions];
     }
+  }
+
+  /** Sets contribution fields and autocomplete options without clearing specific contribution. */
+  private patchContributionFields(
+    contributionType: string,
+    specificContribution: string,
+  ): void {
+    const type = (contributionType ?? '').trim();
+    const specific = (specificContribution ?? '').trim();
+
+    this.previousContributionType = type;
+    if (type) {
+      this.specificContributions = this.getSpecificContributionsForType(type);
+    } else {
+      this.specificContributions = this.contributionTreeData.flatMap((node) =>
+        node.children ? node.children.map((child: any) => child.name) : [],
+      );
+    }
+    this.filteredContributionTypes = [...this.contributionTypes];
+    this.filteredSpecificContributions = [...this.specificContributions];
+
+    this.schoolNeedsForm.patchValue({
+      contributionType: type,
+      specificContribution: specific,
+    });
   }
 
   private loadPillarsAndUnits(): void {
@@ -355,11 +481,22 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     }
   }
 
+  private normalizeContributionKey(value: string): string {
+    return (value ?? '').trim().toLowerCase();
+  }
+
+  private findContributionTreeNode(contributionType: string): { name: string; children?: { name: string }[] } | undefined {
+    const key = this.normalizeContributionKey(contributionType);
+    return this.contributionTreeData.find(
+      (node) => this.normalizeContributionKey(node.name) === key,
+    );
+  }
+
   private getSpecificContributionsForType(contributionType: string): string[] {
     return (
-      this.contributionTreeData
-        .find((node) => node.name === contributionType)
-        ?.children?.map((child: any) => child.name) ?? []
+      this.findContributionTreeNode(contributionType)?.children?.map(
+        (child: { name: string }) => child.name,
+      ) ?? []
     );
   }
 
@@ -387,7 +524,13 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   }
 
   private validateContributionType(value: string): boolean {
-    return this.contributionTypes.includes(value);
+    const key = this.normalizeContributionKey(value);
+    if (this.contributionTypes.some(
+      (option) => this.normalizeContributionKey(option) === key,
+    )) {
+      return true;
+    }
+    return this.isDuplicate && key.length > 0;
   }
 
   private validateSpecificContribution(value: string): boolean {
@@ -395,7 +538,13 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     if (!selectedContributionType) {
       return false;
     }
-    return this.getSpecificContributionsForType(selectedContributionType).includes(value);
+    const key = this.normalizeContributionKey(value);
+    const allowed = this.getSpecificContributionsForType(selectedContributionType);
+    if (allowed.some((option) => this.normalizeContributionKey(option) === key)) {
+      return true;
+    }
+    // Allow values saved on an existing need when the reference tree changed or labels differ slightly.
+    return this.isDuplicate && key.length > 0;
   }
 
   private showInvalidContributionTypeDialog(): void {

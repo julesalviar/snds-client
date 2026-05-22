@@ -72,6 +72,14 @@ export class UserService {
     this.contributionData.next(data);
   }
 
+  getContributionSnapshot(): { name?: string; specificContribution?: string } | null {
+    return this.contributionData.getValue();
+  }
+
+  getSchoolYearSnapshot(): string {
+    return this.schoolYearSubject.getValue();
+  }
+
   setSchoolYear(schoolYear: string) {
     console.log('Setting school year:', schoolYear);
     this.schoolYearSubject.next(schoolYear);

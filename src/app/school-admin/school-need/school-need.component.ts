@@ -78,7 +78,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   previousContributionType: string = '';
 
   selectedProjectIds: string[] = [];
-  isDuplicate: boolean = false;
   schoolYearOptions: string[] = getSchoolYearOptions();
 
   private otherUnitValidator(control: AbstractControl): ValidationErrors | null {
@@ -100,9 +99,8 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     @Optional() private readonly dialogRef: MatDialogRef<SchoolNeedComponent, boolean> | null,
-    @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: { needCode?: string; isDuplicate?: boolean } | null,
+    @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: { needCode?: string } | null,
   ) {
-    this.isDuplicate = !!this.dialogData?.isDuplicate;
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
       specificContribution: ['', [Validators.required]],
@@ -166,41 +164,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
         ? await this.uploadImages('school-needs')
         : [];
 
-      if (this.isDuplicate) {
-        const newNeed: SchoolNeed = {
-          specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
-          contributionType: this.schoolNeedsForm.get('contributionType')?.value,
-          projectId: this.selectedProjectIds,
-          quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
-          unit: this.schoolNeedsForm.get('unit')?.value,
-          estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
-          studentBeneficiaries: this.schoolNeedsForm.get('beneficiaryStudents')?.value,
-          personnelBeneficiaries: this.schoolNeedsForm.get('beneficiaryPersonnel')?.value,
-          description: this.schoolNeedsForm.get('description')?.value,
-          targetDate: this.schoolNeedsForm.get('targetDate')?.value,
-          schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
-          schoolId: this.resolveSchoolIdFromNeed(this.schoolNeed),
-          images: uploadedImages,
-        };
-
-        this.schoolNeedService.createSchoolNeed(newNeed).pipe(takeUntil(this.destroy$)).subscribe({
-          next: () => {
-            this.isSaving = false;
-            this.showSuccessNotification('School need duplicated successfully!');
-            if (this.dialogRef) {
-              this.dialogRef.close(true);
-            } else {
-              this.router.navigate(['/school-admin/list-of-school-needs']);
-            }
-          },
-          error: (err) => {
-            console.error('Error duplicating school need:', err);
-            this.isSaving = false;
-            this.showErrorNotification('Failed to duplicate school need. Please try again.');
-          }
-        });
-      } else {
-        const updatedNeed: any = {
+      const updatedNeed: any = {
           ...this.schoolNeed!,
           specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
           contributionType: this.schoolNeedsForm.get('contributionType')?.value,
@@ -233,7 +197,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
             this.showErrorNotification('Failed to update school need. Please try again.');
           }
         });
-      }
     } catch (error) {
       console.error('Error during form submission:', error);
       this.isSaving = false;
@@ -318,6 +281,18 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     // Get intermediate outcome from first project (if available)
     const firstProject = this.schoolNeed.projectId[0];
     const intermediateOutcome = firstProject && typeof firstProject === 'object' ? firstProject.pillars : '';
+
+    const contributionType = this.schoolNeed.contributionType ?? '';
+    this.previousContributionType = contributionType;
+    if (contributionType) {
+      this.specificContributions = this.getSpecificContributionsForType(contributionType);
+    } else {
+      this.specificContributions = this.contributionTreeData.flatMap((node) =>
+        node.children ? node.children.map((child: any) => child.name) : [],
+      );
+    }
+    this.filteredContributionTypes = [...this.contributionTypes];
+    this.filteredSpecificContributions = [...this.specificContributions];
 
     this.schoolNeedsForm.patchValue({
       contributionType: this.schoolNeed.contributionType,
@@ -471,9 +446,12 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   }
 
   private getSpecificContributionsForType(contributionType: string): string[] {
-    return this.contributionTreeData
-      .find(node => node.name === contributionType)
-      ?.children?.map((child: any) => child.name) ?? [];
+    const key = (contributionType ?? '').trim().toLowerCase();
+    return (
+      this.contributionTreeData
+        .find((node) => (node.name ?? '').trim().toLowerCase() === key)
+        ?.children?.map((child: any) => child.name) ?? []
+    );
   }
 
   private markFormGroupTouched(): void {
@@ -567,8 +545,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
   get totalImageCount(): number {
     const existingCount = this.schoolNeed?.images?.length || 0;
-    const newCount = this.previewImages.length;
-    return existingCount + newCount;
+    return existingCount + this.previewImages.length;
   }
 
   protected addProject(projectId: string): void {

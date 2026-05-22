@@ -62,7 +62,21 @@ export class SchoolNeedService {
   }
 
   createSchoolNeed(payload: SchoolNeed): Observable<any> {
-    return this.httpService.post(API_ENDPOINT.schoolNeed, payload).pipe(
+    const {
+      _id,
+      code,
+      createdAt,
+      updatedAt,
+      engagements,
+      school,
+      project,
+      implementationStatus,
+      engaged,
+      amount,
+      ...createPayload
+    } = payload as SchoolNeed & Record<string, unknown>;
+
+    return this.httpService.post(API_ENDPOINT.schoolNeed, createPayload).pipe(
       catchError(this.httpService.handleError)
     );
   }
@@ -76,7 +90,21 @@ export class SchoolNeedService {
   }
 
   updateSchoolNeed(id: string, payload: SchoolNeed): Observable<any> {
-    return this.httpService.put(`${API_ENDPOINT.schoolNeed}/${id}`, payload).pipe(
+    const {
+      _id,
+      code,
+      createdAt,
+      updatedAt,
+      engagements,
+      school,
+      project,
+      implementationStatus,
+      engaged,
+      amount,
+      ...updatePayload
+    } = payload as SchoolNeed & Record<string, unknown>;
+
+    return this.httpService.put(`${API_ENDPOINT.schoolNeed}/${id}`, updatePayload).pipe(
       catchError(this.httpService.handleError)
     );
   }
