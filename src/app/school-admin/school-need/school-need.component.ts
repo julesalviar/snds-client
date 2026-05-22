@@ -16,7 +16,7 @@ import { SchoolNeedService } from "../../common/services/school-need.service";
 import { aipSchoolYearsAsArray, getSchoolYear, getSchoolYearOptions } from "../../common/date-utils";
 import { AipService } from "../../common/services/aip.service";
 import { Aip } from "../../common/model/aip.model";
-import { SchoolNeed, SchoolNeedImage } from "../../common/model/school-need.model";
+import { SchoolNeed, SchoolNeedImage, SchoolInfo } from "../../common/model/school-need.model";
 import { AuthService } from "../../auth/auth.service";
 import { MatProgressBar } from "@angular/material/progress-bar";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -96,6 +96,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
+    private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     @Optional() private readonly dialogRef: MatDialogRef<SchoolNeedComponent, boolean> | null,
@@ -178,7 +179,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
           description: this.schoolNeedsForm.get('description')?.value,
           targetDate: this.schoolNeedsForm.get('targetDate')?.value,
           schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
-          schoolId: this.schoolNeed?.schoolId ?? '',
+          schoolId: this.resolveSchoolIdFromNeed(this.schoolNeed),
           images: uploadedImages,
         };
 
@@ -204,7 +205,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
           specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
           contributionType: this.schoolNeedsForm.get('contributionType')?.value,
           projectId: this.selectedProjectIds,
-          schoolId: this.schoolNeed!.schoolId,
+          schoolId: this.resolveSchoolIdFromNeed(this.schoolNeed),
           quantity: this.schoolNeedsForm.get('quantityNeeded')?.value,
           unit: this.schoolNeedsForm.get('unit')?.value,
           estimatedCost: this.schoolNeedsForm.get('estimatedCost')?.value,
@@ -264,6 +265,21 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
     });
+  }
+
+  /** API returns populated school as `school`; create/update expect `schoolId` string. */
+  private resolveSchoolIdFromNeed(need: SchoolNeed | null): string {
+    const raw = need?.schoolId ?? need?.school;
+    if (!raw) {
+      return this.authService.getSchoolId();
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      return trimmed || this.authService.getSchoolId();
+    }
+    const id = (raw as SchoolInfo)._id;
+    const trimmed = id != null ? String(id).trim() : '';
+    return trimmed || this.authService.getSchoolId();
   }
 
   private loadSchoolNeed(needCode: string): void {
