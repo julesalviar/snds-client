@@ -130,8 +130,8 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
     const years: string[] = [];
 
-    // Generate from 2015-2016 to the current school year
-    for (let year = currentStartYear; year >= 2024; year--) {
+    // Generate from 2025-2026 to the current school year
+    for (let year = currentStartYear; year >= 2025; year--) {
       years.push(`${year}-${year + 1}`);
     }
 
