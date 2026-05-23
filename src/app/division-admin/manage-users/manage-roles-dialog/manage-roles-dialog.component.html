@@ -33,12 +33,12 @@
           matInput
           [formControl]="schoolSearchControl"
           [matAutocomplete]="schoolAuto"
+          (focus)="onSchoolInputFocus($event)"
           (input)="onSchoolSearchInput($event)"
           placeholder="Search by school name"
           required />
         <mat-autocomplete
           #schoolAuto="matAutocomplete"
-          [displayWith]="displaySchoolFn"
           (optionSelected)="onSchoolOptionSelected($event.option.value)">
           <mat-option *ngFor="let school of filteredSchools" [value]="getSchoolId(school)">
             {{ getSchoolDisplayName(school) }}

@@ -279,9 +279,6 @@ export class ManageRolesDialogComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.filteredSchools = res?.data ?? [];
-          if (this.selectedSchoolId) {
-            this.ensureSelectedSchoolDisplayed();
-          }
         },
         error: () => {
           this.filteredSchools = [];
@@ -298,7 +295,7 @@ export class ManageRolesDialogComponent implements OnInit, OnDestroy {
           const school = res?.data?.[0];
           if (!school) return;
           this.cacheSchool(school);
-          this.schoolSearchControl.setValue(this.selectedSchoolId, { emitEvent: false });
+          this.setSchoolSearchDisplay(school);
         },
         error: () => {
           /* keep id; user can search again */
@@ -306,17 +303,11 @@ export class ManageRolesDialogComponent implements OnInit, OnDestroy {
       });
   }
 
-  private ensureSelectedSchoolDisplayed(): void {
-    const selected = this.findSchoolById(this.selectedSchoolId);
-    if (selected) {
-      this.schoolSearchControl.setValue(this.selectedSchoolId, { emitEvent: false });
-      return;
-    }
-    if (
-      this.selectedSchoolId &&
-      !this.filteredSchools.some((s) => this.getSchoolId(s) === this.selectedSchoolId)
-    ) {
-      this.loadSelectedSchool();
+  private setSchoolSearchDisplay(school: School): void {
+    const display = this.getSchoolDisplayName(school);
+    const current = String(this.schoolSearchControl.value ?? '').trim();
+    if (!current || current === display) {
+      this.schoolSearchControl.setValue(display, { emitEvent: false });
     }
   }
 
@@ -340,35 +331,23 @@ export class ManageRolesDialogComponent implements OnInit, OnDestroy {
     return school.schoolName || '—';
   }
 
-  displaySchoolFn = (value: string | School | null | undefined): string => {
-    if (value == null || value === '') return '';
-    if (typeof value === 'object') {
-      return this.getSchoolDisplayName(value);
-    }
-    const school = this.findSchoolById(value);
-    return school ? this.getSchoolDisplayName(school) : '';
-  };
-
-  private findSchoolById(schoolId: string): School | undefined {
-    if (!schoolId) return undefined;
-    return (
-      this.schools.find((s) => this.getSchoolId(s) === schoolId) ??
-      this.filteredSchools.find((s) => this.getSchoolId(s) === schoolId)
-    );
-  }
-
   onSchoolSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement)?.value ?? '';
-    const currentId = typeof this.schoolSearchControl.value === 'string'
-      ? this.schoolSearchControl.value
-      : this.selectedSchoolId;
-    const currentSchool = currentId ? this.findSchoolById(currentId) : undefined;
-    const currentDisplay = currentSchool ? this.getSchoolDisplayName(currentSchool) : '';
-    if (currentId && currentDisplay && value !== currentDisplay && value !== currentId) {
-      this.selectedSchoolId = '';
-      this.schoolSearchControl.setValue('', { emitEvent: false });
+    if (this.selectedSchoolId) {
+      const school = this.findSchoolById(this.selectedSchoolId);
+      const label = school ? this.getSchoolDisplayName(school) : '';
+      if (label && value !== label) {
+        this.selectedSchoolId = '';
+      }
     }
     this.schoolSearchSubject.next(value.trim());
+  }
+
+  onSchoolInputFocus(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement | null;
+    if (input?.value) {
+      setTimeout(() => input.select(), 0);
+    }
   }
 
   onSchoolOptionSelected(schoolId: string): void {
@@ -376,7 +355,17 @@ export class ManageRolesDialogComponent implements OnInit, OnDestroy {
     const school = this.findSchoolById(schoolId);
     if (school) this.cacheSchool(school);
     this.selectedSchoolId = schoolId;
-    this.schoolSearchControl.setValue(schoolId, { emitEvent: false });
+    if (school) {
+      this.schoolSearchControl.setValue(this.getSchoolDisplayName(school), { emitEvent: false });
+    }
+  }
+
+  private findSchoolById(schoolId: string): School | undefined {
+    if (!schoolId) return undefined;
+    return (
+      this.schools.find((s) => this.getSchoolId(s) === schoolId) ??
+      this.filteredSchools.find((s) => this.getSchoolId(s) === schoolId)
+    );
   }
 
   onOfficeSearchInput(event: Event): void {
