@@ -29,12 +29,21 @@
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>School</mat-label>
-        <mat-select [(ngModel)]="selectedSchoolId" required>
-          <mat-option value="">— Select school —</mat-option>
-          <mat-option *ngFor="let school of schools" [value]="school._id || school.id">
-            {{ (school.schoolName || school.name) || '—' }}
+        <input
+          matInput
+          [formControl]="schoolSearchControl"
+          [matAutocomplete]="schoolAuto"
+          (input)="onSchoolSearchInput($event)"
+          placeholder="Search by school name"
+          required />
+        <mat-autocomplete
+          #schoolAuto="matAutocomplete"
+          [displayWith]="displaySchoolFn"
+          (optionSelected)="onSchoolOptionSelected($event.option.value)">
+          <mat-option *ngFor="let school of filteredSchools" [value]="getSchoolId(school)">
+            {{ getSchoolDisplayName(school) }}
           </mat-option>
-        </mat-select>
+        </mat-autocomplete>
       </mat-form-field>
     </div>
   </div>
@@ -44,21 +53,32 @@
     <div class="assignment-fields">
       <mat-form-field appearance="outline">
         <mat-label>Division</mat-label>
-        <mat-select [(ngModel)]="selectedOfficeDivision" placeholder="— All divisions —">
+        <mat-select
+          [(ngModel)]="selectedOfficeDivision"
+          (selectionChange)="onOfficeDivisionChange($event.value)"
+          placeholder="— All divisions —">
           <mat-option value="">— All divisions —</mat-option>
           <mat-option *ngFor="let div of officeDivisions" [value]="div">{{ div }}</mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Add Office</mat-label>
-        <mat-select
-          [(ngModel)]="officeSelectValue"
-          (selectionChange)="addOffice($event.value); officeSelectValue = ''"
-          placeholder="— Select office to add —">
-          <mat-option *ngFor="let office of officesForSelect" [value]="office._id" [disabled]="selectedOfficeIds.includes(office._id)">
-            {{ office.name }}
+        <input
+          matInput
+          [formControl]="officeSearchControl"
+          [matAutocomplete]="officeAuto"
+          (input)="onOfficeSearchInput($event)"
+          placeholder="Search office to add" />
+        <mat-autocomplete
+          #officeAuto="matAutocomplete"
+          (optionSelected)="addOffice($event.option.value)">
+          <mat-option
+            *ngFor="let office of filteredOfficesForSelect"
+            [value]="office._id"
+            [disabled]="selectedOfficeIds.includes(office._id)">
+            {{ office.division }} — {{ office.name }}
           </mat-option>
-        </mat-select>
+        </mat-autocomplete>
       </mat-form-field>
       <div *ngIf="selectedOfficeIds.length > 0" class="chips-container">
         <mat-chip-set aria-label="Selected Offices">
