@@ -18,12 +18,18 @@ export class SchoolService {
     limit: number;
     search?: string;
     districtOrCluster?: string[];
+    ids?: string[];
   }): Observable<{ data: School[]; totalItems: number }> {
     const queryParams: string[] = [];
     queryParams.push(`page=${params.page}`);
     queryParams.push(`limit=${params.limit}`);
     if (params.search?.trim()) {
       queryParams.push(`search=${encodeQueryValue(params.search.trim())}`);
+    }
+    if (params.ids?.length) {
+      queryParams.push(
+        `ids=${params.ids.map((id) => encodeURIComponent(id.trim())).join(',')}`
+      );
     }
     if (params.districtOrCluster?.length) {
       params.districtOrCluster.forEach((d) => {
