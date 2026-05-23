@@ -32,6 +32,7 @@ import {UserType} from "../../registration/user-type.enum";
 const PARTNERSHIP_ENGAGEMENT_TITLES: readonly string[] = [
   'Groundbreaking Ceremony',
   'MOA Signing',
+  'Brigada Eskwela',
   'Partnership Meeting',
   'School Visit',
   'PPA Monitoring & Evaluation',
