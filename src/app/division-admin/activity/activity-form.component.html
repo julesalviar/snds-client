@@ -38,20 +38,27 @@
                 </mat-select>
                 <mat-error *ngIf="form.get('type')?.hasError('required')">Type is required.</mat-error>
               </mat-form-field>
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field *ngIf="form.get('type')?.value === ActivityType.PartnershipEngagement"
+                              appearance="outline"
+                              class="full-width">
                 <mat-label>Stakeholder</mat-label>
                 <input matInput
-                       formControlName="stakeholderId"
+                       formControlName="stakeholderSearch"
                        [matAutocomplete]="stakeholderAuto"
                        (input)="onStakeholderInput($event)"
+                       (blur)="onStakeholderBlur()"
                        placeholder="Search by name or email">
                 <mat-autocomplete #stakeholderAuto="matAutocomplete"
-                                 [displayWith]="displayStakeholderFn"
                                  (optionSelected)="onStakeholderOptionSelected($event.option.value)">
                   <mat-option *ngFor="let user of filteredUsers" [value]="user._id">
                     {{ getStakeholderDisplayName(user) }}
                   </mat-option>
+                  <mat-option *ngIf="(form.get('stakeholderSearch')?.value ?? '').trim().length > 0 && filteredUsers.length === 0"
+                              disabled>
+                    No stakeholders found. Pick a name from the list when results appear.
+                  </mat-option>
                 </mat-autocomplete>
+                <mat-hint>Search, then click a name in the list to select. Typed text alone cannot be saved.</mat-hint>
                 <mat-error *ngIf="form.get('stakeholderId')?.hasError('required')">Stakeholder is required.</mat-error>
                 <mat-error *ngIf="form.get('stakeholderId')?.hasError('objectId')">
                   Choose a stakeholder from the dropdown suggestions and click on the stakeholder's name to select it.

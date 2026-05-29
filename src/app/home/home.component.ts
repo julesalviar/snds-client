@@ -443,6 +443,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
       case UserType.DivisionAdmin:
         path = '/division-admin/school-needs';
+        queryParams['selectedContribution'] = child.name;
         queryParams['schoolYear'] = state.treeSchoolYear;
         console.log('Navigating to:', path, queryParams);
         break;

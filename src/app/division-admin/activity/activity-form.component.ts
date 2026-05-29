@@ -145,6 +145,9 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       startTimeValue: [null as Date | null],
       endTimeValue: [null as Date | null],
       location: [''],
+      /** Visible search text only — never sent to the API. */
+      stakeholderSearch: [''],
+      /** Selected stakeholder User _id (Mongo ObjectId). */
       stakeholderId: [''],
     });
   }
@@ -245,6 +248,8 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
         stakeholderCtrl?.setValidators([Validators.required, this.partnershipStakeholderObjectIdValidator()]);
       } else {
         stakeholderCtrl?.clearValidators();
+        stakeholderCtrl?.setValue('', { emitEvent: false });
+        this.form.get('stakeholderSearch')?.setValue('', { emitEvent: false });
       }
       stakeholderCtrl?.updateValueAndValidity({ emitEvent: false });
     };
@@ -276,14 +281,25 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
 
   onStakeholderInput(event: Event): void {
     const value = (event.target as HTMLInputElement)?.value ?? '';
-    const raw = this.form.get('stakeholderId')?.value;
-    const currentId = this.normalizeUserId(raw);
+    const currentId = this.normalizeUserId(this.form.get('stakeholderId')?.value);
     const currentUser = currentId ? this.users.find((u) => u._id === currentId) : null;
     const currentDisplay = currentUser ? this.getStakeholderDisplayName(currentUser) : '';
-    if (currentDisplay && value !== currentDisplay) {
-      this.form.patchValue({ stakeholderId: '' });
+    if (!currentId || (currentDisplay && value !== currentDisplay)) {
+      this.form.patchValue({ stakeholderId: '' }, { emitEvent: false });
+      this.form.get('stakeholderId')?.updateValueAndValidity({ emitEvent: false });
     }
     this.searchSubject.next(value.trim());
+  }
+
+  onStakeholderBlur(): void {
+    if (this.form.get('type')?.value !== ActivityType.PartnershipEngagement) return;
+    const search = (this.form.get('stakeholderSearch')?.value ?? '').trim();
+    const id = this.normalizeUserId(this.form.get('stakeholderId')?.value).trim();
+    if (search && !this.isValidMongoObjectId(id)) {
+      this.form.patchValue({ stakeholderSearch: '', stakeholderId: '' });
+      this.form.get('stakeholderId')?.markAsTouched();
+      this.form.get('stakeholderId')?.updateValueAndValidity();
+    }
   }
 
   private performStakeholderSearch(searchTerm: string): void {
@@ -311,20 +327,13 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       if (!this.users.some((u) => u._id === id)) {
         this.users = [...this.users, user];
       }
-      this.form.patchValue({ stakeholderId: id });
+      this.form.patchValue({
+        stakeholderId: id,
+        stakeholderSearch: this.getStakeholderDisplayName(user),
+      });
+      this.form.get('stakeholderId')?.updateValueAndValidity();
     }
   }
-
-  displayStakeholderFn = (value: string | UserListItem): string => {
-    if (value == null) return '';
-    if (typeof value === 'object' && value !== null && '_id' in value) {
-      return this.getStakeholderDisplayName(value as UserListItem);
-    }
-    const id = typeof value === 'string' ? value : '';
-    if (!id) return '';
-    const user = this.users.find((u) => u._id === id);
-    return user ? this.getStakeholderDisplayName(user) : id;
-  };
 
   getStakeholderDisplayName(user: UserListItem): string {
     return user.name || user.userName || user.email || user._id || '—';
@@ -344,6 +353,21 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
     if (typeof value === 'string') return value;
     if (typeof value === 'object' && value !== null && '_id' in value) return (value as UserListItem)._id ?? '';
     return '';
+  }
+
+  private isValidMongoObjectId(value: string | null | undefined): boolean {
+    const id = (value ?? '').trim();
+    return id.length > 0 && MONGO_OBJECT_ID_RE.test(id);
+  }
+
+  private resolveStakeholderSearchLabel(stakeholderId: string, stakeholderRaw: unknown): string {
+    if (!this.isValidMongoObjectId(stakeholderId)) return '';
+    const populated =
+      stakeholderRaw && typeof stakeholderRaw === 'object' && '_id' in (stakeholderRaw as object)
+        ? (stakeholderRaw as UserListItem)
+        : undefined;
+    const user = populated ?? this.users.find((u) => u._id === stakeholderId);
+    return user ? this.getStakeholderDisplayName(user) : '';
   }
 
   private resolveSchoolId(): string | null {
@@ -426,13 +450,21 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   private populateFormFromActivity(activity: Activity): void {
     this.loadedSchoolId = activity.schoolId ? this.schoolIdFromActivity(activity) : undefined;
     const stakeholderRaw = activity.stakeholderId;
-    const stakeholderId = this.normalizeUserId(stakeholderRaw);
+    let stakeholderId = this.normalizeUserId(stakeholderRaw);
     if (stakeholderRaw && typeof stakeholderRaw === 'object' && '_id' in stakeholderRaw) {
       const userObj = stakeholderRaw as UserListItem;
       if (!this.users.some((u) => u._id === userObj._id)) {
         this.users = [...this.users, userObj];
         this.filteredUsers = [...this.filteredUsers, userObj];
       }
+    }
+    let stakeholderSearch = this.resolveStakeholderSearchLabel(stakeholderId, stakeholderRaw);
+    if (stakeholderId && !this.isValidMongoObjectId(stakeholderId)) {
+      this.showError(
+        'This activity has an invalid saved stakeholder. Please search and select a stakeholder from the list.',
+      );
+      stakeholderId = '';
+      stakeholderSearch = '';
     }
     const startVal = activity.startDatetime ?? '';
     const endVal = activity.endDatetime ?? '';
@@ -459,6 +491,7 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       startTimeValue,
       endTimeValue,
       location: activity.location ?? '',
+      stakeholderSearch,
       stakeholderId: stakeholderId ?? '',
     });
   }
@@ -536,7 +569,23 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.form.invalid || this.isSaving) return;
+    if (this.form.invalid || this.isSaving) {
+      if (this.form.invalid) {
+        this.form.markAllAsTouched();
+        if (this.form.get('type')?.value === ActivityType.PartnershipEngagement) {
+          const stakeholderCtrl = this.form.get('stakeholderId');
+          const search = (this.form.get('stakeholderSearch')?.value ?? '').trim();
+          if (stakeholderCtrl?.invalid) {
+            if (search && !this.isValidMongoObjectId(this.normalizeUserId(stakeholderCtrl.value))) {
+              this.showError('Select a stakeholder by clicking a name from the suggestions list.');
+            } else if (stakeholderCtrl.hasError('required')) {
+              this.showError('Stakeholder is required for partnership activities.');
+            }
+          }
+        }
+      }
+      return;
+    }
     const schoolId = this.resolveSchoolId();
     if (!schoolId) {
       this.showError('School is required. Please ensure you are in a school context.');
@@ -557,6 +606,7 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
         ? this.buildDatetime(raw.startDate, raw.endTimeValue)
         : startDatetime;
 
+    const normalizedStakeholderId = this.normalizeUserId(raw.stakeholderId).trim();
     const payload: Partial<Activity> = {
       type: raw.type,
       title: raw.title,
@@ -565,7 +615,11 @@ export class ActivityFormComponent implements OnInit, OnDestroy {
       startDatetime,
       endDatetime,
       location: raw.location || undefined,
-      stakeholderId: this.normalizeUserId(raw.stakeholderId) || undefined,
+      stakeholderId:
+        raw.type === ActivityType.PartnershipEngagement &&
+        this.isValidMongoObjectId(normalizedStakeholderId)
+          ? normalizedStakeholderId
+          : undefined,
       schoolId,
       updatedBy: this.authService.getUserId() || undefined,
     };
