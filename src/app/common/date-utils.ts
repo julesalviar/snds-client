@@ -1,11 +1,10 @@
 import {MongoDate} from "./model/school.model";
 
-export function getSchoolYear(offset: number = 0): string {
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth(); // 0 = January
+/** School years run June 1 (startYear) through May 31 (endYear). */
+export function getSchoolYear(offset: number = 0, now: Date = new Date()): string {
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0 = January; June = 5
 
-  // Determine the base school year
   const baseYear = currentMonth >= 5 ? currentYear : currentYear - 1;
 
   // Apply the optional offset
@@ -34,7 +33,7 @@ export function getSchoolYearOptions(now: Date = new Date()): string[] {
 
 export function getDefaultSchoolYear(now: Date = new Date()): string {
   const options = getSchoolYearOptions(now);
-  const current = getSchoolYear(0);
+  const current = getSchoolYear(0, now);
   if (options.includes(current)) return current;
   return options[0] ?? `${SCHOOL_YEAR_MIN_START}-${SCHOOL_YEAR_MIN_START + 1}`;
 }

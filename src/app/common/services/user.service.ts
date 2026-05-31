@@ -3,6 +3,7 @@ import {BehaviorSubject, catchError, map, Observable, of} from 'rxjs';
 import {environment} from '../../../environments/environment';
 import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
+import {getSchoolYear} from '../date-utils';
 
 export interface UsersByRoleMeta {
   count: number;
@@ -60,7 +61,7 @@ function normalizeUsersByRoleResponse(res: any): UsersByRoleResponse {
 
 export class UserService {
   private readonly projectTitlesSubject = new BehaviorSubject<string[]>([]);
-  private readonly schoolYearSubject = new BehaviorSubject<string>('2025-2026');
+  private readonly schoolYearSubject = new BehaviorSubject<string>(getSchoolYear());
   private readonly contributionData = new BehaviorSubject<any>(null);
   projectTitles$ = this.projectTitlesSubject.asObservable();
   schoolYear$ = this.schoolYearSubject.asObservable();
