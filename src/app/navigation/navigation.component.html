@@ -104,11 +104,35 @@
     <!-- Division Admin Menus -->
     <ng-container *ngIf="UserType.DivisionAdmin === userActiveRole">
       <li>
-          <button mat-button [matMenuTriggerFor]="divisionAdminSchoolsMenu" class="menu-trigger">Find School/Office</button>
-          <mat-menu #divisionAdminSchoolsMenu="matMenu">
+          <button mat-button [matMenuTriggerFor]="divisionAdminFindMenu" class="menu-trigger">Find School/Office</button>
+          <mat-menu #divisionAdminFindMenu="matMenu">
+          <button mat-menu-item
+            #schoolTrigger="matMenuTrigger"
+            [matMenuTriggerFor]="divisionAdminSchoolsSubmenu"
+            (mouseenter)="schoolTrigger.openMenu()">
+            School
+          </button>
+          <mat-menu #divisionAdminSchoolsSubmenu="matMenu">
             <button mat-menu-item [routerLink]="['/division-admin/all-schools']" (click)="closeMenu()">All</button>
             <button mat-menu-item [routerLink]="['/division-admin/districts']" (click)="closeMenu()">By District</button>
+          </mat-menu>           
+           <!-- Office Menu for Division Admin Account (dynamic from GET /offices?includePpaPlanCount=true) -->
+          <button mat-menu-item
+            #officeTrigger="matMenuTrigger"
+            [matMenuTriggerFor]="divisionAdminOfficeSubmenu"
+            (mouseenter)="officeTrigger.openMenu()">
+            Office
+          </button>
+          <mat-menu #divisionAdminOfficeSubmenu="matMenu" [overlapTrigger]="true">
+            <app-office-division-submenu
+              *ngFor="let division of officeDivisionsWithOffices"
+              [division]="division"
+              [offices]="getOfficesForDivision(division)"
+              [officeTableBasePath]="'/division-admin'"
+              (divisionHover)="onDivisionHover($event)"
+              (menuItemClick)="closeMenu()" />
           </mat-menu>
+        </mat-menu>
       </li>
       <li *ngIf="currentTenant === tenant.GENSAN">
         <button mat-button [matMenuTriggerFor]="divisionAdminSupportMenu" class="menu-trigger">Support</button>

@@ -122,6 +122,7 @@ export const routes: Routes = [
       {path: 'school-needs', component: StakeholdersComponent},
       {path: 'all-schools', component: AllSchoolComponent},
       {path: 'districts', component: ClustersComponent},
+      {path: 'office-table', component: OfficeTableComponent},
       {path: 'schools-by-district', component: DivisionAdminComponent},
       {path: 'partners-support', component: DivisionAdminComponent},
       {path: 'reports', component: ReportsComponent}, //  Reports component
