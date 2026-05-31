@@ -41,6 +41,8 @@ import { Aip } from '../../common/model/aip.model';
 import { SchoolNeed } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
+import { PillarConfigService } from '../../common/services/pillar-config.service';
+import { PillarItem } from '../../common/model/pillar-config.model';
 import { InvalidContributionTypeDialogComponent } from '../invalid-contribution-type-dialog.component';
 import { InvalidSpecificContributionDialogComponent } from '../invalid-specific-contribution-dialog.component';
 
@@ -95,7 +97,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   previousContributionType = '';
 
   selectedProjectIds: string[] = [];
-  pillars: string[] = [];
+  pillars: PillarItem[] = [];
 
   private readonly destroy$ = new Subject<void>();
 
@@ -115,6 +117,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     private readonly aipService: AipService,
     private readonly authService: AuthService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly pillarConfigService: PillarConfigService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
     @Optional() @Inject(MAT_DIALOG_DATA) private readonly dialogData: SchoolNeedCreateDialogData | null,
@@ -151,7 +154,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   private async bootstrapDialog(): Promise<void> {
     await this.referenceDataService.initialize();
     this.loadContributionData();
-    this.loadPillarsAndUnits();
+    await this.loadPillarsAndUnits();
 
     if (this.isDuplicate && this.dialogData?.sourceNeedCode != null) {
       this.loadDuplicatePrefill(this.dialogData.sourceNeedCode);
@@ -321,8 +324,10 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     );
 
     const firstProject = need.projectId[0];
-    const intermediateOutcome =
+    const storedPillars =
       firstProject && typeof firstProject === 'object' ? (firstProject.pillars ?? '') : '';
+    const intermediateOutcome =
+      this.pillarConfigService.resolveStoredValue(storedPillars);
 
     this.patchContributionFields(
       need.contributionType ?? '',
@@ -423,10 +428,13 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     });
   }
 
-  private loadPillarsAndUnits(): void {
-    const pillarsData = this.referenceDataService.get<string[]>('pillars');
-    if (pillarsData) {
-      this.pillars = pillarsData;
+  private async loadPillarsAndUnits(): Promise<void> {
+    try {
+      await this.pillarConfigService.initialize();
+      this.pillars = this.pillarConfigService.getPillars();
+    } catch (e) {
+      console.error('Failed to load pillar configuration', e);
+      this.pillars = [];
     }
     const unitsData = this.referenceDataService.get<string[]>('units');
     if (unitsData) {

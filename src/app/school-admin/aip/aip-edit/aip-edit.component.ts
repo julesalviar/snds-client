@@ -13,7 +13,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Aip } from '../../../common/model/aip.model';
 import { AuthService } from '../../../auth/auth.service';
 import { UserType } from '../../../registration/user-type.enum';
-import { ReferenceDataService } from '../../../common/services/reference-data.service';
+import { PillarConfigService } from '../../../common/services/pillar-config.service';
+import { PillarItem } from '../../../common/model/pillar-config.model';
 import { AIP_STATUSES } from '../../../common/enums/aip-status.enum';
 import {
   aipSchoolYearPayloadFromSelection,
@@ -40,7 +41,7 @@ export class AipEditComponent implements OnInit {
   aipForm: FormGroup;
   projectId: string = '';
   isLoading: boolean = true;
-  pillars: string[] = [];
+  pillars: PillarItem[] = [];
   statuses: readonly string[] = AIP_STATUSES;
   readonly schoolYearOptions = getSchoolYearOptions();
 
@@ -51,7 +52,7 @@ export class AipEditComponent implements OnInit {
     private readonly aipService: AipService,
     private readonly snackBar: MatSnackBar,
     private readonly authService: AuthService,
-    private readonly referenceDataService: ReferenceDataService
+    private readonly pillarConfigService: PillarConfigService
   ) {
     this.aipForm = this.fb.group({
       apn: [''],
@@ -93,7 +94,9 @@ export class AipEditComponent implements OnInit {
           schoolYear: aipSchoolYearsAsArray(project.schoolYear),
           title: project.title,
           objectives: project.objectives,
-          intermediateOutcome: project.pillars,
+          intermediateOutcome: this.pillarConfigService.resolveStoredValue(
+            project.pillars,
+          ),
           responsiblePerson: project.responsiblePerson,
           materialsNeeded: project.materialsNeeded,
           totalBudget: project.totalBudget,
@@ -189,10 +192,13 @@ export class AipEditComponent implements OnInit {
     });
   }
 
-  private loadPillars(): void {
-    const pillarsData = this.referenceDataService.get<string[]>('pillars');
-    if (pillarsData) {
-      this.pillars = pillarsData;
+  private async loadPillars(): Promise<void> {
+    try {
+      await this.pillarConfigService.initialize();
+      this.pillars = this.pillarConfigService.getPillars();
+    } catch (e) {
+      console.error('Failed to load pillar configuration', e);
+      this.pillars = [];
     }
   }
 }

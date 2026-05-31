@@ -25,7 +25,8 @@ import {
   getSchoolYear,
   getSchoolYearOptions,
 } from '../../common/date-utils';
-import { ReferenceDataService } from '../../common/services/reference-data.service';
+import { PillarConfigService } from '../../common/services/pillar-config.service';
+import { PillarItem } from '../../common/model/pillar-config.model';
 import { AIP_STATUSES } from '../../common/enums/aip-status.enum';
 
 export interface AipFormDialogData {
@@ -58,7 +59,7 @@ export class AipFormComponent implements OnInit {
   isLoading = false;
   isDuplicate = false;
   isEdit = false;
-  pillars: string[] = [];
+  pillars: PillarItem[] = [];
   readonly schoolYearOptions = getSchoolYearOptions();
   readonly statuses: readonly string[] = AIP_STATUSES;
   private projectId: string | null = null;
@@ -109,7 +110,7 @@ export class AipFormComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly aipService: AipService,
     private readonly snackBar: MatSnackBar,
-    private readonly referenceDataService: ReferenceDataService,
+    private readonly pillarConfigService: PillarConfigService,
     @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: AipFormDialogData | null,
   ) {
     this.isDuplicate = !!dialogData?.isDuplicate;
@@ -133,8 +134,8 @@ export class AipFormComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.loadPillars();
+  async ngOnInit(): Promise<void> {
+    await this.loadPillars();
     if (this.isEdit) {
       if (this.dialogData?.sourceProject) {
         this.patchFormFromProject(this.dialogData.sourceProject, { forEdit: true });
@@ -167,7 +168,9 @@ export class AipFormComponent implements OnInit {
       problemStatement: project.problemStatement ?? '',
       title: project.title ?? '',
       objectives: project.objectives ?? '',
-      intermediateOutcome: project.pillars ?? '',
+      intermediateOutcome: this.pillarConfigService.resolveStoredValue(
+        project.pillars,
+      ),
       responsiblePerson: project.responsiblePerson ?? '',
       materialsNeeded: project.materialsNeeded ?? '',
       totalBudget: project.totalBudget ?? 0,
@@ -308,10 +311,13 @@ export class AipFormComponent implements OnInit {
     });
   }
 
-  private loadPillars(): void {
-    const pillarsData = this.referenceDataService.get<string[]>('pillars');
-    if (pillarsData) {
-      this.pillars = pillarsData;
+  private async loadPillars(): Promise<void> {
+    try {
+      await this.pillarConfigService.initialize();
+      this.pillars = this.pillarConfigService.getPillars();
+    } catch (e) {
+      console.error('Failed to load pillar configuration', e);
+      this.pillars = [];
     }
   }
 }

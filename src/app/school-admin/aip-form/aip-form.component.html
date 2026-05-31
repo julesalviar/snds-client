@@ -91,7 +91,7 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Intermediate Outcome (Pillars)</mat-label>
       <mat-select formControlName="intermediateOutcome">
-        <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
+        <mat-option *ngFor="let pillar of pillars" [value]="pillar.name">{{ pillar.displayName }}</mat-option>
       </mat-select>
       <mat-error *ngIf="aipForm.get('intermediateOutcome')?.invalid && (aipForm.get('intermediateOutcome')?.touched || aipForm.get('intermediateOutcome')?.dirty)">
         Please select an intermediate outcome pillar.

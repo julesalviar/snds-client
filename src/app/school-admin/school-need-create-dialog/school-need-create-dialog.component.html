@@ -90,7 +90,7 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Intermediate Outcome (Pillars)</mat-label>
       <mat-select formControlName="intermediateOutcome">
-        <mat-option *ngFor="let pillar of pillars" [value]="pillar">{{ pillar }}</mat-option>
+        <mat-option *ngFor="let pillar of pillars" [value]="pillar.name">{{ pillar.displayName }}</mat-option>
       </mat-select>
     </mat-form-field>
 

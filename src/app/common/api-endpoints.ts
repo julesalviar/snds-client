@@ -9,6 +9,7 @@ export const API_ENDPOINT = {
   },
   referenceData: `${environment.API_URL}/reference-data`,
   internalReferenceData: `${environment.API_URL}/internal-reference-data`,
+  pillarConfigs: `${environment.API_URL}/pillar-configs`,
   aip: `${environment.API_URL}/aips`,
   schoolNeed: `${environment.API_URL}/school-needs`,
   schools: `${environment.API_URL}/schools`,

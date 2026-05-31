@@ -24,6 +24,8 @@ import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from "@angular/materia
 import { HttpService } from "../../common/services/http.service";
 import { API_ENDPOINT } from "../../common/api-endpoints";
 import { ReferenceDataService } from "../../common/services/reference-data.service";
+import { PillarConfigService } from "../../common/services/pillar-config.service";
+import { PillarItem } from "../../common/model/pillar-config.model";
 import {MatChipsModule} from '@angular/material/chips';
 
 @Component({
@@ -62,7 +64,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   aipProjects: string[] = [];
-  pillars: string[] = [];
+  pillars: PillarItem[] = [];
   units: string[] = []
   isOtherSelected = false;
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; }> = [];
@@ -94,6 +96,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly aipService: AipService,
     private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly pillarConfigService: PillarConfigService,
     private readonly snackBar: MatSnackBar,
     private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
@@ -122,7 +125,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadContributionData();
     this.loadCurrentProjects();
-    this.loadPillarsAndUnits();
+    void this.loadPillarsAndUnits();
     this.schoolNeedsForm
       .get('schoolYear')!
       .valueChanges.pipe(
@@ -280,7 +283,9 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
 
     // Get intermediate outcome from first project (if available)
     const firstProject = this.schoolNeed.projectId[0];
-    const intermediateOutcome = firstProject && typeof firstProject === 'object' ? firstProject.pillars : '';
+    const storedPillars =
+      firstProject && typeof firstProject === 'object' ? firstProject.pillars : '';
+    const intermediateOutcome = this.pillarConfigService.getDisplayLabel(storedPillars);
 
     const contributionType = this.schoolNeed.contributionType ?? '';
     this.previousContributionType = contributionType;
@@ -369,10 +374,13 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadPillarsAndUnits(): void {
-    const pillarsData = this.referenceDataService.get<string[]>('pillars');
-    if (pillarsData) {
-      this.pillars = pillarsData;
+  private async loadPillarsAndUnits(): Promise<void> {
+    try {
+      await this.pillarConfigService.initialize();
+      this.pillars = this.pillarConfigService.getPillars();
+    } catch (e) {
+      console.error('Failed to load pillar configuration', e);
+      this.pillars = [];
     }
 
     const unitsData = this.referenceDataService.get<string[]>('units');

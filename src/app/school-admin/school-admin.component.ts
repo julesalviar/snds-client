@@ -27,6 +27,8 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
+import {PillarConfigService} from "../common/services/pillar-config.service";
+import {PillarItem} from "../common/model/pillar-config.model";
 import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
 import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
@@ -76,7 +78,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = ['contributionType', 'specificContribution', 'quantityNeeded', 'unit', 'estimatedCost', 'targetDate', 'thumbnails', 'actions'];
   aipProjects: string[] = [];  // Populate AIP project names/ must be base on AIP form filled up
-  pillars: string[] = [];
+  pillars: PillarItem[] = [];
   schoolYears: string[] = getSchoolYearOptions();
   units: string[] = []
   selectedSchoolYear: string = getSchoolYear();
@@ -99,6 +101,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly aipService: AipService,
     private readonly  authService: AuthService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly pillarConfigService: PillarConfigService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly router: Router,
@@ -157,7 +160,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     this.loadAllSchoolNeeds();
     this.loadCurrentProjects();
     this.loadContributionData();
-    this.loadPillarsAndUnits();
+    void this.loadPillarsAndUnits();
     this.schoolNeedsForm
       .get('schoolYear')!
       .valueChanges.pipe(startWith(this.schoolNeedsForm.get('schoolYear')!.value), distinctUntilChanged(), takeUntil(this.destroy$))
@@ -427,10 +430,13 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadPillarsAndUnits(): void {
-    const pillarsData = this.referenceDataService.get<string[]>('pillars');
-    if (pillarsData) {
-      this.pillars = pillarsData;
+  private async loadPillarsAndUnits(): Promise<void> {
+    try {
+      await this.pillarConfigService.initialize();
+      this.pillars = this.pillarConfigService.getPillars();
+    } catch (e) {
+      console.error('Failed to load pillar configuration', e);
+      this.pillars = [];
     }
 
     const unitsData = this.referenceDataService.get<string[]>('units');

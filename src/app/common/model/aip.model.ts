@@ -6,6 +6,7 @@ export interface Aip {
   title: string;
   problemStatement?: string;
   objectives: string;
+  /** Pillar config `name` (UI shows `displayName`). */
   pillars: string;
   responsiblePerson: string;
   materialsNeeded: string;
