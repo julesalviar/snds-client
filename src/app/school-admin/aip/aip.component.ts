@@ -29,6 +29,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { AipFormComponent } from '../aip-form/aip-form.component';
 import { AIP_STATUSES } from '../../common/enums/aip-status.enum';
+import { DivisionSettingsService } from '../../common/services/division-settings.service';
+import {
+  extractApiErrorMessage,
+  isSchoolMutationRole,
+} from '../../common/utils/division-lock.util';
 
 @Component({
   selector: 'app-aip',
@@ -74,6 +79,7 @@ export class AipComponent implements OnInit, OnDestroy {
   /** Empty string = all statuses. */
   selectedStatus: string = '';
   readonly aipStatusOptions: readonly string[] = AIP_STATUSES;
+  aipLocksLoaded = false;
 
   protected readonly UserType = UserType;
 
@@ -91,9 +97,14 @@ export class AipComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly breakpointObserver: BreakpointObserver,
+    private readonly divisionSettingsService: DivisionSettingsService,
   ) {}
 
   ngOnInit() {
+    void this.divisionSettingsService.initializeLocks().then(() => {
+      this.aipLocksLoaded = true;
+    });
+
     this.schoolId = this.route.snapshot.params['schoolId'];
     const statusParam = this.route.snapshot.queryParamMap.get('status');
     if (
@@ -162,7 +173,47 @@ export class AipComponent implements OnInit, OnDestroy {
   }
 
   onCreate(): void {
+    if (this.isFilterYearAipLocked) {
+      this.showAipLockedNotification();
+      return;
+    }
     this.openAipFormDialog();
+  }
+
+  isProjectAipLocked(project: Aip): boolean {
+    if (!this.isSchoolMutator || !this.aipLocksLoaded) {
+      return false;
+    }
+    return this.divisionSettingsService.isAipLockedForRawSchoolYear(
+      project.schoolYear,
+    );
+  }
+
+  get isSchoolMutator(): boolean {
+    return isSchoolMutationRole(this.userRole);
+  }
+
+  get isFilterYearAipLocked(): boolean {
+    if (!this.isSchoolMutator || !this.aipLocksLoaded) {
+      return false;
+    }
+    return this.divisionSettingsService.isAipYearLocked(
+      this.selectedSchoolYear,
+    );
+  }
+
+  get aipLockBanner(): string | null {
+    if (!this.isFilterYearAipLocked) {
+      return null;
+    }
+    return `AIPs for school year ${this.selectedSchoolYear} are locked. Contact your division office if you need changes.`;
+  }
+
+  private showAipLockedNotification(): void {
+    this.showErrorNotification(
+      this.aipLockBanner ??
+        'AIPs for the selected school year are locked.',
+    );
   }
 
   private openAipFormDialog(
@@ -202,6 +253,10 @@ export class AipComponent implements OnInit, OnDestroy {
       console.warn('Unauthorized edit attempt by user role:', this.userRole);
       return;
     }
+    if (this.isProjectAipLocked(project)) {
+      this.showAipLockedNotification();
+      return;
+    }
 
     this.openAipFormDialog({
       projectId: project._id,
@@ -215,6 +270,10 @@ export class AipComponent implements OnInit, OnDestroy {
     if (this.userRole !== UserType.SchoolAdmin) {
       this.showErrorNotification('Unauthorized: Only School Admins can delete projects.');
       console.warn('Unauthorized delete attempt by user role:', this.userRole);
+      return;
+    }
+    if (this.isProjectAipLocked(project)) {
+      this.showAipLockedNotification();
       return;
     }
 
@@ -242,26 +301,12 @@ export class AipComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Error deleting AIP project:', err);
 
-            let errorMessage = 'Failed to delete AIP project. Please try again.';
-
-            if (err?.error?.message) {
-              if (Array.isArray(err.error.message)) {
-                errorMessage = err.error.message.join('\n• ');
-                if (err.error.message.length > 1) {
-                  errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-                }
-              } else if (typeof err.error.message === 'string') {
-                errorMessage = err.error.message;
-              }
-            } else if (err?.error && typeof err.error === 'string') {
-              errorMessage = err.error;
-            } else if (err?.message) {
-              errorMessage = err.message;
-            } else if (typeof err === 'string') {
-              errorMessage = err;
-            }
-
-            this.showErrorNotification(errorMessage);
+            this.showErrorNotification(
+              extractApiErrorMessage(
+                err,
+                'Failed to delete AIP project. Please try again.',
+              ),
+            );
           },
         });
       } else {

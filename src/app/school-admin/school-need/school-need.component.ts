@@ -27,6 +27,11 @@ import { ReferenceDataService } from "../../common/services/reference-data.servi
 import { PillarConfigService } from "../../common/services/pillar-config.service";
 import { PillarItem } from "../../common/model/pillar-config.model";
 import {MatChipsModule} from '@angular/material/chips';
+import { DivisionSettingsService } from '../../common/services/division-settings.service';
+import {
+  extractApiErrorMessage,
+  isSchoolMutationRole,
+} from '../../common/utils/division-lock.util';
 
 @Component({
   selector: 'app-school-need',
@@ -71,6 +76,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   isSaving: boolean = false;
   isLoading: boolean = true;
+  schoolNeedLocksLoaded = false;
 
   contributionTypes: string[] = [];
   specificContributions: string[] = [];
@@ -103,6 +109,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     @Optional() private readonly dialogRef: MatDialogRef<SchoolNeedComponent, boolean> | null,
     @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: { needCode?: string } | null,
+    private readonly divisionSettingsService: DivisionSettingsService,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -123,6 +130,9 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    void this.divisionSettingsService.initializeLocks().then(() => {
+      this.schoolNeedLocksLoaded = true;
+    });
     this.loadContributionData();
     this.loadCurrentProjects();
     void this.loadPillarsAndUnits();
@@ -154,9 +164,32 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  get isSchoolNeedFormLocked(): boolean {
+    if (!isSchoolMutationRole(this.authService.getActiveRole()) || !this.schoolNeedLocksLoaded) {
+      return false;
+    }
+    const year = this.schoolNeedsForm.get('schoolYear')?.value;
+    return this.divisionSettingsService.isSchoolNeedYearLocked(year);
+  }
+
+  get schoolNeedLockBanner(): string | null {
+    if (!this.isSchoolNeedFormLocked) {
+      return null;
+    }
+    const year = this.schoolNeedsForm.get('schoolYear')?.value;
+    return `School needs for school year ${year} are locked. Contact your division office if you need changes.`;
+  }
+
   async onSubmit(): Promise<void> {
     if (this.schoolNeedsForm.invalid) {
       this.markFormGroupTouched();
+      return;
+    }
+
+    if (this.isSchoolNeedFormLocked) {
+      this.showErrorNotification(
+        this.schoolNeedLockBanner ?? 'This school need cannot be updated while locked.',
+      );
       return;
     }
 
@@ -197,7 +230,12 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Error updating school need:', err);
             this.isSaving = false;
-            this.showErrorNotification('Failed to update school need. Please try again.');
+            this.showErrorNotification(
+              extractApiErrorMessage(
+                err,
+                'Failed to update school need. Please try again.',
+              ),
+            );
           }
         });
     } catch (error) {

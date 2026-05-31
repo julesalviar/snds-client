@@ -1,0 +1,97 @@
+<div class="locks-page">
+  <h1 class="page-title">School year locks</h1>
+  <p class="page-description">
+    Control when school admins and staff can create, update, or delete school needs and AIPs per school year.
+  </p>
+
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <ng-container *ngIf="!isLoading">
+    <mat-card class="lock-card" *ngFor="let section of sections">
+      <mat-card-header>
+        <mat-card-title>{{ section.title }}</mat-card-title>
+        <mat-card-subtitle>{{ section.description }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="status-line">
+          Status: <strong>{{ statusLabel(section) }}</strong>
+        </p>
+
+        <div class="year-add-row">
+          <mat-form-field appearance="outline" class="year-select">
+            <mat-label>Add school year</mat-label>
+            <mat-select [(ngModel)]="section.selectedYearToAdd">
+              <mat-option
+                *ngFor="let y of schoolYearOptions"
+                [value]="y"
+                [disabled]="section.setting.schoolYears.includes(y)">
+                {{ y }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="addSchoolYear(section)"
+            [disabled]="!section.selectedYearToAdd || isSaving">
+            Add year
+          </button>
+        </div>
+
+        <mat-chip-set *ngIf="section.setting.schoolYears.length" class="year-chips">
+          <mat-chip
+            *ngFor="let y of section.setting.schoolYears"
+            (removed)="removeSchoolYear(section, y)">
+            {{ y }}
+            <button matChipRemove type="button" aria-label="Remove year">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
+        <p *ngIf="!section.setting.schoolYears.length" class="hint">
+          No school years selected. Locks apply only to years listed here.
+        </p>
+
+        <div class="controls">
+          <mat-slide-toggle
+            [checked]="section.setting.locked"
+            (change)="onLockNowChange(section, $event.checked)"
+            [disabled]="isSaving">
+            Lock now
+          </mat-slide-toggle>
+
+          <mat-form-field appearance="outline" class="schedule-field">
+            <mat-label>Scheduled lock</mat-label>
+            <input
+              matInput
+              type="datetime-local"
+              [ngModel]="section.scheduledLocal"
+              (ngModelChange)="onScheduledChange(section, $event)"
+              [disabled]="isSaving" />
+          </mat-form-field>
+
+          <button
+            mat-button
+            type="button"
+            color="warn"
+            (click)="unlockOnDemand(section)"
+            [disabled]="isSaving">
+            Unlock on demand
+          </button>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="saveSection(section)"
+          [disabled]="isSaving">
+          Save {{ section.title }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-container>
+</div>

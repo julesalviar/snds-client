@@ -34,6 +34,8 @@ import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-con
 import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
 import {MatChipsModule} from '@angular/material/chips';
 import {UserType} from "../registration/user-type.enum";
+import { DivisionSettingsService } from '../common/services/division-settings.service';
+import { isSchoolMutationRole } from '../common/utils/division-lock.util';
 
 @Component({
   selector: 'app-school-admin',
@@ -105,6 +107,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly router: Router,
+    private readonly divisionSettingsService: DivisionSettingsService,
   ) {
     this.schoolNeedsForm = this.fb.group({
       contributionType: ['', [Validators.required]],
@@ -136,6 +139,7 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    void this.divisionSettingsService.initializeLocks();
     let isFirstSchoolYearEmit = true;
     this.userService.schoolYear$.pipe(takeUntil(this.destroy$)).subscribe(sy => {
       this.selectedSchoolYear = sy;
@@ -203,6 +207,17 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
+
+    const schoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
+    if (
+      isSchoolMutationRole(this.authService.getActiveRole()) &&
+      this.divisionSettingsService.isSchoolNeedYearLocked(schoolYear)
+    ) {
+      this.showErrorNotification(
+        `School needs for school year ${schoolYear} are locked. Contact your division office if you need changes.`,
+      );
+      return;
+    }
 
     this.isSaving = true;
     try {

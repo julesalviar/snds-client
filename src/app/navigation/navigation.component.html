@@ -150,6 +150,7 @@
           <button mat-menu-item [routerLink]="['/division-admin/manage-users']" (click)="closeMenu()">Manage Users</button>
           <button mat-menu-item [routerLink]="['/division-admin/manage-schools']" (click)="closeMenu()">Manage Schools</button>
           <button mat-menu-item [routerLink]="['/division-admin/activities']" (click)="closeMenu()">Activities</button>
+          <button mat-menu-item [routerLink]="['/division-admin/school-year-locks']" (click)="closeMenu()">School year locks</button>
         </mat-menu>
       </li>
     </ng-container>
@@ -174,7 +175,8 @@
     </ng-container>
 
     <ng-container *ngIf="UserType.SystemAdmin === userActiveRole">
-      <li><a routerLink="/system-admin/manage-users">Users</a></li>
+      <li><a routerLink="/system-admin/manage-users" (click)="closeMenu()">Users</a></li>
+      <li><a routerLink="/system-admin/school-year-locks" (click)="closeMenu()">School year locks</a></li>
     </ng-container>
 
     <!-- Guest Menus - for users who are not logged in (same structure as stakeholder) -->

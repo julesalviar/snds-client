@@ -21,8 +21,15 @@
 <mat-card>
   <mat-card-title>Schools' Needs</mat-card-title>
 
+  <p *ngIf="schoolNeedLockBanner" class="lock-banner" role="status">{{ schoolNeedLockBanner }}</p>
+
   <div class="top-actions">
-    <button mat-raised-button color="primary" type="button" (click)="onCreate()">
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      (click)="onCreate()"
+      [disabled]="!!schoolNeedLockBanner">
       <mat-icon>add</mat-icon>
       Create School Need
     </button>
@@ -227,7 +234,11 @@
             <button mat-icon-button type="button" (click)="navigateToEngage(need.code)" matTooltip="Engage">
               <mat-icon>person</mat-icon>
             </button>
-            <button mat-icon-button type="button" (click)="onDuplicate(need)" matTooltip="Duplicate">
+            <button
+              mat-icon-button
+              type="button"
+              (click)="onDuplicate(need)"
+              matTooltip="Duplicate">
               <mat-icon>content_copy</mat-icon>
             </button>
             <button class="ellipsis-button" mat-icon-button type="button" [matMenuTriggerFor]="actionMenu" matTooltip="More Actions">
@@ -237,10 +248,15 @@
               <button mat-menu-item type="button" (click)="view(need)">
                 <mat-icon>visibility</mat-icon> View
               </button>
-              <button mat-menu-item type="button" (click)="edit(need)">
+              <button mat-menu-item type="button" (click)="edit(need)" [disabled]="isSchoolNeedLocked(need)">
                 <mat-icon>edit</mat-icon> Edit
               </button>
-              <button mat-menu-item type="button" (click)="delete(need)" class="delete-menu-item">
+              <button
+                mat-menu-item
+                type="button"
+                (click)="delete(need)"
+                class="delete-menu-item"
+                [disabled]="isSchoolNeedLocked(need)">
                 <mat-icon>delete</mat-icon> Delete
               </button>
             </mat-menu>

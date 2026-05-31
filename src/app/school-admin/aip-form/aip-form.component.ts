@@ -28,6 +28,12 @@ import {
 import { PillarConfigService } from '../../common/services/pillar-config.service';
 import { PillarItem } from '../../common/model/pillar-config.model';
 import { AIP_STATUSES } from '../../common/enums/aip-status.enum';
+import { DivisionSettingsService } from '../../common/services/division-settings.service';
+import {
+  extractApiErrorMessage,
+  isSchoolMutationRole,
+} from '../../common/utils/division-lock.util';
+import { AuthService } from '../../auth/auth.service';
 
 export interface AipFormDialogData {
   projectId?: string;
@@ -77,9 +83,18 @@ export class AipFormComponent implements OnInit {
     return Array.isArray(value) ? value : value ? [value] : [];
   }
 
+  get selectableSchoolYearOptions(): string[] {
+    if (!isSchoolMutationRole(this.authService.getActiveRole())) {
+      return this.schoolYearOptions;
+    }
+    return this.divisionSettingsService.filterUnlockedAipSchoolYears(
+      this.schoolYearOptions,
+    );
+  }
+
   get availableSchoolYearOptions(): string[] {
     const selected = new Set(this.selectedSchoolYears);
-    return this.schoolYearOptions.filter((y) => !selected.has(y));
+    return this.selectableSchoolYearOptions.filter((y) => !selected.has(y));
   }
 
   get dialogTitle(): string {
@@ -111,6 +126,8 @@ export class AipFormComponent implements OnInit {
     private readonly aipService: AipService,
     private readonly snackBar: MatSnackBar,
     private readonly pillarConfigService: PillarConfigService,
+    private readonly divisionSettingsService: DivisionSettingsService,
+    private readonly authService: AuthService,
     @Optional() @Inject(MAT_DIALOG_DATA) public readonly dialogData: AipFormDialogData | null,
   ) {
     this.isDuplicate = !!dialogData?.isDuplicate;
@@ -135,6 +152,7 @@ export class AipFormComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.divisionSettingsService.initializeLocks();
     await this.loadPillars();
     if (this.isEdit) {
       if (this.dialogData?.sourceProject) {
@@ -156,15 +174,38 @@ export class AipFormComponent implements OnInit {
     } else if (this.statuses.length > 0) {
       this.aipForm.patchValue({ status: this.statuses[0] });
     }
+    this.ensureInitialSchoolYearsUnlocked();
+  }
+
+  private ensureInitialSchoolYearsUnlocked(): void {
+    if (this.isEdit || !isSchoolMutationRole(this.authService.getActiveRole())) {
+      return;
+    }
+    const current = this.selectedSchoolYears;
+    const resolved = this.divisionSettingsService.resolveUnlockedAipSchoolYears(
+      current,
+      this.schoolYearOptions,
+    );
+    if (JSON.stringify(resolved) !== JSON.stringify(current)) {
+      this.aipForm.patchValue({ schoolYear: resolved });
+    }
   }
 
   private patchFormFromProject(
     project: Aip,
     opts: { forEdit?: boolean } = {},
   ): void {
+    const sourceYears = aipSchoolYearsAsArray(project.schoolYear);
+    const schoolYear = opts.forEdit
+      ? sourceYears
+      : this.divisionSettingsService.resolveUnlockedAipSchoolYears(
+          sourceYears,
+          this.schoolYearOptions,
+        );
+
     this.aipForm.patchValue({
       apn: project.apn ?? '',
-      schoolYear: aipSchoolYearsAsArray(project.schoolYear),
+      schoolYear,
       problemStatement: project.problemStatement ?? '',
       title: project.title ?? '',
       objectives: project.objectives ?? '',
@@ -235,9 +276,20 @@ export class AipFormComponent implements OnInit {
       return;
     }
 
-    this.isSaving = true;
     const { intermediateOutcome, apn: _apn, schoolYear, ...filteredValues } =
       this.aipForm.getRawValue();
+    const years = aipSchoolYearsAsArray(schoolYear as string[]);
+    if (
+      isSchoolMutationRole(this.authService.getActiveRole()) &&
+      this.divisionSettingsService.isAipLockedForYears(years)
+    ) {
+      this.showError(
+        'AIPs for one or more selected school years are locked. Contact your division office if you need changes.',
+      );
+      return;
+    }
+
+    this.isSaving = true;
     const payload = {
       pillars: intermediateOutcome,
       schoolYear: aipSchoolYearPayloadFromSelection(schoolYear as string[]),
@@ -268,28 +320,14 @@ export class AipFormComponent implements OnInit {
         this.isSaving = false;
         console.error('Error saving AIP project:', err);
 
-        let errorMessage = this.isEdit
-          ? 'Failed to update AIP project. Please try again.'
-          : this.isDuplicate
-            ? 'Failed to duplicate AIP project. Please try again.'
-            : 'Failed to save AIP project. Please try again.';
-
-        if (err?.error?.message) {
-          if (Array.isArray(err.error.message)) {
-            errorMessage = err.error.message.join('\n• ');
-            if (err.error.message.length > 1) {
-              errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-            }
-          } else if (typeof err.error.message === 'string') {
-            errorMessage = err.error.message;
-          }
-        } else if (err?.error && typeof err.error === 'string') {
-          errorMessage = err.error;
-        } else if (err?.message) {
-          errorMessage = err.message;
-        } else if (typeof err === 'string') {
-          errorMessage = err;
-        }
+        const errorMessage = extractApiErrorMessage(
+          err,
+          this.isEdit
+            ? 'Failed to update AIP project. Please try again.'
+            : this.isDuplicate
+              ? 'Failed to duplicate AIP project. Please try again.'
+              : 'Failed to save AIP project. Please try again.',
+        );
 
         const duration = errorMessage.includes('\n') ? 8000 : 5000;
         this.snackBar.open(errorMessage, 'Close', {

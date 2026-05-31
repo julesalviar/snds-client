@@ -32,6 +32,7 @@ import { ManageDistrictComponent } from './division-admin/manage-district/manage
 import { ManageFundSourceComponent } from './division-admin/manage-fund-source/manage-fund-source.component';
 import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
+import { ManageSchoolYearLocksComponent } from './division-admin/manage-school-year-locks/manage-school-year-locks.component';
 import { OpenRegistrationComponent } from './open-registration/open-registration.component';
 import { CloseRegistrationComponent } from './close-registration/close-registration.component';
 import { CalendarComponent } from './calendar/calendar.component';
@@ -129,6 +130,7 @@ export const routes: Routes = [
       {path: 'manage-district', component: ManageDistrictComponent},
       {path: 'manage-users', component: ManageUsersComponent},
       {path: 'manage-schools', component: ManageSchoolsComponent},
+      {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
       {path: 'activities', component: ActivityListComponent},
       {path: 'activities/create', component: ActivityFormComponent},
       {path: 'activities/edit/:id', component: ActivityFormComponent},
@@ -146,6 +148,7 @@ export const routes: Routes = [
     data: { roleType: UserType.SystemAdmin },
     children: [
       {path: 'manage-users', component: ManageUsersComponent},
+      {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
     ]
   },
   { // Program Holder routes

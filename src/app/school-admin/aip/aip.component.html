@@ -2,8 +2,15 @@
   <mat-card class="list-card">
     <mat-card-title>List of Programs, Projects & Activities</mat-card-title>
 
+    <p *ngIf="aipLockBanner" class="lock-banner" role="status">{{ aipLockBanner }}</p>
+
     <div class="top-actions" *ngIf="userRole === UserType.SchoolAdmin">
-      <button mat-raised-button color="primary" type="button" (click)="onCreate()">
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="onCreate()"
+        [disabled]="isFilterYearAipLocked">
         <mat-icon>add</mat-icon>
         Create PPA
       </button>
@@ -124,7 +131,7 @@
                 mat-icon-button
                 type="button"
                 class="action-icon-button"
-                [disabled]="userRole !== UserType.SchoolAdmin"
+                [disabled]="userRole !== UserType.SchoolAdmin || isProjectAipLocked(project)"
                 (click)="editProject(project)"
                 [matTooltip]="userRole === UserType.SchoolAdmin ? 'Edit this project' : 'Only School Admins can edit'"
                 aria-label="Edit project">
@@ -149,7 +156,7 @@
                   mat-menu-item
                   type="button"
                   class="delete-menu-item"
-                  [disabled]="userRole !== UserType.SchoolAdmin"
+                  [disabled]="userRole !== UserType.SchoolAdmin || isProjectAipLocked(project)"
                   (click)="deleteProject(project)">
                   <mat-icon>delete</mat-icon>
                   Delete

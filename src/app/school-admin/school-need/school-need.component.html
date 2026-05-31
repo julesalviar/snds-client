@@ -15,6 +15,8 @@
         <p>Loading school need...</p>
       </div>
 
+      <p *ngIf="schoolNeedLockBanner" class="lock-banner" role="status">{{ schoolNeedLockBanner }}</p>
+
       <form [formGroup]="schoolNeedsForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
         <mat-form-field appearance="fill">
           <mat-label>Contribution Type</mat-label>
@@ -187,7 +189,7 @@
             <button mat-raised-button type="button" (click)="onCancel()" [disabled]="isSaving">
               <mat-icon>cancel</mat-icon> CANCEL
             </button>
-            <button mat-raised-button type="button" (click)="onSubmit()" [disabled]="isSaving">
+            <button mat-raised-button type="button" (click)="onSubmit()" [disabled]="isSaving || isSchoolNeedFormLocked">
               <mat-icon>save</mat-icon> {{ isSaving ? 'UPDATING...' : 'UPDATE' }}
             </button>
           </div>

@@ -45,6 +45,11 @@ import { PillarConfigService } from '../../common/services/pillar-config.service
 import { PillarItem } from '../../common/model/pillar-config.model';
 import { InvalidContributionTypeDialogComponent } from '../invalid-contribution-type-dialog.component';
 import { InvalidSpecificContributionDialogComponent } from '../invalid-specific-contribution-dialog.component';
+import { DivisionSettingsService } from '../../common/services/division-settings.service';
+import {
+  extractApiErrorMessage,
+  isSchoolMutationRole,
+} from '../../common/utils/division-lock.util';
 
 export interface SchoolNeedCreateDialogData {
   /** Prefill from an existing need, then submit as POST create (never update). */
@@ -86,7 +91,16 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   isLoadingPpaProjects = true;
   isSaving = false;
 
-  schoolYears: string[] = getSchoolYearOptions();
+  readonly allSchoolYearOptions: string[] = getSchoolYearOptions();
+
+  get schoolYears(): string[] {
+    if (!isSchoolMutationRole(this.authService.getActiveRole())) {
+      return this.allSchoolYearOptions;
+    }
+    return this.divisionSettingsService.filterUnlockedSchoolNeedYears(
+      this.allSchoolYearOptions,
+    );
+  }
   units: string[] = [];
 
   contributionTypes: string[] = [];
@@ -120,6 +134,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     private readonly pillarConfigService: PillarConfigService,
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
+    private readonly divisionSettingsService: DivisionSettingsService,
     @Optional() @Inject(MAT_DIALOG_DATA) private readonly dialogData: SchoolNeedCreateDialogData | null,
   ) {
     this.schoolNeedsForm = this.fb.group({
@@ -152,6 +167,7 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   }
 
   private async bootstrapDialog(): Promise<void> {
+    await this.divisionSettingsService.initializeLocks();
     await this.referenceDataService.initialize();
     this.loadContributionData();
     await this.loadPillarsAndUnits();
@@ -187,6 +203,24 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
       }
     });
     this.loadCurrentProjects();
+    this.ensureFormSchoolYearUnlocked();
+  }
+
+  private ensureFormSchoolYearUnlocked(): void {
+    if (!isSchoolMutationRole(this.authService.getActiveRole())) {
+      return;
+    }
+    const current = this.schoolNeedsForm.get('schoolYear')?.value as
+      | string
+      | undefined;
+    const resolved = this.divisionSettingsService.resolveUnlockedSchoolNeedYear(
+      current,
+      this.allSchoolYearOptions,
+    );
+    if (resolved && resolved !== current) {
+      this.schoolNeedsForm.patchValue({ schoolYear: resolved });
+      this.refreshPpaProjectsForFormSchoolYear();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -231,6 +265,17 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
       return;
     }
 
+    const schoolYear = this.schoolNeedsForm.get('schoolYear')?.value;
+    if (
+      isSchoolMutationRole(this.authService.getActiveRole()) &&
+      this.divisionSettingsService.isSchoolNeedYearLocked(schoolYear)
+    ) {
+      this.showErrorNotification(
+        `School needs for school year ${schoolYear} are locked. Contact your division office if you need changes.`,
+      );
+      return;
+    }
+
     this.isSaving = true;
     try {
       const newNeed = this.buildCreatePayload();
@@ -248,24 +293,12 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
         error: (err) => {
           console.error('Error creating school need:', err);
           this.isSaving = false;
-          let errorMessage = 'Failed to save school need. Please try again.';
-          if (err?.error?.message) {
-            if (Array.isArray(err.error.message)) {
-              errorMessage = err.error.message.join('\n• ');
-              if (err.error.message.length > 1) {
-                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-              }
-            } else if (typeof err.error.message === 'string') {
-              errorMessage = err.error.message;
-            }
-          } else if (err?.error && typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else if (err?.message) {
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          }
-          this.showErrorNotification(errorMessage);
+          this.showErrorNotification(
+            extractApiErrorMessage(
+              err,
+              'Failed to save school need. Please try again.',
+            ),
+          );
         },
       });
     } catch (error: any) {
@@ -335,7 +368,10 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     );
 
     this.schoolNeedsForm.patchValue({
-      schoolYear: need.schoolYear ?? getSchoolYear(),
+      schoolYear: this.divisionSettingsService.resolveUnlockedSchoolNeedYear(
+        need.schoolYear,
+        this.allSchoolYearOptions,
+      ),
       ppaName: this.selectedProjectIds,
       intermediateOutcome,
       quantityNeeded: need.quantity,

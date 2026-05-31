@@ -28,6 +28,12 @@ import {
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 import { SchoolNeedCreateDialogComponent } from '../school-need-create-dialog/school-need-create-dialog.component';
 import { SchoolNeedComponent } from '../school-need/school-need.component';
+import { DivisionSettingsService } from '../../common/services/division-settings.service';
+import { AuthService } from '../../auth/auth.service';
+import {
+  extractApiErrorMessage,
+  isSchoolMutationRole,
+} from '../../common/utils/division-lock.util';
 
 /** Matches backend `school-need.controller` validation for `schoolYear` query param. */
 const SCHOOL_YEAR_QUERY = /^\d{4}-\d{4}$/;
@@ -123,6 +129,7 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   dataSource = new MatTableDataSource<SchoolNeed>();
   totalItems: number = 0;
   isLoading: boolean = true;
+  schoolNeedLocksLoaded = false;
 
   readonly schoolYearOptions: string[] = getSchoolYearOptions();
   /** Default filter matches backend `getCurrentSchoolYear()` / list query when `schoolYear` is omitted. */
@@ -300,9 +307,15 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly breakpointObserver: BreakpointObserver,
+    private readonly divisionSettingsService: DivisionSettingsService,
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
+    void this.divisionSettingsService.initializeLocks().then(() => {
+      this.schoolNeedLocksLoaded = true;
+    });
+
     this.filterMode = ListOfSchoolNeedsComponent.parseFilterModeFromQuery(
       this.route.snapshot.queryParamMap.get('filterBy'),
     );
@@ -507,7 +520,59 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   view(need: SchoolNeed): void {
   this.router.navigate(['/school-admin/school-need-view/', need.code]);
 }
+  get isSchoolMutator(): boolean {
+    return isSchoolMutationRole(this.authService.getActiveRole());
+  }
+
+  get schoolNeedLockBanner(): string | null {
+    if (!this.isSchoolMutator || !this.schoolNeedLocksLoaded) {
+      return null;
+    }
+    if (
+      this.filterMode === 'schoolYear' &&
+      this.divisionSettingsService.isSchoolNeedYearLocked(
+        this.selectedSchoolYear,
+      )
+    ) {
+      return `School needs for school year ${this.selectedSchoolYear} are locked. Contact your division office if you need changes.`;
+    }
+    return null;
+  }
+
+  isSchoolNeedLocked(need: SchoolNeed): boolean {
+    if (!this.isSchoolMutator || !this.schoolNeedLocksLoaded) {
+      return false;
+    }
+    return this.divisionSettingsService.isSchoolNeedYearLocked(
+      need.schoolYear,
+    );
+  }
+
+  private showSchoolNeedLockedNotification(): void {
+    this.snackBar.open(
+      this.schoolNeedLockBanner ??
+        'School needs for the selected school year are locked.',
+      'Close',
+      {
+        duration: 6000,
+        horizontalPosition: 'right',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar'],
+      },
+    );
+  }
+
   onCreate(): void {
+    if (
+      this.filterMode === 'schoolYear' &&
+      this.divisionSettingsService.isSchoolNeedYearLocked(
+        this.selectedSchoolYear,
+      ) &&
+      this.isSchoolMutator
+    ) {
+      this.showSchoolNeedLockedNotification();
+      return;
+    }
     const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
     const ref = this.dialog.open(SchoolNeedCreateDialogComponent, {
       width: isMobile ? '100vw' : 'min(640px, 95vw)',
@@ -526,6 +591,10 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
 
   edit(need: SchoolNeed): void {
     if (!need.code) {
+      return;
+    }
+    if (this.isSchoolNeedLocked(need)) {
+      this.showSchoolNeedLockedNotification();
       return;
     }
     const isMobile = this.breakpointObserver.isMatched(Breakpoints.Handset);
@@ -564,6 +633,10 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
   }
 
   delete(need: SchoolNeed): void {
+    if (this.isSchoolNeedLocked(need)) {
+      this.showSchoolNeedLockedNotification();
+      return;
+    }
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
@@ -610,21 +683,15 @@ export class ListOfSchoolNeedsComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         console.error('Error deleting school need:', err);
 
-        // Extract specific error message from server response
-        let errorMessage = 'Failed to delete school need';
-
-        if (err.error?.message) {
-          errorMessage = err.error.message;
-        } else if (err.error?.error) {
-          errorMessage = err.error.error;
-        } else if (err.status === 404) {
+        let errorMessage = extractApiErrorMessage(
+          err,
+          'Failed to delete school need',
+        );
+        if (err.status === 404) {
           errorMessage = 'School need not found';
-        } else if (err.status === 403) {
-          errorMessage = 'You do not have permission to delete this school need';
-        } else if (err.status === 500) {
-          errorMessage = 'Server error occurred while deleting school need';
         } else if (err.status === 0) {
-          errorMessage = 'Unable to connect to server. Please check your internet connection';
+          errorMessage =
+            'Unable to connect to server. Please check your internet connection';
         }
 
         this.snackBar.open(errorMessage, 'Close', {
