@@ -36,5 +36,6 @@ export const API_ENDPOINT = {
   widget: {
     resourceGenerations: `${environment.API_URL}/widgets/resource-generations`,
     partners: `${environment.API_URL}/widgets/partners`,
+    aipStatusStats: `${environment.API_URL}/widgets/aip-status-stats`,
   },
 }

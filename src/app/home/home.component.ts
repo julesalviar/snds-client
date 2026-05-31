@@ -32,7 +32,6 @@ import {
   getSchoolYearOptions,
   getDefaultSchoolYear,
 } from '../common/date-utils';
-import {AipService} from "../common/services/aip.service";
 import {AIP_STATUSES, AipStatus} from "../common/enums/aip-status.enum";
 import {UserType} from "../registration/user-type.enum";
 import {MatButtonModule} from '@angular/material/button';
@@ -49,6 +48,7 @@ import {
   ResourceGenerationsResponse,
   WidgetService,
   PartnersResponse,
+  AipStatusStatsResponse,
 } from '../common/services/widget.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
@@ -100,6 +100,7 @@ export interface HomeState {
   schoolLogoUrl: string | null;
   logoError: boolean;
   aipStatusStats: Map<AipStatus, number>;
+  aipStatusPercentages: Map<AipStatus, number>;
   totalAips: number;
   upcomingPlans: PpaPlan[];
   partnershipActivities: Activity[];
@@ -109,6 +110,8 @@ export interface HomeState {
   partnersBreakdown: HomePieSlice[];
   /** School year filter for division-admin resource/partner breakdown (e.g. `2025-2026`). */
   resourcePartnerSchoolYear: string;
+  /** School year filter for AIP implementation status widget (e.g. `2025-2026`). */
+  aipStatsSchoolYear: string;
   /** School year for the home tree filter; passed to school-needs API for tree counts. */
   treeSchoolYear: string;
 }
@@ -149,6 +152,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   protected readonly AIP_STATUSES = AIP_STATUSES;
   /** Options for resource/partner breakdown school-year filter (2025-2026 … current year + 3). */
   protected readonly resourcePartnerSchoolYearOptions = getSchoolYearOptions();
+  protected readonly aipStatsSchoolYearOptions = getSchoolYearOptions();
 
   /** Accordion: when false, only the widget title row stays visible. */
   private homeWidgetExpanded: Record<HomeWidgetId, boolean> = {
@@ -182,7 +186,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly internalReferenceDataService: InternalReferenceDataService,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly authService: AuthService,
-    private readonly aipService: AipService,
     private readonly ppaPlanService: PpaPlanService,
     private readonly calendarNavigationService: CalendarNavigationService,
     private readonly decimalPipe: DecimalPipe,
@@ -231,7 +234,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     const userRole = this.authService.getActiveRole();
     if (!name || !userRole) console.warn('User information is incomplete.');
     const aipStatusStats = new Map<AipStatus, number>();
-    AIP_STATUSES.forEach((s) => aipStatusStats.set(s, 0));
+    const aipStatusPercentages = new Map<AipStatus, number>();
+    AIP_STATUSES.forEach((s) => {
+      aipStatusStats.set(s, 0);
+      aipStatusPercentages.set(s, 0);
+    });
     const isDivisionAdmin = userRole === UserType.DivisionAdmin;
     return {
       loading: {
@@ -252,12 +259,14 @@ export class HomeComponent implements OnInit, OnDestroy {
       schoolLogoUrl: null,
       logoError: false,
       aipStatusStats,
+      aipStatusPercentages,
       totalAips: 0,
       upcomingPlans: [],
       partnershipActivities: [],
       resourceGenerationBreakdown: [],
       partnersBreakdown: [],
       resourcePartnerSchoolYear: getDefaultSchoolYear(),
+      aipStatsSchoolYear: getDefaultSchoolYear(),
       treeSchoolYear: getDefaultSchoolYear(),
     };
   }
@@ -389,6 +398,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadSchoolNeeds$(latest).subscribe({
       next: (result) => this.homeStateSubject.next(result),
       error: (err) => console.error('School needs reload error:', err),
+    });
+  }
+
+  onAipStatsSchoolYearChange(state: HomeState, schoolYear: string): void {
+    if (schoolYear === state.aipStatsSchoolYear || state.loading.aipStats) {
+      return;
+    }
+    this.homeStateSubject.next({
+      ...state,
+      aipStatsSchoolYear: schoolYear,
+      loading: { ...state.loading, aipStats: true },
+    });
+    const latest = this.homeStateSubject.getValue();
+    this.loadAipStatsIfNeeded$(latest).subscribe({
+      next: (result) => this.homeStateSubject.next(result),
+      error: (err) => console.error('AIP status stats reload error:', err),
     });
   }
 
@@ -546,42 +571,49 @@ export class HomeComponent implements OnInit, OnDestroy {
       return of({ ...state, loading: { ...state.loading, aipStats: false } });
     }
     const schoolId = role === UserType.SchoolAdmin ? this.authService.getSchoolId() : undefined;
-    return this.fetchAllAips(1, 1000, [], schoolId).pipe(
-      map((aips) => {
-        const stats = new Map<AipStatus, number>();
-        AIP_STATUSES.forEach((s) => stats.set(s, 0));
-        aips.forEach((aip: any) => {
-          if (aip.status && stats.has(aip.status)) {
-            stats.set(aip.status, (stats.get(aip.status) ?? 0) + 1);
-          }
-        });
-        return {
-          ...state,
-          loading: { ...state.loading, aipStats: false },
-          aipStatusStats: stats,
-          totalAips: aips.length,
-        };
-      }),
+    const emptyStats: AipStatusStatsResponse = {
+      success: false,
+      data: { total: 0, byStatus: [] },
+      meta: { count: 0, timestamp: '' },
+    };
+    return this.widgetService.getAipStatusStats(state.aipStatsSchoolYear, schoolId).pipe(
+      map((response) => ({
+        ...state,
+        loading: { ...state.loading, aipStats: false },
+        aipStatsSchoolYear: state.aipStatsSchoolYear,
+        ...this.mapAipStatusStatsResponse(response),
+      })),
       catchError((err) => {
         console.error('Error loading AIP statistics:', err);
-        return of({ ...state, loading: { ...state.loading, aipStats: false } });
+        return of({
+          ...state,
+          loading: { ...state.loading, aipStats: false },
+          ...this.mapAipStatusStatsResponse(emptyStats),
+        });
       }),
     );
   }
 
-  private fetchAllAips(page: number, size: number, acc: any[] = [], schoolId?: string): Observable<any[]> {
-    return this.aipService.getAips(page, size, schoolId).pipe(
-      switchMap(res => {
-        const currentData = res?.data ?? [];
-        const allData = [...acc, ...currentData];
-
-        if (currentData.length < size) {
-          return of(allData);
+  private mapAipStatusStatsResponse(
+    response: AipStatusStatsResponse,
+  ): Pick<HomeState, 'aipStatusStats' | 'aipStatusPercentages' | 'totalAips'> {
+    const stats = new Map<AipStatus, number>();
+    const percentages = new Map<AipStatus, number>();
+    AIP_STATUSES.forEach((s) => {
+      stats.set(s, 0);
+      percentages.set(s, 0);
+    });
+    const total = response.success ? response.data.total : 0;
+    if (response.success && Array.isArray(response.data.byStatus)) {
+      for (const row of response.data.byStatus) {
+        const status = row.status as AipStatus;
+        if (AIP_STATUSES.includes(status)) {
+          stats.set(status, row.count);
+          percentages.set(status, row.percentage);
         }
-
-        return this.fetchAllAips(page + 1, size, allData, schoolId);
-      })
-    );
+      }
+    }
+    return { aipStatusStats: stats, aipStatusPercentages: percentages, totalAips: total };
   }
 
   private loadUpcomingPlansIfNeeded$(state: HomeState): Observable<HomeState> {
@@ -824,9 +856,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getStatusPercentage(state: HomeState, status: AipStatus): number {
-    if (state.totalAips === 0) return 0;
-    const count = state.aipStatusStats.get(status) || 0;
-    return Math.round((count / state.totalAips) * 100);
+    return state.aipStatusPercentages.get(status) ?? 0;
   }
 
   getStatusCountFormatted(state: HomeState, status: AipStatus): string {

@@ -32,6 +32,24 @@ export interface PartnersResponse {
   meta: ResourceGenerationsMetaDto;
 }
 
+/** Row from `GET /widgets/aip-status-stats`. */
+export interface AipStatusStatsRowDto {
+  status: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AipStatusStatsDataDto {
+  total: number;
+  byStatus: AipStatusStatsRowDto[];
+}
+
+export interface AipStatusStatsResponse {
+  success: boolean;
+  data: AipStatusStatsDataDto;
+  meta: ResourceGenerationsMetaDto;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -57,5 +75,18 @@ export class WidgetService {
   getPartners(schoolYear?: string): Observable<PartnersResponse> {
     const url = this.appendSchoolYearQuery(API_ENDPOINT.widget.partners, schoolYear);
     return this.httpService.get<PartnersResponse>(url);
+  }
+
+  /** AIP implementation status counts and percentages for the home widget. */
+  getAipStatusStats(
+    schoolYear?: string,
+    schoolId?: string,
+  ): Observable<AipStatusStatsResponse> {
+    let url = this.appendSchoolYearQuery(API_ENDPOINT.widget.aipStatusStats, schoolYear);
+    if (schoolId?.trim()) {
+      const sep = url.includes('?') ? '&' : '?';
+      url += `${sep}schoolId=${encodeURIComponent(schoolId.trim())}`;
+    }
+    return this.httpService.get<AipStatusStatsResponse>(url);
   }
 }

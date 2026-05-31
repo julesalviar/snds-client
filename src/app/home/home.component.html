@@ -206,13 +206,23 @@
               </button>
             </div>
             <div
-              class="aip-status-details ppa-implementation-widget-body home-widget-collapsible-body"
+              class="home-widget-collapsible-body"
               [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('ppaImplementation')"
-              [attr.aria-hidden]="!isHomeWidgetExpanded('ppaImplementation')"
-              (click)="navigateToAip()"
-              role="button"
-              tabindex="0"
-              (keydown.enter)="navigateToAip()">
+              [attr.aria-hidden]="!isHomeWidgetExpanded('ppaImplementation')">
+              <div class="ppa-implementation-school-year-filter" (click)="$event.stopPropagation()">
+                <school-year-widget-filter
+                  controlId="home-aip-stats-sy"
+                  [schoolYear]="state.aipStatsSchoolYear"
+                  [options]="aipStatsSchoolYearOptions"
+                  [disabled]="state.loading.aipStats"
+                  (schoolYearChange)="onAipStatsSchoolYearChange(state, $event)" />
+              </div>
+              <div
+                class="aip-status-details ppa-implementation-widget-body"
+                (click)="navigateToAip()"
+                role="button"
+                tabindex="0"
+                (keydown.enter)="navigateToAip()">
               <div class="aip-stats-cards-inline">
                 <mat-card *ngFor="let status of AIP_STATUSES" class="aip-status-card-inline">
                   <mat-card-content>
@@ -228,6 +238,7 @@
                     </div>
                   </mat-card-content>
                 </mat-card>
+              </div>
               </div>
             </div>
           </aside>
