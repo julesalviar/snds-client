@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpService } from './http.service';
 import { API_ENDPOINT } from '../api-endpoints';
+import { getDefaultSchoolYear } from '../date-utils';
 
 /** Row from `GET /widget/resource-generations`. */
 export interface ResourceGenerationRowDto {
@@ -57,9 +58,9 @@ export class WidgetService {
   constructor(private readonly httpService: HttpService) {}
 
   private appendSchoolYearQuery(url: string, schoolYear?: string): string {
-    if (!schoolYear?.trim()) return url;
+    const year = schoolYear?.trim() || getDefaultSchoolYear();
     const sep = url.includes('?') ? '&' : '?';
-    return `${url}${sep}schoolYear=${encodeURIComponent(schoolYear.trim())}`;
+    return `${url}${sep}schoolYear=${encodeURIComponent(year)}`;
   }
 
   /**

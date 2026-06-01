@@ -30,7 +30,7 @@ import {MatIcon} from "@angular/material/icon";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {
   getSchoolYearOptions,
-  getDefaultSchoolYear,
+  getCurrentSchoolYear,
 } from '../common/date-utils';
 import {AIP_STATUSES, AipStatus} from "../common/enums/aip-status.enum";
 import {UserType} from "../registration/user-type.enum";
@@ -150,9 +150,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   protected readonly UserType = UserType;
   protected readonly AIP_STATUSES = AIP_STATUSES;
-  /** Options for resource/partner breakdown school-year filter (2025-2026 … current year + 3). */
-  protected readonly resourcePartnerSchoolYearOptions = getSchoolYearOptions();
-  protected readonly aipStatsSchoolYearOptions = getSchoolYearOptions();
+  /** School-year options for home widget filters (recomputed so rollover stays correct). */
+  protected get schoolYearWidgetOptions(): readonly string[] {
+    return getSchoolYearOptions();
+  }
 
   /** Accordion: when false, only the widget title row stays visible. */
   private homeWidgetExpanded: Record<HomeWidgetId, boolean> = {
@@ -204,6 +205,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.checkProfileCompleteness();
     }
 
+    this.homeStateSubject.next(
+      this.withWidgetSchoolYearsSetToCurrent(this.homeStateSubject.getValue()),
+    );
+
     this.divisionBreakdownChartsSub = this.homeState$
       .pipe(
         filter(
@@ -227,6 +232,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.divisionBreakdownChartsSub?.unsubscribe();
     this.divisionBreakdownChartsSub = undefined;
     this.disposeDivisionAdminBreakdownCharts();
+  }
+
+  /** Align widget filters to the current school year (handles rollover / stale SPA state). */
+  private withWidgetSchoolYearsSetToCurrent(state: HomeState): HomeState {
+    const current = getCurrentSchoolYear();
+    const options = getSchoolYearOptions();
+    const year = options.includes(current) ? current : options[options.length - 1] ?? current;
+    return {
+      ...state,
+      treeSchoolYear: year,
+      aipStatsSchoolYear: year,
+      resourcePartnerSchoolYear: year,
+    };
   }
 
   private getInitialState(): HomeState {
@@ -265,15 +283,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       partnershipActivities: [],
       resourceGenerationBreakdown: [],
       partnersBreakdown: [],
-      resourcePartnerSchoolYear: getDefaultSchoolYear(),
-      aipStatsSchoolYear: getDefaultSchoolYear(),
-      treeSchoolYear: getDefaultSchoolYear(),
+      resourcePartnerSchoolYear: getCurrentSchoolYear(),
+      aipStatsSchoolYear: getCurrentSchoolYear(),
+      treeSchoolYear: getCurrentSchoolYear(),
     };
   }
 
   private buildLoadPipeline(): Observable<HomeState> {
     return defer(() => {
-      const initial = this.getInitialState();
+      const initial = this.withWidgetSchoolYearsSetToCurrent(this.getInitialState());
       return of(initial).pipe(
         switchMap((s) =>
           this.loadInternalRefData$(s).pipe(

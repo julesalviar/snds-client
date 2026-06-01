@@ -5,9 +5,9 @@
   <select
     [id]="resolvedControlId"
     class="p-select-sm"
-    [value]="schoolYear"
-    [disabled]="disabled"
-    (change)="onSelectChange($any($event.target).value)">
+    [ngModel]="selectedYear"
+    (ngModelChange)="onModelChange($event)"
+    [disabled]="disabled">
     @for (sy of options; track sy) {
       <option [value]="sy">{{ sy }}</option>
     }

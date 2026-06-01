@@ -81,7 +81,7 @@
             <school-year-widget-filter
               controlId="home-tree-school-year"
               [schoolYear]="state.treeSchoolYear"
-              [options]="resourcePartnerSchoolYearOptions"
+              [options]="schoolYearWidgetOptions"
               [disabled]="state.loading.schoolNeeds"
               [alignEnd]="false"
               (schoolYearChange)="onTreeSchoolYearChange(state, $event)" />
@@ -213,7 +213,7 @@
                 <school-year-widget-filter
                   controlId="home-aip-stats-sy"
                   [schoolYear]="state.aipStatsSchoolYear"
-                  [options]="aipStatsSchoolYearOptions"
+                  [options]="schoolYearWidgetOptions"
                   [disabled]="state.loading.aipStats"
                   (schoolYearChange)="onAipStatsSchoolYearChange(state, $event)" />
               </div>
@@ -269,7 +269,7 @@
           <school-year-widget-filter
             controlId="home-resource-partner-sy"
             [schoolYear]="state.resourcePartnerSchoolYear"
-            [options]="resourcePartnerSchoolYearOptions"
+            [options]="schoolYearWidgetOptions"
             [disabled]="state.loading.resourcePartnerBreakdown"
             (schoolYearChange)="onResourcePartnerSchoolYearChange(state, $event)" />
           @if (state.loading.resourcePartnerBreakdown) {

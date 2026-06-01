@@ -1,41 +1,63 @@
 import {MongoDate} from "./model/school.model";
 
-/** School years run June 1 (startYear) through May 31 (endYear). */
-export function getSchoolYear(offset: number = 0, now: Date = new Date()): string {
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth(); // 0 = January; June = 5
+/** DepEd school-year rollover uses Philippines civil date (UTC+8). */
+export const PHILIPPINES_TIME_ZONE = 'Asia/Manila';
 
-  const baseYear = currentMonth >= 5 ? currentYear : currentYear - 1;
-
-  // Apply the optional offset
-  const startYear = baseYear + offset;
-  const endYear = startYear + 1;
-
-  return `${startYear}-${endYear}`;
+function getYearMonthInTimeZone(
+  now: Date,
+  timeZone: string = PHILIPPINES_TIME_ZONE,
+): { year: number; month: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(now);
+  return {
+    year: Number(parts.find((p) => p.type === 'year')?.value ?? '0'),
+    month: Number(parts.find((p) => p.type === 'month')?.value ?? '1'),
+  };
 }
 
-export const getCurrentSchoolYear = () => getSchoolYear();
+/** School years run June 1 (startYear) through May 31 (endYear). */
+export function getSchoolYear(
+  offset: number = 0,
+  now: Date = new Date(),
+  timeZone: string = PHILIPPINES_TIME_ZONE,
+): string {
+  const { year, month } = getYearMonthInTimeZone(now, timeZone);
+  const baseYear = month >= 6 ? year : year - 1;
+  const startYear = baseYear + offset;
+  return `${startYear}-${startYear + 1}`;
+}
+
+export const getCurrentSchoolYear = (now: Date = new Date()) => getSchoolYear(0, now);
+
+/** Default selection for school-year widget dropdowns (always the current school year). */
+export function getDefaultSchoolYear(now: Date = new Date()): string {
+  return getCurrentSchoolYear(now);
+}
 
 export const SCHOOL_YEAR_MIN_START = 2025;
 
 /**
- * School year labels from `2025-2026` through `(currentYear + 3)-(currentYear + 4)`.
- * Same label shape as `getSchoolYear`.
+ * School year labels from min(start floor, current start year) through `(calendarYear + 3)`.
+ * Always includes the current school year so widget dropdowns can default to it.
  */
 export function getSchoolYearOptions(now: Date = new Date()): string[] {
-  const maxStartYear = now.getFullYear() + 3;
+  const current = getCurrentSchoolYear(now);
+  const currentStartYear = Number(current.slice(0, 4));
+  const { year: calendarYear } = getYearMonthInTimeZone(now);
+  const maxStartYear = calendarYear + 3;
+  const minStartYear = Math.min(SCHOOL_YEAR_MIN_START, currentStartYear);
   const out: string[] = [];
-  for (let y = SCHOOL_YEAR_MIN_START; y <= maxStartYear; y++) {
+  for (let y = minStartYear; y <= maxStartYear; y++) {
     out.push(`${y}-${y + 1}`);
   }
+  if (!out.includes(current)) {
+    out.push(current);
+    out.sort((a, b) => Number(a.slice(0, 4)) - Number(b.slice(0, 4)));
+  }
   return out;
-}
-
-export function getDefaultSchoolYear(now: Date = new Date()): string {
-  const options = getSchoolYearOptions(now);
-  const current = getSchoolYear(0, now);
-  if (options.includes(current)) return current;
-  return options[0] ?? `${SCHOOL_YEAR_MIN_START}-${SCHOOL_YEAR_MIN_START + 1}`;
 }
 
 const SCHOOL_YEAR_LABEL = /^\d{4}-\d{4}$/;
