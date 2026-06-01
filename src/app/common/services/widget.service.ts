@@ -38,6 +38,8 @@ export interface AipStatusStatsRowDto {
   status: string;
   count: number;
   percentage: number;
+  /** Pre-formatted percentage from the API (e.g. "100", "33.33"). */
+  percentageDisplay: string;
 }
 
 export interface AipStatusStatsDataDto {

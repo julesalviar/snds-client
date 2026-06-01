@@ -70,7 +70,13 @@ export class DivisionSettingsService {
   }
 
   isAipLockedForYears(schoolYears: string[]): boolean {
-    return schoolYears.some((y) => this.isAipYearLocked(y));
+    const years = schoolYears
+      .map((y) => y?.trim())
+      .filter((y): y is string => !!y);
+    if (years.length === 0) {
+      return false;
+    }
+    return years.every((y) => this.isAipYearLocked(y));
   }
 
   isAipLockedForRawSchoolYear(raw: unknown): boolean {
@@ -103,9 +109,8 @@ export class DivisionSettingsService {
     preferred: string[],
     options: string[],
   ): string[] {
-    const unlockedPreferred = this.filterUnlockedAipSchoolYears(preferred);
-    if (unlockedPreferred.length > 0) {
-      return unlockedPreferred;
+    if (preferred.length > 0 && !this.isAipLockedForYears(preferred)) {
+      return preferred;
     }
     const fallback = this.filterUnlockedAipSchoolYears(options);
     return fallback.length > 0 ? [fallback[0]] : [];

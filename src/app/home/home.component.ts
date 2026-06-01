@@ -100,7 +100,7 @@ export interface HomeState {
   schoolLogoUrl: string | null;
   logoError: boolean;
   aipStatusStats: Map<AipStatus, number>;
-  aipStatusPercentages: Map<AipStatus, number>;
+  aipStatusPercentageDisplays: Map<AipStatus, string>;
   totalAips: number;
   upcomingPlans: PpaPlan[];
   partnershipActivities: Activity[];
@@ -252,10 +252,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     const userRole = this.authService.getActiveRole();
     if (!name || !userRole) console.warn('User information is incomplete.');
     const aipStatusStats = new Map<AipStatus, number>();
-    const aipStatusPercentages = new Map<AipStatus, number>();
+    const aipStatusPercentageDisplays = new Map<AipStatus, string>();
     AIP_STATUSES.forEach((s) => {
       aipStatusStats.set(s, 0);
-      aipStatusPercentages.set(s, 0);
+      aipStatusPercentageDisplays.set(s, '0');
     });
     const isDivisionAdmin = userRole === UserType.DivisionAdmin;
     return {
@@ -277,7 +277,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       schoolLogoUrl: null,
       logoError: false,
       aipStatusStats,
-      aipStatusPercentages,
+      aipStatusPercentageDisplays,
       totalAips: 0,
       upcomingPlans: [],
       partnershipActivities: [],
@@ -614,12 +614,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private mapAipStatusStatsResponse(
     response: AipStatusStatsResponse,
-  ): Pick<HomeState, 'aipStatusStats' | 'aipStatusPercentages' | 'totalAips'> {
+  ): Pick<HomeState, 'aipStatusStats' | 'aipStatusPercentageDisplays' | 'totalAips'> {
     const stats = new Map<AipStatus, number>();
-    const percentages = new Map<AipStatus, number>();
+    const percentageDisplays = new Map<AipStatus, string>();
     AIP_STATUSES.forEach((s) => {
       stats.set(s, 0);
-      percentages.set(s, 0);
+      percentageDisplays.set(s, '0');
     });
     const total = response.success ? response.data.total : 0;
     if (response.success && Array.isArray(response.data.byStatus)) {
@@ -627,11 +627,18 @@ export class HomeComponent implements OnInit, OnDestroy {
         const status = row.status as AipStatus;
         if (AIP_STATUSES.includes(status)) {
           stats.set(status, row.count);
-          percentages.set(status, row.percentage);
+          percentageDisplays.set(
+            status,
+            row.percentageDisplay ?? String(row.percentage ?? 0),
+          );
         }
       }
     }
-    return { aipStatusStats: stats, aipStatusPercentages: percentages, totalAips: total };
+    return {
+      aipStatusStats: stats,
+      aipStatusPercentageDisplays: percentageDisplays,
+      totalAips: total,
+    };
   }
 
   private loadUpcomingPlansIfNeeded$(state: HomeState): Observable<HomeState> {
@@ -873,8 +880,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       .join(', ') || '—';
   }
 
-  getStatusPercentage(state: HomeState, status: AipStatus): number {
-    return state.aipStatusPercentages.get(status) ?? 0;
+  getStatusPercentageDisplay(state: HomeState, status: AipStatus): string {
+    return state.aipStatusPercentageDisplays.get(status) ?? '0';
   }
 
   getStatusCountFormatted(state: HomeState, status: AipStatus): string {

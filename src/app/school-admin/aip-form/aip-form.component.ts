@@ -84,12 +84,7 @@ export class AipFormComponent implements OnInit {
   }
 
   get selectableSchoolYearOptions(): string[] {
-    if (!isSchoolMutationRole(this.authService.getActiveRole())) {
-      return this.schoolYearOptions;
-    }
-    return this.divisionSettingsService.filterUnlockedAipSchoolYears(
-      this.schoolYearOptions,
-    );
+    return this.schoolYearOptions;
   }
 
   get availableSchoolYearOptions(): string[] {
@@ -284,7 +279,7 @@ export class AipFormComponent implements OnInit {
       this.divisionSettingsService.isAipLockedForYears(years)
     ) {
       this.showError(
-        'AIPs for one or more selected school years are locked. Contact your division office if you need changes.',
+        'This AIP cannot be saved because all of its school years are locked. Contact your division office if you need changes.',
       );
       return;
     }

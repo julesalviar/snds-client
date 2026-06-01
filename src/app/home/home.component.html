@@ -233,7 +233,7 @@
                       <div class="skeleton skeleton-card-bar-xs"></div>
                     </div>
                     <div *ngIf="!state.loading.aipStats" class="aip-card-values">
-                      <div class="status-percentage-inline">{{ getStatusPercentage(state, status) }}%</div>
+                      <div class="status-percentage-inline">{{ getStatusPercentageDisplay(state, status) }}%</div>
                       <div class="status-count-inline">{{ getStatusCountFormatted(state, status) }}</div>
                     </div>
                   </mat-card-content>
