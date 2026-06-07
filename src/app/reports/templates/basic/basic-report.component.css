@@ -129,3 +129,15 @@ h1 {
   text-align: center;
 }
 
+.report-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-table-container mat-paginator {
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  font-size: 11pt;
+}
+

@@ -1,16 +1,21 @@
-import {Component, Inject, Optional} from "@angular/core";
+import {Component, Inject, Optional, AfterViewInit, ViewChild} from "@angular/core";
 import {
-  MatCell, MatCellDef,
-  MatColumnDef, MatHeaderCell, MatHeaderCellDef,
+  MatCell,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
   MatHeaderRow,
   MatHeaderRowDef,
   MatRow,
   MatRowDef,
-  MatTable
+  MatTable,
+  MatTableDataSource,
 } from "@angular/material/table";
+import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {NgForOf, NgIf} from "@angular/common";
 import {DecimalPipe, DatePipe, CurrencyPipe, PercentPipe, LowerCasePipe, UpperCasePipe} from "@angular/common";
-import {Report, ReportTemplate, ReportTemplateParameter} from "../../../common/model/report.model";
+import {Report, ReportTemplate} from "../../../common/model/report.model";
 
 @Component({
   selector: 'app-basic-report',
@@ -26,17 +31,22 @@ import {Report, ReportTemplate, ReportTemplateParameter} from "../../../common/m
     MatHeaderCell,
     MatHeaderCellDef,
     MatCellDef,
+    MatPaginator,
+    MatPaginatorModule,
     NgForOf,
     NgIf
   ],
   styleUrls: ['./basic-report.component.css', '../../reports.component.css'],
 })
-export class BasicReportComponent {
-  protected data: any[] = [];
+export class BasicReportComponent implements AfterViewInit {
+  protected dataSource = new MatTableDataSource<any>([]);
   protected template: ReportTemplate | undefined;
   protected title: string = '';
   protected displayedColumns: string[] = [];
   protected isLoading: boolean = false;
+  protected pageSize = 10;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   private decimalPipe = new DecimalPipe('en-US');
   private datePipe = new DatePipe('en-US');
@@ -48,13 +58,20 @@ export class BasicReportComponent {
   constructor(
     @Optional() @Inject('REPORT_DATA') reportData?: any[],
     @Optional() @Inject('REPORT') report?: Report,
-    @Optional() @Inject('IS_LOADING') isLoading?: boolean
+    @Optional() @Inject('IS_LOADING') isLoading?: boolean,
+    @Optional() @Inject('REPORT_PAGE_SIZE') pageSize?: number,
   ) {
-    this.data = reportData ?? [];
+    const rows = reportData ?? [];
+    this.dataSource.data = rows;
     this.template = report?.reportTemplateId;
     this.title = report?.title ?? '';
     this.displayedColumns = this.template?.table?.columns?.map((c: any) => c.field) || [];
     this.isLoading = isLoading ?? false;
+    this.pageSize = pageSize && pageSize > 0 ? pageSize : 10;
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
   }
 
   getNestedValue(obj: any, path: string): any {

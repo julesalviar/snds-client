@@ -72,6 +72,8 @@ export class ReportsComponent implements OnInit, OnChanges {
   componentKey: number | null = null; // Used to force component recreation when data changes
   isLoading: boolean = false;
   sectorOptions: { value: string; label: string }[] = [];
+  readonly rowsPerPageOptions = [10, 25, 50, 100];
+  reportPageSize = 10;
   /** Populated from generateReport() when the API returns `{ template, data }`. */
   private lastGeneratedTemplate: ReportTemplate | undefined;
   private decimalPipe = new DecimalPipe('en-US');
@@ -167,7 +169,9 @@ export class ReportsComponent implements OnInit, OnChanges {
   }
 
   private buildForm() {
-    const formControls: { [key: string]: any } = {};
+    const formControls: { [key: string]: any } = {
+      rowsPerPage: [this.reportPageSize, Validators.required],
+    };
     const reportTemplate = this.selectedReport?.reportTemplateId;
 
     if (reportTemplate?.parameters) {
@@ -187,6 +191,14 @@ export class ReportsComponent implements OnInit, OnChanges {
     this.form = this.fb.group(formControls);
   }
 
+  onRowsPerPageChange(size: number): void {
+    this.reportPageSize = Number(size) || 10;
+    if (this.reportData.length > 0 && this.componentKey !== null) {
+      this.createCustomInjector();
+      this.componentKey = Date.now();
+    }
+  }
+
   private getEffectiveTemplate(): ReportTemplate | undefined {
     return this.lastGeneratedTemplate ?? this.selectedReport?.reportTemplateId;
   }
@@ -203,7 +215,8 @@ export class ReportsComponent implements OnInit, OnChanges {
       providers: [
         { provide: 'REPORT_DATA', useValue: this.reportData },
         { provide: 'REPORT', useValue: this.getReportForInjector() },
-        { provide: 'IS_LOADING', useValue: this.isLoading }
+        { provide: 'IS_LOADING', useValue: this.isLoading },
+        { provide: 'REPORT_PAGE_SIZE', useValue: this.reportPageSize },
       ]
     });
   }
@@ -228,6 +241,7 @@ export class ReportsComponent implements OnInit, OnChanges {
       this.selectedReport = selectedReport;
       this.lastGeneratedTemplate = undefined;
       this.reportData = [];
+      this.reportPageSize = 10;
       this.buildForm();
       // Force component destruction first
       this.componentKey = null;
@@ -260,6 +274,7 @@ export class ReportsComponent implements OnInit, OnChanges {
           this.reportData = Array.isArray(rows)
             ? rows
             : (Array.isArray(response) ? response : []);
+          this.reportPageSize = Number(this.form.get('rowsPerPage')?.value) || 10;
           this.isLoading = false;
 
           this.componentKey = null;
@@ -458,6 +473,7 @@ export class ReportsComponent implements OnInit, OnChanges {
 
   private buildReportPayload(): Record<string, unknown> {
     const payload: Record<string, unknown> = { ...this.form.value };
+    delete payload['rowsPerPage'];
 
     for (const param of this.selectedReport?.reportTemplateId?.parameters ?? []) {
       if (param.type !== 'sector') {

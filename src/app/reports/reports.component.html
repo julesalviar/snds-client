@@ -45,6 +45,14 @@
           </mat-form-field>
         </ng-container>
       </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Rows per page</mat-label>
+        <mat-select formControlName="rowsPerPage" (selectionChange)="onRowsPerPageChange($event.value)">
+          <mat-option *ngFor="let size of rowsPerPageOptions" [value]="size">
+            Show {{ size }} rows
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
       <button mat-flat-button color="primary" type="submit" [disabled]="!form.valid || !reportSelectForm.valid">Generate Report</button>
     </form>
   </aside>
