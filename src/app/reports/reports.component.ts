@@ -8,8 +8,11 @@ import {
   NgComponentOutlet,
   NgForOf,
   NgIf,
+  NgSwitch,
+  NgSwitchCase,
+  NgSwitchDefault,
   PercentPipe,
-  UpperCasePipe
+  UpperCasePipe,
 } from "@angular/common";
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
@@ -24,6 +27,11 @@ import {ReportService} from "../common/services/report.service";
 import {Report, ReportTemplate} from "../common/model/report.model";
 import {SchoolYearSelectComponent} from "./filters/school-year-select/school-year-select.component";
 import {SchoolsSelectComponent} from "./filters/schools-select/schools-select.component";
+import {ReferenceDataService} from "../common/services/reference-data.service";
+import {
+  getSectorNames,
+  SECTOR_REF_DATA_KEY,
+} from "../common/utils/sector-reference-data.util";
 import {jsPDF} from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -35,6 +43,9 @@ import autoTable from "jspdf-autotable";
     MatFormField,
     MatLabel,
     NgForOf,
+    NgSwitch,
+    NgSwitchCase,
+    NgSwitchDefault,
     MatInput,
     MatButton,
     MatSelect,
@@ -60,6 +71,7 @@ export class ReportsComponent implements OnInit, OnChanges {
   isMobile: boolean = false;
   componentKey: number | null = null; // Used to force component recreation when data changes
   isLoading: boolean = false;
+  sectorOptions: { value: string; label: string }[] = [];
   /** Populated from generateReport() when the API returns `{ template, data }`. */
   private lastGeneratedTemplate: ReportTemplate | undefined;
   private decimalPipe = new DecimalPipe('en-US');
@@ -92,11 +104,13 @@ export class ReportsComponent implements OnInit, OnChanges {
     protected injector: Injector,
     private fb: FormBuilder,
     private readonly reportService: ReportService,
+    private readonly referenceDataService: ReferenceDataService,
     private cdr: ChangeDetectorRef
   ) {
   }
 
   ngOnInit() {
+    void this.loadSectorOptions();
     this.checkMobile();
     this.reportSelectForm = this.fb.group({
       report: ['', Validators.required]
@@ -133,6 +147,14 @@ export class ReportsComponent implements OnInit, OnChanges {
     }
   }
 
+  private async loadSectorOptions(): Promise<void> {
+    await this.referenceDataService.initialize();
+    const names = getSectorNames(
+      this.referenceDataService.get(SECTOR_REF_DATA_KEY),
+    );
+    this.sectorOptions = names.map((name) => ({ value: name, label: name }));
+  }
+
   private loadAllReports() {
     this.reportService.getReports().subscribe({
       next: (response: any) => {
@@ -150,8 +172,15 @@ export class ReportsComponent implements OnInit, OnChanges {
 
     if (reportTemplate?.parameters) {
       reportTemplate.parameters.forEach((param: any) => {
-        const initialValue = (param.type === 'select' || param.type === 'schoolYear' || param.type === 'schools') ? '' : (param.value || '');
-        formControls[param.name] = [initialValue, Validators.required];
+        const isOptionalParam = param.type === 'sector';
+        const initialValue = param.type === 'sector'
+          ? []
+          : (param.type === 'select' || param.type === 'schoolYear' || param.type === 'schools')
+            ? ''
+            : (param.value || '');
+        formControls[param.name] = isOptionalParam
+          ? [initialValue]
+          : [initialValue, Validators.required];
       });
     }
 
@@ -223,7 +252,7 @@ export class ReportsComponent implements OnInit, OnChanges {
         this.cdr.detectChanges();
       }, 0);
 
-      this.reportService.generateReport(this.selectedReport._id, this.form.value).subscribe({
+      this.reportService.generateReport(this.selectedReport._id, this.buildReportPayload()).subscribe({
         next: (response: any) => {
           console.log(response);
           this.lastGeneratedTemplate = response.template;
@@ -425,6 +454,23 @@ export class ReportsComponent implements OnInit, OnChanges {
 
   getControl(controlName: string): FormControl {
     return this.form.get(controlName) as FormControl;
+  }
+
+  private buildReportPayload(): Record<string, unknown> {
+    const payload: Record<string, unknown> = { ...this.form.value };
+
+    for (const param of this.selectedReport?.reportTemplateId?.parameters ?? []) {
+      if (param.type !== 'sector') {
+        continue;
+      }
+
+      const value = payload[param.name];
+      if (Array.isArray(value)) {
+        payload[param.name] = value.length > 0 ? value.join(',') : '';
+      }
+    }
+
+    return payload;
   }
 
   @HostListener('window:resize', ['$event'])
