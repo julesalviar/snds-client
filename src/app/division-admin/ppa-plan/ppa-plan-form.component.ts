@@ -327,6 +327,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   }
 
   private initializeAssignedUserId(): void {
+    if (this.isEdit || this.isDuplicate) return;
     const currentUserId = this.authService.getUserId();
     if (currentUserId) {
       this.form.patchValue({ assignedUserId: currentUserId });
@@ -508,6 +509,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
             this.filteredUsers = [...this.filteredUsers, userObj];
           }
         }
+        const assignedRaw = plan.assignedUserId;
+        if (assignedRaw && typeof assignedRaw === 'object' && assignedRaw !== null && '_id' in assignedRaw) {
+          const assignee = assignedRaw as UserListItem;
+          if (!this.users.some((u) => u._id === assignee._id)) {
+            this.users = [...this.users, assignee];
+            this.filteredUsers = [...this.filteredUsers, assignee];
+          }
+        }
         const officeCode = this.normalizeOfficeCode(plan.officeId);
         if (officeCode && !this.officeOptionsForSelect.some((o) => o.value === officeCode)) {
           const rawOfficeId = typeof plan.officeId === 'string' ? plan.officeId : (plan.officeId as Office)?._id;
@@ -547,7 +556,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           supportNeed: plan.supportNeed ?? '',
           supportReceivedValue: plan.supportReceivedValue ?? null,
           stakeholderUserId: stakeholderId ?? '',
-          assignedUserId: this.authService.getUserId() ?? '',
+          assignedUserId: this.resolveAssignedUserIdForForm(plan.assignedUserId),
           amountUtilized: plan.amountUtilized ?? null,
           venue: plan.venue ?? '',
           implementationStatus: plan.implementationStatus ?? '',
@@ -600,7 +609,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       supportNeed: raw.supportNeed || undefined,
       supportReceivedValue: raw.supportReceivedValue ?? undefined,
       stakeholderUserId: this.normalizeStakeholderUserId(raw.stakeholderUserId),
-      assignedUserId: this.authService.getUserId() || undefined,
+      assignedUserId: this.resolveAssignedUserIdForPayload(raw.assignedUserId),
       officeId: this.resolveOfficeIdForPayload(raw.officeId) || undefined,
       venue: raw.venue || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
@@ -767,6 +776,31 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   /** Normalize API value: return id string whether userId is a string or populated object. */
   private normalizeStakeholderUserId(value: string | UserListItem | null | undefined): string {
     return this.normalizeUserId(value);
+  }
+
+  /**
+   * Load/edit: use stored assignee when API populated the user; if missing/deleted (null or orphan id),
+   * default to current user so the next save can repair the reference.
+   */
+  private resolveAssignedUserIdForForm(
+    value: string | UserListItem | null | undefined,
+  ): string {
+    const id = this.normalizeUserId(value);
+    if (!id) return this.authService.getUserId() ?? '';
+    const wasPopulated =
+      typeof value === 'object' && value !== null && '_id' in value;
+    if (wasPopulated) return id;
+    return this.authService.getUserId() ?? '';
+  }
+
+  /** Save: send form assignee id; on create fall back to current user when empty. */
+  private resolveAssignedUserIdForPayload(
+    raw: string | UserListItem | null | undefined,
+  ): string | undefined {
+    const id = this.normalizeUserId(raw);
+    if (id) return id;
+    if (!this.isEdit) return this.authService.getUserId() || undefined;
+    return undefined;
   }
 
   private showSuccess(message: string): void {
