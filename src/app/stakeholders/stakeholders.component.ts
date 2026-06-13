@@ -10,7 +10,10 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { Subject, distinctUntilChanged, map, skip, take, takeUntil } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
+import { LoginRequiredDialogComponent } from '../common/components/login-required-dialog/login-required-dialog.component';
 import { SchoolNeed } from '../common/model/school-need.model';
 import { SchoolNeedService } from '../common/services/school-need.service';
 import { UserService } from '../common/services/user.service';
@@ -88,6 +91,8 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
     private readonly schoolNeedService: SchoolNeedService,
     private readonly route: ActivatedRoute,
     private readonly userService: UserService,
+    private readonly authService: AuthService,
+    private readonly dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -278,6 +283,13 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
   }
 
   viewSchoolNeed(schoolNeed: SchoolNeed): void {
+    if (!this.authService.isLoggedIn()) {
+      this.dialog.open(LoginRequiredDialogComponent, {
+        width: '400px',
+      });
+      return;
+    }
+
     this.router.navigate(['/stakeholder/school-need-view/', schoolNeed.code]);
   }
 

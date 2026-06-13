@@ -255,6 +255,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     console.log(`${SchoolNeedViewComponent.logPrefix} chip click`, {
       aipId: aip?._id,
       title: aip?.title,
+      problemStatement: aip?.problemStatement,
       eventPhase: event.eventPhase,
       defaultPrevented: event.defaultPrevented,
       targetTag: t?.tagName,
@@ -280,20 +281,11 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     }
 
     const openDialog = (payload: Aip, source: string): void => {
-      console.log(`${SchoolNeedViewComponent.logPrefix} dialog.open`, {
-        source,
-        payloadId: payload._id,
-        payloadTitle: payload.title,
-      });
       try {
-        const ref = this.dialog.open(AipDetailViewComponent, {
+        this.dialog.open(AipDetailViewComponent, {
           data: payload,
           width: '560px',
           maxWidth: '95vw',
-        });
-        console.log(`${SchoolNeedViewComponent.logPrefix} dialog.open ok`, {
-          dialogId: ref.id,
-          hasInstance: !!ref.componentInstance,
         });
       } catch (e) {
         console.error(`${SchoolNeedViewComponent.logPrefix} dialog.open threw`, e);
@@ -357,6 +349,7 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
       materialsNeeded: info.materialsNeeded ?? '',
       totalBudget: info.totalBudget ?? '',
       budgetSource: info.budgetSource ?? '',
+      problemStatement: info.problemStatement ?? '',
       status,
     };
   }

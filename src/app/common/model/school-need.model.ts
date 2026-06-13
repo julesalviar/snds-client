@@ -18,6 +18,7 @@ export interface ProjectInfo {
   totalBudget?: string;
   budgetSource?: string;
   status?: string;
+  problemStatement?: string;
 }
 
 import { SchoolInfo } from './school.model';
