@@ -29,8 +29,9 @@ export class AuthGuard implements CanActivate {
       return false;
     }
 
-    const roleType = route.data['roleType'];
-    const allowedRoles = route.data['allowedRoles'] || (roleType ? [roleType] : null);
+    const routeData = this.getInheritedRouteData(route);
+    const roleType = routeData['roleType'];
+    const allowedRoles = routeData['allowedRoles'] || (roleType ? [roleType] : null);
 
     if (allowedRoles && Array.isArray(allowedRoles) && allowedRoles.length > 0) {
       const activeRole = this.authService.getActiveRole();
@@ -41,5 +42,11 @@ export class AuthGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  private getInheritedRouteData(route: ActivatedRouteSnapshot): Record<string, unknown> {
+    return route.pathFromRoot.reduce<Record<string, unknown>>((merged, snapshot) => {
+      return { ...merged, ...snapshot.data };
+    }, {});
   }
 }

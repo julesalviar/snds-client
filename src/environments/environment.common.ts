@@ -1,3 +1,1 @@
-export const commonEnvironment = {
-  DEFAULT_PASSWORD: '123456',
-}
+export const commonEnvironment = {};

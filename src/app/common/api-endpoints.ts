@@ -3,6 +3,8 @@ import {environment} from "../../environments/environment";
 export const API_ENDPOINT = {
   auth: {
     login: `${environment.API_URL}/auth/login`,
+    logout: `${environment.API_URL}/auth/logout`,
+    refresh: `${environment.API_URL}/auth/refresh`,
     register: `${environment.API_URL}/auth/signup`,
     switchRole: `${environment.API_URL}/auth/switch-role`,
     assignRoles: `${environment.API_URL}/auth/users`,

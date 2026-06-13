@@ -2,27 +2,29 @@ import {Injectable} from "@angular/core";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {TenantService} from "../../config/tenant.service";
 import {Observable, throwError} from "rxjs";
+import {TokenHolder} from "../../auth/token-holder";
+import {environment} from "../../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class HttpService {
-  private readonly tenant = this.tenantService.getCurrentDomainTenant();
+  private readonly withCredentials = { withCredentials: true };
 
   constructor(
     private readonly tenantService: TenantService,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
   ) {}
 
   private getHeaders(): HttpHeaders {
     const tenant = this.tenantService.getCurrentDomainTenant();
-    const token = localStorage.getItem('token');
     let headers = new HttpHeaders({
       tenant: tenant,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     });
 
+    const token = TokenHolder.getToken();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
@@ -32,12 +34,12 @@ export class HttpService {
 
   private getUploadHeaders(): HttpHeaders {
     const tenant = this.tenantService.getCurrentDomainTenant();
-    const token = localStorage.getItem('token');
     let headers = new HttpHeaders({
       tenant: tenant,
       'Accept': 'application/json'
     });
 
+    const token = TokenHolder.getToken();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
@@ -46,45 +48,57 @@ export class HttpService {
   }
 
   post<T>(url: string, data: any): Observable<T> {
-    return this.http.post<T>(url, data, { headers: this.getHeaders() });
+    return this.http.post<T>(url, data, {
+      headers: this.getHeaders(),
+      ...this.withCredentials,
+    });
   }
 
   get<T>(url: string): Observable<T> {
-    return this.http.get<T>(url, { headers: this.getHeaders() });
+    return this.http.get<T>(url, {
+      headers: this.getHeaders(),
+      ...this.withCredentials,
+    });
   }
 
   put<T>(url: string, data: any): Observable<T> {
-    return this.http.put<T>(url, data, { headers: this.getHeaders() });
+    return this.http.put<T>(url, data, {
+      headers: this.getHeaders(),
+      ...this.withCredentials,
+    });
   }
 
   patch<T>(url: string, data: any): Observable<T> {
-    return this.http.patch<T>(url, data, { headers: this.getHeaders() });
+    return this.http.patch<T>(url, data, {
+      headers: this.getHeaders(),
+      ...this.withCredentials,
+    });
   }
 
   delete<T>(url: string): Observable<T> {
-    return this.http.delete<T>(url, { headers: this.getHeaders() });
+    return this.http.delete<T>(url, {
+      headers: this.getHeaders(),
+      ...this.withCredentials,
+    });
   }
 
   uploadFile<T>(url: string, formData: FormData): Observable<T> {
-    return this.http.post<T>(url, formData, { headers: this.getUploadHeaders() });
+    return this.http.post<T>(url, formData, {
+      headers: this.getUploadHeaders(),
+      ...this.withCredentials,
+    });
   }
 
   public handleError(error: any): Observable<never> {
-    console.error('HTTP Error:', error);
-
-    // Preserve the original error structure so components can extract the actual error response
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      console.error(`Client Error: ${error.error.message}`);
-    } else {
-      // Server-side error - preserve the error response body
-      console.error(`Server Error: ${error.status} ${error.statusText}`);
-      if (error.error) {
-        console.error('Error response body:', error.error);
+    if (!environment.production) {
+      console.error('HTTP Error:', error);
+      if (error.error instanceof ErrorEvent) {
+        console.error(`Client Error: ${error.error.message}`);
+      } else if (error.status) {
+        console.error(`Server Error: ${error.status} ${error.statusText}`);
       }
     }
 
-    // Return the original error to preserve the response body
     return throwError(() => error);
   }
 }

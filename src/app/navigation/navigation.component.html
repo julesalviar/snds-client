@@ -180,7 +180,7 @@
     </ng-container>
 
     <!-- Guest Menus - for users who are not logged in (same structure as stakeholder) -->
-    <ng-container *ngIf="!isLoggedIn()">
+    <ng-container *ngIf="(isAuthenticated$ | async) === false">
       <li>
         <button mat-button [matMenuTriggerFor]="guestFindMenu" class="menu-trigger">Find School/Office</button>
         <mat-menu #guestFindMenu="matMenu">
@@ -229,7 +229,7 @@
   <!-- Right-side wrapper: profile on top, text info (role indicator) below -->
   <div class="nav-right">
     <div class="profile">
-      <ng-container *ngIf="isLoggedIn(); else loginButton">
+      <ng-container *ngIf="isAuthenticated$ | async; else loginButton">
         <button mat-icon-button [matMenuTriggerFor]="profileMenu" class="avatar-button">
           <div class="avatar">
             <img *ngIf="getProfileImageUrl() && !profileImageError"
@@ -244,7 +244,7 @@
           <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
           <button mat-menu-item [routerLink]="['/profile']" *ngIf="userActiveRole === UserType.SchoolAdmin">Edit Profile</button>
           <button mat-menu-item *ngIf="userRoles.length > 1" (click)="openSwitchRoleDialog()">Switch Role</button>
-          <button mat-menu-item class="logout-menu-item" (click)="logout()" routerLink="/sign-in">Logout</button>
+          <button mat-menu-item class="logout-menu-item" (click)="logout()">Logout</button>
         </mat-menu>
       </ng-container>
       <ng-template #loginButton>
@@ -254,7 +254,7 @@
         </button>
       </ng-template>
     </div>
-    <div class="nav-info" *ngIf="isLoggedIn()">
+    <div class="nav-info" *ngIf="isAuthenticated$ | async">
       <span class="user-name">{{ getName() }}</span>
       <span class="nav-info-separator">•</span>
       <span class="role-indicator">

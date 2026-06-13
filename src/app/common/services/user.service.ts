@@ -82,13 +82,10 @@ export class UserService {
   }
 
   setSchoolYear(schoolYear: string) {
-    console.log('Setting school year:', schoolYear);
     this.schoolYearSubject.next(schoolYear);
   }
 
   register(userData: any) {
-    console.log('User registered:', userData);
-
     return this.httpService.post(API_ENDPOINT.auth.register, userData);
   }
 

@@ -36,7 +36,6 @@ import {InternalReferenceDataService} from "../common/services/internal-referenc
 export class SchoolAdminRegistrationComponent implements OnInit {
   registrationForm: FormGroup;
   passwordMismatch: boolean = false;
-  defaultPassword: string = '123456'; // Default password
   success: boolean = false;
 
   regions: [{ value: string, label: string }] | [] | null | undefined = [];
@@ -64,8 +63,8 @@ export class SchoolAdminRegistrationComponent implements OnInit {
       designation: this.fb.control('', Validators.required),
       contactNumber: this.fb.control('', Validators.required),
       officialEmail: this.fb.control('', [Validators.required, Validators.email]),
-      password: [this.defaultPassword, [Validators.required, Validators.minLength(6)]],
-      confirmPassword: [this.defaultPassword, Validators.required]
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required]
     }, {validators: this.passwordMatchValidator});
   }
 

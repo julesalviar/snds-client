@@ -1,49 +1,84 @@
-import {Injectable} from '@angular/core';
-import {API_ENDPOINT} from "../common/api-endpoints";
-import {HttpService} from "../common/services/http.service";
-import {catchError, Observable, tap, throwError} from "rxjs";
-import {AuthResponse} from "./auth-response.model";
-import {JwtPayload} from "../common/model/jwt-payload.model";
+import { Injectable } from '@angular/core';
+import { API_ENDPOINT } from '../common/api-endpoints';
+import { HttpService } from '../common/services/http.service';
+import {
+  BehaviorSubject,
+  catchError,
+  Observable,
+  tap,
+  throwError,
+  of,
+} from 'rxjs';
+import { AuthResponse } from './auth-response.model';
+import { JwtPayload } from '../common/model/jwt-payload.model';
+import { TokenHolder } from './token-holder';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
+  private sessionToken: string | null = null;
+  private readonly authStateSubject = new BehaviorSubject<boolean>(false);
 
-  constructor(private readonly httpService: HttpService) {
+  readonly authState$ = this.authStateSubject.asObservable();
+
+  constructor(private readonly httpService: HttpService) {}
+
+  initializeSession(): Observable<AuthResponse | null> {
+    this.restoreTokenFromStorage();
+
+    return this.httpService
+      .post<AuthResponse>(API_ENDPOINT.auth.refresh, {})
+      .pipe(
+        tap((authResponse) => {
+          if (authResponse?.authenticated && authResponse.access_token) {
+            this.applyAuthResponse(authResponse);
+          } else if (!this.isLoggedIn()) {
+            this.clearSession();
+          }
+        }),
+        catchError(() => {
+          if (!this.restoreTokenFromStorage()) {
+            this.clearSession();
+          }
+          return of(null);
+        }),
+      );
   }
 
-  login(credentials: { userName: string; password: string }): Observable<AuthResponse> {
+  login(credentials: {
+    userName: string;
+    password: string;
+  }): Observable<AuthResponse> {
     const screen = this.buildLoginScreenContext();
     const body = {
       ...credentials,
       ...(screen ? { clientContext: screen } : {}),
     };
-    return this.httpService.post<AuthResponse>(
-      API_ENDPOINT.auth.login,
-      body
-    ).pipe(
-      tap(authResponse => {
-        const token = authResponse?.access_token ?? (authResponse as unknown as Record<string, string>)?.['accessToken'];
-        if (!token) {
-          throw new Error('Login response missing token');
-        }
-        localStorage.setItem('token', token);
-      }),
-      catchError(error => {
-        return throwError(() => error);
-      })
+    return this.httpService.post<AuthResponse>(API_ENDPOINT.auth.login, body).pipe(
+      tap((authResponse) => this.applyAuthResponse(authResponse)),
+      catchError((error) => throwError(() => error)),
     );
   }
 
   logout(): void {
-    localStorage.removeItem('token');
+    this.clearSession();
+    this.httpService.post(API_ENDPOINT.auth.logout, {}).subscribe();
   }
 
-  /**
-   * Whether the current JWT allows API access for email verification.
-   * Matches backend JwtAuthGuard: `false` blocks; `true` or omitted (legacy token) allows.
-   */
+  setSessionToken(token: string): void {
+    this.sessionToken = token;
+    TokenHolder.setSessionToken(token);
+    this.syncAuthState();
+  }
+
+  clearSession(): void {
+    this.sessionToken = null;
+    TokenHolder.clear();
+    localStorage.removeItem('userProfile');
+    this.syncAuthState();
+  }
+
   isEmailVerifiedForAccess(): boolean {
     const payload = this.getTokenPayload();
     if (!this.isTokenValid(payload)) {
@@ -61,17 +96,17 @@ export class AuthService {
 
   getUsername(): string {
     const payload = this.getTokenPayload();
-    return this.isTokenValid(payload) ? payload?.username ?? '' : '';
+    return this.isTokenValid(payload) ? (payload?.username ?? '') : '';
   }
 
   getName(): string {
     const payload = this.getTokenPayload();
-    return this.isTokenValid(payload) ? payload?.['name'] ?? '' : '';
+    return this.isTokenValid(payload) ? (payload?.['name'] ?? '') : '';
   }
 
   getSchoolId(): string {
     const payload = this.getTokenPayload();
-    return this.isTokenValid(payload) ? payload?.['sid'] ?? '' : '';
+    return this.isTokenValid(payload) ? (payload?.['sid'] ?? '') : '';
   }
 
   getOfficeIds(): string[] {
@@ -90,21 +125,66 @@ export class AuthService {
 
   getActiveRole(): string {
     const payload = this.getTokenPayload();
-    return this.isTokenValid(payload) ? payload?.activeRole ?? (payload?.role ?? '') : '';
+    return this.isTokenValid(payload)
+      ? (payload?.activeRole ?? payload?.role ?? '')
+      : '';
   }
 
   getUserRoles(): string[] {
     const payload = this.getTokenPayload();
-    return this.isTokenValid(payload) ? payload?.roles ?? [] : [];
+    return this.isTokenValid(payload) ? (payload?.roles ?? []) : [];
   }
 
   getUserId(): string {
     const payload = this.getTokenPayload();
-    return this.isTokenValid(payload) ? payload?.['sub'] ?? payload?.['userId'] ?? '' : '';
+    return this.isTokenValid(payload)
+      ? (payload?.['sub'] ?? payload?.['userId'] ?? '')
+      : '';
+  }
+
+  getAuthorizationHeader(): string | null {
+    const token = this.sessionToken ?? TokenHolder.getToken();
+    return token ? `Bearer ${token}` : null;
+  }
+
+  private restoreTokenFromStorage(): boolean {
+    const token = TokenHolder.getToken();
+    if (!token) {
+      return false;
+    }
+
+    const payload = this.decodeToken(token);
+    if (!this.isTokenValid(payload)) {
+      this.clearSession();
+      return false;
+    }
+
+    this.sessionToken = token;
+    TokenHolder.setSessionToken(token);
+    this.syncAuthState();
+    return true;
+  }
+
+  private syncAuthState(): void {
+    this.authStateSubject.next(this.isLoggedIn());
+  }
+
+  private applyAuthResponse(authResponse: AuthResponse): void {
+    const token =
+      authResponse?.access_token ??
+      (authResponse as unknown as Record<string, string>)?.['accessToken'];
+    if (!token) {
+      return;
+    }
+    this.setSessionToken(token);
   }
 
   private getTokenPayload(): JwtPayload | null {
-    const token = localStorage.getItem('token');
+    const token = this.sessionToken ?? TokenHolder.getToken();
+    return this.decodeToken(token);
+  }
+
+  private decodeToken(token: string | null): JwtPayload | null {
     if (!token) return null;
 
     try {
@@ -121,7 +201,6 @@ export class AuthService {
     return token.exp > now;
   }
 
-  /** Screen dimensions for login audit (`${width}x${height}` on server). */
   private buildLoginScreenContext():
     | { screenWidth: number; screenHeight: number }
     | undefined {

@@ -41,6 +41,7 @@ export class NavigationComponent implements OnInit {
   currentRoute = '';
   protected readonly UserType = UserType;
   profileImageError = false;
+  readonly isAuthenticated$ = this.authService.authState$;
 
   /** Offices grouped by division (division -> Office[]). */
   officesByDivision: Map<string, Office[]> = new Map();
@@ -178,6 +179,7 @@ export class NavigationComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/sign-in']);
   }
 
   shouldShowLoginButton(): boolean {

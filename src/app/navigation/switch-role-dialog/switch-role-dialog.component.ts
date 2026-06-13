@@ -9,6 +9,7 @@ import { getRoleIcon, getRoleColor } from '../../registration/user-type-icons';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpService } from '../../common/services/http.service';
 import { API_ENDPOINT } from '../../common/api-endpoints';
+import { AuthService } from '../../auth/auth.service';
 import { catchError, tap, throwError } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -41,6 +42,7 @@ export class SwitchRoleDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<SwitchRoleDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: SwitchRoleDialogData,
     private readonly httpService: HttpService,
+    private readonly authService: AuthService,
     private readonly snackBar: MatSnackBar
   ) {}
 
@@ -63,7 +65,9 @@ export class SwitchRoleDialogComponent implements OnInit {
       { role: this.selectedRole }
     ).pipe(
       tap(response => {
-        localStorage.setItem('token', response.access_token);
+        if (response.access_token) {
+          this.authService.setSessionToken(response.access_token);
+        }
         this.isLoading = false;
         this.dialogRef.close(true);
         window.location.reload();

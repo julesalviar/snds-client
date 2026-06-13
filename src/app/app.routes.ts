@@ -58,10 +58,10 @@ export const routes: Routes = [
     path: 'home',
     component: HomeComponent,
   },
-  {path: 'change-password', component: ChangePasswordComponent},
+  {path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard]},
   {path: 'footer', component: FooterComponent},
   {path: 'about-us', component: AboutUsComponent},
-  {path: 'profile', component: ProfileComponent},
+  {path: 'profile', component: ProfileComponent, canActivate: [AuthGuard]},
 
   {
     path: 'guest',

@@ -19,10 +19,9 @@ import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {UserService} from '../common/services/user.service';
 import {ErrorName} from '../common/enums/error-name';
-import {switchMap} from "rxjs";
-import {DEFAULT_PASSWORD} from "../config";
-import {User} from "./user.model";
-import {controlHasErrorAndTouched} from "../common/form-utils";
+import {switchMap} from 'rxjs';
+import {User} from './user.model';
+import {controlHasErrorAndTouched} from '../common/form-utils';
 import {UserType} from "./user-type.enum";
 import {ReferenceDataService} from '../common/services/reference-data.service';
 import {
@@ -81,8 +80,8 @@ export class RegistrationComponent implements OnInit {
       contactNumber: ['', Validators.required],
       address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: [DEFAULT_PASSWORD, [Validators.required, Validators.minLength(6)]],
-      confirmPassword: [DEFAULT_PASSWORD, Validators.required]
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required]
     }, {validators: passwordMatchValidator()});
   }
 
@@ -115,19 +114,16 @@ export class RegistrationComponent implements OnInit {
     this.passwordMismatch = false; // Reset password mismatch flag
 
     if (this.registrationForm.invalid) {
-      console.log('Form is invalid', this.registrationForm.errors);
       return;
     }
 
     const userData = { ...this.registrationForm.value };
-    console.log(userData);
     const registrationData: User = {
       ...userData,
       activeRole: UserType.StakeHolder,
       roles: [UserType.StakeHolder],
       userName: userData.email // TODO: we use email as username
     };
-    console.log(registrationData);
 
     this.userService.register(registrationData).pipe(
       switchMap(() => this.router.navigate(['/sign-in']))

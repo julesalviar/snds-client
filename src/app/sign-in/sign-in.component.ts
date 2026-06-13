@@ -10,6 +10,7 @@ import {ForgotPasswordDialogComponent} from '../forgot-password/forgot-password-
 import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from "../auth/auth.service";
 import {EmailConfirmationService} from '../auth/email-confirmation.service';
+import {sanitizeReturnUrl} from '../auth/return-url.util';
 
 interface LoginEmailErrorBody {
   message?: string;
@@ -80,7 +81,9 @@ export class SignInComponent implements OnInit {
       this.authService.isLoggedIn() &&
       this.authService.isEmailVerifiedForAccess()
     ) {
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? '/';
+      const returnUrl = sanitizeReturnUrl(
+        this.route.snapshot.queryParams['returnUrl'],
+      );
       this.router.navigateByUrl(returnUrl);
     }
     if (this.route.snapshot.queryParamMap.get('needEmailVerification') === '1') {
@@ -121,7 +124,10 @@ export class SignInComponent implements OnInit {
       this.sessionEmailVerificationMessage = null;
       this.clearEmailActivationExtras();
       this.isSubmitting = true;
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] ?? this.returnUrl;
+      const returnUrl = sanitizeReturnUrl(
+        this.route.snapshot.queryParams['returnUrl'],
+        this.returnUrl,
+      );
       this.authService.login({ userName: email, password }).subscribe({
         next: (response: any) => {
           this.isError = false;
