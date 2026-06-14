@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -26,6 +27,7 @@ import { lastValueFrom } from 'rxjs';
 import { AnnouncementService } from '../../common/services/announcement.service';
 import {
   Announcement,
+  AnnouncementAiStatus,
   AnnouncementTargetAudience,
   getAnnouncementRoleLabel,
 } from '../../common/model/announcement.model';
@@ -42,6 +44,7 @@ export interface AnnouncementFormDialogData {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
@@ -63,6 +66,10 @@ export class AnnouncementFormDialogComponent implements OnInit {
   isEdit: boolean;
   isSaving = false;
   isLoadingRoles = true;
+  aiGenerateEnabled = false;
+  aiLimitReached = false;
+  aiAdditionalContext = '';
+  isAiGenerating = false;
   subordinateRoles: string[] = [];
   staleTargetRoles: string[] = [];
 
@@ -88,11 +95,32 @@ export class AnnouncementFormDialogComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    await this.loadSubordinateRoles();
+    await Promise.all([this.loadSubordinateRoles(), this.loadAiStatus()]);
 
     if (this.isEdit && this.data.announcement) {
       this.patchForm(this.data.announcement);
     }
+  }
+
+  private async loadAiStatus(): Promise<void> {
+    try {
+      const status = await lastValueFrom(this.announcementService.getAiStatus());
+      this.applyAiStatus(status);
+    } catch {
+      this.aiGenerateEnabled = false;
+      this.aiLimitReached = false;
+    }
+  }
+
+  applyAiStatus(status: AnnouncementAiStatus): void {
+    this.aiGenerateEnabled = Boolean(status.aiEnabled);
+    this.aiLimitReached = Boolean(
+      status.aiEnabled && status.quota && !status.quota.canGenerate,
+    );
+  }
+
+  onAiLimitReachedChange(limitReached: boolean): void {
+    this.aiLimitReached = limitReached;
   }
 
   get roleLabelFn() {

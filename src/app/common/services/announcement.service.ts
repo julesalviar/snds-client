@@ -4,8 +4,11 @@ import { HttpService } from './http.service';
 import { API_ENDPOINT } from '../api-endpoints';
 import {
   Announcement,
+  AnnouncementAiStatus,
   AnnouncementListResponse,
   AnnouncementResponse,
+  GenerateAnnouncementContentRequest,
+  GenerateAnnouncementImageResponse,
   RoleSubordinatesResponse,
 } from '../model/announcement.model';
 
@@ -69,6 +72,21 @@ export class AnnouncementService {
 
   getRoleSubordinates(): Observable<RoleSubordinatesResponse> {
     return this.httpService.get<RoleSubordinatesResponse>(API_ENDPOINT.users.rolesSubordinates).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  getAiStatus(): Observable<AnnouncementAiStatus> {
+    return this.httpService.get<AnnouncementAiStatus>(`${API_ENDPOINT.announcements}/ai/status`).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  generateContent(payload: GenerateAnnouncementContentRequest): Observable<GenerateAnnouncementImageResponse> {
+    return this.httpService.post<GenerateAnnouncementImageResponse>(
+      `${API_ENDPOINT.announcements}/ai/generate`,
+      payload,
+    ).pipe(
       catchError(this.httpService.handleError)
     );
   }

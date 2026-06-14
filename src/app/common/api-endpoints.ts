@@ -37,6 +37,7 @@ export const API_ENDPOINT = {
   activity: `${environment.API_URL}/activity`,
   offices: `${environment.API_URL}/offices`,
   announcements: `${environment.API_URL}/announcements`,
+  openrouter: `${environment.API_URL}/openrouter`,
   widget: {
     resourceGenerations: `${environment.API_URL}/widgets/resource-generations`,
     partners: `${environment.API_URL}/widgets/partners`,

@@ -43,6 +43,37 @@ export interface RoleSubordinatesResponse {
   subordinateRoles: string[];
 }
 
+export interface AnnouncementAiStatus {
+  tenantCode: string;
+  envKey: string;
+  aiEnabledEnvKey: string;
+  configured: boolean;
+  aiEnabled: boolean;
+  valid: boolean;
+  error?: string;
+  quota?: AnnouncementAiQuota;
+}
+
+export interface AnnouncementAiQuota {
+  userDailyLimitUsd: number;
+  tenantDailyLimitUsd: number;
+  userDailySpendUsd: number;
+  tenantDailySpendUsd: number;
+  userLimitReached: boolean;
+  tenantLimitReached: boolean;
+  canGenerate: boolean;
+}
+
+export interface GenerateAnnouncementContentRequest {
+  title: string;
+  description: string;
+  additionalContext?: string;
+}
+
+export interface GenerateAnnouncementImageResponse {
+  imageUrl: string;
+}
+
 export const ANNOUNCEMENT_ROLE_LABELS: Record<string, string> = {
   system: 'System',
   systemAdmin: 'System Admin',

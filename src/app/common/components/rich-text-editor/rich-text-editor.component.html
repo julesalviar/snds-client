@@ -1,17 +1,31 @@
 <div class="rich-text-editor">
-  <div class="editor-toolbar-extra">
-    <button
-      mat-stroked-button
-      type="button"
-      disabled
-      matTooltip="Coming soon"
-      class="ai-btn">
-      <mat-icon>auto_awesome</mat-icon>
-      Generate with AI
-    </button>
+  <div class="editor-toolbar-extra" *ngIf="aiEnabled">
+    <div class="ai-toolbar-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        class="ai-btn"
+        [disabled]="disabled || isGenerating || aiLimitReached"
+        matTooltip="Generate an announcement image with AI (max 1 MB)"
+        (click)="generateWithAi()">
+        <mat-icon *ngIf="!isGenerating">auto_awesome</mat-icon>
+        <mat-spinner *ngIf="isGenerating" diameter="18" class="ai-spinner"></mat-spinner>
+        {{ isGenerating ? 'Generating…' : 'Generate with AI' }}
+      </button>
+      <p *ngIf="aiLimitReached" class="ai-limit-message">
+        Daily AI limit reached. Try again tomorrow.
+      </p>
+    </div>
   </div>
 
   <div class="editor-surface">
+    <mat-progress-bar
+      *ngIf="isGenerating"
+      mode="indeterminate"
+      class="ai-generating-bar"
+      aria-hidden="true">
+    </mat-progress-bar>
+
     <div *ngIf="!isReady" class="editor-skeleton" aria-hidden="true">
       <div class="skeleton skeleton-toolbar"></div>
       <div class="skeleton skeleton-line wide"></div>
@@ -19,13 +33,26 @@
       <div class="skeleton skeleton-line medium"></div>
     </div>
 
+    <div
+      *ngIf="isGenerating"
+      class="ai-generating-overlay"
+      role="status"
+      aria-live="polite"
+      aria-busy="true">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p class="ai-generating-title">Generating announcement image</p>
+      <p class="ai-generating-status">{{ generatingStatus }}</p>
+      <p class="ai-generating-hint">Please wait. The editor will update when the image is ready.</p>
+    </div>
+
     <quill-editor
       class="quill-host"
       [class.quill-host-hidden]="!isReady"
+      [class.quill-host-busy]="isGenerating"
       [customModules]="customModules"
       [modules]="quillModules"
       [placeholder]="placeholder"
-      [readOnly]="disabled"
+      [readOnly]="disabled || isGenerating"
       [(ngModel)]="content"
       (onContentChanged)="onContentChanged($event)"
       (onEditorCreated)="onEditorCreated()">

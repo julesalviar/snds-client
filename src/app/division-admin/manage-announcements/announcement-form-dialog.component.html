@@ -13,8 +13,9 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="dense-field">
-          <mat-label>Description (optional)</mat-label>
+          <mat-label>Description</mat-label>
           <input matInput formControlName="description" />
+          <mat-hint *ngIf="aiGenerateEnabled">Required for AI image generation</mat-hint>
         </mat-form-field>
 
         <div class="meta-block dates-block">
@@ -80,9 +81,33 @@
             Content is required.
           </mat-error>
         </div>
+
+        <mat-form-field
+          *ngIf="aiGenerateEnabled && !aiLimitReached"
+          appearance="outline"
+          class="dense-field ai-context-field">
+          <mat-label>Additional AI context</mat-label>
+          <textarea
+            matInput
+            rows="2"
+            [(ngModel)]="aiAdditionalContext"
+            [ngModelOptions]="{ standalone: true }"
+            [disabled]="isAiGenerating"
+            placeholder="Optional: colors, mood, symbols, layout notes…">
+          </textarea>
+          <mat-hint>Used only for AI generation. Not saved with the announcement.</mat-hint>
+        </mat-form-field>
+
         <app-rich-text-editor
           formControlName="announcement"
-          class="editor-fill">
+          class="editor-fill"
+          [aiEnabled]="aiGenerateEnabled"
+          [aiLimitReached]="aiLimitReached"
+          [announcementTitle]="form.get('title')?.value ?? ''"
+          [announcementDescription]="form.get('description')?.value ?? ''"
+          [aiAdditionalContext]="aiAdditionalContext"
+          (aiGeneratingChange)="isAiGenerating = $event"
+          (aiLimitReachedChange)="onAiLimitReachedChange($event)">
         </app-rich-text-editor>
       </section>
     </div>
@@ -90,8 +115,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end" class="dialog-actions">
-  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving">Cancel</button>
-  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving || isAiGenerating">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving || isAiGenerating">
     {{ isEdit ? 'Save' : 'Create' }}
   </button>
 </mat-dialog-actions>
