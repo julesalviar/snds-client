@@ -1,0 +1,120 @@
+<mat-card>
+  <mat-card-title>Announcements</mat-card-title>
+
+  <div class="filter-container">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Search</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchInput()"
+        placeholder="Title, description..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="onCreate()" class="create-button">
+      <mat-icon>add</mat-icon>
+      Create Announcement
+    </button>
+
+    <button *ngIf="hasActiveFilters" mat-button color="warn" (click)="clearFilters()" class="clear-button">
+      Clear Filters
+    </button>
+  </div>
+
+  <div class="table-wrapper">
+    <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
+      <div class="skeleton-table">
+        <div class="skeleton-table-header">
+          <div class="skeleton skeleton-table-cell" style="width: 22%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 18%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+        </div>
+        <div class="skeleton-table-row" *ngFor="let _ of [1,2,3,4,5]">
+          <div class="skeleton skeleton-table-cell" style="width: 22%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 18%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 8%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 12%"></div>
+          <div class="skeleton skeleton-table-cell" style="width: 10%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+      <p class="empty-state-title">No announcements found</p>
+      <p class="empty-state-message">
+        <ng-container *ngIf="hasActiveFilters; else noAnnouncements">
+          No announcements match your search. Try adjusting the search term or clear filters.
+        </ng-container>
+        <ng-template #noAnnouncements>
+          There are no announcements yet. Create one to show it on the home page for your audience.
+        </ng-template>
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="announcements-table mat-elevation-z2">
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef>Title</th>
+          <td mat-cell *matCellDef="let row">{{ row.title }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="audience">
+          <th mat-header-cell *matHeaderCellDef>Audience</th>
+          <td mat-cell *matCellDef="let row">{{ formatAudience(row) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="effectiveFrom">
+          <th mat-header-cell *matHeaderCellDef>From</th>
+          <td mat-cell *matCellDef="let row">{{ formatDate(row.effectiveFrom) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="effectiveUntil">
+          <th mat-header-cell *matHeaderCellDef>Until</th>
+          <td mat-cell *matCellDef="let row">{{ formatDate(row.effectiveUntil) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Active</th>
+          <td mat-cell *matCellDef="let row">{{ row.active ? 'Yes' : 'No' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="forceShowEveryVisit">
+          <th mat-header-cell *matHeaderCellDef>Every visit</th>
+          <td mat-cell *matCellDef="let row">{{ row.forceShowEveryVisit ? 'Yes' : 'No' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button matTooltip="Edit" (click)="onEdit(row)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Delete" (click)="onDelete(row)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</mat-card>

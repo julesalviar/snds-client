@@ -1,0 +1,97 @@
+<h2 mat-dialog-title class="dialog-title">{{ isEdit ? 'Edit' : 'Create' }} Announcement</h2>
+
+<mat-dialog-content class="dialog-content">
+  <mat-progress-bar *ngIf="isSaving" mode="indeterminate" class="save-progress"></mat-progress-bar>
+
+  <form [formGroup]="form" class="announcement-form">
+    <div class="form-layout">
+      <aside class="meta-panel">
+        <mat-form-field appearance="outline" class="dense-field">
+          <mat-label>Title</mat-label>
+          <input matInput formControlName="title" />
+          <mat-error>Title is required.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="dense-field">
+          <mat-label>Description (optional)</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+
+        <div class="meta-block dates-block">
+          <mat-form-field appearance="outline" class="dense-field">
+            <mat-label>Effective from</mat-label>
+            <input matInput [matDatepicker]="fromPicker" formControlName="effectiveFromDate" />
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+            <mat-error>Required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="dense-field">
+            <mat-label>Effective until</mat-label>
+            <input matInput [matDatepicker]="untilPicker" formControlName="effectiveUntilDate" />
+            <mat-datepicker-toggle matSuffix [for]="untilPicker"></mat-datepicker-toggle>
+            <mat-datepicker #untilPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="meta-block audience-block">
+          <span class="meta-label">Audience</span>
+          <mat-radio-group
+            formControlName="targetAudience"
+            class="inline-radios"
+            (change)="onTargetAudienceChange()">
+            <mat-radio-button value="all">All</mat-radio-button>
+            <mat-radio-button value="roles">Specific roles</mat-radio-button>
+          </mat-radio-group>
+
+          <mat-form-field
+            *ngIf="form.get('targetAudience')?.value === 'roles'"
+            appearance="outline"
+            class="dense-field roles-field">
+            <mat-label>Target roles</mat-label>
+            <mat-select formControlName="targetRoles" multiple>
+              <mat-option *ngFor="let role of subordinateRoles" [value]="role">
+                {{ roleLabelFn(role) }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div *ngIf="isLoadingRoles" class="roles-skeleton" aria-hidden="true">
+            <div class="skeleton skeleton-chip"></div>
+            <div class="skeleton skeleton-chip"></div>
+          </div>
+
+          <div *ngIf="staleTargetRoles.length" class="stale-roles-warning">
+            Unavailable roles: {{ staleRolesLabel }}. Adjust before saving.
+          </div>
+        </div>
+
+        <div class="meta-row options-row">
+          <mat-checkbox formControlName="active" class="dense-checkbox">Active</mat-checkbox>
+          <mat-checkbox formControlName="forceShowEveryVisit" class="dense-checkbox">
+            Show every visit
+          </mat-checkbox>
+        </div>
+      </aside>
+
+      <section class="editor-panel">
+        <div class="editor-panel-header">
+          <span class="meta-label">Content</span>
+          <mat-error *ngIf="form.get('announcement')?.touched && form.get('announcement')?.hasError('required')">
+            Content is required.
+          </mat-error>
+        </div>
+        <app-rich-text-editor
+          formControlName="announcement"
+          class="editor-fill">
+        </app-rich-text-editor>
+      </section>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSaving">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="isSaving">
+    {{ isEdit ? 'Save' : 'Create' }}
+  </button>
+</mat-dialog-actions>

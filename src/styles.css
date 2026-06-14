@@ -273,3 +273,16 @@ p {
 .delete-menu-item mat-icon {
   color: #d32f2f !important;
 }
+
+.announcement-form-dialog-panel .mat-mdc-dialog-container {
+  overflow: visible;
+}
+
+.announcement-form-dialog-panel .mat-mdc-dialog-content {
+  overflow-x: visible;
+  overflow-y: auto;
+}
+
+.announcement-form-dialog-panel .mat-mdc-dialog-surface {
+  overflow: visible;
+}

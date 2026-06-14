@@ -33,6 +33,7 @@ import { ManageFundSourceComponent } from './division-admin/manage-fund-source/m
 import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 import { ManageSchoolYearLocksComponent } from './division-admin/manage-school-year-locks/manage-school-year-locks.component';
+import { ManageAnnouncementsComponent } from './division-admin/manage-announcements/manage-announcements.component';
 import { OpenRegistrationComponent } from './open-registration/open-registration.component';
 import { CloseRegistrationComponent } from './close-registration/close-registration.component';
 import { CalendarComponent } from './calendar/calendar.component';
@@ -141,6 +142,7 @@ export const routes: Routes = [
       {path: 'create-partnership-link', component: DivisionAdminComponent},
       {path: 'generated-resources', component: GeneratedResourcesComponent},
       {path: 'stakeholders-profile', component: StakeholdersProfileComponent},
+      {path: 'manage-announcements', component: ManageAnnouncementsComponent},
     ]
   },
   { // System Admin routes
@@ -150,6 +152,7 @@ export const routes: Routes = [
     children: [
       {path: 'manage-users', component: ManageUsersComponent},
       {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
+      {path: 'manage-announcements', component: ManageAnnouncementsComponent},
     ]
   },
   { // Program Holder routes
@@ -172,6 +175,7 @@ export const routes: Routes = [
       { path: 'calendar', component: CalendarComponent },
       { path: 'ppa-plans', component: PpaPlanListComponent },
       { path: 'manage-fund-source', component: ManageFundSourceComponent },
+      { path: 'manage-announcements', component: ManageAnnouncementsComponent },
     ]
   },
 

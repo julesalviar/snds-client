@@ -21,6 +21,7 @@ export const API_ENDPOINT = {
     profile: `${environment.API_URL}/users/profile`,
     changePassword: `${environment.API_URL}/users/change-password`,
     list: `${environment.API_URL}/users`,
+    rolesSubordinates: `${environment.API_URL}/users/roles/subordinates`,
   },
   userInvites: `${environment.API_URL}/user-invites`,
   engagements: `${environment.API_URL}/engagements`,
@@ -35,6 +36,7 @@ export const API_ENDPOINT = {
   ppaPlan: `${environment.API_URL}/ppa-plan`,
   activity: `${environment.API_URL}/activity`,
   offices: `${environment.API_URL}/offices`,
+  announcements: `${environment.API_URL}/announcements`,
   widget: {
     resourceGenerations: `${environment.API_URL}/widgets/resource-generations`,
     partners: `${environment.API_URL}/widgets/partners`,

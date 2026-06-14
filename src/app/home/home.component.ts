@@ -56,6 +56,14 @@ import { formatDateString, formatTimeString } from '../common/date-utils';
 import { UserListItem } from '../registration/user.model';
 import { pickRandomMaterialColors } from '../common/utils/material-chart-colors';
 import { SchoolYearWidgetFilterComponent } from '../common/components/school-year-widget-filter/school-year-widget-filter.component';
+import { MatDialog } from '@angular/material/dialog';
+import { AnnouncementService } from '../common/services/announcement.service';
+import { AnnouncementDismissalService } from '../common/services/announcement-dismissal.service';
+import { Announcement } from '../common/model/announcement.model';
+import {
+  AnnouncementDialogComponent,
+  AnnouncementDialogResult,
+} from './announcement-dialog/announcement-dialog.component';
 
 echarts.use([LegendComponent, TooltipComponent, PieChart, CanvasRenderer]);
 
@@ -193,6 +201,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly fieldCheckerService: FieldCheckerService,
     private readonly activityService: ActivityService,
     private readonly widgetService: WidgetService,
+    private readonly announcementService: AnnouncementService,
+    private readonly announcementDismissalService: AnnouncementDismissalService,
+    private readonly dialog: MatDialog,
   ) {
     const initial = this.getInitialState();
     this.homeStateSubject = new BehaviorSubject(initial);
@@ -225,6 +236,41 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.buildLoadPipeline().subscribe({
       error: (err) => console.error('Home load error:', err),
+    });
+
+    this.loadAndShowAnnouncements();
+  }
+
+  private loadAndShowAnnouncements(): void {
+    this.announcementService.getActive('home').subscribe({
+      next: (announcements) => {
+        const eligible = announcements.filter(
+          (a) =>
+            a.forceShowEveryVisit ||
+            !this.announcementDismissalService.isDismissed(a._id),
+        );
+        this.showAnnouncementQueue(eligible, 0);
+      },
+      error: (err) => console.error('Failed to load announcements:', err),
+    });
+  }
+
+  private showAnnouncementQueue(announcements: Announcement[], index: number): void {
+    if (index >= announcements.length) return;
+
+    const ref = this.dialog.open(AnnouncementDialogComponent, {
+      width: 'min(560px, 95vw)',
+      maxWidth: '95vw',
+      data: { announcement: announcements[index] },
+      panelClass: 'announcement-dialog-panel',
+    });
+
+    ref.afterClosed().subscribe((result: AnnouncementDialogResult | undefined) => {
+      const current = announcements[index];
+      if (result?.dontShowAgain && !current.forceShowEveryVisit) {
+        this.announcementDismissalService.markDismissed(current._id);
+      }
+      this.showAnnouncementQueue(announcements, index + 1);
     });
   }
 

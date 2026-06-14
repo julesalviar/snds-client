@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>{{ announcement.title }}</h2>
+
+<mat-dialog-content>
+  <p *ngIf="announcement.description" class="announcement-description">
+    {{ announcement.description }}
+  </p>
+  <div
+    class="announcement-body"
+    [innerHTML]="announcement.announcement | safeHtml">
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="announcement-actions">
+  <mat-checkbox
+    *ngIf="!announcement.forceShowEveryVisit"
+    [(ngModel)]="dontShowAgain">
+    Don't show this again
+  </mat-checkbox>
+  <span class="spacer"></span>
+  <button mat-raised-button color="primary" (click)="onDismiss()">Dismiss</button>
+</mat-dialog-actions>

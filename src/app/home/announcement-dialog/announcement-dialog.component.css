@@ -1,0 +1,43 @@
+.announcement-description {
+  margin: 0 0 12px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.announcement-body {
+  line-height: 1.5;
+}
+
+:host ::ng-deep .announcement-body img {
+  max-width: 100%;
+}
+
+:host ::ng-deep .announcement-body img:not([width]) {
+  height: auto;
+}
+
+:host ::ng-deep .announcement-body .ql-align-center {
+  text-align: center;
+}
+
+:host ::ng-deep .announcement-body .ql-align-right {
+  text-align: right;
+}
+
+:host ::ng-deep .announcement-body .ql-align-justify {
+  text-align: justify;
+}
+
+.announcement-actions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.spacer {
+  flex: 1;
+}
+
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
