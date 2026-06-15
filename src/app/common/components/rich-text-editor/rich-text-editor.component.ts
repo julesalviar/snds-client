@@ -73,11 +73,26 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
 
   private readonly generatingStatuses = [
     'Preparing your announcement image…',
-    'Generating artwork with Seedream 4.5…',
+    'Generating your announcement image…',
+    'Building the layout from your title and description…',
+    'Applying colors and typography…',
+    'Refining the announcement design…',
+    'Creating a clean, readable design…',
+    'Putting the finishing touches on your image…',
+    'Almost there…',
+    'Still working on your image…',
     'This may take up to a minute…',
+    'Finalizing your announcement image…',
     'Compressing and uploading the image…',
+    'Shaping the announcement banner…',
+    'Balancing text and visuals…',
+    'Making sure everything is easy to read…',
+    'Polishing the announcement layout…',
+    'Turning your details into a shareable graphic…',
+    'Hang tight — good things take a moment…',
+    'Checking the image quality…',
+    'Saving your announcement image…',
   ];
-  private generatingStatusIndex = 0;
 
   private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
@@ -145,18 +160,30 @@ export class RichTextEditorComponent implements ControlValueAccessor, OnDestroy 
     } else {
       this.stopGeneratingStatusCycle();
       this.generatingStatus = this.generatingStatuses[0];
-      this.generatingStatusIndex = 0;
     }
+  }
+
+  private pickRandomGeneratingStatus(): string {
+    if (this.generatingStatuses.length === 1) {
+      return this.generatingStatuses[0];
+    }
+
+    let next = this.generatingStatuses[
+      Math.floor(Math.random() * this.generatingStatuses.length)
+    ];
+    while (next === this.generatingStatus && this.generatingStatuses.length > 1) {
+      next = this.generatingStatuses[
+        Math.floor(Math.random() * this.generatingStatuses.length)
+      ];
+    }
+    return next;
   }
 
   private startGeneratingStatusCycle(): void {
     this.stopGeneratingStatusCycle();
-    this.generatingStatusIndex = 0;
-    this.generatingStatus = this.generatingStatuses[0];
+    this.generatingStatus = this.pickRandomGeneratingStatus();
     this.generatingStatusTimer = setInterval(() => {
-      this.generatingStatusIndex =
-        (this.generatingStatusIndex + 1) % this.generatingStatuses.length;
-      this.generatingStatus = this.generatingStatuses[this.generatingStatusIndex];
+      this.generatingStatus = this.pickRandomGeneratingStatus();
     }, 2800);
   }
 
