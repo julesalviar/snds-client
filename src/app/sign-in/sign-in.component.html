@@ -38,7 +38,6 @@
       <input matInput type="password" formControlName="password" required>
       <mat-error *ngIf="signInForm.get('password')?.invalid && (signInForm.get('password')?.touched || signInForm.get('password')?.dirty)">
         <span *ngIf="signInForm.get('password')?.errors?.['required']">Password is required.</span>
-        <span *ngIf="signInForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters long.</span>
       </mat-error>
     </mat-form-field>
 

@@ -3,6 +3,56 @@ import {MongoDate} from "./model/school.model";
 /** DepEd school-year rollover uses Philippines civil date (UTC+8). */
 export const PHILIPPINES_TIME_ZONE = 'Asia/Manila';
 
+export const PHILIPPINES_UTC_OFFSET = '+08:00';
+
+function pad2(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+function getYmdInTimeZone(
+  now: Date,
+  timeZone: string = PHILIPPINES_TIME_ZONE,
+): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(now);
+
+  return {
+    year: Number(parts.find((p) => p.type === 'year')?.value ?? '0'),
+    month: Number(parts.find((p) => p.type === 'month')?.value ?? '1'),
+    day: Number(parts.find((p) => p.type === 'day')?.value ?? '1'),
+  };
+}
+
+/** Calendar date from an instant, interpreted in Philippines time (UTC+8). */
+export function parsePhilippinesCalendarDate(iso: string): Date | null {
+  if (!iso) return null;
+  const instant = new Date(iso);
+  if (isNaN(instant.getTime())) return null;
+
+  const { year, month, day } = getYmdInTimeZone(instant);
+  return new Date(year, month - 1, day);
+}
+
+/** Start of a picked calendar day in Philippines time (UTC+8). */
+export function formatPhilippinesDateTimeStart(date: Date): string {
+  const y = date.getFullYear();
+  const mo = pad2(date.getMonth() + 1);
+  const da = pad2(date.getDate());
+  return `${y}-${mo}-${da}T00:00:00${PHILIPPINES_UTC_OFFSET}`;
+}
+
+/** End of a picked calendar day in Philippines time (UTC+8). */
+export function formatPhilippinesDateTimeEnd(date: Date): string {
+  const y = date.getFullYear();
+  const mo = pad2(date.getMonth() + 1);
+  const da = pad2(date.getDate());
+  return `${y}-${mo}-${da}T23:59:59${PHILIPPINES_UTC_OFFSET}`;
+}
+
 function getYearMonthInTimeZone(
   now: Date,
   timeZone: string = PHILIPPINES_TIME_ZONE,

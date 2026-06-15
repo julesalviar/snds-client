@@ -7,6 +7,8 @@ const ALLOWED_IFRAME_HOSTS = [
   'maps.google.com',
   'www.openstreetmap.org',
   'openstreetmap.org',
+  'cloudflareinsights.com',
+  'googletagmanager.com',
 ];
 
 @Pipe({

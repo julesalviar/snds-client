@@ -85,8 +85,11 @@ export class UserService {
     this.schoolYearSubject.next(schoolYear);
   }
 
-  register(userData: any) {
-    return this.httpService.post(API_ENDPOINT.auth.register, userData);
+  register(userData: any): Observable<{ success: boolean; message: string }> {
+    return this.httpService.post<{ success: boolean; message: string }>(
+      API_ENDPOINT.auth.register,
+      userData,
+    );
   }
 
   getUsersByRole(role: string, params?: GetUsersByRoleParams): Observable<UsersByRoleResponse> {

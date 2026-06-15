@@ -26,6 +26,11 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { lastValueFrom } from 'rxjs';
 import { AnnouncementService } from '../../common/services/announcement.service';
 import {
+  formatPhilippinesDateTimeEnd,
+  formatPhilippinesDateTimeStart,
+  parsePhilippinesCalendarDate,
+} from '../../common/date-utils';
+import {
   Announcement,
   AnnouncementAiStatus,
   AnnouncementTargetAudience,
@@ -165,26 +170,17 @@ export class AnnouncementFormDialogComponent implements OnInit {
   }
 
   private parseDate(iso: string): Date | null {
-    if (!iso) return null;
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return null;
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return parsePhilippinesCalendarDate(iso);
   }
 
   private buildEffectiveFrom(date: Date | null): string | undefined {
     if (!date || isNaN(date.getTime())) return undefined;
-    const y = date.getFullYear();
-    const mo = String(date.getMonth() + 1).padStart(2, '0');
-    const da = String(date.getDate()).padStart(2, '0');
-    return `${y}-${mo}-${da}T00:00:00`;
+    return formatPhilippinesDateTimeStart(date);
   }
 
   private buildEffectiveUntil(date: Date | null): string | undefined {
     if (!date || isNaN(date.getTime())) return undefined;
-    const y = date.getFullYear();
-    const mo = String(date.getMonth() + 1).padStart(2, '0');
-    const da = String(date.getDate()).padStart(2, '0');
-    return `${y}-${mo}-${da}T23:59:59`;
+    return formatPhilippinesDateTimeEnd(date);
   }
 
   onTargetAudienceChange(): void {

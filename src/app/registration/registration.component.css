@@ -243,3 +243,15 @@ mat-card {
     width: 100%;  
   }
 }
+
+.success-message {
+  margin-top: 16px;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.error-message {
+  margin-top: 16px;
+  color: #c62828;
+  font-weight: 500;
+}

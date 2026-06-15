@@ -1,13 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
-  Validators
+  Validators,
 } from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -17,10 +14,10 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {UserService} from '../common/services/user.service';
 import {ErrorName} from '../common/enums/error-name';
-import {switchMap} from 'rxjs';
-import {User} from './user.model';
+import {finalize, switchMap} from 'rxjs';
 import {controlHasErrorAndTouched} from '../common/form-utils';
 import {UserType} from "./user-type.enum";
 import {ReferenceDataService} from '../common/services/reference-data.service';
@@ -29,16 +26,6 @@ import {
   SectorCategory,
   SECTOR_REF_DATA_KEY,
 } from '../common/utils/sector-reference-data.util';
-
-export function passwordMatchValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const password = control.get('password')?.value;
-    const confirmPassword = control.get('confirmPassword')?.value;
-    return password && confirmPassword && password !== confirmPassword
-      ? {mismatch: true}
-      : null;
-  };
-}
 
 @Component({
   selector: 'app-registration',
@@ -61,8 +48,9 @@ export class RegistrationComponent implements OnInit {
   protected readonly ErrorName = ErrorName;
 
   registrationForm: FormGroup;
-  passwordMismatch: boolean = false;
   success: boolean = false;
+  isSubmitting = false;
+  errorMessage = '';
   availableOptions: string[] = [];
   showPassword: boolean = false;
   sectors: SectorCategory[] = [];
@@ -72,6 +60,7 @@ export class RegistrationComponent implements OnInit {
     private readonly router: Router,
     private readonly userService: UserService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly snackBar: MatSnackBar,
   ) {
     this.registrationForm = this.formBuilder.group({
       name: ['', Validators.required],
@@ -81,8 +70,7 @@ export class RegistrationComponent implements OnInit {
       address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', Validators.required]
-    }, {validators: passwordMatchValidator()});
+    });
   }
 
   async ngOnInit(): Promise<void> {
@@ -111,25 +99,50 @@ export class RegistrationComponent implements OnInit {
   }
 
   onSubmit() {
-    this.passwordMismatch = false; // Reset password mismatch flag
+    this.errorMessage = '';
+    this.success = false;
 
     if (this.registrationForm.invalid) {
+      this.registrationForm.markAllAsTouched();
       return;
     }
 
     const userData = { ...this.registrationForm.value };
-    const registrationData: User = {
+    const registrationData = {
       ...userData,
       activeRole: UserType.StakeHolder,
       roles: [UserType.StakeHolder],
-      userName: userData.email // TODO: we use email as username
+      userName: userData.email,
     };
 
+    this.isSubmitting = true;
     this.userService.register(registrationData).pipe(
-      switchMap(() => this.router.navigate(['/sign-in']))
+      switchMap((response) => {
+        this.success = true;
+        const message =
+          response?.message ??
+          'Registration successful! Check your email to confirm your account, then sign in.';
+        this.snackBar.open(message, 'Close', {
+          duration: 6000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar'],
+        });
+        return this.router.navigate(['/sign-in']);
+      }),
+      finalize(() => {
+        this.isSubmitting = false;
+      }),
     ).subscribe({
-      next: () => this.success = true,
-      error: err => { this.success = false; console.error('Registration error', err); }
+      error: (err) => {
+        this.success = false;
+        this.errorMessage =
+          err?.error?.message ??
+          (Array.isArray(err?.error?.message)
+            ? err.error.message.join(', ')
+            : 'Registration failed. Please check your information and try again.');
+        console.error('Registration error', err);
+      },
     });
   }
 }

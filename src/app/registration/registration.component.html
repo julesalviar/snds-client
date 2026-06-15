@@ -65,15 +65,24 @@
               Password is required.
             </mat-error>
             <mat-error *ngIf="controlHasErrorAndTouched('password', ErrorName.MIN_LENGTH)">
-              Password must be at least 6 characters long.
+              Password must be at least 8 characters long.
             </mat-error>
-            <mat-hint>Use this default Password to log in (123456), you can change it anytime.</mat-hint>
+            <mat-hint>Must be at least 8 characters. You can change it anytime after signing in.</mat-hint>
           </mat-form-field>
           <p class="privacy-notice">By clicking Submit, you agree to our <a href="https://www.mysnds.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
-          <button mat-raised-button class="custom-register" type="submit">Submit</button>
+          <button
+            mat-raised-button
+            class="custom-register"
+            type="submit"
+            [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+          </button>
         </form>
+        <div *ngIf="errorMessage" class="error-message">
+          <p>{{ errorMessage }}</p>
+        </div>
         <div *ngIf="success" id="success-message" class="success-message">
-          <p>Sign-up successful!</p>
+          <p>Sign-up successful! Check your email to confirm your account.</p>
         </div>
       </mat-card-content>
     </mat-card>

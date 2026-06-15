@@ -43,7 +43,7 @@ export class ResetPasswordComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.resetPasswordForm = this.formBuilder.group({
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
