@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {MatTableModule} from '@angular/material/table';
@@ -11,7 +11,9 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatDatepickerModule, MatDatepickerToggle} from '@angular/material/datepicker';
 import {MatButton} from "@angular/material/button";
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {debounceTime, distinctUntilChanged, Subject, takeUntil} from 'rxjs';
+import {MatIcon} from '@angular/material/icon';
+import {MatProgressBar} from '@angular/material/progress-bar';
+import {debounceTime, distinctUntilChanged, forkJoin, lastValueFrom, map, Subject, takeUntil} from 'rxjs';
 import {SchoolNeed} from "../../common/model/school-need.model";
 import {UserService} from '../../common/services/user.service';
 import {SharedDataService} from '../../common/services/shared-data.service';
@@ -20,6 +22,8 @@ import {SchoolNeedService} from '../../common/services/school-need.service';
 import {FormsModule, NgModel} from '@angular/forms';
 import {MatSelectModule} from '@angular/material/select';
 import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
+import {HttpService} from '../../common/services/http.service';
+import {API_ENDPOINT} from '../../common/api-endpoints';
 
 @Component({
   selector: 'app-school-needs-engage',
@@ -43,7 +47,9 @@ import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
     MatDatepickerModule,
     MatDatepickerToggle,
     MatFormFieldModule,
-    MatSelectModule
+    MatSelectModule,
+    MatIcon,
+    MatProgressBar
   ],
   templateUrl: './school-needs-engage.component.html',
   styleUrls: ['./school-needs-engage.component.css'],
@@ -73,6 +79,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   readonly STAKEHOLDER_LIMIT = 50;
   agreementTypes: string[] = [];
   projectCategories: string[] = [];
+  previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; }> = [];
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   @ViewChild('stakeholderInput') stakeholderInputModel!: NgModel;
 
@@ -96,6 +104,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     private readonly referenceDataService: ReferenceDataService,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly snackBar: MatSnackBar,
+    private readonly httpService: HttpService,
   ) {}
 
   ngOnInit(): void {
@@ -273,7 +282,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
            this.initiatedBy !== '';
   }
 
-  saveEngagement(): void {
+  async saveEngagement(): Promise<void> {
     const isValid = this.isStakeholderValid();
 
     if (!this.stakeholder || !isValid) {
@@ -286,43 +295,56 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.needCode) {
-      const engagementData = {
-        stakeholderUserId: this.stakeholder._id,
-        stakeholderRepCount: this.stakeholderRepCount,
-        agreementType: this.agreementType,
-        signatoryName: this.signatoryName,
-        signatoryDesignation: this.signatoryDesignation,
-        projectCategory: this.projectCategory,
-        projectName: this.projectName,
-        agreementStatus: this.agreementStatus,
-        initiatedBy: this.initiatedBy,
-        signingDate: this.moaDate,
-        unit: this.unit,
-        amount: this.amount,
-        startDate: this.startDate,
-        endDate: this.endDate,
-        quantity: this.quantity,
-        schoolNeedCode: +this.needCode,
-      };
+    if (this.previewImages.length === 0) {
+      this.showErrorNotification('Please update image/attach images before engaging.');
+      return;
+    }
 
-      this.schoolNeedService.engageSchoolNeed(engagementData)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            this.sharedDataService.updateEngagementStatus(this.needCode!, true);
-            this.clearForm();
-            this.showSuccessNotification('Engagement saved successfully!');
-            // Navigate back to the previous page after a short delay to show the notification
-            setTimeout(() => {
-              this.router.navigate(['/school-admin/list-of-school-needs']);
-            }, 1500);
-          },
-          error: (error) => {
-            console.error('Error saving engagement:', error);
-            this.showErrorNotification('Failed to save engagement. Please try again.');
-          }
-        });
+    if (this.needCode) {
+      try {
+        const uploadedImages = await this.uploadImages('school-needs-engage');
+
+        const engagementData = {
+          stakeholderUserId: this.stakeholder._id,
+          stakeholderRepCount: this.stakeholderRepCount,
+          agreementType: this.agreementType,
+          signatoryName: this.signatoryName,
+          signatoryDesignation: this.signatoryDesignation,
+          projectCategory: this.projectCategory,
+          projectName: this.projectName,
+          agreementStatus: this.agreementStatus,
+          initiatedBy: this.initiatedBy,
+          signingDate: this.moaDate,
+          unit: this.unit,
+          amount: this.amount,
+          startDate: this.startDate,
+          endDate: this.endDate,
+          quantity: this.quantity,
+          schoolNeedCode: +this.needCode,
+          images: uploadedImages,
+        };
+
+        this.schoolNeedService.engageSchoolNeed(engagementData)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (response) => {
+              this.sharedDataService.updateEngagementStatus(this.needCode!, true);
+              this.clearForm();
+              this.showSuccessNotification('Engagement saved successfully!');
+              // Navigate back to the previous page after a short delay to show the notification
+              setTimeout(() => {
+                this.router.navigate(['/school-admin/list-of-school-needs']);
+              }, 1500);
+            },
+            error: (error) => {
+              console.error('Error saving engagement:', error);
+              this.showErrorNotification('Failed to save engagement. Please try again.');
+            }
+          });
+      } catch (error) {
+        console.error('Error uploading images:', error);
+        this.showErrorNotification('Failed to upload images. Please try again.');
+      }
     }
   }
 
@@ -343,5 +365,87 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.projectName = '';
     this.agreementStatus = '';
     this.initiatedBy = '';
+    this.previewImages = [];
+  }
+
+  onFileSelected(event: Event): void {
+    const files = (event.target as HTMLInputElement).files;
+    if (!files) return;
+
+    const currentImageCount = this.previewImages.length;
+    const maxImages = 5;
+
+    if (currentImageCount >= maxImages) {
+      this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/') || file.size === 0) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewImages.push({
+          file,
+          dataUrl: reader.result,
+          uploading: false,
+          progress: 0,
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  removeImage(index: number): void {
+    this.previewImages.splice(index, 1);
+  }
+
+  async uploadImages(category: string): Promise<any[]> {
+    const uploadRequests = this.previewImages.map(img => {
+      img.uploading = true;
+      img.progress = 0;
+      const formData = new FormData();
+      formData.append('file', img.file);
+      formData.append('category', category);
+
+      return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
+        map(response => {
+          img.uploading = false;
+          img.progress = 100;
+          return response;
+        })
+      );
+    });
+
+    if (uploadRequests.length === 0) {
+      return [];
+    }
+
+    const results = await lastValueFrom(forkJoin(uploadRequests));
+    return results;
+  }
+
+  get totalImageCount(): number {
+    const existingCount = this.schoolNeed?.images?.length || 0;
+    return existingCount + this.previewImages.length;
+  }
+
+  get hasExistingImages(): boolean {
+    return !!(this.schoolNeed?.images && this.schoolNeed.images.length > 0);
+  }
+
+  get existingImages(): any[] {
+    return this.schoolNeed?.images || [];
+  }
+
+  removeExistingImage(imageIndex: number): void {
+    if (!this.schoolNeed?.images) return;
+    this.schoolNeed.images.splice(imageIndex, 1);
+ 
   }
 }
