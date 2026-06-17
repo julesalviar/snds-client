@@ -72,8 +72,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
   pillars: PillarItem[] = [];
   units: string[] = []
   isOtherSelected = false;
-  previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; }> = [];
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   isSaving: boolean = false;
   isLoading: boolean = true;
   schoolNeedLocksLoaded = false;
@@ -100,7 +98,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly schoolNeedService: SchoolNeedService,
     private readonly aipService: AipService,
-    private readonly httpService: HttpService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly pillarConfigService: PillarConfigService,
     private readonly snackBar: MatSnackBar,
@@ -125,7 +122,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
       beneficiaryPersonnel: [0, [Validators.required, Validators.min(0)]],
       targetDate: ['', [Validators.required]],
       description: ['', [Validators.maxLength(2000)]],
-      images: [[]],
     });
   }
 
@@ -196,10 +192,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     this.isSaving = true;
 
     try {
-      const uploadedImages = this.previewImages.length
-        ? await this.uploadImages('school-needs')
-        : [];
-
       const updatedNeed: any = {
           ...this.schoolNeed!,
           specificContribution: this.schoolNeedsForm.get('specificContribution')?.value,
@@ -214,7 +206,7 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
           description: this.schoolNeedsForm.get('description')?.value,
           targetDate: this.schoolNeedsForm.get('targetDate')?.value,
           schoolYear: this.schoolNeedsForm.get('schoolYear')?.value,
-          images: [...this.schoolNeed!.images, ...uploadedImages],
+          images: this.schoolNeed!.images,
         };
 
         this.schoolNeedService.updateSchoolNeed(this.schoolNeed!._id!, updatedNeed).pipe(takeUntil(this.destroy$)).subscribe({
@@ -507,92 +499,6 @@ export class SchoolNeedComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected onFileSelected(event: Event): void {
-    const files = (event.target as HTMLInputElement).files;
-    if (!files) return;
-
-    const currentImageCount = this.previewImages.length;
-    const existingImageCount = this.schoolNeed?.images?.length || 0;
-    const maxImages = 5;
-
-    if (currentImageCount + existingImageCount >= maxImages) {
-      this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
-      (event.target as HTMLInputElement).value = '';
-      return;
-    }
-
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/') || file.size === 0) {
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.previewImages.push({
-          file,
-          dataUrl: reader.result,
-          uploading: false,
-          progress: 0,
-        });
-      };
-      reader.readAsDataURL(file);
-    });
-
-    (event.target as HTMLInputElement).value = '';
-  }
-
-  removeImage(index: number) {
-    this.previewImages.splice(index, 1);
-  }
-
-  async uploadImages(category: string): Promise<any[]> {
-    const uploadRequests = this.previewImages.map(img => {
-      img.uploading = true;
-      img.progress = 0;
-      const formData = new FormData();
-      formData.append('file', img.file);
-      formData.append('category', category);
-
-      return this.httpService.uploadFile(`${API_ENDPOINT.upload}/image`, formData).pipe(
-        map(response => {
-          img.uploading = false;
-          img.progress = 100;
-          return response;
-        })
-      );
-    });
-
-    if (uploadRequests.length === 0) {
-      return [];
-    }
-
-    const results = await lastValueFrom(forkJoin(uploadRequests));
-    this.schoolNeedsForm.get('images')?.setValue(results);
-    return results;
-  }
-
-  get hasExistingImages(): boolean {
-    return !!(this.schoolNeed?.images && this.schoolNeed.images.length > 0);
-  }
-
-  get existingImages(): SchoolNeedImage[] {
-    return this.schoolNeed?.images || [];
-  }
-
-  removeExistingImage(imageIndex: number): void {
-    if (!this.schoolNeed?.images) return;
-
-    // Remove from the school need images array
-    this.schoolNeed.images.splice(imageIndex, 1);
-
-    console.log('Removed existing image at index:', imageIndex);
-    console.log('Remaining existing images:', this.schoolNeed.images);
-  }
-
-  get totalImageCount(): number {
-    const existingCount = this.schoolNeed?.images?.length || 0;
-    return existingCount + this.previewImages.length;
-  }
 
   protected addProject(projectId: string): void {
     if (projectId && !this.selectedProjectIds.includes(projectId)) {
