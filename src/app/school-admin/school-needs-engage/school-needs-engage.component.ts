@@ -298,7 +298,12 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     }
 
     if (this.totalImageCount < 1) {
-      this.showErrorNotification('Please attach at least one MOV (Means of Verification) before engaging.');
+      this.showErrorNotification('you must need to upload file/ image first before you engage');
+      return;
+    }
+
+    if (this.previewImages.length < 1) {
+      this.showErrorNotification('update file image/ MOV\'s , before you engage');
       return;
     }
 
