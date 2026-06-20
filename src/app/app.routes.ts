@@ -123,6 +123,7 @@ export const routes: Routes = [
     data: { roleType: UserType.DivisionAdmin },
     children: [
       {path: 'school-needs', component: StakeholdersComponent},
+      {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'all-schools', component: AllSchoolComponent},
       {path: 'districts', component: ClustersComponent},
       {path: 'office-table', component: OfficeTableComponent},

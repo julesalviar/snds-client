@@ -14,7 +14,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatIcon} from '@angular/material/icon';
 import {MatProgressBar} from '@angular/material/progress-bar';
 import {debounceTime, distinctUntilChanged, forkJoin, lastValueFrom, map, Subject, takeUntil} from 'rxjs';
-import {SchoolNeed} from "../../common/model/school-need.model";
+import {SchoolNeed, SchoolNeedImage} from "../../common/model/school-need.model";
 import {UserService} from '../../common/services/user.service';
 import {SharedDataService} from '../../common/services/shared-data.service';
 import {ReferenceDataService} from '../../common/services/reference-data.service';
@@ -80,6 +80,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   agreementTypes: string[] = [];
   projectCategories: string[] = [];
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; }> = [];
+  isSaving = false;
+  readonly maxImages = 5;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   @ViewChild('stakeholderInput') stakeholderInputModel!: NgModel;
@@ -295,56 +297,72 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.previewImages.length === 0) {
-      this.showErrorNotification('Please update image/attach images before engaging.');
+    if (this.totalImageCount < 1) {
+      this.showErrorNotification('Please attach at least one MOV (Means of Verification) before engaging.');
       return;
     }
 
-    if (this.needCode) {
-      try {
-        const uploadedImages = await this.uploadImages('school-needs-engage');
+    if (!this.schoolNeed?._id) {
+      this.showErrorNotification('School need details are not loaded. Please try again.');
+      return;
+    }
 
-        const engagementData = {
-          stakeholderUserId: this.stakeholder._id,
-          stakeholderRepCount: this.stakeholderRepCount,
-          agreementType: this.agreementType,
-          signatoryName: this.signatoryName,
-          signatoryDesignation: this.signatoryDesignation,
-          projectCategory: this.projectCategory,
-          projectName: this.projectName,
-          agreementStatus: this.agreementStatus,
-          initiatedBy: this.initiatedBy,
-          signingDate: this.moaDate,
-          unit: this.unit,
-          amount: this.amount,
-          startDate: this.startDate,
-          endDate: this.endDate,
-          quantity: this.quantity,
-          schoolNeedCode: +this.needCode,
-          images: uploadedImages,
-        };
+    if (!this.needCode) {
+      return;
+    }
 
-        this.schoolNeedService.engageSchoolNeed(engagementData)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: (response) => {
-              this.sharedDataService.updateEngagementStatus(this.needCode!, true);
-              this.clearForm();
-              this.showSuccessNotification('Engagement saved successfully!');
-              // Navigate back to the previous page after a short delay to show the notification
-              setTimeout(() => {
-                this.router.navigate(['/school-admin/list-of-school-needs']);
-              }, 1500);
-            },
-            error: (error) => {
-              console.error('Error saving engagement:', error);
-              this.showErrorNotification('Failed to save engagement. Please try again.');
-            }
-          });
-      } catch (error) {
-        console.error('Error uploading images:', error);
-        this.showErrorNotification('Failed to upload images. Please try again.');
-      }
+    this.isSaving = true;
+
+    try {
+      const uploadedImages = this.previewImages.length > 0
+        ? await this.uploadImages('school-needs')
+        : [];
+
+      const mergedImages: SchoolNeedImage[] = [
+        ...this.existingImages,
+        ...uploadedImages,
+      ].slice(0, this.maxImages);
+
+      await lastValueFrom(
+        this.schoolNeedService.updateSchoolNeed(this.schoolNeed._id, {
+          images: mergedImages,
+        } as SchoolNeed),
+      );
+
+      const engagementData = {
+        stakeholderUserId: this.stakeholder._id,
+        stakeholderRepCount: this.stakeholderRepCount,
+        agreementType: this.agreementType,
+        signatoryName: this.signatoryName,
+        signatoryDesignation: this.signatoryDesignation,
+        projectCategory: this.projectCategory,
+        projectName: this.projectName,
+        agreementStatus: this.agreementStatus,
+        initiatedBy: this.initiatedBy,
+        signingDate: this.moaDate,
+        unit: this.unit,
+        amount: this.amount,
+        startDate: this.startDate,
+        endDate: this.endDate,
+        quantity: this.quantity,
+        schoolNeedCode: +this.needCode,
+      };
+
+      await lastValueFrom(
+        this.schoolNeedService.engageSchoolNeed(engagementData).pipe(takeUntil(this.destroy$)),
+      );
+
+      this.sharedDataService.updateEngagementStatus(this.needCode, true);
+      this.clearForm();
+      this.showSuccessNotification('Engagement saved successfully!');
+      setTimeout(() => {
+        this.router.navigate(['/school-admin/list-of-school-needs']);
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving engagement:', error);
+      this.showErrorNotification('Failed to save engagement. Please try again.');
+    } finally {
+      this.isSaving = false;
     }
   }
 
@@ -372,11 +390,10 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     const files = (event.target as HTMLInputElement).files;
     if (!files) return;
 
-    const currentImageCount = this.previewImages.length;
-    const maxImages = 5;
+    const currentImageCount = this.totalImageCount;
 
-    if (currentImageCount >= maxImages) {
-      this.showErrorNotification(`Maximum ${maxImages} images allowed. Please remove some images before adding new ones.`);
+    if (currentImageCount >= this.maxImages) {
+      this.showErrorNotification(`Maximum ${this.maxImages} MOVs allowed. Please remove some before adding new ones.`);
       (event.target as HTMLInputElement).value = '';
       return;
     }
@@ -405,7 +422,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.previewImages.splice(index, 1);
   }
 
-  async uploadImages(category: string): Promise<any[]> {
+  async uploadImages(category: string): Promise<SchoolNeedImage[]> {
     const uploadRequests = this.previewImages.map(img => {
       img.uploading = true;
       img.progress = 0;
@@ -417,8 +434,8 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         map(response => {
           img.uploading = false;
           img.progress = 100;
-          return response;
-        })
+          return this.normalizeUploadedImage(response);
+        }),
       );
     });
 
@@ -426,8 +443,20 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       return [];
     }
 
-    const results = await lastValueFrom(forkJoin(uploadRequests));
-    return results;
+    return lastValueFrom(forkJoin(uploadRequests));
+  }
+
+  private normalizeUploadedImage(response: unknown): SchoolNeedImage {
+    const data = response as Partial<SchoolNeedImage>;
+    if (!data.id || !data.originalUrl || !data.thumbnailUrl) {
+      throw new Error('Upload did not return complete image metadata');
+    }
+    return {
+      id: data.id,
+      category: data.category ?? 'school-needs',
+      originalUrl: data.originalUrl,
+      thumbnailUrl: data.thumbnailUrl,
+    };
   }
 
   get totalImageCount(): number {
@@ -439,13 +468,13 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     return !!(this.schoolNeed?.images && this.schoolNeed.images.length > 0);
   }
 
-  get existingImages(): any[] {
-    return this.schoolNeed?.images || [];
+  get existingImages(): SchoolNeedImage[] {
+    return this.schoolNeed?.images ?? [];
   }
 
   removeExistingImage(imageIndex: number): void {
     if (!this.schoolNeed?.images) return;
     this.schoolNeed.images.splice(imageIndex, 1);
- 
+
   }
 }

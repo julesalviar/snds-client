@@ -13,6 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, distinctUntilChanged, map, skip, take, takeUntil } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { UserType } from '../registration/user-type.enum';
 import { LoginRequiredDialogComponent } from '../common/components/login-required-dialog/login-required-dialog.component';
 import { SchoolNeed } from '../common/model/school-need.model';
 import { SchoolNeedService } from '../common/services/school-need.service';
@@ -290,7 +291,22 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/stakeholder/school-need-view/', schoolNeed.code]);
+    if (!schoolNeed.code) {
+      return;
+    }
+
+    this.router.navigate(this.getSchoolNeedViewRoute(schoolNeed.code));
+  }
+
+  private getSchoolNeedViewRoute(code: string): string[] {
+    switch (this.authService.getActiveRole()) {
+      case UserType.DivisionAdmin:
+        return ['/division-admin/school-need-view', code];
+      case UserType.SchoolAdmin:
+        return ['/school-admin/school-need-view', code];
+      default:
+        return ['/stakeholder/school-need-view', code];
+    }
   }
 
   deleteSchoolNeed(schoolNeed: SchoolNeed): void {
