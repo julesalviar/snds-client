@@ -62,6 +62,10 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
     'actions',
   ];
 
+  get isDivisionAdmin(): boolean {
+    return this.authService.getActiveRole() === UserType.DivisionAdmin;
+  }
+
   schoolNeeds: SchoolNeed[] = [];
   schoolName: string = '';
   schoolLocation: string = '';
@@ -193,8 +197,7 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
         'actions',
       ];
     } else {
-      this.displayedColumns = [
-        'school',
+      const base = [
         'specificContribution',
         'quantity',
         'unit',
@@ -204,6 +207,12 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
         'implementationStatus',
         'actions',
       ];
+      if (this.isDivisionAdmin) {
+        base.unshift('marker', 'school');
+      } else {
+        base.unshift('school');
+      }
+      this.displayedColumns = base;
     }
   }
 
@@ -281,6 +290,16 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
       });
+  }
+
+  toggleMarker(need: SchoolNeed): void {
+    if (!need._id) return;
+    need.checkedByDivisionAdmin = !need.checkedByDivisionAdmin;
+    this.schoolNeedService.updateSchoolNeed(need._id, need).subscribe({
+      error: () => {
+        need.checkedByDivisionAdmin = !need.checkedByDivisionAdmin;
+      },
+    });
   }
 
   viewSchoolNeed(schoolNeed: SchoolNeed): void {

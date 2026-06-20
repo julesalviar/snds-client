@@ -392,6 +392,31 @@ app-stakeholders mat-card-title {
   line-height: 1;
 }
 
+.mat-column-marker {
+  width: 40px;
+  min-width: 40px;
+}
+
+.marker-cell mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checked-marker {
+  color: #45a049;
+  cursor: pointer;
+}
+
+.unchecked-marker {
+  color: #bdbdbd;
+  cursor: pointer;
+}
+
 .mat-column-implementationStatus {
   max-width: 180px;
   min-width: 190px;
