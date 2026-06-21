@@ -11,7 +11,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { Subject, distinctUntilChanged, map, skip, take, takeUntil } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Subject, distinctUntilChanged, finalize, map, skip, take, takeUntil } from 'rxjs';
+import { extractApiErrorMessage } from '../common/utils/division-lock.util';
 import { AuthService } from '../auth/auth.service';
 import { UserType } from '../registration/user-type.enum';
 import { LoginRequiredDialogComponent } from '../common/components/login-required-dialog/login-required-dialog.component';
@@ -42,6 +44,7 @@ const SCHOOL_YEAR_QUERY = /^\d{4}-\d{4}$/;
     MatButton,
     MatFormFieldModule,
     MatSelectModule,
+    MatSnackBarModule,
   ],
   templateUrl: './stakeholders.component.html',
   styleUrl: './stakeholders.component.css',
@@ -49,6 +52,7 @@ const SCHOOL_YEAR_QUERY = /^\d{4}-\d{4}$/;
 })
 export class StakeholdersComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
+  private readonly markingNeedIds = new Set<string>();
 
   displayedColumns: string[] = [
     'school',
@@ -61,6 +65,14 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
     'implementationStatus',
     'actions',
   ];
+
+  get isDivisionAdmin(): boolean {
+    return this.authService.getActiveRole() === UserType.DivisionAdmin;
+  }
+
+  get isSchoolAdmin(): boolean {
+    return this.authService.getActiveRole() === UserType.SchoolAdmin;
+  }
 
   schoolNeeds: SchoolNeed[] = [];
   schoolName: string = '';
@@ -94,6 +106,7 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
     private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly dialog: MatDialog,
+    private readonly snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -181,30 +194,30 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
   }
 
   updateDisplayedColumns(): void {
-    if (this.schoolId) {
-      this.displayedColumns = [
-        'specificContribution',
-        'quantity',
-        'unit',
-        'amount',
-        'beneficiaryStudents',
-        'beneficiaryPersonnel',
-        'implementationStatus',
-        'actions',
-      ];
+    const base = [
+      'specificContribution',
+      'quantity',
+      'unit',
+      'amount',
+      'beneficiaryStudents',
+      'beneficiaryPersonnel',
+      'implementationStatus',
+      'actions',
+    ];
+
+    const singleSchoolView = this.schoolId || this.isSchoolAdmin;
+
+    if (singleSchoolView) {
+      if (this.isDivisionAdmin) {
+        base.unshift('marker');
+      }
+    } else if (this.isDivisionAdmin) {
+      base.unshift('marker', 'school');
     } else {
-      this.displayedColumns = [
-        'school',
-        'specificContribution',
-        'quantity',
-        'unit',
-        'amount',
-        'beneficiaryStudents',
-        'beneficiaryPersonnel',
-        'implementationStatus',
-        'actions',
-      ];
+      base.unshift('school');
     }
+
+    this.displayedColumns = base;
   }
 
   onPageChange(event: PageEvent): void {
@@ -279,6 +292,34 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error fetching school needs:', err);
           this.isLoading = false;
+        },
+      });
+  }
+
+  toggleMarker(need: SchoolNeed): void {
+    if (!this.isDivisionAdmin || !need._id || this.markingNeedIds.has(need._id)) {
+      return;
+    }
+
+    const checked = !need.checkedByDivisionAdmin;
+    need.checkedByDivisionAdmin = checked;
+    this.markingNeedIds.add(need._id);
+
+    this.schoolNeedService
+      .updateSchoolNeed(need._id, { checkedByDivisionAdmin: checked } as SchoolNeed)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.markingNeedIds.delete(need._id!)),
+      )
+      .subscribe({
+        error: (err) => {
+          need.checkedByDivisionAdmin = !checked;
+          console.error('Error updating marker:', err);
+          this.snackBar.open(
+            extractApiErrorMessage(err, 'Failed to update marker. Please try again.'),
+            'Close',
+            { duration: 5000 },
+          );
         },
       });
   }

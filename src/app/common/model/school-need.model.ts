@@ -51,6 +51,7 @@ export interface SchoolNeed {
   school?: SchoolInfo;
   project?: ProjectInfo;
   images: SchoolNeedImage[];
+  checkedByDivisionAdmin?: boolean;
 
   engagements?: any[];
 }

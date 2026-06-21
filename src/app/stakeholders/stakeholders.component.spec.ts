@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { provideRouter } from '@angular/router';
 
 import { StakeholdersComponent } from './stakeholders.component';
 
@@ -8,7 +10,11 @@ describe('StakeholdersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StakeholdersComponent]
+      imports: [StakeholdersComponent],
+      providers: [
+        provideRouter([]),
+        { provide: MatSnackBar, useValue: { open: jasmine.createSpy('open') } },
+      ],
     })
     .compileComponents();
 
