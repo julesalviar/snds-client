@@ -297,13 +297,11 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.totalImageCount < 1) {
-      this.showErrorNotification('you must need to upload file/ image first before you engage');
-      return;
-    }
-
     if (this.previewImages.length < 1) {
-      this.showErrorNotification('update file image/ MOV\'s , before you engage');
+      const message = this.hasExistingImages
+        ? 'Please update your MOV/image before engaging.'
+        : 'Please upload at least one MOV (Means of Verification) before engaging.';
+      this.showErrorNotification(message);
       return;
     }
 
@@ -319,9 +317,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.isSaving = true;
 
     try {
-      const uploadedImages = this.previewImages.length > 0
-        ? await this.uploadImages('school-needs')
-        : [];
+      const uploadedImages = await this.uploadImages('school-needs');
 
       const mergedImages: SchoolNeedImage[] = [
         ...this.existingImages,
