@@ -397,6 +397,12 @@ app-stakeholders mat-card-title {
   min-width: 40px;
 }
 
+.marker-cell .mat-mdc-icon-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
 .marker-cell mat-icon {
   font-size: 18px;
   width: 18px;
@@ -409,12 +415,10 @@ app-stakeholders mat-card-title {
 
 .checked-marker {
   color: #45a049;
-  cursor: pointer;
 }
 
 .unchecked-marker {
   color: #bdbdbd;
-  cursor: pointer;
 }
 
 .mat-column-implementationStatus {

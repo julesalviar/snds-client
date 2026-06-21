@@ -125,13 +125,17 @@
       <table mat-table [dataSource]="dataSource" class="school-needs-table mat-elevation-z2">
 
         <ng-container matColumnDef="marker" *ngIf="isDivisionAdmin">
-          <th mat-header-cell *matHeaderCellDef></th>
+          <th mat-header-cell *matHeaderCellDef aria-label="Reviewed"></th>
           <td mat-cell *matCellDef="let need" class="marker-cell">
-            <mat-icon (click)="toggleMarker(need)"
-                      [class.checked-marker]="need.checkedByDivisionAdmin"
-                      [class.unchecked-marker]="!need.checkedByDivisionAdmin">
-              {{ need.checkedByDivisionAdmin ? 'check_circle' : 'radio_button_unchecked' }}
-            </mat-icon>
+            <button mat-icon-button type="button"
+                    (click)="toggleMarker(need)"
+                    [attr.aria-label]="need.checkedByDivisionAdmin ? 'Mark as not reviewed' : 'Mark as reviewed'"
+                    [matTooltip]="need.checkedByDivisionAdmin ? 'Reviewed' : 'Mark as reviewed'">
+              <mat-icon [class.checked-marker]="need.checkedByDivisionAdmin"
+                        [class.unchecked-marker]="!need.checkedByDivisionAdmin">
+                {{ need.checkedByDivisionAdmin ? 'check_circle' : 'radio_button_unchecked' }}
+              </mat-icon>
+            </button>
           </td>
         </ng-container>
 
