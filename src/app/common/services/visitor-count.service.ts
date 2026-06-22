@@ -39,6 +39,9 @@ export class VisitorCountService implements OnDestroy {
   );
   private heartbeatIntervalSub?: Subscription;
   private activePollSub?: Subscription;
+  private lastActiveHeartbeatAt = 0;
+  private readonly activeHeartbeatMinIntervalMs = 120_000;
+  private readonly activeCountPollIntervalMs = 60_000;
 
   readonly visitorCount$ = this.visitorCountSubject.asObservable();
   readonly activeVisitorCount$ = this.activeVisitorCountSubject.asObservable();
@@ -58,7 +61,7 @@ export class VisitorCountService implements OnDestroy {
         this.syncHomeActivePolling(isHome);
       });
 
-    this.heartbeatIntervalSub = interval(60_000).subscribe(() => {
+    this.heartbeatIntervalSub = interval(this.activeHeartbeatMinIntervalMs).subscribe(() => {
       this.sendActiveHeartbeatAndUpdateCount();
     });
 
@@ -98,7 +101,16 @@ export class VisitorCountService implements OnDestroy {
     });
   }
 
-  private sendActiveHeartbeatAndUpdateCount(): void {
+  private sendActiveHeartbeatAndUpdateCount(force = false): void {
+    const now = Date.now();
+    if (
+      !force &&
+      now - this.lastActiveHeartbeatAt < this.activeHeartbeatMinIntervalMs
+    ) {
+      return;
+    }
+
+    this.lastActiveHeartbeatAt = now;
     this.sendActiveHeartbeat().subscribe({
       next: (response) => {
         this.activeVisitorCountSubject.next(response.data.activeCount);
@@ -119,7 +131,7 @@ export class VisitorCountService implements OnDestroy {
       },
     });
 
-    this.activePollSub = interval(30_000).subscribe(() => {
+    this.activePollSub = interval(this.activeCountPollIntervalMs).subscribe(() => {
       this.getActiveVisitorCount().subscribe({
         next: (response) => {
           this.activeVisitorCountSubject.next(response.data.activeCount);
