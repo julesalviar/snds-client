@@ -286,3 +286,15 @@ p {
 .announcement-form-dialog-panel .mat-mdc-dialog-surface {
   overflow: visible;
 }
+
+.announcement-dialog-panel .mat-mdc-dialog-container,
+.announcement-dialog-panel .mat-mdc-dialog-surface {
+  box-sizing: border-box;
+  max-width: 95vw;
+}
+
+.announcement-dialog-panel .mat-mdc-dialog-content {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+}

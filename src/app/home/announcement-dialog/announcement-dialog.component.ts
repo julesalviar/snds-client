@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -8,8 +8,9 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Announcement } from '../../common/model/announcement.model';
-import { SafeHtmlPipe } from '../../common/pipes/safe-html.pipe';
+import { normalizeAnnouncementHtml } from '../../common/utils/announcement-html.util';
 
 export interface AnnouncementDialogData {
   announcement: Announcement;
@@ -27,13 +28,13 @@ export interface AnnouncementDialogResult {
     MatDialogModule,
     MatButtonModule,
     MatCheckboxModule,
-    SafeHtmlPipe,
   ],
   templateUrl: './announcement-dialog.component.html',
   styleUrl: './announcement-dialog.component.css',
 })
 export class AnnouncementDialogComponent {
   dontShowAgain = true;
+  private readonly sanitizer = inject(DomSanitizer);
 
   constructor(
     public dialogRef: MatDialogRef<AnnouncementDialogComponent, AnnouncementDialogResult>,
@@ -42,6 +43,12 @@ export class AnnouncementDialogComponent {
 
   get announcement(): Announcement {
     return this.data.announcement;
+  }
+
+  get announcementBodyHtml(): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(
+      normalizeAnnouncementHtml(this.announcement.announcement),
+    );
   }
 
   onDismiss(): void {

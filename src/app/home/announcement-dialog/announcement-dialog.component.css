@@ -1,14 +1,28 @@
 .announcement-description {
   margin: 0 0 12px;
   color: rgba(0, 0, 0, 0.7);
+  text-align: justify;
 }
 
 .announcement-body {
   line-height: 1.5;
+  text-align: justify;
+  max-width: 100%;
+}
+
+:host ::ng-deep .announcement-body p,
+:host ::ng-deep .announcement-body li {
+  text-align: justify;
+}
+
+:host ::ng-deep .announcement-body .ql-align-left {
+  text-align: left;
 }
 
 :host ::ng-deep .announcement-body img {
   max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 :host ::ng-deep .announcement-body img:not([width]) {
@@ -27,6 +41,20 @@
   text-align: justify;
 }
 
+:host ::ng-deep .announcement-body table {
+  max-width: 100%;
+}
+
+:host ::ng-deep .announcement-body pre,
+:host ::ng-deep .announcement-body code {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+:host ::ng-deep .announcement-body a {
+  overflow-wrap: break-word;
+}
+
 .announcement-actions {
   display: flex;
   align-items: center;
@@ -38,6 +66,15 @@
 }
 
 mat-dialog-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   max-height: 70vh;
+  overflow-x: hidden;
   overflow-y: auto;
+}
+
+:host {
+  display: block;
+  max-width: 100%;
 }

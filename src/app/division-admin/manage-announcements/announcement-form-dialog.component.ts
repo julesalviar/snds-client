@@ -30,6 +30,7 @@ import {
   formatPhilippinesDateTimeStart,
   parsePhilippinesCalendarDate,
 } from '../../common/date-utils';
+import { normalizeAnnouncementHtml } from '../../common/utils/announcement-html.util';
 import {
   Announcement,
   AnnouncementAiStatus,
@@ -219,7 +220,7 @@ export class AnnouncementFormDialogComponent implements OnInit {
     const payload = {
       title: raw.title.trim(),
       description: raw.description?.trim() || undefined,
-      announcement: raw.announcement,
+      announcement: normalizeAnnouncementHtml(raw.announcement),
       effectiveFrom,
       effectiveUntil,
       location: 'home' as const,
