@@ -9,6 +9,7 @@ import {filter} from "rxjs";
 import { FooterComponent } from './footer/footer.component';
 import { FieldCheckerService } from './common/services/utils/field-checker.service';
 import { AuthService } from './auth/auth.service';
+import { VisitorCountService } from './common/services/visitor-count.service';
 import {UserType} from "./registration/user-type.enum";
 @Component({
   selector: 'app-root',
@@ -24,7 +25,9 @@ export class AppComponent {
   constructor(
     private readonly router: Router,
     private readonly fieldCheckerService: FieldCheckerService,
-    private readonly authService: AuthService) {
+    private readonly authService: AuthService,
+    private readonly visitorCountService: VisitorCountService,
+  ) {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)

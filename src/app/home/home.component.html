@@ -1,8 +1,8 @@
-<ng-container *ngIf="homeState$ | async as state">
-  <div class="container home-compact">
-    <div class="widget-section-row">
-      <div class="sections-wrapper">
-        <div class="column-first">
+<div class="container home-compact">
+  <div class="widget-section-row">
+    <div class="sections-wrapper">
+      <div class="column-first">
+        <ng-container *ngIf="homeState$ | async as state">
         <div class="welcome-section">
           <h2 class="welcome-title">Welcome {{ state.name?.trim() ? state.name : 'Partners' }}</h2>
         </div>
@@ -131,9 +131,13 @@
           </ul>
           </div>
         </aside>
+        </ng-container>
       </div>
 
       <div class="column-second">
+        <app-visitor-counter-widget variant="home" [alwaysShow]="true" />
+
+        <ng-container *ngIf="homeState$ | async as state">
         <div *ngIf="shouldShowStats(state)" class="home-stats-widgets-row">
           <aside class="home-widget school-context-widget">
             <div class="home-widget-header-row">
@@ -445,8 +449,8 @@
           <a [routerLink]="getCalendarRoute(state)" class="upcoming-events-view-all">View Calendar</a>
           </div>
         </aside>
+        </ng-container>
       </div>
     </div>
-    </div>
   </div>
-</ng-container>
+</div>

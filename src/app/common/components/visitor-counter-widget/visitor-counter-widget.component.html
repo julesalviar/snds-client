@@ -1,0 +1,57 @@
+@if (variant === 'home') {
+  <aside class="visitor-counter-home-widget">
+    <div class="visitor-counter-home-widget__header">
+      <h3 class="visitor-counter-home-widget__title">
+        <mat-icon class="visitor-counter-home-widget__icon">groups</mat-icon>
+        Site Visitors
+      </h3>
+    </div>
+
+    @if (homeStats$ | async; as stats) {
+      <div
+        class="visitor-counter-home-widget__body"
+        aria-live="polite"
+        [attr.aria-busy]="stats.visitorCount === null && alwaysShow">
+        <div class="visitor-counter-home-widget__stat">
+          <p class="visitor-counter-home-widget__label">Total visitors</p>
+          @if (stats.visitorCount !== null) {
+            <p class="visitor-counter-home-widget__value">{{ stats.visitorCount | number }}</p>
+          } @else if (alwaysShow) {
+            <p class="visitor-counter-home-widget__value visitor-counter-home-widget__value--loading">—</p>
+          }
+        </div>
+
+        <div class="visitor-counter-home-widget__divider" aria-hidden="true"></div>
+
+        <div class="visitor-counter-home-widget__stat visitor-counter-home-widget__stat--active">
+          <p class="visitor-counter-home-widget__label">Currently active</p>
+          @if (stats.activeVisitorCount !== null) {
+            <p class="visitor-counter-home-widget__value visitor-counter-home-widget__value--active">
+              {{ stats.activeVisitorCount | number }}
+            </p>
+          } @else if (alwaysShow) {
+            <p class="visitor-counter-home-widget__value visitor-counter-home-widget__value--loading">—</p>
+          }
+        </div>
+      </div>
+    }
+  </aside>
+} @else {
+  @if (visitorCount$ | async; as visitorCount) {
+    <div class="visitor-counter" aria-live="polite">
+      <span class="visitor-counter__label">Visitors</span>
+      <div class="visitor-counter__digits">
+        @for (digit of visitorCount.toString().split(''); track $index) {
+          <span class="visitor-counter__digit">{{ digit }}</span>
+        }
+      </div>
+    </div>
+  } @else if (alwaysShow) {
+    <div class="visitor-counter" aria-live="polite" aria-busy="true">
+      <span class="visitor-counter__label">Visitors</span>
+      <div class="visitor-counter__digits">
+        <span class="visitor-counter__digit visitor-counter__digit--loading">-</span>
+      </div>
+    </div>
+  }
+}

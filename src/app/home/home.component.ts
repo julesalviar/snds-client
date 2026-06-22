@@ -56,6 +56,7 @@ import { formatDateString, formatTimeString } from '../common/date-utils';
 import { UserListItem } from '../registration/user.model';
 import { pickRandomMaterialColors } from '../common/utils/material-chart-colors';
 import { SchoolYearWidgetFilterComponent } from '../common/components/school-year-widget-filter/school-year-widget-filter.component';
+import { VisitorCounterWidgetComponent } from '../common/components/visitor-counter-widget/visitor-counter-widget.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AnnouncementService } from '../common/services/announcement.service';
 import { AnnouncementDismissalService } from '../common/services/announcement-dismissal.service';
@@ -145,6 +146,7 @@ type HomeWidgetId =
     MatTooltipModule,
     RouterLink,
     SchoolYearWidgetFilterComponent,
+    VisitorCounterWidgetComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],

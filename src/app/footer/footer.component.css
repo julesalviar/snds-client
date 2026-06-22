@@ -1,12 +1,12 @@
 footer {
-  background-color: #f1f1f1; 
+  background-color: #f1f1f1;
 }
 
 .footer-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: Microsoft JhengHei;
+  font-family: Microsoft JhengHei, Arial, sans-serif;
   font-size: 14px;
   color: #666;
   padding: 10px 20px;
