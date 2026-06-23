@@ -40,6 +40,22 @@
     text-align: center;
   }
 
+  .session-expired-message {
+    color: #e65100;
+    background-color: #fff3e0;
+    border: 1px solid #ffb74d;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.45;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+
+  .session-expired-message .session-expired-main {
+    margin: 0;
+  }
+
   .email-activation-message {
     color: #1565c0;
     background-color: #e3f2fd;

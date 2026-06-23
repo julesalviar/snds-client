@@ -11,6 +11,10 @@ import {MatDialog} from '@angular/material/dialog';
 import {AuthService} from "../auth/auth.service";
 import {EmailConfirmationService} from '../auth/email-confirmation.service';
 import {sanitizeReturnUrl} from '../auth/return-url.util';
+import {
+  isSessionExpiredRedirect,
+  SESSION_EXPIRED_MESSAGE,
+} from '../auth/sign-in-session.util';
 
 interface LoginEmailErrorBody {
   message?: string;
@@ -42,6 +46,8 @@ export class SignInComponent implements OnInit {
   errorMessage: string = '';
   /** Shown when AuthGuard sent the user here after revoking a session with unverified email (JWT). */
   sessionEmailVerificationMessage: string | null = null;
+  /** Shown when the session was invalidated (expired token, version bump, etc.). */
+  sessionExpiredMessage: string | null = null;
 
   /** ISO date from login error when email is not verified (current token expiry, if any). */
   emailConfirmationExpiresAt: string | null = null;
@@ -90,6 +96,9 @@ export class SignInComponent implements OnInit {
       this.sessionEmailVerificationMessage =
         'Your session was cleared because this account must have a verified email to continue. Open the confirmation link from your registration email, then sign in again. You can also check your spam folder.';
     }
+    if (isSessionExpiredRedirect(this.route.snapshot.queryParamMap)) {
+      this.sessionExpiredMessage = SESSION_EXPIRED_MESSAGE;
+    }
   }
 
   onForgotPassword() {
@@ -122,6 +131,7 @@ export class SignInComponent implements OnInit {
       this.isEmailActivationError = false;
       this.errorMessage = '';
       this.sessionEmailVerificationMessage = null;
+      this.sessionExpiredMessage = null;
       this.clearEmailActivationExtras();
       this.isSubmitting = true;
       const returnUrl = sanitizeReturnUrl(

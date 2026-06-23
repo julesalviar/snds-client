@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../../auth/auth.service';
+import { signInSessionExpiredQueryParams } from '../../auth/sign-in-session.util';
 
 const AUTH_BOOTSTRAP_PATHS = [
   '/auth/refresh',
@@ -22,10 +23,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !isAuthBootstrapRequest(req.url)) {
-        const sentAuth = req.headers.has('Authorization');
         authService.clearSession();
-        if (sentAuth) {
-          router.navigate(['/sign-in']);
+        const onSignIn = router.url.split(/[?#]/)[0] === '/sign-in';
+        if (!onSignIn) {
+          void router.navigate(['/sign-in'], {
+            queryParams: signInSessionExpiredQueryParams(),
+          });
         }
       }
       return throwError(() => error);

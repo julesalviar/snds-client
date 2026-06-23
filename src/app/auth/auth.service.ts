@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { API_ENDPOINT } from '../common/api-endpoints';
 import { HttpService } from '../common/services/http.service';
 import {
@@ -12,6 +13,7 @@ import {
 import { AuthResponse } from './auth-response.model';
 import { JwtPayload } from '../common/model/jwt-payload.model';
 import { TokenHolder } from './token-holder';
+import { signInSessionExpiredQueryParams } from './sign-in-session.util';
 
 @Injectable({
   providedIn: 'root',
@@ -22,9 +24,13 @@ export class AuthService {
 
   readonly authState$ = this.authStateSubject.asObservable();
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly router: Router,
+  ) {}
 
   initializeSession(): Observable<AuthResponse | null> {
+    const hadStoredToken = !!TokenHolder.getToken();
     this.restoreTokenFromStorage();
 
     return this.httpService
@@ -33,14 +39,12 @@ export class AuthService {
         tap((authResponse) => {
           if (authResponse?.authenticated && authResponse.access_token) {
             this.applyAuthResponse(authResponse);
-          } else if (!this.isLoggedIn()) {
-            this.clearSession();
+            return;
           }
+          this.invalidateStaleSession(hadStoredToken);
         }),
         catchError(() => {
-          if (!this.restoreTokenFromStorage()) {
-            this.clearSession();
-          }
+          this.invalidateStaleSession(hadStoredToken);
           return of(null);
         }),
       );
@@ -145,6 +149,15 @@ export class AuthService {
   getAuthorizationHeader(): string | null {
     const token = this.sessionToken ?? TokenHolder.getToken();
     return token ? `Bearer ${token}` : null;
+  }
+
+  private invalidateStaleSession(redirectToSignIn: boolean): void {
+    this.clearSession();
+    if (redirectToSignIn) {
+      void this.router.navigate(['/sign-in'], {
+        queryParams: signInSessionExpiredQueryParams(),
+      });
+    }
   }
 
   private restoreTokenFromStorage(): boolean {
