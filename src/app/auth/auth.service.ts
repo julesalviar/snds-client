@@ -5,15 +5,23 @@ import { HttpService } from '../common/services/http.service';
 import {
   BehaviorSubject,
   catchError,
+  finalize,
+  map,
   Observable,
+  of,
+  shareReplay,
   tap,
   throwError,
-  of,
 } from 'rxjs';
 import { AuthResponse } from './auth-response.model';
 import { JwtPayload } from '../common/model/jwt-payload.model';
 import { TokenHolder } from './token-holder';
 import { signInSessionExpiredQueryParams } from './sign-in-session.util';
+import {
+  getRefreshBufferSeconds,
+  MIN_REFRESH_INTERVAL_MS,
+  shouldRefreshTokenSoon,
+} from './auth-session.util';
 
 @Injectable({
   providedIn: 'root',
@@ -21,33 +29,88 @@ import { signInSessionExpiredQueryParams } from './sign-in-session.util';
 export class AuthService {
   private sessionToken: string | null = null;
   private readonly authStateSubject = new BehaviorSubject<boolean>(false);
+  private refreshInFlight: Observable<boolean> | null = null;
+  private refreshTimerId: ReturnType<typeof setTimeout> | null = null;
+  private lastRefreshAtMs = 0;
 
   readonly authState$ = this.authStateSubject.asObservable();
 
   constructor(
     private readonly httpService: HttpService,
     private readonly router: Router,
-  ) {}
+  ) {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (
+          document.visibilityState === 'visible' &&
+          this.isLoggedIn() &&
+          this.shouldRefreshSoon()
+        ) {
+          this.refreshSession().subscribe();
+        }
+      });
+    }
+  }
 
   initializeSession(): Observable<AuthResponse | null> {
     const hadStoredToken = !!TokenHolder.getToken();
     this.restoreTokenFromStorage();
 
-    return this.httpService
+    if (this.isLoggedIn() && !this.shouldRefreshSoon()) {
+      const token = TokenHolder.getToken();
+      return of(
+        token
+          ? ({ authenticated: true, access_token: token } as AuthResponse)
+          : null,
+      );
+    }
+
+    return this.refreshSession({ force: !this.isLoggedIn() }).pipe(
+      map((authenticated) => {
+        if (authenticated) {
+          const token = TokenHolder.getToken();
+          return token
+            ? ({ authenticated: true, access_token: token } as AuthResponse)
+            : null;
+        }
+        this.invalidateStaleSession(hadStoredToken);
+        return null;
+      }),
+    );
+  }
+
+  refreshSession(options?: { force?: boolean }): Observable<boolean> {
+    if (
+      !options?.force &&
+      this.lastRefreshAtMs > 0 &&
+      Date.now() - this.lastRefreshAtMs < MIN_REFRESH_INTERVAL_MS
+    ) {
+      return of(this.isLoggedIn());
+    }
+
+    if (this.refreshInFlight) {
+      return this.refreshInFlight;
+    }
+
+    this.refreshInFlight = this.httpService
       .post<AuthResponse>(API_ENDPOINT.auth.refresh, {})
       .pipe(
-        tap((authResponse) => {
+        map((authResponse) => {
           if (authResponse?.authenticated && authResponse.access_token) {
             this.applyAuthResponse(authResponse);
-            return;
+            this.lastRefreshAtMs = Date.now();
+            return true;
           }
-          this.invalidateStaleSession(hadStoredToken);
+          return false;
         }),
-        catchError(() => {
-          this.invalidateStaleSession(hadStoredToken);
-          return of(null);
+        catchError(() => of(false)),
+        finalize(() => {
+          this.refreshInFlight = null;
         }),
+        shareReplay(1),
       );
+
+    return this.refreshInFlight;
   }
 
   login(credentials: {
@@ -74,12 +137,15 @@ export class AuthService {
     this.sessionToken = token;
     TokenHolder.setSessionToken(token);
     this.syncAuthState();
+    this.scheduleProactiveRefresh();
   }
 
   clearSession(): void {
     this.sessionToken = null;
     TokenHolder.clear();
     localStorage.removeItem('userProfile');
+    this.lastRefreshAtMs = 0;
+    this.clearProactiveRefresh();
     this.syncAuthState();
   }
 
@@ -175,6 +241,7 @@ export class AuthService {
     this.sessionToken = token;
     TokenHolder.setSessionToken(token);
     this.syncAuthState();
+    this.scheduleProactiveRefresh();
     return true;
   }
 
@@ -212,6 +279,32 @@ export class AuthService {
 
     const now = Math.floor(Date.now() / 1000);
     return token.exp > now;
+  }
+
+  private shouldRefreshSoon(): boolean {
+    return shouldRefreshTokenSoon(this.getTokenPayload());
+  }
+
+  private scheduleProactiveRefresh(): void {
+    this.clearProactiveRefresh();
+    const payload = this.getTokenPayload();
+    if (!payload?.exp) {
+      return;
+    }
+
+    const bufferSeconds = getRefreshBufferSeconds(payload);
+    const now = Math.floor(Date.now() / 1000);
+    const delayMs = Math.max(0, (payload.exp - bufferSeconds - now) * 1000);
+    this.refreshTimerId = setTimeout(() => {
+      this.refreshSession().subscribe();
+    }, delayMs);
+  }
+
+  private clearProactiveRefresh(): void {
+    if (this.refreshTimerId != null) {
+      clearTimeout(this.refreshTimerId);
+      this.refreshTimerId = null;
+    }
   }
 
   private buildLoginScreenContext():
