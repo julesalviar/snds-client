@@ -25,6 +25,25 @@ export class TokenHolder {
     return sessionStorage.getItem(TOKEN_STORAGE_KEY);
   }
 
+  static getValidToken(): string | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])) as { exp?: number };
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp != null && payload.exp > now) {
+        return token;
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  }
+
   static clear(): void {
     this.sessionToken = null;
     if (typeof sessionStorage !== 'undefined') {

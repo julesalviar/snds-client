@@ -3,6 +3,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {TenantService} from "../../config/tenant.service";
 import {Observable, throwError} from "rxjs";
 import {TokenHolder} from "../../auth/token-holder";
+import {isAuthBootstrapUrl} from "../../auth/auth-bootstrap.util";
 import {environment} from "../../../environments/environment";
 
 @Injectable({
@@ -16,7 +17,7 @@ export class HttpService {
     private readonly http: HttpClient,
   ) {}
 
-  private getHeaders(): HttpHeaders {
+  private getHeaders(url: string): HttpHeaders {
     const tenant = this.tenantService.getCurrentDomainTenant();
     let headers = new HttpHeaders({
       tenant: tenant,
@@ -24,31 +25,35 @@ export class HttpService {
       'Accept': 'application/json'
     });
 
-    const token = TokenHolder.getToken();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+    if (!isAuthBootstrapUrl(url)) {
+      const token = TokenHolder.getValidToken();
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
     }
 
     return headers;
   }
 
-  private getUploadHeaders(): HttpHeaders {
+  private getUploadHeaders(url: string): HttpHeaders {
     const tenant = this.tenantService.getCurrentDomainTenant();
     let headers = new HttpHeaders({
       tenant: tenant,
       'Accept': 'application/json'
     });
 
-    const token = TokenHolder.getToken();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+    if (!isAuthBootstrapUrl(url)) {
+      const token = TokenHolder.getValidToken();
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
     }
 
     return headers;
   }
 
   post<T>(url: string, data: any, extraHeaders?: Record<string, string>): Observable<T> {
-    let headers = this.getHeaders();
+    let headers = this.getHeaders(url);
     if (extraHeaders) {
       for (const [key, value] of Object.entries(extraHeaders)) {
         headers = headers.set(key, value);
@@ -63,35 +68,35 @@ export class HttpService {
 
   get<T>(url: string): Observable<T> {
     return this.http.get<T>(url, {
-      headers: this.getHeaders(),
+      headers: this.getHeaders(url),
       ...this.withCredentials,
     });
   }
 
   put<T>(url: string, data: any): Observable<T> {
     return this.http.put<T>(url, data, {
-      headers: this.getHeaders(),
+      headers: this.getHeaders(url),
       ...this.withCredentials,
     });
   }
 
   patch<T>(url: string, data: any): Observable<T> {
     return this.http.patch<T>(url, data, {
-      headers: this.getHeaders(),
+      headers: this.getHeaders(url),
       ...this.withCredentials,
     });
   }
 
   delete<T>(url: string): Observable<T> {
     return this.http.delete<T>(url, {
-      headers: this.getHeaders(),
+      headers: this.getHeaders(url),
       ...this.withCredentials,
     });
   }
 
   uploadFile<T>(url: string, formData: FormData): Observable<T> {
     return this.http.post<T>(url, formData, {
-      headers: this.getUploadHeaders(),
+      headers: this.getUploadHeaders(url),
       ...this.withCredentials,
     });
   }

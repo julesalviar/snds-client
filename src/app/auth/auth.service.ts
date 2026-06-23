@@ -117,6 +117,7 @@ export class AuthService {
     userName: string;
     password: string;
   }): Observable<AuthResponse> {
+    this.clearSession();
     const screen = this.buildLoginScreenContext();
     const body = {
       ...credentials,

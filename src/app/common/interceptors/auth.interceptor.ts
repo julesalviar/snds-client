@@ -9,17 +9,11 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../../auth/auth.service';
 import { signInSessionExpiredQueryParams } from '../../auth/sign-in-session.util';
 import { AUTH_RETRY_CONTEXT } from '../../auth/auth-retry.context';
+import { isAuthBootstrapUrl } from '../../auth/auth-bootstrap.util';
 import { TokenHolder } from '../../auth/token-holder';
 
-const AUTH_BOOTSTRAP_PATHS = [
-  '/auth/refresh',
-  '/auth/login',
-  '/auth/signup',
-  '/auth/logout',
-];
-
 function isAuthBootstrapRequest(url: string): boolean {
-  return AUTH_BOOTSTRAP_PATHS.some((path) => url.includes(path));
+  return isAuthBootstrapUrl(url);
 }
 
 function handleSessionExpired(
