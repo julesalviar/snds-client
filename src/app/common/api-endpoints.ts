@@ -47,5 +47,6 @@ export const API_ENDPOINT = {
     visitorCountHit: `${environment.API_URL}/widgets/visitor-count/hit`,
     visitorActiveCount: `${environment.API_URL}/widgets/visitor-count/active`,
     visitorActiveHeartbeat: `${environment.API_URL}/widgets/visitor-count/active/heartbeat`,
+    visitorOnlineUsers: `${environment.API_URL}/widgets/visitor-count/online-users`,
   },
 }

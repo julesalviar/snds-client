@@ -35,6 +35,58 @@
         </div>
       </div>
     }
+
+    @if (showOnlineUsers) {
+      @if (onlineUsersDisplay$ | async; as onlineDisplay) {
+        <section class="visitor-counter-home-widget__online" aria-live="polite">
+          <div class="visitor-counter-home-widget__online-header">
+            <span class="visitor-counter-home-widget__online-title">Who's online</span>
+            <span class="visitor-counter-home-widget__online-count">{{ onlineDisplay.total }}</span>
+          </div>
+
+          @if (onlineDisplay.total > 0) {
+            <div
+              class="visitor-counter-home-widget__online-chips"
+              role="list"
+              [attr.aria-label]="onlineDisplay.total + ' users online'">
+              @for (user of onlineDisplay.users; track user.userId) {
+                <span
+                  class="visitor-counter-home-widget__online-chip"
+                  role="listitem"
+                  [title]="user.displayName + ' · ' + getRoleLabel(user.activeRole)">
+                  <mat-icon
+                    class="visitor-counter-home-widget__online-chip-icon"
+                    [style.color]="getRoleChartColor(user.activeRole)"
+                    [attr.aria-label]="getRoleLabel(user.activeRole)">
+                    {{ getRoleIcon(user.activeRole) }}
+                  </mat-icon>
+                  <span class="visitor-counter-home-widget__online-chip-name">
+                    {{ user.displayName }}
+                  </span>
+                </span>
+              }
+              @if (onlineDisplay.overflowCount > 0) {
+                <span
+                  class="visitor-counter-home-widget__online-chip visitor-counter-home-widget__online-chip--more"
+                  role="listitem"
+                  [title]="onlineDisplay.overflowCount + ' more users online'">
+                  {{ onlineDisplay.overflowCount }} more
+                </span>
+              }
+            </div>
+          } @else {
+            <p class="visitor-counter-home-widget__online-empty">No users online</p>
+          }
+        </section>
+      } @else {
+        <section class="visitor-counter-home-widget__online" aria-live="polite" aria-busy="true">
+          <div class="visitor-counter-home-widget__online-header">
+            <span class="visitor-counter-home-widget__online-title">Who's online</span>
+          </div>
+          <p class="visitor-counter-home-widget__online-empty">—</p>
+        </section>
+      }
+    }
   </aside>
 } @else {
   @if (visitorCount$ | async; as visitorCount) {

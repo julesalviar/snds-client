@@ -3,6 +3,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, filter, interval, Observable, Subscription } from 'rxjs';
 import { HttpService } from './http.service';
 import { API_ENDPOINT } from '../api-endpoints';
+import { environment } from '../../../environments/environment';
 
 export interface VisitorCountDataDto {
   count: number;
@@ -12,6 +13,19 @@ export interface VisitorCountDataDto {
 export interface ActiveVisitorCountDataDto {
   activeCount: number;
   tenantCode: string;
+}
+
+export interface OnlineVisitorUserDto {
+  userId: string;
+  displayName: string;
+  activeRole: string;
+  lastSeen: string;
+}
+
+export interface OnlineUsersDataDto {
+  tenantCode: string;
+  count: number;
+  users: OnlineVisitorUserDto[];
 }
 
 export interface VisitorCountResponse {
@@ -26,6 +40,12 @@ export interface ActiveVisitorCountResponse {
   meta: { timestamp: string };
 }
 
+export interface OnlineUsersResponse {
+  success: boolean;
+  data: OnlineUsersDataDto;
+  meta: { timestamp: string };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -34,17 +54,22 @@ export class VisitorCountService implements OnDestroy {
   private readonly activeVisitorCountSubject = new BehaviorSubject<number | null>(
     null,
   );
+  private readonly onlineUsersSubject = new BehaviorSubject<
+    OnlineVisitorUserDto[] | null
+  >(null);
   private readonly isHomeRouteSubject = new BehaviorSubject<boolean>(
     this.isHomeUrl(this.router.url),
   );
   private heartbeatIntervalSub?: Subscription;
   private activePollSub?: Subscription;
+  private onlineUsersPollSub?: Subscription;
   private lastActiveHeartbeatAt = 0;
   private readonly activeHeartbeatMinIntervalMs = 120_000;
   private readonly activeCountPollIntervalMs = 60_000;
 
   readonly visitorCount$ = this.visitorCountSubject.asObservable();
   readonly activeVisitorCount$ = this.activeVisitorCountSubject.asObservable();
+  readonly onlineUsers$ = this.onlineUsersSubject.asObservable();
   readonly isHomeRoute$ = this.isHomeRouteSubject.asObservable();
 
   constructor(
@@ -71,6 +96,7 @@ export class VisitorCountService implements OnDestroy {
   ngOnDestroy(): void {
     this.heartbeatIntervalSub?.unsubscribe();
     this.activePollSub?.unsubscribe();
+    this.stopOnlineUsersPolling();
   }
 
   recordVisitorHit(): Observable<VisitorCountResponse> {
@@ -81,9 +107,14 @@ export class VisitorCountService implements OnDestroy {
   }
 
   sendActiveHeartbeat(): Observable<ActiveVisitorCountResponse> {
+    const extraHeaders = environment.production
+      ? undefined
+      : { 'X-Snds-Dev-Session': '1' };
+
     return this.httpService.post<ActiveVisitorCountResponse>(
       API_ENDPOINT.widget.visitorActiveHeartbeat,
       { sessionId: this.getActiveSessionId() },
+      extraHeaders,
     );
   }
 
@@ -91,6 +122,38 @@ export class VisitorCountService implements OnDestroy {
     return this.httpService.get<ActiveVisitorCountResponse>(
       API_ENDPOINT.widget.visitorActiveCount,
     );
+  }
+
+  getOnlineUsers(): Observable<OnlineUsersResponse> {
+    return this.httpService.get<OnlineUsersResponse>(
+      API_ENDPOINT.widget.visitorOnlineUsers,
+    );
+  }
+
+  startOnlineUsersPolling(): void {
+    this.stopOnlineUsersPolling();
+    this.fetchOnlineUsers();
+
+    this.onlineUsersPollSub = interval(this.activeCountPollIntervalMs).subscribe(() => {
+      this.fetchOnlineUsers();
+    });
+  }
+
+  stopOnlineUsersPolling(): void {
+    this.onlineUsersPollSub?.unsubscribe();
+    this.onlineUsersPollSub = undefined;
+    this.onlineUsersSubject.next(null);
+  }
+
+  private fetchOnlineUsers(): void {
+    this.getOnlineUsers().subscribe({
+      next: (response) => {
+        this.onlineUsersSubject.next(response.data.users);
+      },
+      error: () => {
+        this.onlineUsersSubject.next([]);
+      },
+    });
   }
 
   private recordVisitorHitAndUpdateCount(): void {

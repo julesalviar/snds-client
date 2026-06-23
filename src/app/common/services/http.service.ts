@@ -47,9 +47,16 @@ export class HttpService {
     return headers;
   }
 
-  post<T>(url: string, data: any): Observable<T> {
+  post<T>(url: string, data: any, extraHeaders?: Record<string, string>): Observable<T> {
+    let headers = this.getHeaders();
+    if (extraHeaders) {
+      for (const [key, value] of Object.entries(extraHeaders)) {
+        headers = headers.set(key, value);
+      }
+    }
+
     return this.http.post<T>(url, data, {
-      headers: this.getHeaders(),
+      headers,
       ...this.withCredentials,
     });
   }
