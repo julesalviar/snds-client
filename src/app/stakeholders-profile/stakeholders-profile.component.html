@@ -1,86 +1,162 @@
-<div class="filter-bar">
-  <mat-form-field appearance="outline" class="filter-field">
-    <mat-label>Select School Year</mat-label>
-    <mat-select [(ngModel)]="selectedSchoolYear">
-      <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
-    </mat-select>
-  </mat-form-field>
+<mat-card>
+  <mat-card-title>Stakeholders' Profile</mat-card-title>
 
-  <mat-form-field appearance="outline" class="filter-field">
-    <mat-label>Sector</mat-label>
-    <mat-select [(ngModel)]="selectedSector">
-      <mat-option *ngFor="let s of sectorOptions" [value]="s">{{ s }}</mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <mat-radio-group class="engagement-radio" [(ngModel)]="selectedEngagement" *ngIf="!isSchoolAdmin">
-    <mat-radio-button value="Engaged">Engaged</mat-radio-button>
-    <mat-radio-button value="Not Engaged">Not Engage</mat-radio-button>
-    <mat-radio-button value="All">All</mat-radio-button>
-  </mat-radio-group>
-
-  <button mat-raised-button color="primary" (click)="applyFilter()">Query</button>
-  <button mat-button (click)="resetFilters()">Clear</button>
-</div>
-
-  <div class="stats-bar">
-  <div class="stat-item">
-    <span class="stat-label">Engaged Stakeholders:</span>
-    <span class="stat-value">{{ engagedCount }}</span>
-  </div>
-  <div class="stat-item">
-    <span class="stat-label">Not Engaged Stakeholders:</span>
-    <span class="stat-value">{{ notEngagedCount }}</span>
-  </div>
-</div>
-<div class="table-wrapper">
-  <div *ngIf="dataSource.data.length === 0" class="no-data-message" style="text-align: center; padding: 40px; color: #666;">
-    <p>...No data found</p>
+  <div class="summary-bar" *ngIf="!isLoading || totalItems > 0 || hasActiveFilters">
+    <div class="summary-item">
+      <span class="summary-label">Engaged</span>
+      <span class="summary-value engaged">{{ engagedCount }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Not Engaged</span>
+      <span class="summary-value not-engaged">{{ notEngagedCount }}</span>
+    </div>
   </div>
 
-  <div *ngIf="dataSource.data.length > 0">
-    <mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-      <ng-container matColumnDef="contribution">
-        <mat-header-cell *matHeaderCellDef> Contribution </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <button mat-button color="primary" (click)="openContributionDialog(row)">
-            View Contribution
-          </button>
-        </mat-cell>
-      </ng-container>
+  <div class="table-wrapper">
+    <div class="filter-container">
+      <div class="filter-fields">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>School Year</mat-label>
+          <mat-select
+            [(ngModel)]="selectedSchoolYear"
+            (selectionChange)="onSchoolYearChange()">
+            <mat-option *ngFor="let y of schoolYearOptions" [value]="y">{{ y }}</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
-        <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
-      </ng-container>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Sector</mat-label>
+          <mat-select
+            [(ngModel)]="selectedSector"
+            (selectionChange)="onSectorChange()">
+            <mat-option *ngFor="let s of sectorOptions" [value]="s">{{ s }}</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <ng-container matColumnDef="contactNumber">
-        <mat-header-cell *matHeaderCellDef>Contact Number</mat-header-cell>
-        <mat-cell *matCellDef="let row">{{ row.contactNumber }}</mat-cell>
-      </ng-container>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Search</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchInput()"
+            placeholder="Name">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
 
-      <ng-container matColumnDef="address">
-        <mat-header-cell *matHeaderCellDef>Address</mat-header-cell>
-        <mat-cell *matCellDef="let row">{{ row.address }}</mat-cell>
-      </ng-container>
+        <mat-radio-group
+          class="engagement-radio filter-engagement"
+          [(ngModel)]="selectedEngagement"
+          (change)="onEngagementChange()">
+          <mat-radio-button value="Engaged">Engaged</mat-radio-button>
+          <mat-radio-button value="Not Engaged">Not Engaged</mat-radio-button>
+          <mat-radio-button value="All">All</mat-radio-button>
+        </mat-radio-group>
 
-      <ng-container matColumnDef="engagementStatus">
-        <mat-header-cell *matHeaderCellDef>Engagement Status</mat-header-cell>
-        <mat-cell *matCellDef="let row">{{ row.engagementStatus }}</mat-cell>
-      </ng-container>
+        <mat-checkbox
+          class="filter-checkbox"
+          [(ngModel)]="includeReferenceAccounts"
+          (ngModelChange)="onReferenceAccountsChange()">
+          Include reference accounts
+        </mat-checkbox>
+      </div>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
+      <button
+        *ngIf="hasActiveFilters"
+        mat-button
+        color="warn"
+        type="button"
+        class="clear-button"
+        (click)="clearFilters()"
+        [disabled]="isLoading">
+        Clear Filters
+      </button>
+    </div>
+
+    <div *ngIf="isLoading" class="loading" aria-hidden="true">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Loading stakeholder profiles…</p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+      <p class="empty-state-title">No stakeholders found</p>
+      <p class="empty-state-message">
+        Stakeholder profiles will appear here when available. Adjust your filters or include reference accounts to see pre-installed fund sources.
+      </p>
+    </div>
+
+    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="stakeholder-profile-table mat-elevation-z2">
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef aria-label="Reference account"></th>
+          <td mat-cell *matCellDef="let row" class="reference-cell">
+            <mat-icon
+              *ngIf="row.isReferenceAccount"
+              matTooltip="Pre-installed fund source"
+              aria-label="Pre-installed fund source">dns</mat-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let row">{{ formatCell(row.name) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="sector">
+          <th mat-header-cell *matHeaderCellDef>Sector</th>
+          <td mat-cell *matCellDef="let row">{{ formatCell(row.sector) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="contactNumber">
+          <th mat-header-cell *matHeaderCellDef>Contact Number</th>
+          <td mat-cell *matCellDef="let row">{{ formatCell(row.contactNumber) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="address">
+          <th mat-header-cell *matHeaderCellDef>Address</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-content" [matTooltip]="formatCell(row.address)">{{ formatCell(row.address) }}</div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="engagementStatus">
+          <th mat-header-cell *matHeaderCellDef>Engagement Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span
+              class="engagement-badge"
+              [class.engagement-badge-engaged]="row.engagementStatus === 'Engaged'"
+              [class.engagement-badge-not-engaged]="row.engagementStatus === 'Not Engaged'">
+              {{ row.engagementStatus }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row" class="actions-cell">
+            <button
+              mat-stroked-button
+              color="primary"
+              type="button"
+              (click)="openContributionDialog(row)"
+              [disabled]="row.engagementStatus !== 'Engaged'">
+              View Contribution
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      *ngIf="!isLoading && totalItems > 0"
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons
+      (page)="onPageChange($event)">
+    </mat-paginator>
   </div>
-</div>
-
-<mat-paginator
-  [length]="stakeholderDirectoryTotalItems"
-  [pageSize]="pageSize"
-  [pageIndex]="pageIndex"
-  [pageSizeOptions]="[5, 10, 25, 50, 100]"
-  showFirstLastButtons
-  (page)="onPageChange($event)">
-</mat-paginator>
-
+</mat-card>

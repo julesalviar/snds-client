@@ -34,7 +34,7 @@ describe('SchoolNeedsEngageComponent', () => {
         { provide: Router, useValue: { navigate: jasmine.createSpy('navigate') } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '101' } } } },
         { provide: SharedDataService, useValue: { updateEngagementStatus: jasmine.createSpy() } },
-        { provide: UserService, useValue: { getUsersByRole: () => of({ data: [] }) } },
+        { provide: UserService, useValue: { getUsers: () => of({ data: [], totalItems: 0 }) } },
         {
           provide: ReferenceDataService,
           useValue: {

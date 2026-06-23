@@ -9,26 +9,10 @@ import { AuthService } from '../../auth/auth.service';
 import { UserType } from '../../registration/user-type.enum';
 import { DocumentViewerComponent } from '../document-viewer/document-viewer.component';
 
-interface ContributionItem {
-  schoolYear: string;
-  school: string;
-  specificContribution: string;
-  amount: string;
-  movs: string;
-  images: any[];
-}
-
-interface StakeholderProfile {
-  _id: string;
-  contribution: string;
-  name: string;
-  contactNumber: string;
-  address: string;
-  engagementStatus: 'Engaged' | 'Not Engaged';
-  schoolYear: string;
-  sector: string;
-  contributions: ContributionItem[];
-}
+import {
+  ContributionItem,
+  StakeholderProfile,
+} from '../../common/model/stakeholder-profile.model';
 
 @Component({
   selector: 'app-contribution-dialog',

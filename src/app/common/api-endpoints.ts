@@ -25,6 +25,7 @@ export const API_ENDPOINT = {
   },
   userInvites: `${environment.API_URL}/user-invites`,
   engagements: `${environment.API_URL}/engagements`,
+  stakeholderProfiles: `${environment.API_URL}/stakeholder-profiles`,
   mail: {
     confirmEmail: `${environment.API_URL}/mail/confirm-email`,
     confirmEmailVerify: `${environment.API_URL}/mail/confirm-email/verify`,

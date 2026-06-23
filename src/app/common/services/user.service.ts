@@ -5,56 +5,6 @@ import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
 import {getSchoolYear} from '../date-utils';
 
-export interface UsersByRoleMeta {
-  count: number;
-  totalItems: number;
-  currentPage: number;
-  totalPages: number;
-  role?: string;
-  search?: string;
-}
-
-export interface UsersByRoleResponse {
-  data: any[];
-  meta: UsersByRoleMeta;
-}
-
-export interface GetUsersByRoleParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  stakeholderInfo?: boolean;
-  engaged?: boolean;
-}
-
-function normalizeUsersByRoleResponse(res: any): UsersByRoleResponse {
-  if (Array.isArray(res)) {
-    const len = res.length;
-    return {
-      data: res,
-      meta: {
-        count: len,
-        totalItems: len,
-        currentPage: 1,
-        totalPages: len > 0 ? 1 : 0,
-      },
-    };
-  }
-  const data = Array.isArray(res?.data) ? res.data : [];
-  const m = res?.meta;
-  return {
-    data,
-    meta: {
-      count: m?.count ?? data.length,
-      totalItems: m?.totalItems ?? data.length,
-      currentPage: m?.currentPage ?? 1,
-      totalPages: m?.totalPages ?? (data.length > 0 ? 1 : 0),
-      role: m?.role,
-      search: m?.search,
-    },
-  };
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -92,38 +42,9 @@ export class UserService {
     );
   }
 
-  getUsersByRole(role: string, params?: GetUsersByRoleParams): Observable<UsersByRoleResponse> {
-    let url = `${environment.API_URL}/users/by-role/${role}`;
-    const p = params ?? {};
-    const query: string[] = [];
-
-    if (p.page != null && p.page >= 1) {
-      query.push(`page=${Math.floor(p.page)}`);
-    }
-    if (p.limit != null && p.limit >= 1) {
-      query.push(`limit=${Math.floor(p.limit)}`);
-    }
-    if (p.search != null && String(p.search).trim() !== '') {
-      query.push(`search=${encodeURIComponent(String(p.search).trim())}`);
-    }
-    if (p.stakeholderInfo !== undefined) {
-      query.push(`stakeholderInfo=${p.stakeholderInfo ? 'true' : 'false'}`);
-    }
-    if (p.engaged != undefined) {
-      query.push(`engaged=${p.engaged ? 'true' : 'false'}`);
-    }
-
-    if (query.length > 0) {
-      url += `?${query.join('&')}`;
-    }
-
-    return this.httpService.get<any>(url).pipe(map(normalizeUsersByRoleResponse));
-  }
-
   /**
    * List users with server-side pagination and search.
    * GET /users?page=1&limit=25&search=john
-   * Backend returns { data: UserListItem[], totalItems?: number } or { data: [], total?: number }.
    */
   getUsers(params: {
     page: number;

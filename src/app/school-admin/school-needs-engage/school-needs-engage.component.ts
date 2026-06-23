@@ -144,10 +144,17 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   loadStakeholders(): void {
-    this.userService.getUsersByRole('stakeholder', { limit: this.STAKEHOLDER_LIMIT }).subscribe({
-      next: ({ data: stakeholders }) => {
-        this.stakeholders = stakeholders;
-        this.filteredStakeholders = stakeholders;
+    this.userService
+      .getUsers({
+        page: 1,
+        limit: this.STAKEHOLDER_LIMIT,
+        roles: ['stakeholder'],
+        includeReferenceAccounts: true,
+      })
+      .subscribe({
+      next: (res) => {
+        this.stakeholders = res.data ?? [];
+        this.filteredStakeholders = this.stakeholders;
       },
       error: (error) => {
         console.error('Error loading stakeholders:', error);
@@ -223,9 +230,17 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
 
   performSearch(searchTerm: string): void {
     if (searchTerm && searchTerm.length > 0) {
-      this.userService.getUsersByRole('stakeholder', { search: searchTerm, limit: this.STAKEHOLDER_LIMIT }).subscribe({
-        next: ({ data: stakeholders }) => {
-          this.filteredStakeholders = stakeholders;
+      this.userService
+        .getUsers({
+          page: 1,
+          limit: this.STAKEHOLDER_LIMIT,
+          search: searchTerm,
+          roles: ['stakeholder'],
+          includeReferenceAccounts: true,
+        })
+        .subscribe({
+        next: (res) => {
+          this.filteredStakeholders = res.data ?? [];
         },
         error: (error) => {
           console.error('Error searching stakeholders:', error);
@@ -233,7 +248,6 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      // If no search term, show all stakeholders
       this.filteredStakeholders = this.stakeholders;
     }
   }
