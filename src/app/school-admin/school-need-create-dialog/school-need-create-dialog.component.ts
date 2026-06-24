@@ -16,6 +16,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatOption, provideNativeDateAdapter } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -38,13 +39,14 @@ import {
 } from '../../common/date-utils';
 import { AipService } from '../../common/services/aip.service';
 import { Aip } from '../../common/model/aip.model';
-import { SchoolNeed } from '../../common/model/school-need.model';
+import { SchoolNeed, SchoolNeedImage } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
 import { PillarConfigService } from '../../common/services/pillar-config.service';
 import { PillarItem } from '../../common/model/pillar-config.model';
 import { InvalidContributionTypeDialogComponent } from '../invalid-contribution-type-dialog.component';
 import { InvalidSpecificContributionDialogComponent } from '../invalid-specific-contribution-dialog.component';
+import { DocumentViewerComponent } from '../../stakeholders/document-viewer/document-viewer.component';
 import { DivisionSettingsService } from '../../common/services/division-settings.service';
 import {
   extractApiErrorMessage,
@@ -73,6 +75,7 @@ export interface SchoolNeedCreateDialogData {
     MatOption,
     MatProgressBarModule,
     MatIconModule,
+    MatTooltipModule,
     MatChipsModule,
   ],
   templateUrl: './school-need-create-dialog.component.html',
@@ -236,6 +239,19 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
 
   onDismiss(): void {
     this.dialogRef.close(false);
+  }
+
+  protected openUnitGuide(): void {
+    this.dialog.open(DocumentViewerComponent, {
+      width: '700px',
+      data: {
+        title: 'Unit Guide',
+        images: [
+          { id: 'guide1', originalUrl: 'assets/unitGuide.png', thumbnailUrl: 'assets/unitGuide.png', category: 'guide' },
+          { id: 'guide2', originalUrl: 'assets/unitGuide2.png', thumbnailUrl: 'assets/unitGuide2.png', category: 'guide' },
+        ],
+      },
+    });
   }
 
   async onSubmit(): Promise<void> {

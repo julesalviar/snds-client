@@ -108,6 +108,9 @@
       <mat-select formControlName="unit">
         <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
       </mat-select>
+      <button mat-icon-button matSuffix type="button" (click)="openUnitGuide(); $event.stopPropagation()" matTooltip="Open Unit Guide">
+        <mat-icon>help_outline</mat-icon>
+      </button>
       <mat-error *ngIf="schoolNeedsForm.get('unit')?.invalid && schoolNeedsForm.get('unit')?.touched">
         Unit is required
       </mat-error>
