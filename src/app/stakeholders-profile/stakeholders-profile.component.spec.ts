@@ -3,7 +3,6 @@ import { of } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StakeholdersProfileComponent } from './stakeholders-profile.component';
 import { StakeholderProfileService } from '../common/services/stakeholder-profile.service';
-import { AuthService } from '../auth/auth.service';
 import { ReferenceDataService } from '../common/services/reference-data.service';
 
 describe('StakeholdersProfileComponent', () => {
@@ -43,10 +42,6 @@ describe('StakeholdersProfileComponent', () => {
                 },
               }),
           },
-        },
-        {
-          provide: AuthService,
-          useValue: { getActiveRole: () => 'divisionAdmin', getSchoolId: () => null },
         },
         {
           provide: ReferenceDataService,

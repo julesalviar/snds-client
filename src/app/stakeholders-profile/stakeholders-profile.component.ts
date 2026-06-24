@@ -33,7 +33,6 @@ import {
   ListStakeholderProfilesParams,
   StakeholderProfile,
 } from '../common/model/stakeholder-profile.model';
-import { AuthService } from '../auth/auth.service';
 import { ReferenceDataService } from '../common/services/reference-data.service';
 import { extractApiErrorMessage } from '../common/utils/division-lock.util';
 import {
@@ -73,7 +72,6 @@ export class StakeholdersProfileComponent implements OnInit, OnDestroy {
   private readonly searchSubject = new Subject<string>();
 
   isLoading = true;
-  isSchoolAdmin = this.authService.getActiveRole() === 'schoolAdmin';
 
   engagedCount = 0;
   notEngagedCount = 0;
@@ -115,7 +113,6 @@ export class StakeholdersProfileComponent implements OnInit, OnDestroy {
   constructor(
     private readonly dialog: MatDialog,
     private readonly stakeholderProfileService: StakeholderProfileService,
-    private readonly authService: AuthService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly snackBar: MatSnackBar,
   ) {}
