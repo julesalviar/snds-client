@@ -68,7 +68,7 @@ describe('SchoolNeedsEngageComponent', () => {
     beforeEach(() => {
       component.stakeholder = { _id: 'stake1', name: 'Stakeholder' };
       component.needCode = '101';
-      component.schoolNeed = { _id: 'need1', images: [] } as SchoolNeed;
+      component.schoolNeed = { _id: 'need1', images: [] } as unknown as SchoolNeed;
     });
 
     it('should block engagement when no existing images and no new upload', async () => {

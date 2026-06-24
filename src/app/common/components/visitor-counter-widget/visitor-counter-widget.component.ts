@@ -1,25 +1,23 @@
 import { AsyncPipe, DecimalPipe } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { combineLatest, map } from 'rxjs';
 import { AuthService } from '../../../auth/auth.service';
-import { UserType, getRoleLabel } from '../../../registration/user-type.enum';
+import { getRoleLabel } from '../../../registration/user-type.enum';
 import { getRoleIcon } from '../../../registration/user-type-icons';
 import { getRoleChartColor } from '../../utils/material-chart-colors';
 import {
-  OnlineVisitorUserDto,
-  VisitorCountService,
-} from '../../services/visitor-count.service';
-
-export interface OnlineUsersDisplay {
-  total: number;
-  users: OnlineVisitorUserDto[];
-  overflowCount: number;
-}
+  buildOnlineUsersDisplay,
+  OnlineUsersDisplay,
+} from '../../utils/visitor-counter-online-display.util';
+import { canShowHomeVisitorCounterWidget } from '../../utils/visitor-counter-visibility.util';
+import { VisitorCountService } from '../../services/visitor-count.service';
 
 @Component({
   selector: 'app-visitor-counter-widget',
-  imports: [AsyncPipe, DecimalPipe, MatIcon],
+  imports: [AsyncPipe, DecimalPipe, MatIcon, MatIconButton, MatTooltipModule],
   templateUrl: './visitor-counter-widget.component.html',
   styleUrl: './visitor-counter-widget.component.css',
 })
@@ -33,7 +31,9 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
   /** Max chips in the row, including the optional “N more” overflow chip. */
   private readonly onlineUsersDisplayMax = 10;
   readonly onlineUsersDisplay$ = this.onlineUsers$.pipe(
-    map((users) => (users ? this.buildOnlineUsersDisplay(users) : null)),
+    map((snapshot) =>
+      snapshot ? this.buildOnlineUsersDisplay(snapshot) : null,
+    ),
   );
   readonly homeStats$ = combineLatest([
     this.visitorCount$,
@@ -58,7 +58,7 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.showOnlineUsers =
       this.variant === 'home' &&
-      this.authService.getActiveRole() === UserType.DivisionAdmin;
+      canShowHomeVisitorCounterWidget(this.authService.getActiveRole());
 
     if (this.showOnlineUsers) {
       this.visitorCountService.startOnlineUsersPolling();
@@ -71,21 +71,35 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildOnlineUsersDisplay(
-    users: OnlineVisitorUserDto[],
+  buildOnlineUsersDisplay(
+    snapshot: Parameters<typeof buildOnlineUsersDisplay>[0],
   ): OnlineUsersDisplay {
-    const maxSlots = this.onlineUsersDisplayMax;
-    const overflowSlotReserved = maxSlots > 1 ? 1 : 0;
-    const maxVisibleUsers = maxSlots - overflowSlotReserved;
+    return buildOnlineUsersDisplay(snapshot, this.onlineUsersDisplayMax);
+  }
 
-    if (users.length <= maxVisibleUsers) {
-      return { total: users.length, users, overflowCount: 0 };
+  guestChipTitle(anonymousSessionCount: number): string {
+    const label =
+      anonymousSessionCount === 1 ? 'anonymous session' : 'anonymous sessions';
+    return `Guests · ${anonymousSessionCount} ${label}`;
+  }
+
+  onlineUsersHelpTooltip(display: OnlineUsersDisplay | null): string {
+    if (!display) {
+      return 'Signed-in users and guest browsers active on the site right now.';
     }
 
-    return {
-      total: users.length,
-      users: users.slice(0, maxVisibleUsers),
-      overflowCount: users.length - maxVisibleUsers,
-    };
+    const parts: string[] = [];
+    if (display.users.length > 0) {
+      const count = display.users.length;
+      parts.push(`${count} signed-in user${count === 1 ? '' : 's'}`);
+    }
+    if (display.anonymousSessionCount > 0) {
+      const count = display.anonymousSessionCount;
+      parts.push(`${count} guest session${count === 1 ? '' : 's'}`);
+    }
+
+    const breakdown =
+      parts.length > 0 ? parts.join(' and ') : 'No active sessions right now';
+    return breakdown;
   }
 }

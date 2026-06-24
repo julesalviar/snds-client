@@ -57,6 +57,7 @@ import { UserListItem } from '../registration/user.model';
 import { pickRandomMaterialColors } from '../common/utils/material-chart-colors';
 import { SchoolYearWidgetFilterComponent } from '../common/components/school-year-widget-filter/school-year-widget-filter.component';
 import { VisitorCounterWidgetComponent } from '../common/components/visitor-counter-widget/visitor-counter-widget.component';
+import { canShowHomeVisitorCounterWidget } from '../common/utils/visitor-counter-visibility.util';
 import { MatDialog } from '@angular/material/dialog';
 import { AnnouncementService } from '../common/services/announcement.service';
 import { AnnouncementDismissalService } from '../common/services/announcement-dismissal.service';
@@ -857,6 +858,10 @@ export class HomeComponent implements OnInit, OnDestroy {
           });
         }),
       );
+  }
+
+  canShowVisitorCounterWidget(state: HomeState): boolean {
+    return canShowHomeVisitorCounterWidget(state.userRole);
   }
 
   /** Whether the user can see the upcoming events widget (office-admin, assistant-office-admin, program-holders). */

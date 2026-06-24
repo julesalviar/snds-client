@@ -135,9 +135,11 @@
       </div>
 
       <div class="column-second">
-        <app-visitor-counter-widget variant="home" [alwaysShow]="true" />
-
         <ng-container *ngIf="homeState$ | async as state">
+        <app-visitor-counter-widget
+          *ngIf="canShowVisitorCounterWidget(state)"
+          variant="home"
+          [alwaysShow]="true" />
         <div *ngIf="shouldShowStats(state)" class="home-stats-widgets-row">
           <aside class="home-widget school-context-widget">
             <div class="home-widget-header-row">

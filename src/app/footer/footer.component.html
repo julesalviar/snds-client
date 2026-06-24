@@ -2,7 +2,7 @@
 <footer>
   <div class="footer-content">
     <div>&copy; 2025 SNDS DepEd Gensan. All rights reserved.</div>
-    @if ((isHomeRoute$ | async) === false) {
+    @if (showFooterVisitorCounter$ | async) {
       <app-visitor-counter-widget />
     }
     <div>Version: 2.1.1.1</div>

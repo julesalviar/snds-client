@@ -40,7 +40,25 @@
       @if (onlineUsersDisplay$ | async; as onlineDisplay) {
         <section class="visitor-counter-home-widget__online" aria-live="polite">
           <div class="visitor-counter-home-widget__online-header">
-            <span class="visitor-counter-home-widget__online-title">Who's online</span>
+            <div class="visitor-counter-home-widget__online-title-row">
+              <mat-icon
+                class="visitor-counter-home-widget__online-title-icon"
+                [class.visitor-counter-home-widget__online-title-icon--live]="onlineDisplay.total > 0"
+                aria-hidden="true">
+                sensors
+              </mat-icon>
+              <span class="visitor-counter-home-widget__online-title">Who's online</span>
+              <button
+                type="button"
+                mat-icon-button
+                class="visitor-counter-home-widget__online-info-btn"
+                [matTooltip]="onlineUsersHelpTooltip(onlineDisplay)"
+                matTooltipPosition="above"
+                [matTooltipShowDelay]="280"
+                aria-label="About who's online">
+                <mat-icon>info_outline</mat-icon>
+              </button>
+            </div>
             <span class="visitor-counter-home-widget__online-count">{{ onlineDisplay.total }}</span>
           </div>
 
@@ -65,6 +83,25 @@
                   </span>
                 </span>
               }
+              @if (onlineDisplay.anonymousSessionCount > 0) {
+                <span
+                  class="visitor-counter-home-widget__online-chip visitor-counter-home-widget__online-chip--guest"
+                  role="listitem"
+                  [title]="guestChipTitle(onlineDisplay.anonymousSessionCount)"
+                  [attr.aria-label]="guestChipTitle(onlineDisplay.anonymousSessionCount)">
+                  <mat-icon
+                    class="visitor-counter-home-widget__online-chip-icon"
+                    aria-hidden="true">
+                    person_outline
+                  </mat-icon>
+                  <span class="visitor-counter-home-widget__online-chip-name">
+                    Guests
+                  </span>
+                  <span class="visitor-counter-home-widget__online-chip-count">
+                    {{ onlineDisplay.anonymousSessionCount | number }}
+                  </span>
+                </span>
+              }
               @if (onlineDisplay.overflowCount > 0) {
                 <span
                   class="visitor-counter-home-widget__online-chip visitor-counter-home-widget__online-chip--more"
@@ -81,7 +118,24 @@
       } @else {
         <section class="visitor-counter-home-widget__online" aria-live="polite" aria-busy="true">
           <div class="visitor-counter-home-widget__online-header">
-            <span class="visitor-counter-home-widget__online-title">Who's online</span>
+            <div class="visitor-counter-home-widget__online-title-row">
+              <mat-icon
+                class="visitor-counter-home-widget__online-title-icon"
+                aria-hidden="true">
+                sensors
+              </mat-icon>
+              <span class="visitor-counter-home-widget__online-title">Who's online</span>
+              <button
+                type="button"
+                mat-icon-button
+                class="visitor-counter-home-widget__online-info-btn"
+                [matTooltip]="onlineUsersHelpTooltip(null)"
+                matTooltipPosition="above"
+                [matTooltipShowDelay]="280"
+                aria-label="About who's online">
+                <mat-icon>info_outline</mat-icon>
+              </button>
+            </div>
           </div>
           <p class="visitor-counter-home-widget__online-empty">—</p>
         </section>

@@ -24,7 +24,14 @@ export interface OnlineVisitorUserDto {
 
 export interface OnlineUsersDataDto {
   tenantCode: string;
-  count: number;
+  activeCount: number;
+  anonymousSessionCount: number;
+  users: OnlineVisitorUserDto[];
+}
+
+export interface OnlineUsersSnapshot {
+  activeCount: number;
+  anonymousSessionCount: number;
   users: OnlineVisitorUserDto[];
 }
 
@@ -55,7 +62,7 @@ export class VisitorCountService implements OnDestroy {
     null,
   );
   private readonly onlineUsersSubject = new BehaviorSubject<
-    OnlineVisitorUserDto[] | null
+    OnlineUsersSnapshot | null
   >(null);
   private readonly isHomeRouteSubject = new BehaviorSubject<boolean>(
     this.isHomeUrl(this.router.url),
@@ -148,10 +155,18 @@ export class VisitorCountService implements OnDestroy {
   private fetchOnlineUsers(): void {
     this.getOnlineUsers().subscribe({
       next: (response) => {
-        this.onlineUsersSubject.next(response.data.users);
+        this.onlineUsersSubject.next({
+          activeCount: response.data.activeCount,
+          anonymousSessionCount: response.data.anonymousSessionCount,
+          users: response.data.users,
+        });
       },
       error: () => {
-        this.onlineUsersSubject.next([]);
+        this.onlineUsersSubject.next({
+          activeCount: 0,
+          anonymousSessionCount: 0,
+          users: [],
+        });
       },
     });
   }
