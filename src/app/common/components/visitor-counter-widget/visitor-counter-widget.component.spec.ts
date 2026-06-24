@@ -149,6 +149,7 @@ describe('VisitorCounterWidgetComponent', () => {
     component.ngOnInit();
     onlineUsersSubject.next({
       activeCount: 1,
+      signedInUserCount: 0,
       anonymousSessionCount: 0,
       users: [],
     });
@@ -164,12 +165,13 @@ describe('VisitorCounterWidgetComponent', () => {
     expect(component.expanded).toBe(false);
   });
 
-  it('renders the Guests chip and active total on the home online panel', () => {
+  it('renders the Guests chip on the home online panel', () => {
     component.variant = 'home';
     component.homeSection = 'online';
     component.ngOnInit();
     onlineUsersSubject.next({
       activeCount: 5,
+      signedInUserCount: 1,
       anonymousSessionCount: 3,
       users: [
         {
@@ -177,6 +179,7 @@ describe('VisitorCounterWidgetComponent', () => {
           displayName: 'Alice',
           activeRole: UserType.DivisionAdmin,
           lastSeen: '2026-01-01T00:00:00.000Z',
+          sessionCount: 1,
         },
       ],
     });
@@ -187,20 +190,55 @@ describe('VisitorCounterWidgetComponent', () => {
     const guestChip = root.querySelector(
       '.visitor-counter-home-widget__online-chip--guest',
     ) as HTMLElement | null;
+    const userChip = root.querySelector(
+      '.visitor-counter-home-widget__online-chip:not(.visitor-counter-home-widget__online-chip--guest)',
+    ) as HTMLElement | null;
 
     expect(root.textContent).toContain("Who's online");
-    expect(root.textContent).toContain('5');
     expect(root.textContent).toContain('Guests');
     expect(root.textContent).toContain('Alice');
     expect(guestChip?.textContent).toContain('3');
     expect(guestChip?.querySelector('.visitor-counter-home-widget__online-chip-count')?.textContent?.trim()).toBe(
       '3',
     );
+    expect(userChip?.querySelector('.visitor-counter-home-widget__online-chip-count')).toBeNull();
+    expect(root.querySelector('.visitor-counter-home-widget__online-count')).toBeNull();
     expect(root.querySelector('.visitor-counter-home-widget__online-title-icon')?.textContent?.trim()).toBe(
       'sensors',
     );
-    expect(root.querySelector('.visitor-counter-home-widget__online-count')).not.toBeNull();
     expect(root.querySelector('.visitor-counter-home-widget__toggle-btn')).not.toBeNull();
+  });
+
+  it('shows a session badge when a signed-in user has more than one session', () => {
+    component.variant = 'home';
+    component.homeSection = 'online';
+    component.ngOnInit();
+    onlineUsersSubject.next({
+      activeCount: 3,
+      signedInUserCount: 2,
+      anonymousSessionCount: 1,
+      users: [
+        {
+          userId: 'u1',
+          displayName: 'Alice',
+          activeRole: UserType.DivisionAdmin,
+          lastSeen: '2026-01-01T00:00:00.000Z',
+          sessionCount: 2,
+        },
+      ],
+    });
+
+    fixture.detectChanges();
+
+    const userChip = fixture.nativeElement.querySelector(
+      '.visitor-counter-home-widget__online-chip',
+    ) as HTMLElement | null;
+
+    expect(userChip?.querySelector('.visitor-counter-home-widget__online-chip-count')?.textContent?.trim()).toBe(
+      '2',
+    );
+    expect(component.showUserSessionBadge(1)).toBe(false);
+    expect(component.showUserSessionBadge(2)).toBe(true);
   });
 
   it('renders skeleton placeholders while stats are loading', () => {
@@ -225,27 +263,8 @@ describe('VisitorCounterWidgetComponent', () => {
     fixture.detectChanges();
 
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('.visitor-counter-home-widget__online-count-skeleton')).not.toBeNull();
     expect(root.querySelectorAll('.visitor-counter-home-widget__online-chip-skeleton').length).toBe(4);
+    expect(root.querySelector('.visitor-counter-home-widget__online-count-skeleton')).toBeNull();
     expect(root.textContent).not.toContain('—');
-  });
-
-  it('describes the online breakdown in the help tooltip', () => {
-    const tooltip = component.onlineUsersHelpTooltip({
-      total: 5,
-      users: [
-        {
-          userId: 'u1',
-          displayName: 'Alice',
-          activeRole: UserType.DivisionAdmin,
-          lastSeen: '2026-01-01T00:00:00.000Z',
-        },
-      ],
-      anonymousSessionCount: 3,
-      overflowCount: 0,
-    });
-
-    expect(tooltip).toContain('1 signed-in user');
-    expect(tooltip).toContain('3 guest sessions');
   });
 });

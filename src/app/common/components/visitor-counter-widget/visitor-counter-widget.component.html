@@ -18,23 +18,6 @@
         }
       </h3>
       <div class="visitor-counter-home-widget__header-actions">
-        @if (homeSection === 'online') {
-          <button
-            type="button"
-            class="visitor-counter-home-widget__online-count"
-            [matTooltip]="onlineUsersHelpTooltip((onlineUsersDisplay$ | async) ?? null)"
-            matTooltipPosition="above"
-            [matTooltipShowDelay]="280"
-            aria-label="About who's online">
-            @if (onlineUsersDisplay$ | async; as onlineDisplay) {
-              {{ onlineDisplay.total }}
-            } @else {
-              <span
-                class="skeleton visitor-counter-home-widget__online-count-skeleton"
-                aria-hidden="true"></span>
-            }
-          </button>
-        }
         <button
           type="button"
           mat-icon-button
@@ -113,10 +96,10 @@
                 <span
                   class="visitor-counter-home-widget__online-chip"
                   role="listitem"
-                  [matTooltip]="user.displayName"
+                  [matTooltip]="userChipTooltip(user)"
                   matTooltipPosition="above"
                   [matTooltipShowDelay]="280"
-                  [attr.aria-label]="user.displayName + ' · ' + getRoleLabel(user.activeRole)">
+                  [attr.aria-label]="userChipAriaLabel(user)">
                   <mat-icon
                     class="visitor-counter-home-widget__online-chip-icon"
                     [style.color]="getRoleChartColor(user.activeRole)"
@@ -126,6 +109,11 @@
                   <span class="visitor-counter-home-widget__online-chip-name">
                     {{ user.displayName }}
                   </span>
+                  @if (showUserSessionBadge(user.sessionCount)) {
+                    <span class="visitor-counter-home-widget__online-chip-count">
+                      {{ user.sessionCount | number }}
+                    </span>
+                  }
                 </span>
               }
               @if (onlineDisplay.anonymousSessionCount > 0) {

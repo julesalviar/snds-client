@@ -13,7 +13,7 @@ import {
   OnlineUsersDisplay,
 } from '../../utils/visitor-counter-online-display.util';
 import { canShowHomeVisitorCounterWidget } from '../../utils/visitor-counter-visibility.util';
-import { VisitorCountService } from '../../services/visitor-count.service';
+import { VisitorCountService, OnlineVisitorUserDto } from '../../services/visitor-count.service';
 
 @Component({
   selector: 'app-visitor-counter-widget',
@@ -88,6 +88,29 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
     return `Guests · ${anonymousSessionCount} ${label}`;
   }
 
+  showUserSessionBadge(sessionCount: number): boolean {
+    return sessionCount > 1;
+  }
+
+  userSessionBadgeTitle(sessionCount: number): string {
+    return `${sessionCount} active sessions`;
+  }
+
+  userChipTooltip(user: OnlineVisitorUserDto): string {
+    const role = getRoleLabel(user.activeRole);
+    if (this.showUserSessionBadge(user.sessionCount)) {
+      return `${user.displayName} · ${role} · ${this.userSessionBadgeTitle(user.sessionCount)}`;
+    }
+    return `${user.displayName} · ${role}`;
+  }
+
+  userChipAriaLabel(user: OnlineVisitorUserDto): string {
+    if (this.showUserSessionBadge(user.sessionCount)) {
+      return `${user.displayName} · ${getRoleLabel(user.activeRole)} · ${this.userSessionBadgeTitle(user.sessionCount)}`;
+    }
+    return `${user.displayName} · ${getRoleLabel(user.activeRole)}`;
+  }
+
   toggleExpanded(event?: Event): void {
     event?.stopPropagation();
     this.expanded = !this.expanded;
@@ -103,25 +126,5 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
     return this.homeSection === 'stats'
       ? 'Show or hide site visitors'
       : "Show or hide who's online";
-  }
-
-  onlineUsersHelpTooltip(display: OnlineUsersDisplay | null): string {
-    if (!display) {
-      return 'Signed-in users and guest browsers active on the site right now.';
-    }
-
-    const parts: string[] = [];
-    if (display.users.length > 0) {
-      const count = display.users.length;
-      parts.push(`${count} signed-in user${count === 1 ? '' : 's'}`);
-    }
-    if (display.anonymousSessionCount > 0) {
-      const count = display.anonymousSessionCount;
-      parts.push(`${count} guest session${count === 1 ? '' : 's'}`);
-    }
-
-    const breakdown =
-      parts.length > 0 ? parts.join(' and ') : 'No active sessions right now';
-    return breakdown;
   }
 }

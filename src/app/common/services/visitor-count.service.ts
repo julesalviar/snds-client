@@ -20,17 +20,20 @@ export interface OnlineVisitorUserDto {
   displayName: string;
   activeRole: string;
   lastSeen: string;
+  sessionCount: number;
 }
 
 export interface OnlineUsersDataDto {
   tenantCode: string;
   activeCount: number;
+  signedInUserCount: number;
   anonymousSessionCount: number;
   users: OnlineVisitorUserDto[];
 }
 
 export interface OnlineUsersSnapshot {
   activeCount: number;
+  signedInUserCount: number;
   anonymousSessionCount: number;
   users: OnlineVisitorUserDto[];
 }
@@ -138,7 +141,9 @@ export class VisitorCountService implements OnDestroy {
   }
 
   startOnlineUsersPolling(): void {
-    this.stopOnlineUsersPolling();
+    this.stopOnlineUsersPolling(false);
+    this.activePollSub?.unsubscribe();
+    this.activePollSub = undefined;
     this.fetchOnlineUsers();
 
     this.onlineUsersPollSub = interval(this.activeCountPollIntervalMs).subscribe(() => {
@@ -146,27 +151,38 @@ export class VisitorCountService implements OnDestroy {
     });
   }
 
-  stopOnlineUsersPolling(): void {
+  stopOnlineUsersPolling(resumeActivePolling = true): void {
     this.onlineUsersPollSub?.unsubscribe();
     this.onlineUsersPollSub = undefined;
     this.onlineUsersSubject.next(null);
+    if (resumeActivePolling && this.isHomeUrl(this.router.url)) {
+      this.syncHomeActivePolling(true);
+    }
   }
 
   private fetchOnlineUsers(): void {
     this.getOnlineUsers().subscribe({
       next: (response) => {
+        const signedInUserCount = response.data.signedInUserCount ?? 0;
+        const anonymousSessionCount = response.data.anonymousSessionCount ?? 0;
+        const activeTotal = signedInUserCount + anonymousSessionCount;
+
         this.onlineUsersSubject.next({
-          activeCount: response.data.activeCount,
-          anonymousSessionCount: response.data.anonymousSessionCount,
+          activeCount: activeTotal,
+          signedInUserCount,
+          anonymousSessionCount,
           users: response.data.users,
         });
+        this.activeVisitorCountSubject.next(activeTotal);
       },
       error: () => {
         this.onlineUsersSubject.next({
           activeCount: 0,
+          signedInUserCount: 0,
           anonymousSessionCount: 0,
           users: [],
         });
+        this.activeVisitorCountSubject.next(0);
       },
     });
   }
