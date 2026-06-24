@@ -136,12 +136,24 @@
 
       <div class="column-second">
         <ng-container *ngIf="homeState$ | async as state">
-        <app-visitor-counter-widget
-          *ngIf="canShowVisitorCounterWidget(state)"
-          variant="home"
-          [alwaysShow]="true" />
-        <div *ngIf="shouldShowStats(state)" class="home-stats-widgets-row">
-          <aside class="home-widget school-context-widget">
+        <div
+          *ngIf="canShowVisitorCounterWidget(state) || shouldShowStats(state)"
+          class="home-paired-widgets-grid">
+          <app-visitor-counter-widget
+            *ngIf="canShowVisitorCounterWidget(state)"
+            class="home-paired-widgets-grid__item home-paired-widgets-grid__item--narrow"
+            variant="home"
+            homeSection="stats"
+            [alwaysShow]="true" />
+          <app-visitor-counter-widget
+            *ngIf="canShowVisitorCounterWidget(state)"
+            class="home-paired-widgets-grid__item home-paired-widgets-grid__item--wide"
+            variant="home"
+            homeSection="online"
+            [alwaysShow]="true" />
+          <aside
+            *ngIf="shouldShowStats(state)"
+            class="home-widget school-context-widget home-paired-widgets-grid__item home-paired-widgets-grid__item--narrow">
             <div class="home-widget-header-row">
               <h3 class="home-widget-title">
                 <mat-icon class="home-widget-icon">domain</mat-icon>
@@ -192,7 +204,9 @@
             </div>
           </aside>
 
-          <aside class="home-widget ppa-implementation-widget">
+          <aside
+            *ngIf="shouldShowStats(state)"
+            class="home-widget ppa-implementation-widget home-paired-widgets-grid__item home-paired-widgets-grid__item--wide">
             <div class="home-widget-header-row">
               <h3 class="home-widget-title">
                 <mat-icon class="home-widget-icon">insights</mat-icon>

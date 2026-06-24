@@ -1,67 +1,109 @@
 @if (variant === 'home') {
-  <aside class="visitor-counter-home-widget">
+  <aside
+    class="visitor-counter-home-widget"
+    [class.visitor-counter-home-widget--stats]="homeSection === 'stats'"
+    [class.visitor-counter-home-widget--online]="homeSection === 'online'">
     <div class="visitor-counter-home-widget__header">
       <h3 class="visitor-counter-home-widget__title">
-        <mat-icon class="visitor-counter-home-widget__icon">groups</mat-icon>
-        Site Visitors
+        @if (homeSection === 'stats') {
+          <mat-icon class="visitor-counter-home-widget__icon">groups</mat-icon>
+          Site Visitors
+        } @else {
+          <mat-icon
+            class="visitor-counter-home-widget__icon visitor-counter-home-widget__online-title-icon"
+            [class.visitor-counter-home-widget__online-title-icon--live]="((onlineUsersDisplay$ | async)?.total ?? 0) > 0">
+            sensors
+          </mat-icon>
+          Who's online
+        }
       </h3>
+      <div class="visitor-counter-home-widget__header-actions">
+        @if (homeSection === 'online') {
+          <button
+            type="button"
+            class="visitor-counter-home-widget__online-count"
+            [matTooltip]="onlineUsersHelpTooltip((onlineUsersDisplay$ | async) ?? null)"
+            matTooltipPosition="above"
+            [matTooltipShowDelay]="280"
+            aria-label="About who's online">
+            @if (onlineUsersDisplay$ | async; as onlineDisplay) {
+              {{ onlineDisplay.total }}
+            } @else {
+              <span
+                class="skeleton visitor-counter-home-widget__online-count-skeleton"
+                aria-hidden="true"></span>
+            }
+          </button>
+        }
+        <button
+          type="button"
+          mat-icon-button
+          class="visitor-counter-home-widget__toggle-btn"
+          [matTooltip]="widgetToggleTooltip()"
+          matTooltipPosition="left"
+          [matTooltipShowDelay]="280"
+          (click)="toggleExpanded($event)"
+          [attr.aria-expanded]="expanded"
+          [attr.aria-label]="widgetToggleAriaLabel()">
+          <mat-icon>{{ expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
     </div>
 
-    @if (homeStats$ | async; as stats) {
-      <div
-        class="visitor-counter-home-widget__body"
-        aria-live="polite"
-        [attr.aria-busy]="stats.visitorCount === null && alwaysShow">
-        <div class="visitor-counter-home-widget__stat">
-          <p class="visitor-counter-home-widget__label">Total visitors</p>
-          @if (stats.visitorCount !== null) {
-            <p class="visitor-counter-home-widget__value">{{ stats.visitorCount | number }}</p>
-          } @else if (alwaysShow) {
-            <p class="visitor-counter-home-widget__value visitor-counter-home-widget__value--loading">—</p>
-          }
-        </div>
-
-        <div class="visitor-counter-home-widget__divider" aria-hidden="true"></div>
-
-        <div class="visitor-counter-home-widget__stat visitor-counter-home-widget__stat--active">
-          <p class="visitor-counter-home-widget__label">Currently active</p>
-          @if (stats.activeVisitorCount !== null) {
-            <p class="visitor-counter-home-widget__value visitor-counter-home-widget__value--active">
-              {{ stats.activeVisitorCount | number }}
-            </p>
-          } @else if (alwaysShow) {
-            <p class="visitor-counter-home-widget__value visitor-counter-home-widget__value--loading">—</p>
-          }
-        </div>
-      </div>
-    }
-
-    @if (showOnlineUsers) {
-      @if (onlineUsersDisplay$ | async; as onlineDisplay) {
-        <section class="visitor-counter-home-widget__online" aria-live="polite">
-          <div class="visitor-counter-home-widget__online-header">
-            <div class="visitor-counter-home-widget__online-title-row">
-              <mat-icon
-                class="visitor-counter-home-widget__online-title-icon"
-                [class.visitor-counter-home-widget__online-title-icon--live]="onlineDisplay.total > 0"
-                aria-hidden="true">
-                sensors
-              </mat-icon>
-              <span class="visitor-counter-home-widget__online-title">Who's online</span>
-              <button
-                type="button"
-                mat-icon-button
-                class="visitor-counter-home-widget__online-info-btn"
-                [matTooltip]="onlineUsersHelpTooltip(onlineDisplay)"
-                matTooltipPosition="above"
-                [matTooltipShowDelay]="280"
-                aria-label="About who's online">
-                <mat-icon>info_outline</mat-icon>
-              </button>
-            </div>
-            <span class="visitor-counter-home-widget__online-count">{{ onlineDisplay.total }}</span>
+    <div
+      class="visitor-counter-home-widget__collapsible-body"
+      [class.visitor-counter-home-widget__collapsible-body--collapsed]="!expanded"
+      [attr.aria-hidden]="!expanded">
+    @if (homeSection === 'stats') {
+      @if (homeStats$ | async; as stats) {
+        <div
+          class="visitor-counter-home-widget__body"
+          aria-live="polite"
+          [attr.aria-busy]="stats.visitorCount === null && alwaysShow">
+          <div class="visitor-counter-home-widget__stat">
+            <span
+              class="visitor-counter-home-widget__label"
+              matTooltip="Total visitors"
+              matTooltipPosition="above"
+              [matTooltipShowDelay]="280">
+              Total visitors
+            </span>
+            @if (stats.visitorCount !== null) {
+              <span class="visitor-counter-home-widget__value">{{ stats.visitorCount | number }}</span>
+            } @else if (alwaysShow) {
+              <span
+                class="skeleton visitor-counter-home-widget__value-skeleton"
+                aria-hidden="true"></span>
+            }
           </div>
 
+          <div class="visitor-counter-home-widget__divider" aria-hidden="true"></div>
+
+          <div class="visitor-counter-home-widget__stat visitor-counter-home-widget__stat--active">
+            <span
+              class="visitor-counter-home-widget__label"
+              matTooltip="Currently active"
+              matTooltipPosition="above"
+              [matTooltipShowDelay]="280">
+              Active now
+            </span>
+            @if (stats.activeVisitorCount !== null) {
+              <span class="visitor-counter-home-widget__value visitor-counter-home-widget__value--active">
+                {{ stats.activeVisitorCount | number }}
+              </span>
+            } @else if (alwaysShow) {
+              <span
+                class="skeleton visitor-counter-home-widget__value-skeleton visitor-counter-home-widget__value-skeleton--active"
+                aria-hidden="true"></span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if (homeSection === 'online' && showOnlineUsers) {
+      @if (onlineUsersDisplay$ | async; as onlineDisplay) {
+        <section class="visitor-counter-home-widget__online" aria-live="polite">
           @if (onlineDisplay.total > 0) {
             <div
               class="visitor-counter-home-widget__online-chips"
@@ -71,7 +113,10 @@
                 <span
                   class="visitor-counter-home-widget__online-chip"
                   role="listitem"
-                  [title]="user.displayName + ' · ' + getRoleLabel(user.activeRole)">
+                  [matTooltip]="user.displayName"
+                  matTooltipPosition="above"
+                  [matTooltipShowDelay]="280"
+                  [attr.aria-label]="user.displayName + ' · ' + getRoleLabel(user.activeRole)">
                   <mat-icon
                     class="visitor-counter-home-widget__online-chip-icon"
                     [style.color]="getRoleChartColor(user.activeRole)"
@@ -117,30 +162,15 @@
         </section>
       } @else {
         <section class="visitor-counter-home-widget__online" aria-live="polite" aria-busy="true">
-          <div class="visitor-counter-home-widget__online-header">
-            <div class="visitor-counter-home-widget__online-title-row">
-              <mat-icon
-                class="visitor-counter-home-widget__online-title-icon"
-                aria-hidden="true">
-                sensors
-              </mat-icon>
-              <span class="visitor-counter-home-widget__online-title">Who's online</span>
-              <button
-                type="button"
-                mat-icon-button
-                class="visitor-counter-home-widget__online-info-btn"
-                [matTooltip]="onlineUsersHelpTooltip(null)"
-                matTooltipPosition="above"
-                [matTooltipShowDelay]="280"
-                aria-label="About who's online">
-                <mat-icon>info_outline</mat-icon>
-              </button>
-            </div>
+          <div class="visitor-counter-home-widget__online-chips-skeleton" aria-hidden="true">
+            @for (_ of [1, 2, 3, 4]; track $index) {
+              <span class="skeleton visitor-counter-home-widget__online-chip-skeleton"></span>
+            }
           </div>
-          <p class="visitor-counter-home-widget__online-empty">—</p>
         </section>
       }
     }
+    </div>
   </aside>
 } @else {
   @if (visitorCount$ | async; as visitorCount) {
@@ -156,7 +186,7 @@
     <div class="visitor-counter" aria-live="polite" aria-busy="true">
       <span class="visitor-counter__label">Visitors</span>
       <div class="visitor-counter__digits">
-        <span class="visitor-counter__digit visitor-counter__digit--loading">-</span>
+        <span class="skeleton visitor-counter__digit-skeleton" aria-hidden="true"></span>
       </div>
     </div>
   }

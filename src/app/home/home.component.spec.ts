@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthService } from '../auth/auth.service';
@@ -15,8 +16,8 @@ import { ActivityService } from '../common/services/activity.service';
 import { WidgetService } from '../common/services/widget.service';
 import { AnnouncementService } from '../common/services/announcement.service';
 import { AnnouncementDismissalService } from '../common/services/announcement-dismissal.service';
+import { VisitorCountService } from '../common/services/visitor-count.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { AIP_STATUSES } from '../common/enums/aip-status.enum';
 
@@ -70,11 +71,10 @@ describe('HomeComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [HomeComponent],
+      imports: [HomeComponent, RouterTestingModule],
       providers: [
         DecimalPipe,
         { provide: UserService, useValue: {} },
-        { provide: Router, useValue: { events: of(), url: '/home' } },
         { provide: ReferenceDataService, useValue: { get: () => [] } },
         {
           provide: InternalReferenceDataService,
@@ -95,6 +95,16 @@ describe('HomeComponent', () => {
         { provide: WidgetService, useValue: {} },
         { provide: AnnouncementService, useValue: { getActive: () => of([]) } },
         { provide: AnnouncementDismissalService, useValue: { isDismissed: () => false } },
+        {
+          provide: VisitorCountService,
+          useValue: {
+            visitorCount$: of(10),
+            activeVisitorCount$: of(7),
+            onlineUsers$: of(null),
+            startOnlineUsersPolling: jasmine.createSpy('startOnlineUsersPolling'),
+            stopOnlineUsersPolling: jasmine.createSpy('stopOnlineUsersPolling'),
+          },
+        },
         { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(undefined) }) } },
       ],
     }).compileComponents();
@@ -118,8 +128,8 @@ describe('HomeComponent', () => {
 
     expect(component.canShowVisitorCounterWidget(state)).toBe(true);
     expect(
-      fixture.nativeElement.querySelector('app-visitor-counter-widget'),
-    ).not.toBeNull();
+      fixture.nativeElement.querySelectorAll('app-visitor-counter-widget').length,
+    ).toBe(2);
   });
 
   it('shows the visitor widget for office admin', () => {
@@ -129,8 +139,8 @@ describe('HomeComponent', () => {
 
     expect(component.canShowVisitorCounterWidget(state)).toBe(true);
     expect(
-      fixture.nativeElement.querySelector('app-visitor-counter-widget'),
-    ).not.toBeNull();
+      fixture.nativeElement.querySelectorAll('app-visitor-counter-widget').length,
+    ).toBe(2);
   });
 
   it('hides the visitor widget for school admin', () => {

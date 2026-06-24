@@ -23,6 +23,8 @@ import { VisitorCountService } from '../../services/visitor-count.service';
 })
 export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
   @Input() variant: 'footer' | 'home' = 'footer';
+  /** Home layout panel: visitor stats or who's online (shown side by side on home). */
+  @Input() homeSection: 'stats' | 'online' = 'stats';
   @Input() alwaysShow = false;
 
   readonly visitorCount$ = this.visitorCountService.visitorCount$;
@@ -46,6 +48,8 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
   );
 
   showOnlineUsers = false;
+  /** Each home panel collapses independently. */
+  expanded = true;
   readonly getRoleLabel = getRoleLabel;
   readonly getRoleIcon = getRoleIcon;
   readonly getRoleChartColor = getRoleChartColor;
@@ -58,6 +62,7 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.showOnlineUsers =
       this.variant === 'home' &&
+      this.homeSection === 'online' &&
       canShowHomeVisitorCounterWidget(this.authService.getActiveRole());
 
     if (this.showOnlineUsers) {
@@ -81,6 +86,23 @@ export class VisitorCounterWidgetComponent implements OnInit, OnDestroy {
     const label =
       anonymousSessionCount === 1 ? 'anonymous session' : 'anonymous sessions';
     return `Guests · ${anonymousSessionCount} ${label}`;
+  }
+
+  toggleExpanded(event?: Event): void {
+    event?.stopPropagation();
+    this.expanded = !this.expanded;
+  }
+
+  widgetToggleTooltip(): string {
+    const label =
+      this.homeSection === 'stats' ? 'site visitors' : "who's online";
+    return this.expanded ? `Collapse ${label}` : `Expand ${label}`;
+  }
+
+  widgetToggleAriaLabel(): string {
+    return this.homeSection === 'stats'
+      ? 'Show or hide site visitors'
+      : "Show or hide who's online";
   }
 
   onlineUsersHelpTooltip(display: OnlineUsersDisplay | null): string {
