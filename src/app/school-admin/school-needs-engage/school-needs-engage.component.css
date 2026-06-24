@@ -57,6 +57,19 @@ button:hover {
   margin: 20px 0;
 }
 
+.file-upload-error {
+  padding: 12px;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  background-color: rgba(244, 67, 54, 0.08);
+}
+
+.validation-error {
+  margin: 8px 0 0;
+  color: #f44336;
+  font-size: 12px;
+}
+
 .file-upload button {
   background-color: #2196F3 !important;
   color: white !important;

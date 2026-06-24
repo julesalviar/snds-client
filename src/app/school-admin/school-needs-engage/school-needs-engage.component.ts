@@ -19,7 +19,7 @@ import {UserService} from '../../common/services/user.service';
 import {SharedDataService} from '../../common/services/shared-data.service';
 import {ReferenceDataService} from '../../common/services/reference-data.service';
 import {SchoolNeedService} from '../../common/services/school-need.service';
-import {FormsModule, NgModel} from '@angular/forms';
+import {FormsModule, NgForm, NgModel} from '@angular/forms';
 import {MatSelectModule} from '@angular/material/select';
 import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 import {HttpService} from '../../common/services/http.service';
@@ -65,7 +65,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   startDate: Date | null = null;
   endDate: Date | null = null;
   // Additional fields
-  isApplicable: boolean = false;
+  isApplicable: boolean = true;
   stakeholderRepCount: number | null = null;
   agreementType: string = '';
   signatoryName: string = '';
@@ -81,23 +81,17 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   projectCategories: string[] = [];
   previewImages: Array<{ file: File; dataUrl: string | ArrayBuffer | null; uploading: boolean; progress: number; }> = [];
   isSaving = false;
+  submitAttempted = false;
   readonly maxImages = 5;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('engagementForm') engagementForm!: NgForm;
+  @ViewChild('implementationForm') implementationForm!: NgForm;
 
   @ViewChild('stakeholderInput') stakeholderInputModel!: NgModel;
 
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
-    get formIsValid(): boolean {
-    return this.stakeholderRepCount !== null &&
-           this.agreementType !== '' &&
-           this.signatoryName !== '' &&
-           this.signatoryDesignation !== '' &&
-           this.projectCategory !== '' &&
-           this.agreementStatus !== '' &&
-           this.initiatedBy !== '';
-  }
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
@@ -211,17 +205,72 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       if (this.stakeholderInputModel && this.stakeholderInputModel.control) {
         const isValid = this.isStakeholderValid();
-        if (!isValid && this.stakeholderInputModel.touched) {
-          // Mark control as invalid
+        const showError = this.stakeholderInputModel.touched || this.submitAttempted;
+        if (!isValid && showError) {
           this.stakeholderInputModel.control.setErrors({ invalidStakeholder: true });
         } else if (isValid && this.stakeholderInputModel.control.hasError('invalidStakeholder')) {
-          // Clear the custom error if valid
           const errors = { ...this.stakeholderInputModel.control.errors };
           delete errors['invalidStakeholder'];
           this.stakeholderInputModel.control.setErrors(Object.keys(errors).length > 0 ? errors : null);
         }
       }
     });
+  }
+
+  showControlError(control: NgModel | undefined): boolean {
+    return !!(control && control.invalid && (control.touched || control.dirty || this.submitAttempted));
+  }
+
+  showStakeholderError(): boolean {
+    return !!(
+      (this.stakeholderInputModel?.invalid || !this.isStakeholderValid()) &&
+      (this.stakeholderInputModel?.touched || this.stakeholderInputModel?.dirty || this.submitAttempted)
+    );
+  }
+
+  showMovError(): boolean {
+    return this.submitAttempted && this.previewImages.length < 1;
+  }
+
+  private markAllFormsTouched(): void {
+    this.submitAttempted = true;
+    [this.engagementForm, this.implementationForm].forEach(form => {
+      if (!form) {
+        return;
+      }
+      Object.values(form.controls).forEach(control => {
+        control.markAsTouched();
+        control.markAsDirty();
+      });
+    });
+    this.updateStakeholderValidity();
+  }
+
+  private hasValidationErrors(): boolean {
+    const stakeholderInvalid = !this.isStakeholderValid();
+    const engagementInvalid = !!this.engagementForm?.invalid;
+    const implementationInvalid = !!this.implementationForm?.invalid;
+    const applicableInvalid = this.isApplicable && !this.validateForm();
+    const movInvalid = this.previewImages.length < 1;
+
+    return stakeholderInvalid || engagementInvalid || implementationInvalid || applicableInvalid || movInvalid;
+  }
+
+  private showValidationFeedback(): void {
+    if (!this.isStakeholderValid()) {
+      this.showErrorNotification('Please select a stakeholder from the list.');
+      return;
+    }
+
+    if (this.showMovError()) {
+      const message = this.hasExistingImages
+        ? 'Please update your MOV/image before engaging.'
+        : 'Please upload at least one MOV (Means of Verification) before engaging.';
+      this.showErrorNotification(message);
+      return;
+    }
+
+    this.showErrorNotification('Please fill out all required fields before engaging.');
   }
 
   onStakeholderSelectionChange(): void {
@@ -299,23 +348,10 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   async saveEngagement(): Promise<void> {
-    const isValid = this.isStakeholderValid();
+    this.markAllFormsTouched();
 
-    if (!this.stakeholder || !isValid) {
-      this.showErrorNotification('Please select a stakeholder from the list.');
-      return;
-    }
-
-    if (this.isApplicable && !this.validateForm()) {
-      this.showErrorNotification('Please fill out all required fields before engaging.');
-      return;
-    }
-
-    if (this.previewImages.length < 1) {
-      const message = this.hasExistingImages
-        ? 'Please update your MOV/image before engaging.'
-        : 'Please upload at least one MOV (Means of Verification) before engaging.';
-      this.showErrorNotification(message);
+    if (this.hasValidationErrors()) {
+      this.showValidationFeedback();
       return;
     }
 
@@ -382,6 +418,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   clearForm(): void {
+    this.submitAttempted = false;
     this.stakeholder = null;
     this.moaDate = null;
     this.quantity = null;
@@ -389,7 +426,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     this.amount = null;
     this.startDate = null;
     this.endDate = null;
-    this.isApplicable = false;
+    this.isApplicable = true;
     this.stakeholderRepCount = null;
     this.agreementType = '';
     this.signatoryName = '';

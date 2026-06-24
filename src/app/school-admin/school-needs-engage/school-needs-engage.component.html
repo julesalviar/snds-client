@@ -12,7 +12,7 @@
       <p *ngIf="schoolNeed?.personnelBeneficiaries"><strong>Personnel Beneficiaries:</strong> {{ schoolNeed?.personnelBeneficiaries }}</p>
       <p *ngIf="schoolNeed?.targetDate"><strong>Target Date:</strong> {{ schoolNeed?.targetDate | date:'mediumDate' }}</p>
       <form #engagementForm="ngForm">
-        <mat-form-field appearance="fill" [class.mat-form-field-invalid]="!isStakeholderValid() && stakeholderInput.touched">
+        <mat-form-field appearance="fill" [class.mat-form-field-invalid]="!isStakeholderValid() && (stakeholderInput.touched || submitAttempted)">
           <mat-label>Type the name of the stakeholder to engage</mat-label>
           <input matInput
                  [(ngModel)]="stakeholder"
@@ -20,7 +20,7 @@
                  [matAutocomplete]="auto"
                  (input)="onStakeholderInput($event)"
                  (blur)="onStakeholderInput($event)"
-                 [class.ng-invalid]="!isStakeholderValid() && stakeholderInput.touched"
+                 [class.ng-invalid]="!isStakeholderValid() && (stakeholderInput.touched || submitAttempted)"
                  required
                  #stakeholderInput="ngModel">
           <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onStakeholderSelectionChange()">
@@ -28,21 +28,23 @@
               {{ stakeholder.name }}
             </mat-option>
           </mat-autocomplete>
-          <mat-error *ngIf="(stakeholderInput.invalid || !isStakeholderValid()) && (stakeholderInput.touched || stakeholderInput.dirty)">
+          <mat-error *ngIf="showStakeholderError()">
             {{ getStakeholderErrorMessage() }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
           <mat-label>Date of MOA signing</mat-label>
-          <input matInput [matDatepicker]="picker" [(ngModel)]="moaDate" name="moaDate" required>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="moaDate" name="moaDate" required #moaDateInput="ngModel">
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
+          <mat-error *ngIf="showControlError(moaDateInput)">Date of MOA signing is required</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
           <mat-label>Quantity Donated</mat-label>
-          <input matInput type="number" [(ngModel)]="quantity" name="quantity" min="0" required>
+          <input matInput type="number" [(ngModel)]="quantity" name="quantity" min="0" required #quantityInput="ngModel">
+          <mat-error *ngIf="showControlError(quantityInput)">Quantity donated is required</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
@@ -52,7 +54,8 @@
 
         <mat-form-field appearance="fill">
           <mat-label>Amount contribution or appraised value of item (do not put commas)</mat-label>
-          <input matInput type="number" [(ngModel)]="amount" name="amount" min="0" required>
+          <input matInput type="number" [(ngModel)]="amount" name="amount" min="0" required #amountInput="ngModel">
+          <mat-error *ngIf="showControlError(amountInput)">Amount is required</mat-error>
         </mat-form-field>
       </form>
     </mat-card-content>
@@ -61,19 +64,21 @@
   <mat-card class="implementation-card">
     <mat-card-title>Period of Implementation</mat-card-title>
     <mat-card-content>
-      <form>
+      <form #implementationForm="ngForm">
         <mat-form-field appearance="fill">
           <mat-label>Start Date</mat-label>
-          <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" name="startDate" required>
+          <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" name="startDate" required #startDateInput="ngModel">
           <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
           <mat-datepicker #startPicker></mat-datepicker>
+          <mat-error *ngIf="showControlError(startDateInput)">Start date is required</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
           <mat-label>End Date</mat-label>
-          <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" name="endDate" required>
+          <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" name="endDate" required #endDateInput="ngModel">
           <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
           <mat-datepicker #endPicker></mat-datepicker>
+          <mat-error *ngIf="showControlError(endDateInput)">End date is required</mat-error>
         </mat-form-field>
 
         <hr>
@@ -98,24 +103,27 @@
 <div *ngIf="isApplicable">
   <mat-form-field appearance="fill">
     <mat-label>Number of Stakeholder Representatives</mat-label>
-    <input matInput [(ngModel)]="stakeholderRepCount" name="stakeholderRepCount" type="number" required />
+    <input matInput [(ngModel)]="stakeholderRepCount" name="stakeholderRepCount" type="number" required #stakeholderRepCountInput="ngModel" />
+    <mat-error *ngIf="showControlError(stakeholderRepCountInput)">Number of stakeholder representatives is required</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Agreements</mat-label>
-    <mat-select [(ngModel)]="agreementType" name="agreementType" required>
+    <mat-select [(ngModel)]="agreementType" name="agreementType" required #agreementTypeInput="ngModel">
       <mat-option *ngFor="let at of agreementTypes" [value]="at">{{ at }}</mat-option>
     </mat-select>
+    <mat-error *ngIf="showControlError(agreementTypeInput)">Agreement type is required</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Signatory Name</mat-label>
-    <input matInput [(ngModel)]="signatoryName" name="signatoryName" required />
+    <input matInput [(ngModel)]="signatoryName" name="signatoryName" required #signatoryNameInput="ngModel" />
+    <mat-error *ngIf="showControlError(signatoryNameInput)">Signatory name is required</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Signatory Designation</mat-label>
-    <mat-select [(ngModel)]="signatoryDesignation" name="signatoryDesignation" required>
+    <mat-select [(ngModel)]="signatoryDesignation" name="signatoryDesignation" required #signatoryDesignationInput="ngModel">
       <mat-option value="CEO">CEO</mat-option>
       <mat-option value="Executive Director">Executive Director</mat-option>
       <mat-option value="President">President</mat-option>
@@ -123,13 +131,15 @@
       <mat-option value="Project Officer">Project Officer</mat-option>
       <mat-option value="Donor">Donor</mat-option>
     </mat-select>
+    <mat-error *ngIf="showControlError(signatoryDesignationInput)">Signatory designation is required</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Project Category</mat-label>
-    <mat-select [(ngModel)]="projectCategory" name="projectCategory" required>
+    <mat-select [(ngModel)]="projectCategory" name="projectCategory" required #projectCategoryInput="ngModel">
       <mat-option *ngFor="let pc of projectCategories" [value]="pc">{{ pc }}</mat-option>
     </mat-select>
+    <mat-error *ngIf="showControlError(projectCategoryInput)">Project category is required</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
@@ -139,26 +149,23 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Status of Agreement</mat-label>
-    <mat-select [(ngModel)]="agreementStatus" name="agreementStatus" required>
+    <mat-select [(ngModel)]="agreementStatus" name="agreementStatus" required #agreementStatusInput="ngModel">
       <mat-option value="Completed">Completed</mat-option>
       <mat-option value="Ongoing">Ongoing</mat-option>
     </mat-select>
+    <mat-error *ngIf="showControlError(agreementStatusInput)">Status of agreement is required</mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Initiated By</mat-label>
-    <mat-select [(ngModel)]="initiatedBy" name="initiatedBy" required>
+    <mat-select [(ngModel)]="initiatedBy" name="initiatedBy" required #initiatedByInput="ngModel">
       <mat-option value="central_office">Central Office</mat-option>
       <mat-option value="regional_office">Regional Office</mat-option>
       <mat-option value="school_division_office">School Division Office</mat-option>
       <mat-option value="school">School</mat-option>
     </mat-select>
+    <mat-error *ngIf="showControlError(initiatedByInput)">Initiated by is required</mat-error>
   </mat-form-field>
-
-  <!-- Error message -->
-  <div *ngIf="isApplicable && !formIsValid" style="color: red;">
-    Please fill out all required fields before engaging.
-  </div>
 </div>
 
 <!-- Existing MOVs -->
@@ -174,12 +181,15 @@
   </div>
 </div>
 
-<div class="file-upload">
+<div class="file-upload" [class.file-upload-error]="showMovError()">
   <button mat-raised-button type="button" (click)="fileInput.click()" [disabled]="totalImageCount >= maxImages">
     <mat-icon>attach_file</mat-icon>
     Attach MOV ({{totalImageCount}}/{{maxImages}})
   </button>
   <input #fileInput type="file" accept="image/*" multiple (change)="onFileSelected($event)" hidden />
+  <p *ngIf="showMovError()" class="validation-error">
+    {{ hasExistingImages ? 'Please update your MOV/image before engaging.' : 'Please upload at least one MOV (Means of Verification) before engaging.' }}
+  </p>
 </div>
 
 <div class="preview-container">
