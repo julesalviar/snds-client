@@ -1,12 +1,12 @@
+<ng-container *ngIf="homeState$ | async as state">
 <div class="container home-compact">
   <div class="widget-section-row">
     <div class="sections-wrapper">
       <div class="column-first">
-        <ng-container *ngIf="homeState$ | async as state">
         <div class="welcome-section">
           <h2 class="welcome-title">Welcome {{ state.name?.trim() ? state.name : 'Partners' }}</h2>
         </div>
-        <div class="ppa-features-section" *ngIf="shouldHideTreeSection(state)">
+        <div class="ppa-features-section" *ngIf="state.hideTree">
           <div class="home-widget-header-row">
             <h2 class="home-collapsible-heading">Available Features</h2>
             <button
@@ -51,7 +51,7 @@
 
         <aside
           class="home-widget home-widget--plain tree-section"
-          *ngIf="!shouldHideTreeSection(state)">
+          *ngIf="!state.hideTree">
           <div class="home-widget-header-row home-tree-widget-header-row">
             <div class="home-tree-widget-header-text">
               <div class="second-message">
@@ -86,7 +86,7 @@
               [alignEnd]="false"
               (schoolYearChange)="onTreeSchoolYearChange(state, $event)" />
           </div>
-          <p *ngIf="isSchoolAdmin(state)" class="home-school-needs-list-link-wrap">
+          <p *ngIf="state.isSchoolAdminRole" class="home-school-needs-list-link-wrap">
             <a routerLink="/school-admin/list-of-school-needs" class="feature-link">List of school needs</a>
             <span class="home-school-needs-list-hint"> — create and manage entries from the table view.</span>
           </p>
@@ -102,7 +102,7 @@
           </ul>
 
           <ul *ngIf="!state.loading.schoolNeeds">
-            <li *ngFor="let node of state.treeData">
+            <li *ngFor="let node of state.treeData; trackBy: trackByTreeNode">
               <div (click)="toggleChildren(state, node)" style="cursor: pointer;">
                 <span
                   class="node-name"
@@ -118,7 +118,7 @@
                 </span>
               </div>
               <ul *ngIf="node.expanded">
-                <li *ngFor="let child of node.children" style="list-style-type: none;">
+                <li *ngFor="let child of node.children; trackBy: trackByTreeNode" style="list-style-type: none;">
                   <span (click)="onChildClick(child, state)" style="cursor: pointer;">
                     {{ child.name }}
                     <span *ngIf="child.count">
@@ -131,33 +131,31 @@
           </ul>
           </div>
         </aside>
-        </ng-container>
       </div>
 
       <div class="column-second">
-        <ng-container *ngIf="homeState$ | async as state">
         <div
-          *ngIf="canShowVisitorCounterWidget(state) || shouldShowStats(state)"
+          *ngIf="state.showVisitorCounter || state.showStats"
           class="home-paired-widgets-grid">
           <app-visitor-counter-widget
-            *ngIf="canShowVisitorCounterWidget(state)"
+            *ngIf="state.showVisitorCounter"
             class="home-paired-widgets-grid__item home-paired-widgets-grid__item--narrow"
             variant="home"
             homeSection="stats"
             [alwaysShow]="true" />
           <app-visitor-counter-widget
-            *ngIf="canShowVisitorCounterWidget(state)"
+            *ngIf="state.showVisitorCounter && state.mountOnlineVisitorWidget"
             class="home-paired-widgets-grid__item home-paired-widgets-grid__item--wide"
             variant="home"
             homeSection="online"
             [alwaysShow]="true" />
           <aside
-            *ngIf="shouldShowStats(state)"
+            *ngIf="state.showStats"
             class="home-widget school-context-widget home-paired-widgets-grid__item home-paired-widgets-grid__item--narrow">
             <div class="home-widget-header-row">
               <h3 class="home-widget-title">
                 <mat-icon class="home-widget-icon">domain</mat-icon>
-                {{ isSchoolAdmin(state) ? 'School' : 'Division' }}
+                {{ state.isSchoolAdminRole ? 'School' : 'Division' }}
               </h3>
               <button
                 mat-icon-button
@@ -176,23 +174,23 @@
               class="school-context-widget-body home-widget-collapsible-body"
               [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('schoolContext')"
               [attr.aria-hidden]="!isHomeWidgetExpanded('schoolContext')">
-              <div *ngIf="isSchoolAdmin(state) || isDivisionAdmin(state)" #logoContainer class="school-logo-container school-context-logo logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
+              <div *ngIf="state.isSchoolAdminRole || state.isDivisionAdminRole" #logoContainer class="school-logo-container school-context-logo logo-preview-wrapper" (mouseenter)="onLogoHover($event)">
                 <div *ngIf="isHeaderLoading(state)" class="skeleton skeleton-logo" aria-hidden="true"></div>
                 <img
-                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
-                  [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                  *ngIf="!isHeaderLoading(state) && ((state.isSchoolAdminRole && state.schoolLogoUrl) || (state.isDivisionAdminRole && state.divisionLogoUrl)) && !state.logoError"
+                  [src]="state.isSchoolAdminRole ? state.schoolLogoUrl : state.divisionLogoUrl"
                   alt="Logo"
                   class="school-logo"
                   (error)="onLogoError(state)" />
                 <mat-icon
-                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && (!state.schoolLogoUrl || state.logoError)) || (isDivisionAdmin(state) && (!state.divisionLogoUrl || state.logoError)))"
+                  *ngIf="!isHeaderLoading(state) && ((state.isSchoolAdminRole && (!state.schoolLogoUrl || state.logoError)) || (state.isDivisionAdminRole && (!state.divisionLogoUrl || state.logoError)))"
                   class="school-icon">school</mat-icon>
 
                 <div
-                  *ngIf="!isHeaderLoading(state) && ((isSchoolAdmin(state) && state.schoolLogoUrl) || (isDivisionAdmin(state) && state.divisionLogoUrl)) && !state.logoError"
+                  *ngIf="!isHeaderLoading(state) && ((state.isSchoolAdminRole && state.schoolLogoUrl) || (state.isDivisionAdminRole && state.divisionLogoUrl)) && !state.logoError"
                   #logoPreview class="logo-preview">
                   <img
-                    [src]="isSchoolAdmin(state) ? state.schoolLogoUrl : state.divisionLogoUrl"
+                    [src]="state.isSchoolAdminRole ? state.schoolLogoUrl : state.divisionLogoUrl"
                     alt="Logo Preview"
                     class="logo-preview-image" />
                 </div>
@@ -205,7 +203,7 @@
           </aside>
 
           <aside
-            *ngIf="shouldShowStats(state)"
+            *ngIf="state.showStats"
             class="home-widget ppa-implementation-widget home-paired-widgets-grid__item home-paired-widgets-grid__item--wide">
             <div class="home-widget-header-row">
               <h3 class="home-widget-title">
@@ -263,7 +261,7 @@
             </div>
           </aside>
         </div>
-        <aside *ngIf="isDivisionAdmin(state)" class="resource-partner-breakdown-widget">
+        <aside *ngIf="state.isDivisionAdminRole" class="resource-partner-breakdown-widget">
           <div class="home-widget-header-row">
             <h3 class="resource-partner-breakdown-title">
               <mat-icon class="resource-partner-breakdown-icon">pie_chart</mat-icon>
@@ -331,7 +329,7 @@
           </div>
         </aside>
 
-        <aside *ngIf="canShowPartnershipActivitiesWidget(state)" class="partnership-activities-widget">
+        <aside *ngIf="state.showPartnershipActivities" class="partnership-activities-widget">
           <div class="home-widget-header-row">
             <h3 class="partnership-activities-title">
               <mat-icon class="partnership-activities-icon">handshake</mat-icon>
@@ -380,7 +378,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (activity of state.partnershipActivities; track activity._id || $index) {
+                  @for (activity of state.partnershipActivities; track trackByActivity($index, activity)) {
                     <tr>
                       <td class="col-school">{{ formatPartnershipActivitySchool(activity) }}</td>
                       @if (isPartnershipActivitiesTableAdminView(state)) {
@@ -405,7 +403,7 @@
         </aside>
 
         <!-- Upcoming events: office-admin, assistant-office-admin, program-holders only -->
-        <aside *ngIf="canShowUpcomingEventsWidget(state)" class="upcoming-events-widget">
+        <aside *ngIf="state.showUpcomingEvents" class="upcoming-events-widget">
           <div class="home-widget-header-row">
             <h3 class="upcoming-events-title">
               <mat-icon class="upcoming-events-icon">event</mat-icon>
@@ -438,7 +436,7 @@
             <div class="upcoming-events-empty">No upcoming events</div>
           } @else {
             <ul class="upcoming-events-list">
-              @for (plan of state.upcomingPlans.slice(0, 9); track plan._id || $index) {
+              @for (plan of state.upcomingPlans.slice(0, 9); track trackByPlan($index, plan)) {
                 <li class="upcoming-event-item">
                   <a [routerLink]="getCalendarRoute(state)" (click)="onUpcomingEventClick(plan)" class="upcoming-event-link">
                     <span class="upcoming-event-date">{{ getPlanDisplayDate(plan) }}</span>
@@ -465,8 +463,8 @@
           <a [routerLink]="getCalendarRoute(state)" class="upcoming-events-view-all">View Calendar</a>
           </div>
         </aside>
-        </ng-container>
       </div>
     </div>
   </div>
 </div>
+</ng-container>

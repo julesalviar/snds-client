@@ -8,7 +8,7 @@ import { HomeComponent, HomeState } from './home.component';
 import { UserService } from '../common/services/user.service';
 import { ReferenceDataService } from '../common/services/reference-data.service';
 import { InternalReferenceDataService } from '../common/services/internal-reference-data.service';
-import { SchoolNeedService } from '../common/services/school-need.service';
+import { SchoolService } from '../common/services/school.service';
 import { PpaPlanService } from '../common/services/ppa-plan.service';
 import { CalendarNavigationService } from '../common/services/calendar-navigation.service';
 import { FieldCheckerService } from '../common/services/utils/field-checker.service';
@@ -57,6 +57,28 @@ function createHomeState(userRole: string | undefined): HomeState {
     resourcePartnerSchoolYear: '2025-2026',
     aipStatsSchoolYear: '2025-2026',
     treeSchoolYear: '2025-2026',
+    showStats:
+      userRole === UserType.SchoolAdmin || userRole === UserType.DivisionAdmin,
+    hideTree:
+      userRole === UserType.ProgramHolder ||
+      userRole === UserType.OfficeAdmin ||
+      userRole === UserType.OfficeAdminAssistant,
+    showVisitorCounter:
+      userRole === UserType.DivisionAdmin ||
+      userRole === UserType.OfficeAdmin ||
+      userRole === UserType.SystemAdmin ||
+      userRole === UserType.StakeHolder,
+    showPartnershipActivities:
+      userRole === UserType.SchoolAdmin ||
+      userRole === UserType.DivisionAdmin ||
+      userRole === UserType.StakeHolder,
+    showUpcomingEvents:
+      userRole === UserType.OfficeAdmin ||
+      userRole === UserType.OfficeAdminAssistant ||
+      userRole === UserType.ProgramHolder,
+    mountOnlineVisitorWidget: false,
+    isSchoolAdminRole: userRole === UserType.SchoolAdmin,
+    isDivisionAdminRole: userRole === UserType.DivisionAdmin,
   };
 }
 
@@ -64,10 +86,42 @@ describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
   let homeStateSubject: BehaviorSubject<HomeState>;
+  let widgetService: jasmine.SpyObj<
+    Pick<
+      WidgetService,
+      | 'getSchoolNeedContributionCounts'
+      | 'getAipStatusStats'
+      | 'getResourceGenerations'
+      | 'getPartners'
+    >
+  >;
 
   beforeEach(async () => {
     homeStateSubject = new BehaviorSubject<HomeState>(
       createHomeState(UserType.SchoolAdmin),
+    );
+
+    widgetService = jasmine.createSpyObj('WidgetService', [
+      'getSchoolNeedContributionCounts',
+      'getAipStatusStats',
+      'getResourceGenerations',
+      'getPartners',
+    ]);
+    widgetService.getSchoolNeedContributionCounts.and.returnValue(
+      of({ success: true, data: [], meta: { count: 0, timestamp: '' } }),
+    );
+    widgetService.getAipStatusStats.and.returnValue(
+      of({
+        success: true,
+        data: { total: 0, byStatus: [] },
+        meta: { count: 0, timestamp: '' },
+      }),
+    );
+    widgetService.getResourceGenerations.and.returnValue(
+      of({ success: true, data: [], meta: { count: 0, timestamp: '' } }),
+    );
+    widgetService.getPartners.and.returnValue(
+      of({ success: true, data: [], meta: { count: 0, timestamp: '' } }),
     );
 
     await TestBed.configureTestingModule({
@@ -80,19 +134,20 @@ describe('HomeComponent', () => {
           provide: InternalReferenceDataService,
           useValue: { initialize: async () => undefined, get: () => null },
         },
-        { provide: SchoolNeedService, useValue: {} },
+        { provide: SchoolService, useValue: { getSchoolById: () => of(null) } },
         {
           provide: AuthService,
           useValue: {
             getActiveRole: () => UserType.SchoolAdmin,
             getName: () => 'Test User',
+            getSchoolId: () => 'school-1',
           },
         },
-        { provide: PpaPlanService, useValue: {} },
+        { provide: PpaPlanService, useValue: { getList: () => of({ data: [] }) } },
         { provide: CalendarNavigationService, useValue: {} },
-        { provide: FieldCheckerService, useValue: {} },
-        { provide: ActivityService, useValue: {} },
-        { provide: WidgetService, useValue: {} },
+        { provide: FieldCheckerService, useValue: { checkRequiredProfileData: async () => ({ isComplete: true }) } },
+        { provide: ActivityService, useValue: { getList: () => of({ data: [] }) } },
+        { provide: WidgetService, useValue: widgetService },
         { provide: AnnouncementService, useValue: { getActive: () => of([]) } },
         { provide: AnnouncementDismissalService, useValue: { isDismissed: () => false } },
         {
@@ -121,23 +176,24 @@ describe('HomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('shows the visitor widget for division admin', () => {
+  it('shows the stats visitor widget for division admin', () => {
     const state = createHomeState(UserType.DivisionAdmin);
     homeStateSubject.next(state);
     fixture.detectChanges();
 
-    expect(component.canShowVisitorCounterWidget(state)).toBe(true);
     expect(
       fixture.nativeElement.querySelectorAll('app-visitor-counter-widget').length,
-    ).toBe(2);
+    ).toBe(1);
   });
 
-  it('shows the visitor widget for office admin', () => {
-    const state = createHomeState(UserType.OfficeAdmin);
+  it('shows the online visitor widget when deferred mount is enabled', () => {
+    const state = {
+      ...createHomeState(UserType.DivisionAdmin),
+      mountOnlineVisitorWidget: true,
+    };
     homeStateSubject.next(state);
     fixture.detectChanges();
 
-    expect(component.canShowVisitorCounterWidget(state)).toBe(true);
     expect(
       fixture.nativeElement.querySelectorAll('app-visitor-counter-widget').length,
     ).toBe(2);
@@ -147,9 +203,29 @@ describe('HomeComponent', () => {
     homeStateSubject.next(createHomeState(UserType.SchoolAdmin));
     fixture.detectChanges();
 
-    expect(component.canShowVisitorCounterWidget(createHomeState(UserType.SchoolAdmin))).toBe(
-      false,
-    );
     expect(fixture.nativeElement.querySelector('app-visitor-counter-widget')).toBeNull();
+  });
+
+  it('maps contribution counts onto the tree without fetching all school needs', () => {
+    const tree = [
+      {
+        name: 'Parent',
+        children: [{ name: 'Books' }, { name: 'Chairs' }],
+      },
+    ];
+    const counts = [
+      { specificContribution: 'Books', count: 3 },
+      { specificContribution: 'Chairs', count: 0 },
+    ];
+
+    const result = (component as unknown as {
+      mapCountsToTreeData: (
+        nodes: typeof tree,
+        rows: typeof counts,
+      ) => { children?: { name: string; count?: number }[] }[];
+    }).mapCountsToTreeData(tree, counts);
+
+    expect(result[0].children?.[0].count).toBe(3);
+    expect(result[0].children?.[1].count).toBeUndefined();
   });
 });

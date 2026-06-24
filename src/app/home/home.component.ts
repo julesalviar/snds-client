@@ -1,29 +1,26 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import * as echarts from 'echarts/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import type { EChartsCoreOption, EChartsType } from 'echarts/core';
-import { PieChart } from 'echarts/charts';
-import { LegendComponent, TooltipComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
 import {UserService} from '../common/services/user.service';
 import {CommonModule, DecimalPipe} from '@angular/common';
 import {MatBadgeModule} from '@angular/material/badge';
 import {Router, RouterLink} from '@angular/router';
 import {ReferenceDataService} from "../common/services/reference-data.service";
-import {SchoolNeedService} from "../common/services/school-need.service";
+import {SchoolService} from "../common/services/school.service";
 import {AuthService} from "../auth/auth.service";
 import {
   BehaviorSubject,
   catchError,
   defer,
+  EMPTY,
   filter,
   forkJoin,
   from,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
   Subscription,
-  switchMap,
   tap,
 } from 'rxjs';
 import {MatIcon} from "@angular/material/icon";
@@ -49,6 +46,7 @@ import {
   WidgetService,
   PartnersResponse,
   AipStatusStatsResponse,
+  SchoolNeedContributionCountsResponse,
 } from '../common/services/widget.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
@@ -66,8 +64,6 @@ import {
   AnnouncementDialogComponent,
   AnnouncementDialogResult,
 } from './announcement-dialog/announcement-dialog.component';
-
-echarts.use([LegendComponent, TooltipComponent, PieChart, CanvasRenderer]);
 
 interface TreeNode {
   name: string;
@@ -124,7 +120,25 @@ export interface HomeState {
   aipStatsSchoolYear: string;
   /** School year for the home tree filter; passed to school-needs API for tree counts. */
   treeSchoolYear: string;
+  /** Precomputed template flags (OnPush-friendly). */
+  showStats: boolean;
+  hideTree: boolean;
+  showVisitorCounter: boolean;
+  showPartnershipActivities: boolean;
+  showUpcomingEvents: boolean;
+  /** Deferred mount for online-users visitor panel. */
+  mountOnlineVisitorWidget: boolean;
+  isSchoolAdminRole: boolean;
+  isDivisionAdminRole: boolean;
 }
+
+type HomeLoaderId =
+  | 'internalRef'
+  | 'resourcePartner'
+  | 'schoolNeeds'
+  | 'aipStats'
+  | 'upcomingPlans'
+  | 'partnershipActivities';
 
 type HomeWidgetId =
   | 'ppaFeatures'
@@ -151,7 +165,8 @@ type HomeWidgetId =
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-  providers: [DecimalPipe]
+  providers: [DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('logoContainer') logoContainer!: ElementRef<HTMLDivElement>;
@@ -185,6 +200,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private breakdownChartsPostAnimateResizeTimer?: ReturnType<typeof setTimeout>;
   private breakdownChartsDomRetryCount = 0;
   private divisionBreakdownChartsSub?: Subscription;
+  private echartsCore?: typeof import('echarts/core');
 
   /** Single stream for template – use with async pipe. No manual subscriptions. */
   readonly homeState$: Observable<HomeState>;
@@ -196,7 +212,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly referenceDataService: ReferenceDataService,
     private readonly internalReferenceDataService: InternalReferenceDataService,
-    private readonly schoolNeedService: SchoolNeedService,
+    private readonly schoolService: SchoolService,
     private readonly authService: AuthService,
     private readonly ppaPlanService: PpaPlanService,
     private readonly calendarNavigationService: CalendarNavigationService,
@@ -207,6 +223,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly announcementService: AnnouncementService,
     private readonly announcementDismissalService: AnnouncementDismissalService,
     private readonly dialog: MatDialog,
+    private readonly cdr: ChangeDetectorRef,
   ) {
     const initial = this.getInitialState();
     this.homeStateSubject = new BehaviorSubject(initial);
@@ -214,34 +231,172 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const isAdmin = this.authService.getActiveRole() === UserType.SchoolAdmin;
-    if (isAdmin) {
-      this.checkProfileCompleteness();
-    }
-
     this.homeStateSubject.next(
-      this.withWidgetSchoolYearsSetToCurrent(this.homeStateSubject.getValue()),
+      this.withWidgetSchoolYearsSetToCurrent(
+        this.withComputedFlags(this.homeStateSubject.getValue()),
+      ),
     );
 
     this.divisionBreakdownChartsSub = this.homeState$
       .pipe(
         filter(
           (s) =>
-            this.isDivisionAdmin(s) &&
+            s.isDivisionAdminRole &&
             !s.loading.resourcePartnerBreakdown &&
             s.resourceGenerationBreakdown.length > 0 &&
             s.partnersBreakdown.length > 0,
         ),
       )
       .subscribe(() => {
-        queueMicrotask(() => requestAnimationFrame(() => this.initDivisionAdminBreakdownCharts()));
+        queueMicrotask(() =>
+          requestAnimationFrame(() => void this.initDivisionAdminBreakdownCharts()),
+        );
       });
 
     this.buildLoadPipeline().subscribe({
       error: (err) => console.error('Home load error:', err),
     });
 
-    this.loadAndShowAnnouncements();
+    this.scheduleDeferredInit();
+  }
+
+  private scheduleDeferredInit(): void {
+    const run = () => {
+      if (this.authService.getActiveRole() === UserType.SchoolAdmin) {
+        void this.checkProfileCompleteness();
+      }
+      this.loadAndShowAnnouncements();
+    };
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(run);
+    } else {
+      setTimeout(run, 0);
+    }
+  }
+
+  private maybeEnableDeferredUi(state: HomeState): void {
+    if (state.mountOnlineVisitorWidget || !this.isTier1Complete(state)) {
+      return;
+    }
+    const enable = () => {
+      const current = this.homeStateSubject.getValue();
+      if (current.mountOnlineVisitorWidget) {
+        return;
+      }
+      this.homeStateSubject.next(
+        this.withComputedFlags({ ...current, mountOnlineVisitorWidget: true }),
+      );
+      this.cdr.markForCheck();
+    };
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(enable);
+    } else {
+      setTimeout(enable, 0);
+    }
+  }
+
+  private isTier1Complete(state: HomeState): boolean {
+    if (state.hideTree) {
+      return !state.loading.schoolNeeds;
+    }
+    if (state.loading.schoolNeeds) {
+      return false;
+    }
+    if (state.isDivisionAdminRole) {
+      return !state.loading.internalRefData;
+    }
+    return true;
+  }
+
+  private withComputedFlags(state: HomeState): HomeState {
+    const userRole = state.userRole;
+    return {
+      ...state,
+      showStats:
+        userRole === UserType.SchoolAdmin || userRole === UserType.DivisionAdmin,
+      hideTree:
+        userRole === UserType.ProgramHolder ||
+        userRole === UserType.OfficeAdmin ||
+        userRole === UserType.OfficeAdminAssistant,
+      showVisitorCounter: canShowHomeVisitorCounterWidget(userRole),
+      showPartnershipActivities:
+        userRole === UserType.SchoolAdmin ||
+        userRole === UserType.DivisionAdmin ||
+        userRole === UserType.StakeHolder,
+      showUpcomingEvents:
+        userRole === UserType.OfficeAdmin ||
+        userRole === UserType.OfficeAdminAssistant ||
+        userRole === UserType.ProgramHolder,
+      isSchoolAdminRole: userRole === UserType.SchoolAdmin,
+      isDivisionAdminRole: userRole === UserType.DivisionAdmin,
+      mountOnlineVisitorWidget: state.mountOnlineVisitorWidget ?? false,
+    };
+  }
+
+  private mergeLoaderResult(
+    current: HomeState,
+    loaded: HomeState,
+    loaderId: HomeLoaderId,
+  ): HomeState {
+    const loading = { ...current.loading };
+    switch (loaderId) {
+      case 'internalRef':
+        loading.internalRefData = loaded.loading.internalRefData;
+        return {
+          ...current,
+          loading,
+          divisionName: loaded.divisionName,
+          divisionLogoUrl: loaded.divisionLogoUrl,
+          logoError: loaded.logoError,
+        };
+      case 'resourcePartner':
+        loading.resourcePartnerBreakdown = loaded.loading.resourcePartnerBreakdown;
+        return {
+          ...current,
+          loading,
+          resourcePartnerSchoolYear: loaded.resourcePartnerSchoolYear,
+          resourceGenerationBreakdown: loaded.resourceGenerationBreakdown,
+          partnersBreakdown: loaded.partnersBreakdown,
+        };
+      case 'schoolNeeds':
+        loading.schoolNeeds = loaded.loading.schoolNeeds;
+        return {
+          ...current,
+          loading,
+          treeData: loaded.treeData,
+          schoolNeedData: loaded.schoolNeedData,
+          schoolInfo: loaded.schoolInfo,
+          schoolLogoUrl: loaded.schoolLogoUrl,
+          logoError: loaded.logoError,
+          treeSchoolYear: loaded.treeSchoolYear,
+        };
+      case 'aipStats':
+        loading.aipStats = loaded.loading.aipStats;
+        return {
+          ...current,
+          loading,
+          aipStatsSchoolYear: loaded.aipStatsSchoolYear,
+          aipStatusStats: loaded.aipStatusStats,
+          aipStatusPercentageDisplays: loaded.aipStatusPercentageDisplays,
+          totalAips: loaded.totalAips,
+        };
+      case 'upcomingPlans':
+        loading.upcomingPlans = loaded.loading.upcomingPlans;
+        return {
+          ...current,
+          loading,
+          upcomingPlans: loaded.upcomingPlans,
+        };
+      case 'partnershipActivities':
+        loading.partnershipActivities = loaded.loading.partnershipActivities;
+        return {
+          ...current,
+          loading,
+          partnershipActivities: loaded.partnershipActivities,
+        };
+      default:
+        return current;
+    }
   }
 
   private loadAndShowAnnouncements(): void {
@@ -307,7 +462,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       aipStatusPercentageDisplays.set(s, '0');
     });
     const isDivisionAdmin = userRole === UserType.DivisionAdmin;
-    return {
+    const base: HomeState = {
       loading: {
         internalRefData: true,
         schoolNeeds: true,
@@ -335,44 +490,49 @@ export class HomeComponent implements OnInit, OnDestroy {
       resourcePartnerSchoolYear: getCurrentSchoolYear(),
       aipStatsSchoolYear: getCurrentSchoolYear(),
       treeSchoolYear: getCurrentSchoolYear(),
+      showStats: false,
+      hideTree: false,
+      showVisitorCounter: false,
+      showPartnershipActivities: false,
+      showUpcomingEvents: false,
+      mountOnlineVisitorWidget: false,
+      isSchoolAdminRole: false,
+      isDivisionAdminRole: false,
     };
+    return this.withComputedFlags(base);
   }
 
   private buildLoadPipeline(): Observable<HomeState> {
     return defer(() => {
       const initial = this.withWidgetSchoolYearsSetToCurrent(this.getInitialState());
-      return of(initial).pipe(
-        switchMap((s) =>
-          this.loadInternalRefData$(s).pipe(
-            tap((result) => this.homeStateSubject.next(result)),
+      this.homeStateSubject.next(initial);
+
+      const loaders: { id: HomeLoaderId; obs: Observable<HomeState> }[] = [
+        { id: 'internalRef', obs: this.loadInternalRefData$(initial) },
+        { id: 'resourcePartner', obs: this.loadResourcePartnerBreakdown$(initial) },
+        { id: 'schoolNeeds', obs: this.loadSchoolNeeds$(initial) },
+        { id: 'aipStats', obs: this.loadAipStatsIfNeeded$(initial) },
+        { id: 'upcomingPlans', obs: this.loadUpcomingPlansIfNeeded$(initial) },
+        { id: 'partnershipActivities', obs: this.loadPartnershipActivitiesIfNeeded$(initial) },
+      ];
+
+      return merge(
+        ...loaders.map(({ id, obs }) =>
+          obs.pipe(
+            tap((loaded) => {
+              const merged = this.withComputedFlags(
+                this.mergeLoaderResult(this.homeStateSubject.getValue(), loaded, id),
+              );
+              this.homeStateSubject.next(merged);
+              this.maybeEnableDeferredUi(merged);
+            }),
+            catchError((err) => {
+              console.error(`Home loader error (${id}):`, err);
+              return EMPTY;
+            }),
           ),
         ),
-        switchMap((s) =>
-          this.loadResourcePartnerBreakdown$(s).pipe(
-            tap((result) => this.homeStateSubject.next(result)),
-          ),
-        ),
-        switchMap((s) =>
-          this.loadSchoolNeeds$(s).pipe(
-            tap((result) => this.homeStateSubject.next(result)),
-          ),
-        ),
-        switchMap((s) =>
-          this.loadAipStatsIfNeeded$(s).pipe(
-            tap((result) => this.homeStateSubject.next(result)),
-          ),
-        ),
-        switchMap((s) =>
-          this.loadUpcomingPlansIfNeeded$(s).pipe(
-            tap((result) => this.homeStateSubject.next(result)),
-          ),
-        ),
-        switchMap((s) =>
-          this.loadPartnershipActivitiesIfNeeded$(s).pipe(
-            tap((result) => this.homeStateSubject.next(result)),
-          ),
-        ),
-      );
+      ).pipe(map(() => this.homeStateSubject.getValue()));
     });
   }
 
@@ -558,78 +718,76 @@ export class HomeComponent implements OnInit, OnDestroy {
 }
 
   private loadSchoolNeeds$(state: HomeState): Observable<HomeState> {
-    if (
-      state.userRole === UserType.ProgramHolder ||
-      state.userRole === UserType.OfficeAdmin ||
-      state.userRole === UserType.OfficeAdminAssistant
-    ) {
+    if (state.hideTree) {
       return of({ ...state, loading: { ...state.loading, schoolNeeds: false } });
     }
+
+    const schoolId = state.isSchoolAdminRole ? this.authService.getSchoolId() : undefined;
+    const emptyCounts: SchoolNeedContributionCountsResponse = {
+      success: false,
+      data: [],
+      meta: { count: 0, timestamp: '' },
+    };
+
     return forkJoin({
-      tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree')),
-      needs: this.fetchAllSchoolNeedsData(state.treeSchoolYear),
+      tree: of(this.referenceDataService.get<TreeNode[]>('contributionTree') ?? []),
+      counts: this.widgetService
+        .getSchoolNeedContributionCounts(state.treeSchoolYear, schoolId)
+        .pipe(
+          catchError((err) => {
+            console.error('Contribution counts widget error:', err);
+            return of(emptyCounts);
+          }),
+        ),
+      school:
+        state.isSchoolAdminRole && schoolId
+          ? this.schoolService.getSchoolById(schoolId).pipe(
+              catchError((err) => {
+                console.error('School header load error:', err);
+                return of(null);
+              }),
+            )
+          : of(null),
     }).pipe(
-      map(({ tree, needs }) => {
-        const treeWithCounts = this.mapCountsToTreeData(tree, needs.data);
+      map(({ tree, counts, school }) => {
+        const countRows =
+          counts.success && Array.isArray(counts.data) ? counts.data : [];
+        const treeWithCounts = this.mapCountsToTreeData(tree, countRows);
+        const schoolInfo = (school as SchoolInfo | null) ?? null;
         return {
           ...state,
           loading: { ...state.loading, schoolNeeds: false },
           treeData: treeWithCounts,
-          schoolNeedData: needs.data,
-          schoolInfo: needs.schoolInfo,
-          schoolLogoUrl: needs.schoolInfo?.logoUrl ?? null,
+          schoolNeedData: [],
+          schoolInfo,
+          schoolLogoUrl: schoolInfo?.logoUrl ?? null,
           logoError: false,
         };
       }),
       catchError((err) => {
-        console.error('Error fetching school needs:', err);
+        console.error('Error fetching school needs tree:', err);
         return of({ ...state, loading: { ...state.loading, schoolNeeds: false } });
       }),
     );
   }
 
-  private fetchAllSchoolNeedsData(
-    schoolYear: string,
-    page = 1,
-    size = 10000,
-    acc: any[] = [],
-    schoolName = '',
-    schoolInfo: SchoolInfo | null = null,
-  ): Observable<{ data: any[]; schoolName: string; schoolInfo: SchoolInfo | null }> {
-    return this.schoolNeedService
-      .getSchoolNeeds(page, size, schoolYear, undefined, undefined, true)
-      .pipe(
-        switchMap((res) => {
-          const currentData = res?.data ?? [];
-          const allData = [...acc, ...currentData];
-          const sn = page === 1 && res?.school ? res.school.schoolName || '' : schoolName;
-          const si = page === 1 && res?.school ? res.school : schoolInfo;
-          if (currentData.length < size) {
-            return of({ data: allData, schoolName: sn, schoolInfo: si });
-          }
-          return this.fetchAllSchoolNeedsData(schoolYear, page + 1, size, allData, sn, si);
-        }),
-      );
-  }
-
-  private mapCountsToTreeData(tree: TreeNode[], needs: any[]): TreeNode[] {
-    const out = JSON.parse(JSON.stringify(tree)) as TreeNode[];
-    for (const node of out) {
-      if (node.children) {
-        for (const child of node.children) {
-          const specificNeeds = needs.filter((n: any) => n.specificContribution === child.name);
-          let count = specificNeeds.reduce((sum: number, n: any) => {
-            const totalEngaged = (n.engagements ?? []).reduce(
-              (engAcc: number, eng: any) => engAcc + (eng.quantity ?? 0),
-              0,
-            );
-            return sum + (n.quantity ?? 0) - totalEngaged;
-          }, 0);
-          child.count = count <= 0 ? undefined : count;
-        }
-      }
-    }
-    return out;
+  private mapCountsToTreeData(
+    tree: TreeNode[],
+    counts: { specificContribution: string; count: number }[],
+  ): TreeNode[] {
+    const countByContribution = new Map(
+      counts.map((row) => [row.specificContribution, row.count]),
+    );
+    return tree.map((node) => ({
+      ...node,
+      children: node.children?.map((child) => {
+        const count = countByContribution.get(child.name);
+        return {
+          ...child,
+          count: count != null && count > 0 ? count : undefined,
+        };
+      }),
+    }));
   }
 
   private loadAipStatsIfNeeded$(state: HomeState): Observable<HomeState> {
@@ -968,6 +1126,19 @@ export class HomeComponent implements OnInit, OnDestroy {
         }),
       );
     }
+    this.cdr.markForCheck();
+  }
+
+  trackByTreeNode(_index: number, node: TreeNode): string {
+    return node.name;
+  }
+
+  trackByActivity(_index: number, activity: Activity): string {
+    return activity._id ?? `${activity.title ?? ''}-${activity.startDatetime ?? _index}`;
+  }
+
+  trackByPlan(_index: number, plan: PpaPlan): string {
+    return plan._id ?? `${plan.title ?? ''}-${_index}`;
   }
 
   private readonly homeWidgetSectionLabels: Record<HomeWidgetId, string> = {
@@ -990,7 +1161,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * Apache ECharts pie (see https://echarts.apache.org/examples/en/editor.html?c=pie-simple).
    * Initialized only when division-admin hosts exist in the template.
    */
-  private initDivisionAdminBreakdownCharts(): void {
+  private async initDivisionAdminBreakdownCharts(): Promise<void> {
     if (this.resourceBreakdownChart) return;
 
     const resEl = this.resourcePieHost?.nativeElement;
@@ -1001,7 +1172,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.breakdownChartsDomRetryCount < 30
       ) {
         this.breakdownChartsDomRetryCount++;
-        setTimeout(() => this.initDivisionAdminBreakdownCharts(), 50);
+        setTimeout(() => void this.initDivisionAdminBreakdownCharts(), 50);
       }
       return;
     }
@@ -1011,6 +1182,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     const resourceSlices = latest.resourceGenerationBreakdown;
     const partnerSlices = latest.partnersBreakdown;
     if (!resourceSlices.length || !partnerSlices.length) return;
+
+    const echarts = await this.ensureEcharts();
 
     /** Cover opening animation + stagger + partner delay (see buildBreakdownPieOption). */
     const resizeUnfreezeMs = 1850;
@@ -1040,6 +1213,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.resourceBreakdownChart?.resize();
       this.partnersBreakdownChart?.resize();
     }, resizeUnfreezeMs);
+  }
+
+  private async ensureEcharts(): Promise<typeof import('echarts/core')> {
+    if (!this.echartsCore) {
+      const core = await import('echarts/core');
+      const { PieChart } = await import('echarts/charts');
+      const { LegendComponent, TooltipComponent } = await import('echarts/components');
+      const { CanvasRenderer } = await import('echarts/renderers');
+      core.use([LegendComponent, TooltipComponent, PieChart, CanvasRenderer]);
+      this.echartsCore = core;
+    }
+    return this.echartsCore;
   }
 
   private clearBreakdownChartsPostAnimateResizeTimer(): void {
@@ -1172,8 +1357,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   isHeaderLoading(state: HomeState): boolean {
-    if (this.isDivisionAdmin(state)) return state.loading.internalRefData;
-    if (this.isSchoolAdmin(state)) return state.loading.schoolNeeds;
+    if (state.isDivisionAdminRole) return state.loading.internalRefData;
+    if (state.isSchoolAdminRole) return state.loading.schoolNeeds;
     return false;
   }
 

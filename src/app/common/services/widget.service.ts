@@ -53,6 +53,18 @@ export interface AipStatusStatsResponse {
   meta: ResourceGenerationsMetaDto;
 }
 
+/** Row from `GET /widgets/school-need-contribution-counts`. */
+export interface SchoolNeedContributionCountRowDto {
+  specificContribution: string;
+  count: number;
+}
+
+export interface SchoolNeedContributionCountsResponse {
+  success: boolean;
+  data: SchoolNeedContributionCountRowDto[];
+  meta: ResourceGenerationsMetaDto;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -91,5 +103,21 @@ export class WidgetService {
       url += `${sep}schoolId=${encodeURIComponent(schoolId.trim())}`;
     }
     return this.httpService.get<AipStatusStatsResponse>(url);
+  }
+
+  /** Unmet school-need counts per contribution category for the home tree widget. */
+  getSchoolNeedContributionCounts(
+    schoolYear?: string,
+    schoolId?: string,
+  ): Observable<SchoolNeedContributionCountsResponse> {
+    let url = this.appendSchoolYearQuery(
+      API_ENDPOINT.widget.schoolNeedContributionCounts,
+      schoolYear,
+    );
+    if (schoolId?.trim()) {
+      const sep = url.includes('?') ? '&' : '?';
+      url += `${sep}schoolId=${encodeURIComponent(schoolId.trim())}`;
+    }
+    return this.httpService.get<SchoolNeedContributionCountsResponse>(url);
   }
 }
