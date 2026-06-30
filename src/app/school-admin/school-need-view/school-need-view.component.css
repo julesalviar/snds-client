@@ -204,6 +204,130 @@
   margin: 20px 0;
 }
 
+.table-container .school-needs-table {
+  width: 100%;
+}
+
+.table-container .school-needs-table .mat-mdc-header-cell,
+.table-container .school-needs-table .mat-header-cell {
+  font-size: 0.875rem;
+  color: #424242;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5 !important;
+  vertical-align: middle;
+}
+
+.table-container .school-needs-table .mat-mdc-cell,
+.table-container .school-needs-table .mat-cell {
+  font-size: 0.875rem;
+  color: #212121;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff !important;
+  vertical-align: middle;
+}
+
+.table-container .school-needs-table tr.mat-mdc-row:hover,
+.table-container .school-needs-table tr.mat-row:hover {
+  background-color: rgba(69, 160, 73, 0.08);
+}
+
+.table-container .actions-header {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.table-container .actions-cell {
+  white-space: nowrap;
+}
+
+.actions-cell-inner {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  vertical-align: middle;
+}
+
+.actions-cell-inner .action-icon-button.mat-mdc-icon-button,
+.actions-cell-inner .action-icon-button.mat-icon-button {
+  --mdc-icon-button-icon-size: 18px;
+  --mdc-icon-button-state-layer-size: 32px;
+  --mat-icon-button-hover-state-layer-opacity: 0.08;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  line-height: 32px;
+}
+
+.actions-cell-inner .action-icon-button .action-icon,
+.actions-cell-inner .action-icon-button mat-icon.action-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+}
+
+.actions-cell-inner .action-spinner {
+  display: inline-block;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.edit-engagement-button mat-icon,
+.edit-engagement-button .action-icon {
+  color: #1976d2 !important;
+}
+
+.edit-engagement-button {
+  color: #1976d2 !important;
+}
+
+.edit-engagement-button:hover:not([disabled]) {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* Delete Button Styles */
+.delete-engagement-button {
+  color: #d32f2f !important;
+}
+
+.delete-engagement-button:hover:not([disabled]) {
+  background-color: rgba(211, 47, 47, 0.1) !important;
+  color: #c62828 !important;
+}
+
+.delete-engagement-button:active:not([disabled]) {
+  background-color: rgba(211, 47, 47, 0.2) !important;
+}
+
+.delete-engagement-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delete-engagement-button mat-icon {
+  color: #d32f2f !important;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-engagement-button:hover:not([disabled]) mat-icon {
+  color: #c62828 !important;
+  transform: scale(1.05);
+}
+
+.delete-engagement-button mat-spinner {
+  --mdc-circular-progress-active-indicator-color: #d32f2f;
+}
+
 .mat-progress-bar-title {
   margin-top: 10px;
   margin-bottom: 0;
@@ -623,39 +747,6 @@ mat-card-title {
     font-size: 14px;
     padding: 4px 12px;
   }
-}
-
-/* Delete Button Styles */
-.delete-engagement-button {
-  color: #d32f2f !important;
-}
-
-.delete-engagement-button:hover:not([disabled]) {
-  background-color: rgba(211, 47, 47, 0.1) !important;
-  color: #c62828 !important;
-}
-
-.delete-engagement-button:active:not([disabled]) {
-  background-color: rgba(211, 47, 47, 0.2) !important;
-}
-
-.delete-engagement-button[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.delete-engagement-button mat-icon {
-  color: #d32f2f !important;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.delete-engagement-button:hover:not([disabled]) mat-icon {
-  color: #c62828 !important;
-  transform: scale(1.1);
-}
-
-.delete-engagement-button mat-spinner {
-  --mdc-circular-progress-active-indicator-color: #d32f2f;
 }
 
 .chips-container {

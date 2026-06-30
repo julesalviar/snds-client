@@ -138,6 +138,20 @@ export class SchoolNeedViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  editStakeholder(engagement: any): void {
+    if (!this.isSchoolAdmin()) {
+      this.showErrorNotification('Unauthorized: Only school administrators can edit engagements');
+      return;
+    }
+
+    if (!engagement || !engagement._id || !this.code) {
+      this.showErrorNotification('Invalid engagement data');
+      return;
+    }
+
+    this.router.navigate(['/school-admin/school-needs-engage', this.code, engagement._id]);
+  }
+
   deleteStakeholder(engagement: any): void {
     if (!this.isSchoolAdmin()) {
       this.showErrorNotification('Unauthorized: Only school administrators can delete engagements');

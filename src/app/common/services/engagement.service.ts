@@ -2,6 +2,7 @@ import {Injectable} from "@angular/core";
 import {catchError, Observable} from "rxjs";
 import {MyContributionsResponse} from "../model/my-contribution.model";
 import {
+  Engagement,
   EngagementsResponse,
   EngagementStatisticsQuery,
   EngagementStatisticsResponse,
@@ -122,6 +123,12 @@ export class EngagementService {
 
   deleteEngagement(id: string): Observable<any> {
     return this.httpService.delete(`${API_ENDPOINT.engagements}/${id}`).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  updateEngagement(id: string, data: Partial<Engagement>): Observable<any> {
+    return this.httpService.patch(`${API_ENDPOINT.engagements}/${id}`, data).pipe(
       catchError(this.httpService.handleError)
     );
   }

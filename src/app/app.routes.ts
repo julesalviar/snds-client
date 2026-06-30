@@ -104,6 +104,7 @@ export const routes: Routes = [
       {path: 'aip/edit/:id', component: AipEditComponent},
       {path: 'basic', component: SchoolAdminComponent},
       {path: 'spfp', component: SchoolAdminComponent},
+      {path: 'school-needs-engage/:code/:engagementId', component: SchoolNeedsEngageComponent},
       {path: 'school-needs-engage/:code', component: SchoolNeedsEngageComponent},
       {path: 'implementation-status-dialog', component: ImplementationStatusDialogComponent},
       {path: 'school-need/:code', component: SchoolNeedComponent},

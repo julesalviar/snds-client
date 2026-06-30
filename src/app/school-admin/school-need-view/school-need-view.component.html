@@ -37,7 +37,7 @@
         </div>
 
         <div class="table-container">
-          <table mat-table [dataSource]="schoolNeed?.engagements || []" class="mat-elevation-z8">
+          <table mat-table [dataSource]="schoolNeed?.engagements || []" class="mat-elevation-z8 school-needs-table engagements-table">
             <ng-container matColumnDef="contributor">
               <th mat-header-cell *matHeaderCellDef> Contributor</th>
               <td mat-cell *matCellDef="let element"> {{ element.stakeholderUserId?.name }}</td>
@@ -59,21 +59,34 @@
             </ng-container>
 
             <ng-container matColumnDef="action">
-              <th mat-header-cell *matHeaderCellDef> Action</th>
-              <td mat-cell *matCellDef="let element">
-                <button mat-icon-button
-                        class="delete-engagement-button"
-                        color="warn"
-                        (click)="deleteStakeholder(element)"
-                        [disabled]="deletingEngagementId === element._id || !isSchoolAdmin()"
-                        [matTooltip]="deletingEngagementId === element._id ? 'Deleting...' : 'Delete engagement'"
-                        *ngIf="isSchoolAdmin()">
-                  <mat-icon *ngIf="deletingEngagementId !== element._id">delete</mat-icon>
-                  <mat-spinner *ngIf="deletingEngagementId === element._id"
-                               diameter="20"
-                               style="display: inline-block;">
-                  </mat-spinner>
-                </button>
+              <th mat-header-cell *matHeaderCellDef class="actions-header"> Action</th>
+              <td mat-cell *matCellDef="let element" class="actions-cell">
+                <div class="actions-cell-inner">
+                  <button mat-icon-button
+                          class="edit-engagement-button action-icon-button"
+                          color="primary"
+                          (click)="editStakeholder(element)"
+                          [disabled]="!isSchoolAdmin()"
+                          matTooltip="Edit engagement"
+                          aria-label="Edit engagement"
+                          *ngIf="isSchoolAdmin()">
+                    <mat-icon class="action-icon">edit</mat-icon>
+                  </button>
+                  <button mat-icon-button
+                          class="delete-engagement-button action-icon-button"
+                          color="warn"
+                          (click)="deleteStakeholder(element)"
+                          [disabled]="deletingEngagementId === element._id || !isSchoolAdmin()"
+                          [matTooltip]="deletingEngagementId === element._id ? 'Deleting...' : 'Delete engagement'"
+                          aria-label="Delete engagement"
+                          *ngIf="isSchoolAdmin()">
+                    <mat-icon *ngIf="deletingEngagementId !== element._id" class="action-icon">delete</mat-icon>
+                    <mat-spinner *ngIf="deletingEngagementId === element._id"
+                                 diameter="16"
+                                 class="action-spinner">
+                    </mat-spinner>
+                  </button>
+                </div>
               </td>
             </ng-container>
 

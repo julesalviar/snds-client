@@ -1,6 +1,6 @@
 <div class="container">
   <mat-card class="engage-card">
-    <mat-card-title>Engagement Details</mat-card-title>
+    <mat-card-title>{{ isEditMode ? 'Edit Engagement' : 'Engagement Details' }}</mat-card-title>
     <mat-card-content>
       <p *ngIf="needCode">Engaging with need code: <strong>{{ schoolNeed?.code }}</strong></p>
       <p *ngIf="schoolNeed?.description"><strong>Description:</strong> {{ schoolNeed?.description }}</p>
@@ -203,7 +203,7 @@
 </div>
 
 <button mat-raised-button color="primary" (click)="saveEngagement()" [disabled]="isSaving">
-  {{ isSaving ? 'Saving...' : 'Engage' }}
+  {{ isSaving ? 'Saving...' : (isEditMode ? 'Update' : 'Engage') }}
 </button>
       </form>
     </mat-card-content>

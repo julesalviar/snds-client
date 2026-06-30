@@ -32,6 +32,13 @@ export interface Engagement {
   schoolYear: string;
   specificContribution: string;
   stakeholderRepCount?: number | null;
+  agreementType?: string;
+  signatoryName?: string;
+  signatoryDesignation?: string;
+  projectCategory?: string;
+  projectName?: string;
+  agreementStatus?: string;
+  initiatedBy?: string;
   createdAt?: string;
   updatedAt?: string;
 }

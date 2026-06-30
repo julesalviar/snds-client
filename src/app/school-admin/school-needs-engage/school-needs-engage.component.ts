@@ -15,10 +15,12 @@ import {MatIcon} from '@angular/material/icon';
 import {MatProgressBar} from '@angular/material/progress-bar';
 import {debounceTime, distinctUntilChanged, forkJoin, lastValueFrom, map, Subject, takeUntil} from 'rxjs';
 import {SchoolNeed, SchoolNeedImage} from "../../common/model/school-need.model";
+import {Engagement} from "../../common/model/engagement.model";
 import {UserService} from '../../common/services/user.service';
 import {SharedDataService} from '../../common/services/shared-data.service';
 import {ReferenceDataService} from '../../common/services/reference-data.service';
 import {SchoolNeedService} from '../../common/services/school-need.service';
+import {EngagementService} from '../../common/services/engagement.service';
 import {FormsModule, NgForm, NgModel} from '@angular/forms';
 import {MatSelectModule} from '@angular/material/select';
 import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
@@ -57,6 +59,8 @@ import {API_ENDPOINT} from '../../common/api-endpoints';
 export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   schoolNeed: SchoolNeed | undefined;
   needCode: string | null = null;
+  engagementId: string | null = null;
+  editingEngagement: Engagement | null = null;
   stakeholder: any = null;
   moaDate: Date | null = null;
   quantity: number | null = null;
@@ -99,9 +103,14 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     private readonly userService: UserService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly schoolNeedService: SchoolNeedService,
+    private readonly engagementService: EngagementService,
     private readonly snackBar: MatSnackBar,
     private readonly httpService: HttpService,
   ) {}
+
+  get isEditMode(): boolean {
+    return !!this.engagementId;
+  }
 
   ngOnInit(): void {
     this.initializeData().catch(error => {
@@ -113,6 +122,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     await this.referenceDataService.initialize();
 
     this.needCode = this.route.snapshot.paramMap.get('code');
+    this.engagementId = this.route.snapshot.paramMap.get('engagementId');
     if (this.needCode) {
       this.loadSchoolNeed(this.needCode);
     }
@@ -170,6 +180,9 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         if (need) {
           this.unit = need.unit ?? '';
           this.schoolNeed = need;
+          if (this.isEditMode) {
+            this.resolveEditEngagement();
+          }
         }
       },
       error: (error) => {
@@ -177,6 +190,80 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         this.showErrorNotification('Failed to load school need details. Please try again.');
       }
     });
+  }
+
+  private resolveEditEngagement(): void {
+    if (!this.engagementId || !this.schoolNeed?.engagements?.length) {
+      this.showErrorNotification('Engagement not found.');
+      this.navigateAfterEditFailure();
+      return;
+    }
+
+    const engagement = this.schoolNeed.engagements.find(
+      (eng) => String(eng._id) === String(this.engagementId),
+    );
+
+    if (!engagement) {
+      this.showErrorNotification('Engagement not found.');
+      this.navigateAfterEditFailure();
+      return;
+    }
+
+    this.editingEngagement = engagement as Engagement;
+    this.populateFormFromEngagement(this.editingEngagement);
+  }
+
+  private navigateAfterEditFailure(): void {
+    if (this.needCode) {
+      this.router.navigate(['/school-admin/school-need-view', this.needCode]);
+    } else {
+      this.router.navigate(['/school-admin/list-of-school-needs']);
+    }
+  }
+
+  private populateFormFromEngagement(engagement: Engagement): void {
+    const stakeholder = engagement.stakeholderUserId;
+    if (typeof stakeholder === 'object' && stakeholder !== null) {
+      this.stakeholder = stakeholder;
+    }
+
+    this.moaDate = this.parseDate(engagement.signingDate);
+    this.quantity = engagement.quantity ?? null;
+    this.unit = engagement.unit ?? this.unit;
+    this.amount = engagement.amount ?? null;
+    this.startDate = this.parseDate(engagement.startDate);
+    this.endDate = this.parseDate(engagement.endDate);
+
+    this.stakeholderRepCount = engagement.stakeholderRepCount ?? null;
+    this.agreementType = engagement.agreementType ?? '';
+    this.signatoryName = engagement.signatoryName ?? '';
+    this.signatoryDesignation = engagement.signatoryDesignation ?? '';
+    this.projectCategory = engagement.projectCategory ?? '';
+    this.projectName = engagement.projectName ?? '';
+    this.agreementStatus = engagement.agreementStatus ?? '';
+    this.initiatedBy = engagement.initiatedBy ?? '';
+
+    this.isApplicable = !!(
+      engagement.stakeholderRepCount != null ||
+      engagement.agreementType ||
+      engagement.signatoryName ||
+      engagement.signatoryDesignation ||
+      engagement.projectCategory ||
+      engagement.projectName ||
+      engagement.agreementStatus ||
+      engagement.initiatedBy
+    );
+  }
+
+  private parseDate(value: string | Date | null | undefined): Date | null {
+    if (!value) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 
   setupDebouncedSearch(): void {
@@ -229,7 +316,17 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
   }
 
   showMovError(): boolean {
-    return this.submitAttempted && this.previewImages.length < 1;
+    return this.submitAttempted && this.isMovInvalid();
+  }
+
+  private isMovInvalid(): boolean {
+    if (this.isEditMode) {
+      return this.totalImageCount < 1;
+    }
+    if (this.hasExistingImages) {
+      return this.previewImages.length < 1;
+    }
+    return this.totalImageCount < 1;
   }
 
   private markAllFormsTouched(): void {
@@ -251,7 +348,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     const engagementInvalid = !!this.engagementForm?.invalid;
     const implementationInvalid = !!this.implementationForm?.invalid;
     const applicableInvalid = this.isApplicable && !this.validateForm();
-    const movInvalid = this.previewImages.length < 1;
+    const movInvalid = this.isMovInvalid();
 
     return stakeholderInvalid || engagementInvalid || implementationInvalid || applicableInvalid || movInvalid;
   }
@@ -263,14 +360,20 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     }
 
     if (this.showMovError()) {
-      const message = this.hasExistingImages
-        ? 'Please update your MOV/image before engaging.'
-        : 'Please upload at least one MOV (Means of Verification) before engaging.';
+      const message = this.isEditMode
+        ? 'Please keep or upload at least one MOV (Means of Verification).'
+        : this.hasExistingImages
+          ? 'Please update your MOV/image before engaging.'
+          : 'Please upload at least one MOV (Means of Verification) before engaging.';
       this.showErrorNotification(message);
       return;
     }
 
-    this.showErrorNotification('Please fill out all required fields before engaging.');
+    this.showErrorNotification(
+      this.isEditMode
+        ? 'Please fill out all required fields before updating.'
+        : 'Please fill out all required fields before engaging.',
+    );
   }
 
   onStakeholderSelectionChange(): void {
@@ -396,19 +499,34 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         startDate: this.startDate,
         endDate: this.endDate,
         quantity: this.quantity,
-        schoolNeedCode: +this.needCode,
+        ...(this.isEditMode ? {} : { schoolNeedCode: +this.needCode }),
       };
 
-      await lastValueFrom(
-        this.schoolNeedService.engageSchoolNeed(engagementData).pipe(takeUntil(this.destroy$)),
-      );
+      if (this.isEditMode && this.engagementId) {
+        await lastValueFrom(
+          this.engagementService.updateEngagement(
+            this.engagementId,
+            engagementData as unknown as Partial<Engagement>,
+          ).pipe(
+            takeUntil(this.destroy$),
+          ),
+        );
+        this.showSuccessNotification('Engagement updated successfully!');
+        setTimeout(() => {
+          this.router.navigate(['/school-admin/school-need-view', this.needCode]);
+        }, 1500);
+      } else {
+        await lastValueFrom(
+          this.schoolNeedService.engageSchoolNeed(engagementData).pipe(takeUntil(this.destroy$)),
+        );
 
-      this.sharedDataService.updateEngagementStatus(this.needCode, true);
-      this.clearForm();
-      this.showSuccessNotification('Engagement saved successfully!');
-      setTimeout(() => {
-        this.router.navigate(['/school-admin/list-of-school-needs']);
-      }, 1500);
+        this.sharedDataService.updateEngagementStatus(this.needCode, true);
+        this.clearForm();
+        this.showSuccessNotification('Engagement saved successfully!');
+        setTimeout(() => {
+          this.router.navigate(['/school-admin/list-of-school-needs']);
+        }, 1500);
+      }
     } catch (error) {
       console.error('Error saving engagement:', error);
       this.showErrorNotification('Failed to save engagement. Please try again.');
