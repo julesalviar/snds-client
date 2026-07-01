@@ -71,8 +71,9 @@ export class VisitorCountService implements OnDestroy {
     this.isHomeUrl(this.router.url),
   );
   private heartbeatIntervalSub?: Subscription;
-  private activePollSub?: Subscription;
   private onlineUsersPollSub?: Subscription;
+  private onlineUsersPollingActive = false;
+  private visibilityListener?: () => void;
   private lastActiveHeartbeatAt = 0;
   private readonly activeHeartbeatMinIntervalMs = 120_000;
   private readonly activeCountPollIntervalMs = 60_000;
@@ -92,21 +93,22 @@ export class VisitorCountService implements OnDestroy {
         const isHome = this.isHomeUrl(event.urlAfterRedirects);
         this.isHomeRouteSubject.next(isHome);
         this.recordVisitorHitAndUpdateCount();
-        this.sendActiveHeartbeatAndUpdateCount();
-        this.syncHomeActivePolling(isHome);
+        const heartbeatSent = this.sendActiveHeartbeatAndUpdateCount();
+        this.syncHomeActiveCount(isHome, heartbeatSent);
       });
 
-    this.heartbeatIntervalSub = interval(this.activeHeartbeatMinIntervalMs).subscribe(() => {
-      this.sendActiveHeartbeatAndUpdateCount();
-    });
-
-    this.syncHomeActivePolling(this.isHomeUrl(this.router.url));
+    this.startHeartbeatInterval();
+    this.registerVisibilityHandling();
+    this.syncHomeActiveCount(this.isHomeUrl(this.router.url), false);
   }
 
   ngOnDestroy(): void {
-    this.heartbeatIntervalSub?.unsubscribe();
-    this.activePollSub?.unsubscribe();
-    this.stopOnlineUsersPolling();
+    this.stopHeartbeatInterval();
+    this.stopOnlineUsersPolling(false);
+    if (this.visibilityListener && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.visibilityListener);
+      this.visibilityListener = undefined;
+    }
   }
 
   recordVisitorHit(): Observable<VisitorCountResponse> {
@@ -142,8 +144,7 @@ export class VisitorCountService implements OnDestroy {
 
   startOnlineUsersPolling(): void {
     this.stopOnlineUsersPolling(false);
-    this.activePollSub?.unsubscribe();
-    this.activePollSub = undefined;
+    this.onlineUsersPollingActive = true;
     this.fetchOnlineUsers();
 
     this.onlineUsersPollSub = interval(this.activeCountPollIntervalMs).subscribe(() => {
@@ -151,16 +152,20 @@ export class VisitorCountService implements OnDestroy {
     });
   }
 
-  stopOnlineUsersPolling(resumeActivePolling = true): void {
+  stopOnlineUsersPolling(resumeActiveCount = true): void {
     this.onlineUsersPollSub?.unsubscribe();
     this.onlineUsersPollSub = undefined;
+    this.onlineUsersPollingActive = false;
     this.onlineUsersSubject.next(null);
-    if (resumeActivePolling && this.isHomeUrl(this.router.url)) {
-      this.syncHomeActivePolling(true);
+    if (resumeActiveCount && this.isHomeUrl(this.router.url)) {
+      this.syncHomeActiveCount(true, false);
     }
   }
 
   private fetchOnlineUsers(): void {
+    if (this.isDocumentHidden()) {
+      return;
+    }
     this.getOnlineUsers().subscribe({
       next: (response) => {
         const signedInUserCount = response.data.signedInUserCount ?? 0;
@@ -195,13 +200,22 @@ export class VisitorCountService implements OnDestroy {
     });
   }
 
-  private sendActiveHeartbeatAndUpdateCount(force = false): void {
+  /**
+   * Sends a heartbeat unless throttled or the tab is hidden.
+   * Returns whether a request was actually issued so callers can avoid
+   * firing a redundant active-count fetch for the same navigation.
+   */
+  private sendActiveHeartbeatAndUpdateCount(force = false): boolean {
+    if (this.isDocumentHidden()) {
+      return false;
+    }
+
     const now = Date.now();
     if (
       !force &&
       now - this.lastActiveHeartbeatAt < this.activeHeartbeatMinIntervalMs
     ) {
-      return;
+      return false;
     }
 
     this.lastActiveHeartbeatAt = now;
@@ -210,12 +224,24 @@ export class VisitorCountService implements OnDestroy {
         this.activeVisitorCountSubject.next(response.data.activeCount);
       },
     });
+    return true;
   }
 
-  private syncHomeActivePolling(isHome: boolean): void {
-    this.activePollSub?.unsubscribe();
-
-    if (!isHome) {
+  /**
+   * Populates the active count on the home route with a single request.
+   * Ongoing updates come from the 120s heartbeat (which also returns the
+   * count), so there is no separate recurring count poll to avoid the
+   * heartbeat + poll double-fetch. Skipped when a heartbeat was just sent,
+   * when the who's-online widget is polling (it returns the count too), or
+   * when the tab is hidden.
+   */
+  private syncHomeActiveCount(isHome: boolean, heartbeatSent: boolean): void {
+    if (
+      !isHome ||
+      heartbeatSent ||
+      this.onlineUsersPollingActive ||
+      this.isDocumentHidden()
+    ) {
       return;
     }
 
@@ -224,14 +250,61 @@ export class VisitorCountService implements OnDestroy {
         this.activeVisitorCountSubject.next(response.data.activeCount);
       },
     });
+  }
 
-    this.activePollSub = interval(this.activeCountPollIntervalMs).subscribe(() => {
-      this.getActiveVisitorCount().subscribe({
-        next: (response) => {
-          this.activeVisitorCountSubject.next(response.data.activeCount);
-        },
-      });
+  private startHeartbeatInterval(): void {
+    this.stopHeartbeatInterval();
+    this.heartbeatIntervalSub = interval(
+      this.activeHeartbeatMinIntervalMs,
+    ).subscribe(() => {
+      this.sendActiveHeartbeatAndUpdateCount();
     });
+  }
+
+  private stopHeartbeatInterval(): void {
+    this.heartbeatIntervalSub?.unsubscribe();
+    this.heartbeatIntervalSub = undefined;
+  }
+
+  private registerVisibilityHandling(): void {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    this.visibilityListener = () => this.handleVisibilityChange();
+    document.addEventListener('visibilitychange', this.visibilityListener);
+  }
+
+  /**
+   * Pauses all monitoring traffic while the tab is backgrounded and resumes
+   * (with an immediate refresh) when it becomes visible again. Background tabs
+   * were a primary driver of app-wide heartbeat/poll fan-out.
+   */
+  private handleVisibilityChange(): void {
+    if (this.isDocumentHidden()) {
+      this.stopHeartbeatInterval();
+      this.onlineUsersPollSub?.unsubscribe();
+      this.onlineUsersPollSub = undefined;
+      return;
+    }
+
+    this.startHeartbeatInterval();
+    const heartbeatSent = this.sendActiveHeartbeatAndUpdateCount(true);
+    if (this.onlineUsersPollingActive) {
+      this.fetchOnlineUsers();
+      this.onlineUsersPollSub = interval(
+        this.activeCountPollIntervalMs,
+      ).subscribe(() => {
+        this.fetchOnlineUsers();
+      });
+    } else {
+      this.syncHomeActiveCount(this.isHomeUrl(this.router.url), heartbeatSent);
+    }
+  }
+
+  private isDocumentHidden(): boolean {
+    return (
+      typeof document !== 'undefined' && document.visibilityState === 'hidden'
+    );
   }
 
   private getActiveSessionId(): string {
