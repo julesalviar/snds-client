@@ -178,6 +178,7 @@ export const routes: Routes = [
       { path: 'ppa-plans', component: PpaPlanListComponent },
       { path: 'manage-fund-source', component: ManageFundSourceComponent },
       { path: 'manage-announcements', component: ManageAnnouncementsComponent },
+      { path: 'office/'}
     ]
   },
 
