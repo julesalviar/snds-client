@@ -74,9 +74,27 @@ export class VisitorCountService implements OnDestroy {
   private onlineUsersPollSub?: Subscription;
   private onlineUsersPollingActive = false;
   private visibilityListener?: () => void;
+  private idleTimeoutId?: ReturnType<typeof setTimeout>;
+  private userIdle = false;
+  private readonly activityRemovers: Array<() => void> = [];
+  private readonly activityListenerOptions: AddEventListenerOptions = {
+    passive: true,
+    capture: true,
+  };
+  private readonly activityEvents = [
+    'mousemove',
+    'mousedown',
+    'keydown',
+    'scroll',
+    'touchstart',
+    'touchmove',
+    'wheel',
+  ] as const;
   private lastActiveHeartbeatAt = 0;
   private readonly activeHeartbeatMinIntervalMs = 120_000;
   private readonly activeCountPollIntervalMs = 60_000;
+  /** Aligns with server active-visitor Mongo TTL (5 min). */
+  private readonly idleThresholdMs = 5 * 60_000;
 
   readonly visitorCount$ = this.visitorCountSubject.asObservable();
   readonly activeVisitorCount$ = this.activeVisitorCountSubject.asObservable();
@@ -87,9 +105,13 @@ export class VisitorCountService implements OnDestroy {
     private readonly httpService: HttpService,
     private readonly router: Router,
   ) {
+    this.registerActivityTracking();
+    this.scheduleIdleTimeout();
+
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
+        this.bumpActivity();
         const isHome = this.isHomeUrl(event.urlAfterRedirects);
         this.isHomeRouteSubject.next(isHome);
         this.recordVisitorHitAndUpdateCount();
@@ -97,14 +119,18 @@ export class VisitorCountService implements OnDestroy {
         this.syncHomeActiveCount(isHome, heartbeatSent);
       });
 
-    this.startHeartbeatInterval();
     this.registerVisibilityHandling();
+    this.resumeMonitoringIntervals();
     this.syncHomeActiveCount(this.isHomeUrl(this.router.url), false);
   }
 
   ngOnDestroy(): void {
-    this.stopHeartbeatInterval();
-    this.stopOnlineUsersPolling(false);
+    this.pauseMonitoringIntervals();
+    this.clearIdleTimeout();
+    for (const remove of this.activityRemovers) {
+      remove();
+    }
+    this.activityRemovers.length = 0;
     if (this.visibilityListener && typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.visibilityListener);
       this.visibilityListener = undefined;
@@ -145,11 +171,11 @@ export class VisitorCountService implements OnDestroy {
   startOnlineUsersPolling(): void {
     this.stopOnlineUsersPolling(false);
     this.onlineUsersPollingActive = true;
+    if (!this.shouldSendMonitoringTraffic()) {
+      return;
+    }
+    this.startOnlineUsersPollInterval();
     this.fetchOnlineUsers();
-
-    this.onlineUsersPollSub = interval(this.activeCountPollIntervalMs).subscribe(() => {
-      this.fetchOnlineUsers();
-    });
   }
 
   stopOnlineUsersPolling(resumeActiveCount = true): void {
@@ -157,13 +183,13 @@ export class VisitorCountService implements OnDestroy {
     this.onlineUsersPollSub = undefined;
     this.onlineUsersPollingActive = false;
     this.onlineUsersSubject.next(null);
-    if (resumeActiveCount && this.isHomeUrl(this.router.url)) {
+    if (resumeActiveCount && this.shouldSendMonitoringTraffic() && this.isHomeUrl(this.router.url)) {
       this.syncHomeActiveCount(true, false);
     }
   }
 
   private fetchOnlineUsers(): void {
-    if (this.isDocumentHidden()) {
+    if (!this.shouldSendMonitoringTraffic()) {
       return;
     }
     this.getOnlineUsers().subscribe({
@@ -193,6 +219,9 @@ export class VisitorCountService implements OnDestroy {
   }
 
   private recordVisitorHitAndUpdateCount(): void {
+    if (!this.shouldSendMonitoringTraffic()) {
+      return;
+    }
     this.recordVisitorHit().subscribe({
       next: (response) => {
         this.visitorCountSubject.next(response.data.count);
@@ -201,12 +230,12 @@ export class VisitorCountService implements OnDestroy {
   }
 
   /**
-   * Sends a heartbeat unless throttled or the tab is hidden.
+   * Sends a heartbeat unless throttled, the tab is hidden, or the user is idle.
    * Returns whether a request was actually issued so callers can avoid
    * firing a redundant active-count fetch for the same navigation.
    */
   private sendActiveHeartbeatAndUpdateCount(force = false): boolean {
-    if (this.isDocumentHidden()) {
+    if (!this.shouldSendMonitoringTraffic()) {
       return false;
     }
 
@@ -227,20 +256,12 @@ export class VisitorCountService implements OnDestroy {
     return true;
   }
 
-  /**
-   * Populates the active count on the home route with a single request.
-   * Ongoing updates come from the 120s heartbeat (which also returns the
-   * count), so there is no separate recurring count poll to avoid the
-   * heartbeat + poll double-fetch. Skipped when a heartbeat was just sent,
-   * when the who's-online widget is polling (it returns the count too), or
-   * when the tab is hidden.
-   */
   private syncHomeActiveCount(isHome: boolean, heartbeatSent: boolean): void {
     if (
       !isHome ||
       heartbeatSent ||
       this.onlineUsersPollingActive ||
-      this.isDocumentHidden()
+      !this.shouldSendMonitoringTraffic()
     ) {
       return;
     }
@@ -250,6 +271,69 @@ export class VisitorCountService implements OnDestroy {
         this.activeVisitorCountSubject.next(response.data.activeCount);
       },
     });
+  }
+
+  private shouldSendMonitoringTraffic(): boolean {
+    return !this.isDocumentHidden() && !this.userIdle;
+  }
+
+  private bumpActivity(resumeIfWasIdle = true): void {
+    const wasIdle = this.userIdle;
+    this.userIdle = false;
+    this.scheduleIdleTimeout();
+    if (resumeIfWasIdle && wasIdle && !this.isDocumentHidden()) {
+      this.resumeMonitoringIntervals();
+    }
+  }
+
+  private scheduleIdleTimeout(): void {
+    this.clearIdleTimeout();
+    this.idleTimeoutId = setTimeout(() => {
+      this.idleTimeoutId = undefined;
+      this.userIdle = true;
+      this.pauseMonitoringIntervals();
+    }, this.idleThresholdMs);
+  }
+
+  private clearIdleTimeout(): void {
+    if (this.idleTimeoutId !== undefined) {
+      clearTimeout(this.idleTimeoutId);
+      this.idleTimeoutId = undefined;
+    }
+  }
+
+  private pauseMonitoringIntervals(): void {
+    this.stopHeartbeatInterval();
+    this.onlineUsersPollSub?.unsubscribe();
+    this.onlineUsersPollSub = undefined;
+  }
+
+  /**
+   * Restarts heartbeat / online-users polling and sends an immediate heartbeat
+   * when the tab becomes visible again or the user returns from idle.
+   */
+  private resumeMonitoringIntervals(): void {
+    if (!this.shouldSendMonitoringTraffic()) {
+      return;
+    }
+
+    this.startHeartbeatInterval();
+    const heartbeatSent = this.sendActiveHeartbeatAndUpdateCount(true);
+    if (this.onlineUsersPollingActive) {
+      this.startOnlineUsersPollInterval();
+      this.fetchOnlineUsers();
+    } else {
+      this.syncHomeActiveCount(this.isHomeUrl(this.router.url), heartbeatSent);
+    }
+  }
+
+  private startOnlineUsersPollInterval(): void {
+    this.onlineUsersPollSub?.unsubscribe();
+    this.onlineUsersPollSub = interval(this.activeCountPollIntervalMs).subscribe(
+      () => {
+        this.fetchOnlineUsers();
+      },
+    );
   }
 
   private startHeartbeatInterval(): void {
@@ -266,6 +350,20 @@ export class VisitorCountService implements OnDestroy {
     this.heartbeatIntervalSub = undefined;
   }
 
+  private registerActivityTracking(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const bump = () => this.bumpActivity();
+    for (const event of this.activityEvents) {
+      window.addEventListener(event, bump, this.activityListenerOptions);
+      this.activityRemovers.push(() =>
+        window.removeEventListener(event, bump, this.activityListenerOptions),
+      );
+    }
+  }
+
   private registerVisibilityHandling(): void {
     if (typeof document === 'undefined') {
       return;
@@ -274,31 +372,15 @@ export class VisitorCountService implements OnDestroy {
     document.addEventListener('visibilitychange', this.visibilityListener);
   }
 
-  /**
-   * Pauses all monitoring traffic while the tab is backgrounded and resumes
-   * (with an immediate refresh) when it becomes visible again. Background tabs
-   * were a primary driver of app-wide heartbeat/poll fan-out.
-   */
   private handleVisibilityChange(): void {
     if (this.isDocumentHidden()) {
-      this.stopHeartbeatInterval();
-      this.onlineUsersPollSub?.unsubscribe();
-      this.onlineUsersPollSub = undefined;
+      this.clearIdleTimeout();
+      this.pauseMonitoringIntervals();
       return;
     }
 
-    this.startHeartbeatInterval();
-    const heartbeatSent = this.sendActiveHeartbeatAndUpdateCount(true);
-    if (this.onlineUsersPollingActive) {
-      this.fetchOnlineUsers();
-      this.onlineUsersPollSub = interval(
-        this.activeCountPollIntervalMs,
-      ).subscribe(() => {
-        this.fetchOnlineUsers();
-      });
-    } else {
-      this.syncHomeActiveCount(this.isHomeUrl(this.router.url), heartbeatSent);
-    }
+    this.bumpActivity(false);
+    this.resumeMonitoringIntervals();
   }
 
   private isDocumentHidden(): boolean {
