@@ -1,1 +1,62 @@
-<p>accomplishment-summary works!</p>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>PPA Accomplishment Summary Table</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (isLoading) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    @if (!isLoading && error) {
+      <div class="error-msg">{{ error }}</div>
+    }
+
+    @if (!isLoading && !error && dataSource.length === 0) {
+      <div class="empty-msg">No PPA data available.</div>
+    }
+
+    @if (!isLoading && dataSource.length > 0) {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2" class="th-corner">Functional Division/Office</th>
+              @for (col of classificationColumns; track col.key) {
+                <th [attr.colspan]="3" class="th-group">{{ col.label }}</th>
+              }
+            </tr>
+            <tr>
+              @for (col of classificationColumns; track col.key) {
+                <th class="th-sub">No. of PPAs</th>
+                <th class="th-sub">No. of PPAs Completed</th>
+                <th class="th-sub">% of Accomplishment</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of dataSource; track row.division) {
+              <tr>
+                <td class="cell-division">{{ row.displayName }}</td>
+                @for (col of classificationColumns; track col.key) {
+                  <td class="cell-numeric">{{ row.classifications[col.key].ppaCount}}</td>
+                  <td class="cell-numeric">{{ row.classifications[col.key].completedCount }}</td>
+                  <td class="cell-numeric cell-pct">{{ row.classifications[col.key].percentage }}%</td>
+                }
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="row-totals">
+              <td class="cell-division">TOTAL</td>
+              @for (col of classificationColumns; track col.key) {
+                <td class="cell-numeric cell-bold">{{ totals[col.key].ppaCount}}</td>
+                <td class="cell-numeric cell-bold">{{ totals[col.key].completedCount}}</td>
+                <td class="cell-numeric cell-bold cell-pct">{{ totals[col.key].percentage}}%</td>
+              }
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

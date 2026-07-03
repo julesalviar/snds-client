@@ -45,6 +45,7 @@ import { OfficeListComponent } from './division-admin/office/office-list.compone
 import { StakeholdersProfileComponent } from './stakeholders-profile/stakeholders-profile.component';
 import { ConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { EmailActivatedComponent } from './email-activated/email-activated.component';
+import { AccomplishmentSummaryComponent } from './division-admin/office/accomplishment-summary/accomplishment-summary.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -145,6 +146,7 @@ export const routes: Routes = [
       {path: 'generated-resources', component: GeneratedResourcesComponent},
       {path: 'stakeholders-profile', component: StakeholdersProfileComponent},
       {path: 'manage-announcements', component: ManageAnnouncementsComponent},
+      {path: 'office/accomplishment-summary', component: AccomplishmentSummaryComponent },
     ]
   },
   { // System Admin routes
@@ -178,7 +180,7 @@ export const routes: Routes = [
       { path: 'ppa-plans', component: PpaPlanListComponent },
       { path: 'manage-fund-source', component: ManageFundSourceComponent },
       { path: 'manage-announcements', component: ManageAnnouncementsComponent },
-      { path: 'office/'}
+      { path: 'accomplishment-summary', component: AccomplishmentSummaryComponent },
     ]
   },
 

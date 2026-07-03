@@ -1,0 +1,186 @@
+:host {
+  display: block;
+  overflow: hidden;
+}
+
+mat-card-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+mat-card-header {
+  margin-bottom: 24px;
+}
+
+.table-wrapper {
+  overflow: auto;
+  max-height: calc(100vh - 260px);
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+td, th {
+  border: 1px solid #d0d0d0;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: #e8f5e9;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #333;
+}
+
+thead th.th-corner {
+  z-index: 3;
+  left: 0;
+  text-align: left;
+}
+
+thead th:not(.th-corner) {
+  z-index: 1;
+}
+
+thead th.th-group {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+thead th.th-sub {
+  font-size: 11px;
+  color: #555;
+  font-weight: 600;
+}
+
+td.cell-division {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #fff;
+  text-align: left;
+}
+
+thead th:first-child {
+  z-index: 4;
+  background: #e8f5e9;
+}
+
+tfoot td:first-child {
+  background: #f0f0f0;
+}
+
+.cell-division {
+  min-width: 380px;
+  font-weight: 600;
+  color: #333;
+}
+
+.cell-numeric {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-bold {
+  font-weight: 700;
+}
+
+.cell-pct {
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.row-totals td {
+  font-weight: 700;
+  background: #f0f0f0;
+  border-top: 2px solid #b0b0b0;
+}
+
+.row-totals .cell-pct {
+  color: #1b5e20;
+  font-weight: 800;
+}
+
+tbody tr:hover td {
+  background: #e8f5e9;
+}
+
+tbody tr:hover td.cell-division {
+  background: #e8f5e9;
+}
+
+.error-msg {
+  color: #c62828;
+  background: #ffebee;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.empty-msg {
+  color: #666;
+  text-align: center;
+  padding: 48px 16px;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .table-wrapper {
+    max-height: none;
+    height: auto;
+  }
+
+  td.cell-division,
+  thead th.th-corner {
+    position: static;
+    left: auto;
+    z-index: auto;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  td, th {
+    padding: 5px 6px;
+    font-size: 11px;
+  }
+
+  .cell-division {
+    min-width: 280px;
+    font-size: 11px;
+  }
+
+  thead th.th-group {
+    font-size: 10px;
+  }
+
+  thead th.th-sub {
+    font-size: 10px;
+  }
+
+  table {
+    min-width: 800px;
+    font-size: 11px;
+  }
+}
