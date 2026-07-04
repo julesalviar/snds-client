@@ -28,6 +28,8 @@ export interface PpaPlan {
   factors?: string;
   reportUrls?: string[];
   allowedRoles?: string[];
+  isDedp?: boolean;
+  isPublic?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

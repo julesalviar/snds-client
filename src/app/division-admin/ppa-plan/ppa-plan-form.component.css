@@ -357,6 +357,16 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+.plan-settings-row {
+  display: flex;
+  align-items: center;
+  margin: 8px 0 16px;
+}
+
+.plan-settings-row mat-slide-toggle {
+  width: 100%;
+}
+
 .full-width {
   width: 100%;
   display: block;

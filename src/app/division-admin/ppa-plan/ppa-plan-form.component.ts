@@ -18,10 +18,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
-import { UserService } from '../../common/services/user.service';
+import { StakeholderProfileService } from '../../common/services/stakeholder-profile.service';
 import { HttpService } from '../../common/services/http.service';
 import { API_ENDPOINT } from '../../common/api-endpoints';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
@@ -34,6 +35,11 @@ import { PLAN_PARTICIPANT_OPTIONS } from '../../common/enums/plan-participant.en
 import { TIMELINESS } from '../../common/enums/timeliness.enum';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { UserListItem } from '../../registration/user.model';
+
+interface StakeholderSearchOption {
+  _id: string;
+  name: string;
+}
 
 /** Validator: end date must not be before start date. */
 function implementationDateRangeValidator(control: AbstractControl): ValidationErrors | null {
@@ -68,6 +74,7 @@ function implementationDateRangeValidator(control: AbstractControl): ValidationE
     MatSnackBarModule,
     MatDialogModule,
     MatDatepickerModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './ppa-plan-form.component.html',
   styleUrl: './ppa-plan-form.component.css'
@@ -80,8 +87,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   private isDuplicate = false;
   isLoading = true;
   isSaving = false;
-  users: UserListItem[] = [];
-  filteredUsers: UserListItem[] = [];
+  filteredStakeholders: StakeholderSearchOption[] = [];
+  private readonly stakeholderCache = new Map<string, StakeholderSearchOption>();
   private readonly searchSubject = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
   get classificationOptions(): readonly (typeof PLAN_CLASSIFICATION)[number][] {
@@ -93,7 +100,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   readonly timelinessOptions = TIMELINESS;
   fundSourceOptions: string[] = [];
   readonly participantOptions = PLAN_PARTICIPANT_OPTIONS;
-  readonly userSearchLimit = 50;
+  readonly stakeholderSearchLimit = 50;
   officeOptionsForSelect: Array<{ value: string; label: string; id: string }> = [];
   get programHolderDisplayName(): string {
     const name = this.authService.getName();
@@ -214,6 +221,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     return fundSource;
   }
 
+  onHideFromPublicChange(checked: boolean): void {
+    this.form.get('isPublic')?.setValue(!checked);
+  }
+
+  isHiddenFromPublic(): boolean {
+    return this.form.get('isPublic')?.value === false;
+  }
+
   addFundSourceFromInput(event: { value: string }): void {
     const value = (event?.value ?? '').trim();
     if (!value) return;
@@ -247,7 +262,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly ppaPlanService: PpaPlanService,
-    private readonly userService: UserService,
+    private readonly stakeholderProfileService: StakeholderProfileService,
     private readonly authService: AuthService,
     private readonly officeService: OfficeService,
     private readonly internalReferenceDataService: InternalReferenceDataService,
@@ -286,6 +301,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       implementationStatus: ['', Validators.required],
       timeliness: [''],
       factors: [''],
+      isDedp: [true],
+      isPublic: [true],
     });
     if (this.isDialogMode && dialogData?.initialDate && !this.isEdit) {
       this.form.patchValue({ implementationStartDate: dialogData.initialDate, implementationEndDate: dialogData.initialDate });
@@ -300,7 +317,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     this.setupStakeholderSearch();
     this.setupImplementationDateValidation();
     this.initializeAssignedUserId();
-    this.loadUsers();
+    this.loadFormData();
   }
 
   ngOnDestroy(): void {
@@ -321,9 +338,32 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        takeUntil(this.destroy$)
+        switchMap((term) => {
+          const search = term.trim();
+          if (!search) {
+            return of([] as StakeholderSearchOption[]);
+          }
+          return this.stakeholderProfileService
+            .listProfiles({
+              page: 1,
+              limit: this.stakeholderSearchLimit,
+              search,
+            })
+            .pipe(
+              map((res) =>
+                (res.data ?? []).map((profile) => ({
+                  _id: profile._id,
+                  name: profile.name,
+                })),
+              ),
+              catchError(() => of([] as StakeholderSearchOption[])),
+            );
+        }),
+        takeUntil(this.destroy$),
       )
-      .subscribe((term) => this.performStakeholderSearch(term));
+      .subscribe((results) => {
+        this.filteredStakeholders = results;
+      });
   }
 
   private initializeAssignedUserId(): void {
@@ -338,36 +378,33 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     const value = (event.target as HTMLInputElement)?.value ?? '';
     const raw = this.form.get('stakeholderUserId')?.value;
     const currentId = this.normalizeStakeholderUserId(raw);
-    const currentUser = currentId ? this.users.find((u) => u._id === currentId) : null;
-    const currentDisplay = currentUser ? this.getStakeholderDisplayName(currentUser) : '';
+    const cached = currentId ? this.stakeholderCache.get(currentId) : undefined;
+    const currentDisplay = cached ? this.getStakeholderDisplayName(cached) : '';
     if (currentDisplay && value !== currentDisplay) {
       this.form.patchValue({ stakeholderUserId: '' });
     }
     this.searchSubject.next(value.trim());
   }
 
-  private performStakeholderSearch(searchTerm: string): void {
-    if (searchTerm.length > 0) {
-      this.userService
-        .getUsers({ page: 1, limit: this.userSearchLimit, search: searchTerm })
-        .subscribe({
-          next: (res) => {
-            this.filteredUsers = res.data ?? [];
-          },
-          error: () => {
-            this.filteredUsers = [];
-          },
-        });
-    } else {
-      this.filteredUsers = [...this.users];
+  onStakeholderOptionSelected(id: string): void {
+    const profile = this.filteredStakeholders.find((p) => p._id === id);
+    if (profile) {
+      this.cacheStakeholder(profile);
     }
   }
 
-  onStakeholderOptionSelected(id: string): void {
-    const user = this.filteredUsers.find((u) => u._id === id);
-    if (user && !this.users.some((u) => u._id === id)) {
-      this.users = [...this.users, user];
-    }
+  private cacheStakeholder(entry: {
+    _id?: string;
+    name?: string;
+    userName?: string;
+    email?: string;
+  }): void {
+    const id = entry._id;
+    if (!id) return;
+    this.stakeholderCache.set(id, {
+      _id: id,
+      name: entry.name || entry.userName || entry.email || id,
+    });
   }
 
   /** Format Date to YYYY-MM-DD using local timezone (avoids UTC shift). */
@@ -410,30 +447,18 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   }
 
   /** Used by mat-autocomplete displayWith; handles both id string and populated user object from API. */
-  displayStakeholderFn = (value: string | UserListItem): string => {
+  displayStakeholderFn = (value: string | StakeholderSearchOption | UserListItem): string => {
     if (value == null) return '';
     if (typeof value === 'object' && value !== null && '_id' in value) {
-      return this.getStakeholderDisplayName(value as UserListItem);
+      return this.getStakeholderDisplayName(value);
     }
     const id = typeof value === 'string' ? value : '';
     if (!id) return '';
-    const user = this.users.find((u) => u._id === id);
-    return user ? this.getStakeholderDisplayName(user) : id;
+    const cached = this.stakeholderCache.get(id);
+    return cached ? this.getStakeholderDisplayName(cached) : id;
   };
 
-  private loadUsers(): void {
-    const users$ = this.userService.getUsers({ page: 1, limit: 500 }).pipe(
-      map((res) => {
-        this.users = res.data ?? [];
-        this.filteredUsers = [...this.users];
-        return this.users;
-      }),
-      catchError(() => {
-        this.users = [];
-        this.filteredUsers = [];
-        return of([]);
-      })
-    );
+  private loadFormData(): void {
     const offices$ = this.loadOfficesObservable();
     const refData$ = from(this.internalReferenceDataService.initialize()).pipe(
       map(() => {
@@ -441,7 +466,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
         return true;
       })
     );
-    forkJoin({ users: users$, offices: offices$, refData: refData$ })
+    forkJoin({ offices: offices$, refData: refData$ })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -503,19 +528,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
         const stakeholderRaw = plan.stakeholderUserId;
         const stakeholderId = this.normalizeStakeholderUserId(stakeholderRaw);
         if (stakeholderRaw && typeof stakeholderRaw === 'object' && stakeholderRaw !== null && '_id' in stakeholderRaw) {
-          const userObj = stakeholderRaw as UserListItem;
-          if (!this.users.some((u) => u._id === userObj._id)) {
-            this.users = [...this.users, userObj];
-            this.filteredUsers = [...this.filteredUsers, userObj];
-          }
-        }
-        const assignedRaw = plan.assignedUserId;
-        if (assignedRaw && typeof assignedRaw === 'object' && assignedRaw !== null && '_id' in assignedRaw) {
-          const assignee = assignedRaw as UserListItem;
-          if (!this.users.some((u) => u._id === assignee._id)) {
-            this.users = [...this.users, assignee];
-            this.filteredUsers = [...this.filteredUsers, assignee];
-          }
+          this.cacheStakeholder(stakeholderRaw as UserListItem);
         }
         const officeCode = this.normalizeOfficeCode(plan.officeId);
         if (officeCode && !this.officeOptionsForSelect.some((o) => o.value === officeCode)) {
@@ -562,6 +575,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           implementationStatus: plan.implementationStatus ?? '',
           timeliness: plan.timeliness ?? '',
           factors: plan.factors ?? '',
+          isDedp: plan.isDedp ?? true,
+          isPublic: plan.isPublic ?? true,
         });
         if (!this.isDuplicate) {
           this.reportDocUrl = Array.isArray(plan.reportUrls) && plan.reportUrls.length > 0 ? plan.reportUrls[0] : null;
@@ -617,6 +632,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       timeliness: raw.timeliness || undefined,
       factors: raw.factors || undefined,
       reportUrls: reportUrls.length > 0 ? reportUrls : undefined,
+      isDedp: raw.isDedp ?? true,
+      isPublic: raw.isPublic ?? true,
     });
 
     this.isSaving = true;
@@ -763,14 +780,17 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  getUserDisplay(user: UserListItem): string {
-    const name = user.name || user.userName || user.email || user._id || '—';
-    return user.email ? `${name} (${user.email})` : name;
-  }
-
   /** Display name only for stakeholder (no email). */
-  getStakeholderDisplayName(user: UserListItem): string {
-    return user.name || user.userName || user.email || user._id || '—';
+  getStakeholderDisplayName(
+    user: StakeholderSearchOption | UserListItem | { _id?: string; name?: string; userName?: string; email?: string },
+  ): string {
+    return (
+      user.name ||
+      ('userName' in user && user.userName) ||
+      ('email' in user && user.email) ||
+      user._id ||
+      '—'
+    );
   }
 
   /** Normalize API value: return id string whether userId is a string or populated object. */

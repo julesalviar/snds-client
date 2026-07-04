@@ -157,6 +157,16 @@
               <textarea matInput formControlName="expectedOutput" rows="2" placeholder="Expected output"></textarea>
               <mat-error *ngIf="form.get('expectedOutput')?.hasError('required')">Expected output is required.</mat-error>
             </mat-form-field>
+            <div class="plan-settings-row">
+              <mat-slide-toggle formControlName="isDedp">Count as DEDP PPA</mat-slide-toggle>
+            </div>
+            <div class="plan-settings-row">
+              <mat-slide-toggle
+                [checked]="isHiddenFromPublic()"
+                (change)="onHideFromPublicChange($event.checked)">
+                Hide from public view
+              </mat-slide-toggle>
+            </div>
           </section>
 
           <section class="form-section">
@@ -221,13 +231,14 @@
                      formControlName="stakeholderUserId"
                      [matAutocomplete]="stakeholderAuto"
                      (input)="onStakeholderInput($event)"
-                     placeholder="Search by name or email">
+                     placeholder="Search by name">
+              <mat-hint>Type at least one character to search stakeholder profiles.</mat-hint>
               <mat-error *ngIf="form.get('stakeholderUserId')?.invalid && form.get('stakeholderUserId')?.touched">Please enter or select a valid stakeholder.</mat-error>
               <mat-autocomplete #stakeholderAuto="matAutocomplete"
                                [displayWith]="displayStakeholderFn"
                                (optionSelected)="onStakeholderOptionSelected($event.option.value)">
-                <mat-option *ngFor="let user of filteredUsers" [value]="user._id">
-                  {{ getStakeholderDisplayName(user) }}
+                <mat-option *ngFor="let profile of filteredStakeholders" [value]="profile._id">
+                  {{ getStakeholderDisplayName(profile) }}
                 </mat-option>
               </mat-autocomplete>
             </mat-form-field>
