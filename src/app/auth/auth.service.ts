@@ -29,11 +29,13 @@ import {
 export class AuthService {
   private sessionToken: string | null = null;
   private readonly authStateSubject = new BehaviorSubject<boolean>(false);
+  private readonly avatarUrlSubject = new BehaviorSubject<string | null>(null);
   private refreshInFlight: Observable<boolean> | null = null;
   private refreshTimerId: ReturnType<typeof setTimeout> | null = null;
   private lastRefreshAtMs = 0;
 
   readonly authState$ = this.authStateSubject.asObservable();
+  readonly avatarUrl$ = this.avatarUrlSubject.asObservable();
 
   constructor(
     private readonly httpService: HttpService,
@@ -144,10 +146,10 @@ export class AuthService {
   clearSession(): void {
     this.sessionToken = null;
     TokenHolder.clear();
-    localStorage.removeItem('userProfile');
     this.lastRefreshAtMs = 0;
     this.clearProactiveRefresh();
     this.syncAuthState();
+    this.avatarUrlSubject.next(null);
   }
 
   isEmailVerifiedForAccess(): boolean {
@@ -213,6 +215,16 @@ export class AuthService {
       : '';
   }
 
+  getAvatarUrl(): string | null {
+    return this.avatarUrlSubject.value;
+  }
+
+  /** Updates the nav avatar immediately without waiting for a token refresh. */
+  updateAvatarUrl(url: string | null | undefined): void {
+    const trimmed = url?.trim();
+    this.avatarUrlSubject.next(trimmed ? trimmed : null);
+  }
+
   getAuthorizationHeader(): string | null {
     const token = this.sessionToken ?? TokenHolder.getToken();
     return token ? `Bearer ${token}` : null;
@@ -248,6 +260,17 @@ export class AuthService {
 
   private syncAuthState(): void {
     this.authStateSubject.next(this.isLoggedIn());
+    this.syncAvatarFromToken();
+  }
+
+  private syncAvatarFromToken(): void {
+    const payload = this.getTokenPayload();
+    if (!this.isTokenValid(payload)) {
+      this.avatarUrlSubject.next(null);
+      return;
+    }
+    const url = payload?.avatarUrl?.trim();
+    this.avatarUrlSubject.next(url ? url : null);
   }
 
   private applyAuthResponse(authResponse: AuthResponse): void {

@@ -23,6 +23,7 @@ import {FooterComponent} from './footer/footer.component';
 import {AboutUsComponent} from './navigation/about-us/about-us.component';
 import {SchoolNeedViewComponent} from "./school-admin/school-need-view/school-need-view.component";
 import {ProfileComponent} from "./navigation/profile/profile.component";
+import {AccountSettingsComponent} from './navigation/account-settings/account-settings.component';
 import {GeneratedResourcesComponent} from "./stakeholders/generated-resources/generated-resources.component";
 import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 import {UserType} from './registration/user-type.enum';
@@ -60,6 +61,7 @@ export const routes: Routes = [
     component: HomeComponent,
   },
   {path: 'change-password', component: ChangePasswordComponent, canActivate: [AuthGuard]},
+  {path: 'account-settings', component: AccountSettingsComponent, canActivate: [AuthGuard]},
   {path: 'footer', component: FooterComponent},
   {path: 'about-us', component: AboutUsComponent},
   {path: 'profile', component: ProfileComponent, canActivate: [AuthGuard]},

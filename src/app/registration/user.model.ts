@@ -3,8 +3,6 @@ import {UserType} from "./user-type.enum";
 export interface User {
   type: UserType;
   name?: string;
-  firstName?: string;
-  lastName?: string;
   sector?: string;
   subsector?: string;
   selectedOption?: string;

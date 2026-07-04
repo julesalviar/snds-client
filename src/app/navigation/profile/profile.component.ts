@@ -334,7 +334,7 @@ export class ProfileComponent implements OnInit {
 
     const formData = new FormData();
     formData.append('file', this.selectedFile);
-    formData.append('category', 'school-profile');
+    formData.append('category', 'school');
     formData.append('schoolId', this.schoolId);
 
     return this.httpService.uploadFile(`${API_ENDPOINT.upload}/document`, formData).pipe(

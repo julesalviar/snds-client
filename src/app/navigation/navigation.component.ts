@@ -42,6 +42,7 @@ export class NavigationComponent implements OnInit {
   protected readonly UserType = UserType;
   profileImageError = false;
   readonly isAuthenticated$ = this.authService.authState$;
+  readonly avatarUrl$ = this.authService.avatarUrl$;
 
   /** Offices grouped by division (division -> Office[]). */
   officesByDivision: Map<string, Office[]> = new Map();
@@ -60,6 +61,12 @@ export class NavigationComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentRoute = this.router.url.split(/[?#!;]/)[0];
+    this.authService.authState$.subscribe(() => {
+      this.profileImageError = false;
+    });
+    this.authService.avatarUrl$.subscribe(() => {
+      this.profileImageError = false;
+    });
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd)
@@ -205,16 +212,6 @@ export class NavigationComponent implements OnInit {
     return 'U';
   }
 
-
-  getProfileImageUrl(): string | null {
-    // Placeholder for future image URL retrieval
-    // For now, return null to show initials
-    return null;
-  }
-
-  hasProfileImage(): boolean {
-    return this.getProfileImageUrl() !== null && !this.profileImageError;
-  }
 
   onImageError(event: Event): void {
     this.profileImageError = true;

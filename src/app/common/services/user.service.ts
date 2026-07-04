@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, catchError, map, Observable, of} from 'rxjs';
-import {environment} from '../../../environments/environment';
+import {BehaviorSubject, catchError, map, Observable} from 'rxjs';
 import {API_ENDPOINT} from "../api-endpoints";
 import {HttpService} from "./http.service";
 import {getSchoolYear} from '../date-utils';
+import {AccountProfile, UpdateMyProfilePayload} from '../model/account-profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -109,20 +109,20 @@ export class UserService {
     );
   }
 
-   getSchoolProfile(): any {
-    const user = this.httpService.get(API_ENDPOINT.schools).pipe(
-      catchError(this.httpService.handleError)
+  getMyProfile(): Observable<AccountProfile> {
+    return this.httpService.get<AccountProfile>(API_ENDPOINT.users.profile).pipe(
+      catchError(this.httpService.handleError),
     );
-    // return JSON.parse(localStorage.getItem('userProfile') ?? '{}');
-     return user;
   }
 
-
-  updateUserProfile(profileData: any): Observable<any> {
-    localStorage.setItem('userProfile', JSON.stringify(profileData));
-    return of(profileData);
+  updateMyProfile(payload: UpdateMyProfilePayload): Observable<{ success: boolean; data: AccountProfile }> {
+    return this.httpService
+      .patch<{ success: boolean; data: AccountProfile }>(
+        API_ENDPOINT.users.updateProfile,
+        payload,
+      )
+      .pipe(catchError(this.httpService.handleError));
   }
-
 
   changePassword(currentPassword: string, newPassword: string) {
       const payload = { currentPassword, newPassword };

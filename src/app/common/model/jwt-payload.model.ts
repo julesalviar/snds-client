@@ -10,6 +10,7 @@ export interface JwtPayload {
   userId?: string;
   sid?: string;
   oids?: string | string[];
+  avatarUrl?: string;
   /** When false, backend denies protected API access. Omitted on older tokens (treated as verified for compatibility). */
   emailVerified?: boolean;
   [key: string]: any;

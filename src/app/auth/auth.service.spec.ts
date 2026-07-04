@@ -126,6 +126,27 @@ describe('AuthService', () => {
     });
   });
 
+  it('updateAvatarUrl updates avatarUrl$ immediately', () => {
+    service.updateAvatarUrl('https://cdn.example/avatar.png');
+    expect(service.getAvatarUrl()).toBe('https://cdn.example/avatar.png');
+
+    service.updateAvatarUrl(null);
+    expect(service.getAvatarUrl()).toBeNull();
+  });
+
+  it('syncs avatarUrl from token on setSessionToken', () => {
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(
+      JSON.stringify({
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        avatarUrl: 'https://cdn.example/from-jwt.png',
+      }),
+    );
+    service.setSessionToken(`${header}.${payload}.sig`);
+    expect(service.getAvatarUrl()).toBe('https://cdn.example/from-jwt.png');
+  });
+
   it('initializeSession redirects when refresh fails and a token was stored', (done) => {
     TokenHolder.setSessionToken(makeJwt(-60));
     httpService.post.and.returnValue(of({ authenticated: false }));

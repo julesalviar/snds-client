@@ -235,17 +235,19 @@
       <ng-container *ngIf="isAuthenticated$ | async; else loginButton">
         <button mat-icon-button [matMenuTriggerFor]="profileMenu" class="avatar-button">
           <div class="avatar">
-            <img *ngIf="getProfileImageUrl() && !profileImageError"
-                 [src]="getProfileImageUrl()"
+            @let avatarUrl = avatarUrl$ | async;
+            <img *ngIf="avatarUrl && !profileImageError"
+                 [src]="avatarUrl"
                  alt="Profile"
                  class="avatar-image"
                  (error)="onImageError($event)">
-            <span class="avatar-initials" [style.display]="hasProfileImage() ? 'none' : 'flex'">{{ getUserInitials() }}</span>
+            <span class="avatar-initials" [style.display]="avatarUrl && !profileImageError ? 'none' : 'flex'">{{ getUserInitials() }}</span>
           </div>
         </button>
         <mat-menu #profileMenu="matMenu">
+          <button mat-menu-item [routerLink]="['/account-settings']">Account Settings</button>
           <button mat-menu-item [routerLink]="['/change-password']">Change Password</button>
-          <button mat-menu-item [routerLink]="['/profile']" *ngIf="userActiveRole === UserType.SchoolAdmin">Edit Profile</button>
+          <button mat-menu-item [routerLink]="['/profile']" *ngIf="userActiveRole === UserType.SchoolAdmin">School Profile</button>
           <button mat-menu-item *ngIf="userRoles.length > 1" (click)="openSwitchRoleDialog()">Switch Role</button>
           <button mat-menu-item class="logout-menu-item" (click)="logout()">Logout</button>
         </mat-menu>

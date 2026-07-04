@@ -1,0 +1,194 @@
+<div class="account-settings-container">
+  <mat-card class="account-settings-card">
+    <mat-card-title>Account Settings</mat-card-title>
+    <mat-card-subtitle>Manage your personal account details</mat-card-subtitle>
+
+    <mat-card-content>
+      <div *ngIf="isLoading" class="skeleton-loading" aria-hidden="true">
+        <section class="skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton-read-only-grid">
+            <div class="skeleton skeleton-field"></div>
+            <div class="skeleton skeleton-field"></div>
+          </div>
+        </section>
+
+        <section class="skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-avatar"></div>
+        </section>
+
+        <section class="skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-field"></div>
+          <div class="skeleton skeleton-field"></div>
+          <div class="skeleton skeleton-field skeleton-field-textarea"></div>
+          <div class="skeleton skeleton-field"></div>
+        </section>
+
+        <div class="skeleton-actions">
+          <div class="skeleton skeleton-button"></div>
+          <div class="skeleton skeleton-button skeleton-button-primary"></div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && profile">
+        <section class="read-only-section">
+          <h3>Account Information</h3>
+          <div class="read-only-grid">
+            <div *ngIf="isUsernameSameAsEmail; else separateUsernameEmail" class="read-only-field">
+              <span class="field-label">Username / Email</span>
+              <span class="field-value">{{ profile.email }}</span>
+            </div>
+            <ng-template #separateUsernameEmail>
+              <div class="read-only-field">
+                <span class="field-label">Username</span>
+                <span class="field-value">{{ profile.userName }}</span>
+              </div>
+              <div class="read-only-field">
+                <span class="field-label">Email</span>
+                <span class="field-value">{{ profile.email }}</span>
+              </div>
+            </ng-template>
+          </div>
+          <p *ngIf="!profile.emailVerified" class="email-unverified-note">
+            Your email address is not verified. Please check your inbox for the confirmation link.
+          </p>
+          <p *ngIf="isSchoolAdminAccount" class="role-hint">
+            School details such as region, division, and school name are managed in
+            <a routerLink="/profile">School Profile</a>.
+          </p>
+        </section>
+
+        <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
+          <section class="avatar-section">
+            <h3>{{ profileImageSectionLabel }}</h3>
+            <div class="avatar-upload-container">
+              <div *ngIf="avatarUrl && !selectedAvatarFile" class="avatar-uploaded-indicator">
+                <div class="avatar-image-frame">
+                  <div *ngIf="isUploadingAvatar" class="skeleton avatar-skeleton" aria-hidden="true"></div>
+                  <img
+                    *ngIf="!isUploadingAvatar"
+                    [src]="avatarUrl"
+                    [alt]="profileImageSectionLabel"
+                    class="avatar-uploaded-image" />
+                </div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="onRemoveAvatar()"
+                  class="avatar-remove-btn"
+                  [title]="'Remove ' + profileImageSectionLabel.toLowerCase()"
+                  [disabled]="isSaving || isUploadingAvatar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+
+              <div *ngIf="selectedAvatarFile && avatarPreviewUrl" class="avatar-preview-small">
+                <div class="avatar-image-frame">
+                  <div *ngIf="isUploadingAvatar" class="skeleton avatar-skeleton" aria-hidden="true"></div>
+                  <img
+                    *ngIf="!isUploadingAvatar"
+                    [src]="avatarPreviewUrl"
+                    [alt]="profileImageSectionLabel + ' preview'"
+                    class="avatar-preview-img-small" />
+                </div>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="removeAvatarFile()"
+                  class="avatar-preview-remove-btn"
+                  [disabled]="isSaving || isUploadingAvatar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+
+              <div
+                *ngIf="!avatarUrl && !selectedAvatarFile"
+                class="avatar-drop-zone"
+                [class.drag-over]="isDraggingAvatar"
+                (dragover)="onAvatarDragOver($event)"
+                (dragleave)="onAvatarDragLeave($event)"
+                (drop)="onAvatarDrop($event)"
+                (click)="onAvatarInputClick()">
+                <input
+                  #avatarInput
+                  type="file"
+                  accept="image/*"
+                  (change)="onAvatarSelected($event)"
+                  hidden />
+
+                <div class="avatar-drop-zone-content">
+                  <mat-icon class="avatar-upload-icon">image</mat-icon>
+                  <span class="avatar-drop-text">
+                    Drop or click to upload {{ profileImageSectionLabel.toLowerCase() }}
+                  </span>
+                </div>
+              </div>
+
+              <p *ngIf="avatarUrlRemoved" class="avatar-pending-hint">
+                Your initials avatar will be restored after you save.
+              </p>
+            </div>
+          </section>
+
+          <section class="personal-details-section">
+            <h3>Personal Details</h3>
+            <div class="form-grid">
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>{{ isSchoolAdminAccount ? 'Name of Accountable Person' : 'Your Name or Name of Your Organization' }}</mat-label>
+                <input matInput formControlName="name" />
+              </mat-form-field>
+
+              <ng-container *ngIf="isStakeholderAccount">
+                <div class="sector-field full-width">
+                  <mat-label class="sector-label">Choose a Sector:</mat-label>
+                  <mat-radio-group
+                    formControlName="sector"
+                    class="sector-radio-group"
+                    (change)="onSectorChange($event.value)">
+                    <mat-radio-button *ngFor="let sector of sectors" [value]="sector.category">
+                      {{ sector.category }}
+                    </mat-radio-button>
+                  </mat-radio-group>
+                </div>
+
+                <mat-form-field appearance="fill" class="full-width" *ngIf="availableSubsectors.length > 0">
+                  <mat-label>Select a Subsector</mat-label>
+                  <mat-select formControlName="subsector">
+                    <mat-option *ngFor="let option of availableSubsectors" [value]="option">
+                      {{ option }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </ng-container>
+
+              <mat-form-field appearance="fill">
+                <mat-label>Contact Number</mat-label>
+                <input matInput formControlName="contactNumber" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="full-width" *ngIf="!isSchoolAdminAccount">
+                <mat-label>Present Address</mat-label>
+                <textarea matInput formControlName="address" rows="3"></textarea>
+              </mat-form-field>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button mat-raised-button type="button" (click)="onCancel()" [disabled]="isSaving || isUploadingAvatar">
+              Cancel
+            </button>
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="isSaving || isUploadingAvatar || accountForm.invalid">
+              {{ isSaving ? savingStatusMessage : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

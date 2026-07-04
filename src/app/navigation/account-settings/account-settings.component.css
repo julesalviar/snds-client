@@ -1,0 +1,349 @@
+.account-settings-container {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 48px;
+  background-color: #f9f9f974;
+  min-height: calc(100vh - 64px);
+}
+
+.account-settings-card {
+  width: 100%;
+  max-width: 720px;
+  padding: 8px;
+}
+
+.read-only-section,
+.avatar-section,
+.personal-details-section {
+  margin-bottom: 24px;
+}
+
+.read-only-section h3,
+.avatar-section h3,
+.personal-details-section h3 {
+  margin: 0 0 12px;
+  color: #2e7d32;
+}
+
+.read-only-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.read-only-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f5f5f5;
+}
+
+.field-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field-value {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+  word-break: break-word;
+}
+
+.email-unverified-note {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #c62828;
+}
+
+.avatar-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 200px;
+}
+
+.avatar-uploaded-indicator,
+.avatar-preview-small,
+.avatar-drop-zone {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.avatar-uploaded-indicator,
+.avatar-preview-small {
+  overflow: visible;
+}
+
+.avatar-image-frame {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-uploaded-indicator {
+  border: 2px solid #4CAF50;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+}
+
+.avatar-uploaded-image,
+.avatar-preview-img-small {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-remove-btn,
+.avatar-preview-remove-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  background-color: #f44336 !important;
+  color: white !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  transform: translate(15%, -15%);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.avatar-remove-btn:hover:not([disabled]),
+.avatar-preview-remove-btn:hover:not([disabled]) {
+  background-color: #d32f2f !important;
+  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.45);
+  transform: translate(15%, -15%) scale(1.1);
+}
+
+.avatar-remove-btn:active:not([disabled]),
+.avatar-preview-remove-btn:active:not([disabled]) {
+  background-color: #b71c1c !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translate(15%, -15%) scale(0.95);
+}
+
+.avatar-remove-btn ::ng-deep .mat-mdc-button-touch-target,
+.avatar-preview-remove-btn ::ng-deep .mat-mdc-button-touch-target {
+  width: 28px;
+  height: 28px;
+}
+
+.avatar-remove-btn mat-icon,
+.avatar-preview-remove-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: white !important;
+}
+
+.avatar-preview-small {
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+}
+
+.avatar-drop-zone {
+  overflow: hidden;
+  border-radius: 50%;
+  border: 2px dashed #4CAF50;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.avatar-drop-zone:hover {
+  background-color: #e8f5e9;
+  border-color: #45a049;
+}
+
+.avatar-drop-zone.drag-over {
+  background-color: #c8e6c9;
+  border-color: #4CAF50;
+  border-style: solid;
+  transform: scale(1.02);
+}
+
+.avatar-drop-zone-content {
+  text-align: center;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.avatar-upload-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #4CAF50;
+}
+
+.avatar-drop-text {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+}
+
+.avatar-skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.avatar-pending-hint {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.role-hint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.role-hint a {
+  color: #2e7d32;
+}
+
+.sector-field {
+  margin-bottom: 8px;
+}
+
+.sector-label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+.sector-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Skeleton loading */
+.skeleton-loading {
+  padding: 0;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 0%,
+    #f5f5f5 50%,
+    #e8e8e8 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-section {
+  margin-bottom: 28px;
+}
+
+.skeleton-section .skeleton-title {
+  height: 16px;
+  width: 160px;
+  margin-bottom: 16px;
+}
+
+.skeleton-read-only-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.skeleton-section .skeleton-field {
+  height: 56px;
+  width: 100%;
+}
+
+.skeleton-section .skeleton-field-textarea {
+  height: 88px;
+}
+
+.skeleton-section .skeleton-avatar {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+}
+
+.skeleton-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.skeleton-button {
+  width: 96px;
+  height: 36px;
+  border-radius: 4px;
+}
+
+.skeleton-button-primary {
+  width: 132px;
+}
+
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .skeleton-actions {
+    flex-direction: column-reverse;
+  }
+
+  .skeleton-button,
+  .skeleton-button-primary {
+    width: 100%;
+  }
+}

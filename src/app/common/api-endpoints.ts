@@ -19,6 +19,7 @@ export const API_ENDPOINT = {
   upload: `${environment.API_URL}/upload`,
   users: {
     profile: `${environment.API_URL}/users/profile`,
+    updateProfile: `${environment.API_URL}/users/update-profile`,
     changePassword: `${environment.API_URL}/users/change-password`,
     list: `${environment.API_URL}/users`,
     rolesSubordinates: `${environment.API_URL}/users/roles/subordinates`,
