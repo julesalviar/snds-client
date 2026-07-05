@@ -13,6 +13,8 @@ export interface VisitorCountDataDto {
 export interface ActiveVisitorCountDataDto {
   activeCount: number;
   tenantCode: string;
+  /** Present only when this heartbeat created a new session (total count incremented). */
+  visitorCount?: number;
 }
 
 export interface OnlineVisitorUserDto {
@@ -95,6 +97,7 @@ export class VisitorCountService implements OnDestroy {
   private readonly activeCountPollIntervalMs = 60_000;
   /** Aligns with server active-visitor Mongo TTL (5 min). */
   private readonly idleThresholdMs = 5 * 60_000;
+  private readonly activeSessionStorageKey = 'snds:active-visitor-session';
 
   readonly visitorCount$ = this.visitorCountSubject.asObservable();
   readonly activeVisitorCount$ = this.activeVisitorCountSubject.asObservable();
@@ -114,12 +117,12 @@ export class VisitorCountService implements OnDestroy {
         this.bumpActivity();
         const isHome = this.isHomeUrl(event.urlAfterRedirects);
         this.isHomeRouteSubject.next(isHome);
-        this.recordVisitorHitAndUpdateCount();
         const heartbeatSent = this.sendActiveHeartbeatAndUpdateCount();
         this.syncHomeActiveCount(isHome, heartbeatSent);
       });
 
     this.registerVisibilityHandling();
+    this.fetchVisitorCountIfNeeded();
     this.resumeMonitoringIntervals();
     this.syncHomeActiveCount(this.isHomeUrl(this.router.url), false);
   }
@@ -137,10 +140,9 @@ export class VisitorCountService implements OnDestroy {
     }
   }
 
-  recordVisitorHit(): Observable<VisitorCountResponse> {
-    return this.httpService.post<VisitorCountResponse>(
-      API_ENDPOINT.widget.visitorCountHit,
-      {},
+  getVisitorCount(): Observable<VisitorCountResponse> {
+    return this.httpService.get<VisitorCountResponse>(
+      API_ENDPOINT.widget.visitorCount,
     );
   }
 
@@ -218,15 +220,31 @@ export class VisitorCountService implements OnDestroy {
     });
   }
 
-  private recordVisitorHitAndUpdateCount(): void {
+  private fetchVisitorCountIfNeeded(): void {
+    if (this.visitorCountSubject.value !== null || !this.shouldSendMonitoringTraffic()) {
+      return;
+    }
+
+    this.fetchVisitorCount();
+  }
+
+  private fetchVisitorCount(): void {
     if (!this.shouldSendMonitoringTraffic()) {
       return;
     }
-    this.recordVisitorHit().subscribe({
+
+    this.getVisitorCount().subscribe({
       next: (response) => {
         this.visitorCountSubject.next(response.data.count);
       },
     });
+  }
+
+  private applyHeartbeatResponse(response: ActiveVisitorCountResponse): void {
+    this.activeVisitorCountSubject.next(response.data.activeCount);
+    if (response.data.visitorCount !== undefined) {
+      this.visitorCountSubject.next(response.data.visitorCount);
+    }
   }
 
   /**
@@ -249,9 +267,7 @@ export class VisitorCountService implements OnDestroy {
 
     this.lastActiveHeartbeatAt = now;
     this.sendActiveHeartbeat().subscribe({
-      next: (response) => {
-        this.activeVisitorCountSubject.next(response.data.activeCount);
-      },
+      next: (response) => this.applyHeartbeatResponse(response),
     });
     return true;
   }
@@ -317,6 +333,7 @@ export class VisitorCountService implements OnDestroy {
       return;
     }
 
+    this.fetchVisitorCountIfNeeded();
     this.startHeartbeatInterval();
     const heartbeatSent = this.sendActiveHeartbeatAndUpdateCount(true);
     if (this.onlineUsersPollingActive) {
@@ -390,15 +407,14 @@ export class VisitorCountService implements OnDestroy {
   }
 
   private getActiveSessionId(): string {
-    const storageKey = 'snds:active-visitor-session';
-    let sessionId = sessionStorage.getItem(storageKey);
+    let sessionId = sessionStorage.getItem(this.activeSessionStorageKey);
 
     if (!sessionId) {
       sessionId =
         typeof crypto !== 'undefined' && 'randomUUID' in crypto
           ? crypto.randomUUID()
           : `visitor-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-      sessionStorage.setItem(storageKey, sessionId);
+      sessionStorage.setItem(this.activeSessionStorageKey, sessionId);
     }
 
     return sessionId;
