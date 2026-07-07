@@ -152,6 +152,7 @@
           <button mat-menu-item [routerLink]="['/division-admin/activities']" (click)="closeMenu()">Activities</button>
           <button mat-menu-item [routerLink]="['/division-admin/school-year-locks']" (click)="closeMenu()">School year locks</button>
           <button mat-menu-item [routerLink]="['/division-admin/manage-announcements']" (click)="closeMenu()">Announcements</button>
+          <button mat-menu-item [routerLink]="['/division-admin/office/accomplishment-summary']" (click)="closeMenu()">Accomplishment Summary</button>
         </mat-menu>
       </li>
     </ng-container>
@@ -172,6 +173,7 @@
           <button mat-menu-item [routerLink]="['/office-admin/offices']" (click)="closeMenu()">Manage Office</button>
           <button mat-menu-item [routerLink]="['/office-admin/manage-fund-source']" (click)="closeMenu()">Manage Fund Source</button>
           <button *ngIf="UserType.OfficeAdmin === userActiveRole" mat-menu-item [routerLink]="['/office-admin/manage-announcements']" (click)="closeMenu()">Announcements</button>
+          <button mat-menu-item [routerLink]="['/office-admin/accomplishment-summary']" (click)="closeMenu()">Accomplishment Summary</button>
         </mat-menu>
       </li>
     </ng-container>

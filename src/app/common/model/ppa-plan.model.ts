@@ -39,3 +39,15 @@ export interface PpaPlanListResponse {
   totalItems?: number;
   total?: number;
 }
+
+export interface ClassificationSummary {
+  ppaCount: number;
+  completedCount: number;
+  percentage: number;
+}
+
+export interface DivisionAccomplishmentRow {
+  division: string;
+  displayName: string;
+  classifications: Record<string, ClassificationSummary>;
+}

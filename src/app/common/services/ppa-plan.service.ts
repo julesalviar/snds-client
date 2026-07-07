@@ -3,7 +3,16 @@ import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { API_ENDPOINT } from '../api-endpoints';
 import { HttpService } from './http.service';
-import { PpaPlan, PpaPlanListResponse } from '../model/ppa-plan.model';
+import { PpaPlan, PpaPlanListResponse, DivisionAccomplishmentRow, ClassificationSummary } from '../model/ppa-plan.model';
+
+interface AccomplishmentSummaryResponse {
+  success: boolean;
+  data: {
+    rows: DivisionAccomplishmentRow[];
+    totals: Record<string, ClassificationSummary>;
+  };
+  meta?: { timestamp: string };
+}
 
 export interface PpaPlanListParams {
   page?: number;
@@ -112,5 +121,21 @@ export class PpaPlanService {
     return this.httpService
       .delete<void>(`${API_ENDPOINT.ppaPlan}/${id}`)
       .pipe(catchError(this.httpService.handleError));
+  }
+
+  getAccomplishmentSummary(params?: { officeIds?: string[]; division?: string }): Observable<{ rows: DivisionAccomplishmentRow[]; totals: Record<string, ClassificationSummary> }> {
+    const queryParams: string[] = [];
+    if (params?.officeIds?.length) {
+      queryParams.push(`officeIds=${encodeURIComponent(params.officeIds.join(','))}`);
+    }
+    if (params?.division?.trim()) {
+      queryParams.push(`division=${encodeURIComponent(params.division.trim())}`);
+    }
+    const url = queryParams.length > 0
+      ? `${API_ENDPOINT.ppaPlanAccomplishmentSummary}?${queryParams.join('&')}`
+      : API_ENDPOINT.ppaPlanAccomplishmentSummary;
+    return this.httpService.get<AccomplishmentSummaryResponse>(url).pipe(
+      map((res) => res.data)
+    );
   }
 }
