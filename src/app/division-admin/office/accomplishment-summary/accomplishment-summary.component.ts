@@ -71,20 +71,36 @@ export class AccomplishmentSummaryComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    const userOfficeIds = this.authService.getOfficeIds();
+    const officeIds = this.authService.getOfficeIds();
+    const params = officeIds.length ? { officeIds } : undefined;
 
-    forkJoin({
-      ppas: this.ppaPlanService.getList({ limit: 1000 }),
-      offices: this.officeService.getOffices({
-        page: 1,
-        limit: 1000,
-        ...(userOfficeIds.length ? { ids: userOfficeIds } : {}),
-      }),
-    })
+    this.ppaPlanService.getAccomplishmentSummary(params)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: (result) =>
-          this.processData(result.ppas.data, result.offices.data, userOfficeIds),
+        next: ({ rows, totals }) => {
+          for (const row of rows) {
+            row.displayName = this.divisionDisplayNames[row.division] || row.division;
+          }
+
+          for (const [division, displayName] of Object.entries(this.divisionDisplayNames)) {
+            if (!rows.some((r) => r.division === division)) {
+              const classifications: Record<string, ClassificationSummary> = {};
+              for (const c of this.classifications) {
+                classifications[c] = { ppaCount: 0, completedCount: 0, percentage: 0 };
+              }
+              rows.push({ division, displayName, classifications });
+            }
+          }
+
+          rows.sort((a, b) => {
+            const aOrder = this.divisionOrder[a.division] ?? 99;
+            const bOrder = this.divisionOrder[b.division] ?? 99;
+            return aOrder - bOrder || a.division.localeCompare(b.division);
+          });
+
+          this.dataSource = rows;
+          this.totals = totals;
+        },
         error: () => {
           this.error = 'Failed to load data. Please try again later.';
         },
