@@ -19,16 +19,6 @@ import { ClassificationSummary, DivisionAccomplishmentRow } from '../../../commo
 export class AccomplishmentSummaryComponent implements OnInit {
   readonly classifications = PLAN_CLASSIFICATION;
 
-  private readonly divisionDisplayNames: Record<string, string> = {
-    'Curriculum Implementation Division': 'Curriculum Implementation Division (CID)',
-    'School Governance & Operations Division': 'School Governance & Operations Division (SGOD)',
-    'Office of the Division Superintendent': 'Office of the Division Superintendent (OSDS)',
-  };
-
-  private readonly divisionAliases: Record<string, string> = {
-    'Office of the Schools Division Superintendent': 'Office of the Division Superintendent',
-  };
-
   dataSource: DivisionAccomplishmentRow[] = [];
   totals: Record<string, ClassificationSummary> = {};
   isLoading = true;
@@ -61,24 +51,10 @@ export class AccomplishmentSummaryComponent implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: ({ rows, totals }) => {
-          for (const row of rows) {
-            const canonical = this.divisionAliases[row.division] ?? row.division;
-            row.division = canonical;
-            row.displayName = this.divisionDisplayNames[canonical] || canonical;
-          }
-
-          for (const [division, displayName] of Object.entries(this.divisionDisplayNames)) {
-            if (!rows.some((r) => r.division === division)) {
-              const classifications: Record<string, ClassificationSummary> = {};
-              for (const c of this.classifications) {
-                classifications[c] = { ppaCount: 0, completedCount: 0, percentage: 0 };
-              }
-              rows.push({ division, displayName, classifications });
-            }
-          }
-
           rows.sort((a, b) => a.division.localeCompare(b.division));
-
+          for (const row of rows) {
+            row.displayName ||= row.division;
+          }
           this.dataSource = rows;
           this.totals = totals;
         },
