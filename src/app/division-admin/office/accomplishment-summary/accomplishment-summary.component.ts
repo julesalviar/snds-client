@@ -25,12 +25,6 @@ export class AccomplishmentSummaryComponent implements OnInit {
     'Office of the Division Superintendent': 'Office of the Division Superintendent (OSDS)',
   };
 
-  private readonly divisionOrder: Record<string, number> = {
-    'Curriculum Implementation Division': 1,
-    'Office of the Division Superintendent': 2,
-    'School Governance & Operations Division': 3,
-  };
-
   private readonly divisionAliases: Record<string, string> = {
     'Office of the Schools Division Superintendent': 'Office of the Division Superintendent',
   };
@@ -83,11 +77,7 @@ export class AccomplishmentSummaryComponent implements OnInit {
             }
           }
 
-          rows.sort((a, b) => {
-            const aOrder = this.divisionOrder[a.division] ?? 99;
-            const bOrder = this.divisionOrder[b.division] ?? 99;
-            return aOrder - bOrder || a.division.localeCompare(b.division);
-          });
+          rows.sort((a, b) => a.division.localeCompare(b.division));
 
           this.dataSource = rows;
           this.totals = totals;
