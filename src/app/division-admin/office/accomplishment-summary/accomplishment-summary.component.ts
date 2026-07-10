@@ -9,7 +9,6 @@ import { PpaPlanService } from '../../../common/services/ppa-plan.service';
 import { AuthService } from '../../../auth/auth.service';
 import { PlanClassificationDisplayService } from '../../../common/services/plan-classification-display.service';
 import { ClassificationSummary, DivisionAccomplishmentRow } from '../../../common/model/ppa-plan.model';
-import {UserType} from "../../../registration/user-type.enum";
 
 @Component({
   selector: 'app-accomplishment-summary',
