@@ -9,6 +9,7 @@ import { PpaPlanService } from '../../../common/services/ppa-plan.service';
 import { AuthService } from '../../../auth/auth.service';
 import { PlanClassificationDisplayService } from '../../../common/services/plan-classification-display.service';
 import { ClassificationSummary, DivisionAccomplishmentRow } from '../../../common/model/ppa-plan.model';
+import {UserType} from "../../../registration/user-type.enum";
 
 @Component({
   selector: 'app-accomplishment-summary',
@@ -44,10 +45,7 @@ export class AccomplishmentSummaryComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    const officeIds = this.authService.getOfficeIds();
-    const params = officeIds.length ? { officeIds } : undefined;
-
-    this.ppaPlanService.getAccomplishmentSummary(params)
+    this.ppaPlanService.getAccomplishmentSummary()
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: ({ rows, totals }) => {
