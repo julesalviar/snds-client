@@ -69,6 +69,7 @@ thead th.th-sub {
   font-size: 11px;
   color: #555;
   font-weight: 600;
+  text-transform: none;
 }
 
 td.cell-division {
@@ -79,7 +80,7 @@ td.cell-division {
   text-align: left;
 }
 
-thead th:first-child {
+thead tr:first-child th:first-child {
   z-index: 4;
   background: #e8f5e9;
 }
