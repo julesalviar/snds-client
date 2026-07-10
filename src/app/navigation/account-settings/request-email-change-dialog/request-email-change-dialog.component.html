@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Request email change</h2>
+<mat-dialog-content>
+  <p class="dialog-note" *ngIf="data.usernameSameAsEmail">
+    Your username and email are the same. If approved, both will be updated to your new email address.
+  </p>
+  <p class="dialog-note" *ngIf="!data.usernameSameAsEmail">
+    If approved, both your username and email will be updated to the new email address.
+  </p>
+  <div class="fields">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Current email</mat-label>
+      <input matInput [value]="data.currentEmail" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width" *ngIf="!data.usernameSameAsEmail && data.currentUserName">
+      <mat-label>Current username</mat-label>
+      <input matInput [value]="data.currentUserName" disabled />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>New email</mat-label>
+      <input
+        matInput
+        type="email"
+        name="newEmail"
+        [(ngModel)]="newEmail"
+        placeholder="user@example.com" />
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isSubmitting">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="button"
+    (click)="onSubmit()"
+    [disabled]="isSubmitting">
+    <span *ngIf="!isSubmitting">Submit request</span>
+    <span *ngIf="isSubmitting" class="submitting">
+      <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+      Submitting…
+    </span>
+  </button>
+</mat-dialog-actions>

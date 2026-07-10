@@ -36,22 +36,109 @@
         <section class="read-only-section">
           <h3>Account Information</h3>
           <div class="read-only-grid">
-            <div *ngIf="isUsernameSameAsEmail; else separateUsernameEmail" class="read-only-field">
+            <div *ngIf="isUsernameSameAsEmail; else separateUsernameEmail" class="read-only-field read-only-field-with-action">
               <span class="field-label">Username / Email</span>
-              <span class="field-value">{{ profile.email }}</span>
+              <div class="field-value-row">
+                <span class="field-value">{{ profile.email }}</span>
+                <button
+                  mat-button
+                  color="primary"
+                  type="button"
+                  class="request-change-btn"
+                  [disabled]="!!pendingEmailChangeRequest || isLoadingPendingRequest"
+                  (click)="onRequestEmailChange()"
+                  aria-label="Request email change">
+                  <mat-icon>edit</mat-icon>
+                  Request change
+                </button>
+              </div>
             </div>
             <ng-template #separateUsernameEmail>
               <div class="read-only-field">
                 <span class="field-label">Username</span>
                 <span class="field-value">{{ profile.userName }}</span>
               </div>
-              <div class="read-only-field">
+              <div class="read-only-field read-only-field-with-action">
                 <span class="field-label">Email</span>
-                <span class="field-value">{{ profile.email }}</span>
+                <div class="field-value-row">
+                  <span class="field-value">{{ profile.email }}</span>
+                  <button
+                    mat-button
+                    color="primary"
+                    type="button"
+                    class="request-change-btn"
+                    [disabled]="!!pendingEmailChangeRequest || isLoadingPendingRequest"
+                    (click)="onRequestEmailChange()"
+                    aria-label="Request email change">
+                    <mat-icon>edit</mat-icon>
+                    Request change
+                  </button>
+                </div>
               </div>
             </ng-template>
           </div>
-          <p *ngIf="!profile.emailVerified" class="email-unverified-note">
+
+          <div *ngIf="pendingEmailChangeRequest" class="email-change-status email-change-status-pending" role="status">
+            <div class="email-change-status-icon" aria-hidden="true">
+              <mat-icon>schedule</mat-icon>
+            </div>
+            <div class="email-change-status-body">
+              <div class="email-change-status-header">
+                <span class="email-change-status-title">Email change pending</span>
+                <span class="email-change-status-meta">
+                  Requested {{ pendingEmailChangeRequest.createdAt | date:'mediumDate' }}
+                </span>
+              </div>
+              <div class="email-change-status-change">
+                <span class="email-change-from">{{ pendingEmailChangeRequest.snapshot.before.email }}</span>
+                <mat-icon class="email-change-arrow" aria-hidden="true">arrow_forward</mat-icon>
+                <span class="email-change-to">{{ pendingEmailChangeRequest.snapshot.after.email }}</span>
+              </div>
+              <p class="email-change-status-hint">
+                Waiting for division admin approval. You can cancel this request anytime.
+              </p>
+            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              color="warn"
+              class="email-change-status-action"
+              [disabled]="isCancellingRequest"
+              (click)="onCancelPendingRequest()">
+              {{ isCancellingRequest ? 'Cancelling…' : 'Cancel' }}
+            </button>
+          </div>
+
+          <div *ngIf="isEmailChangeVerificationPending" class="email-change-status email-change-status-verify" role="status">
+            <div class="email-change-status-icon" aria-hidden="true">
+              <mat-icon>mark_email_unread</mat-icon>
+            </div>
+            <div class="email-change-status-body">
+              <div class="email-change-status-header">
+                <span class="email-change-status-title">Verify your new email</span>
+              </div>
+              <p class="email-change-status-hint">
+                Your change was approved. Check
+                <strong>{{ profile.email }}</strong>
+                for a verification link to finish.
+              </p>
+              <p *ngIf="resendVerificationSuccess" class="resend-success">
+                A new verification email has been sent.
+              </p>
+              <p *ngIf="resendVerificationError" class="resend-error">{{ resendVerificationError }}</p>
+            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              color="primary"
+              class="email-change-status-action"
+              (click)="onResendVerificationEmail()"
+              [disabled]="resendVerificationBusy">
+              {{ resendVerificationBusy ? 'Sending…' : 'Resend' }}
+            </button>
+          </div>
+
+          <p *ngIf="isSignupEmailVerificationPending" class="email-unverified-note">
             Your email address is not verified. Please check your inbox for the confirmation link.
           </p>
           <p *ngIf="isSchoolAdminAccount" class="role-hint">

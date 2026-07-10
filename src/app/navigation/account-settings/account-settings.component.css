@@ -25,6 +25,180 @@
   color: #2e7d32;
 }
 
+.field-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.field-value-row .field-value {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.request-change-btn {
+  flex-shrink: 0;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 8px;
+  line-height: 28px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.request-change-btn mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+.request-change-btn ::ng-deep .mdc-button__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.email-change-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.email-change-status-pending {
+  background: #fff8e1;
+  border-color: #ffe082;
+}
+
+.email-change-status-verify {
+  background: #e3f2fd;
+  border-color: #90caf9;
+}
+
+.email-change-status-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-top: 1px;
+}
+
+.email-change-status-pending .email-change-status-icon {
+  background: #ffecb3;
+  color: #f57c00;
+}
+
+.email-change-status-verify .email-change-status-icon {
+  background: #bbdefb;
+  color: #1565c0;
+}
+
+.email-change-status-icon mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.email-change-status-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.email-change-status-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.email-change-status-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.email-change-status-meta {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.email-change-status-change {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+  font-size: 13px;
+}
+
+.email-change-from {
+  color: rgba(0, 0, 0, 0.55);
+  text-decoration: line-through;
+  word-break: break-word;
+}
+
+.email-change-to {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+  word-break: break-word;
+}
+
+.email-change-arrow {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.email-change-status-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.email-change-status-action {
+  flex-shrink: 0;
+  align-self: center;
+  height: 32px;
+  min-height: 32px;
+  line-height: 32px;
+  font-size: 12px;
+  padding: 0 12px;
+}
+
+.resend-success {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #2e7d32;
+}
+
+.resend-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #c62828;
+}
+
+@media (max-width: 600px) {
+  .email-change-status {
+    flex-wrap: wrap;
+  }
+
+  .email-change-status-action {
+    width: 100%;
+    margin-left: 44px;
+  }
+}
+
 .read-only-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

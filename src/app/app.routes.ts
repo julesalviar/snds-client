@@ -46,6 +46,9 @@ import { OfficeListComponent } from './division-admin/office/office-list.compone
 import { StakeholdersProfileComponent } from './stakeholders-profile/stakeholders-profile.component';
 import { ConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { EmailActivatedComponent } from './email-activated/email-activated.component';
+import { VerifyEmailChangeComponent } from './verify-email-change/verify-email-change.component';
+import { EmailChangeVerifiedComponent } from './email-change-verified/email-change-verified.component';
+import { ChangeRequestsComponent } from './division-admin/change-requests/change-requests.component';
 import { AccomplishmentSummaryComponent } from './division-admin/office/accomplishment-summary/accomplishment-summary.component';
 
 export const routes: Routes = [
@@ -57,6 +60,8 @@ export const routes: Routes = [
   {path: 'reset-password', component: ResetPasswordComponent},
   {path: 'confirm-email', component: ConfirmEmailComponent},
   {path: 'email-activated', component: EmailActivatedComponent},
+  {path: 'verify-email-change', component: VerifyEmailChangeComponent},
+  {path: 'email-change-verified', component: EmailChangeVerifiedComponent},
   {
     path: 'home',
     component: HomeComponent,
@@ -136,6 +141,7 @@ export const routes: Routes = [
       {path: 'reports', component: ReportsComponent}, //  Reports component
       {path: 'manage-district', component: ManageDistrictComponent},
       {path: 'manage-users', component: ManageUsersComponent},
+      {path: 'requests', component: ChangeRequestsComponent},
       {path: 'manage-schools', component: ManageSchoolsComponent},
       {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
       {path: 'activities', component: ActivityListComponent},
@@ -157,6 +163,7 @@ export const routes: Routes = [
     data: { roleType: UserType.SystemAdmin },
     children: [
       {path: 'manage-users', component: ManageUsersComponent},
+      {path: 'requests', component: ChangeRequestsComponent},
       {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
       {path: 'manage-announcements', component: ManageAnnouncementsComponent},
     ]

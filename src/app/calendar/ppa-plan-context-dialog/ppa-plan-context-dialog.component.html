@@ -85,11 +85,13 @@
   </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  @if (canEdit) {
+  @if (canDuplicate) {
     <button mat-stroked-button (click)="onDuplicate()">
       <mat-icon>content_copy</mat-icon>
       Duplicate
     </button>
+  }
+  @if (canEdit) {
     <button mat-stroked-button color="primary" (click)="onEdit()">
       <mat-icon>edit</mat-icon>
       Edit

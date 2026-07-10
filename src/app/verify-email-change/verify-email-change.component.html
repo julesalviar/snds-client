@@ -1,0 +1,15 @@
+<mat-card class="verify-email-change-card">
+  <mat-card-title>Verify new email</mat-card-title>
+
+  <div *ngIf="viewState === 'verifying'" class="centered">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Verifying your new email address…</p>
+  </div>
+
+  <div *ngIf="viewState === 'missing-token' || viewState === 'error'" class="message-block">
+    <p class="error-text">{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" type="button" (click)="goToSignIn()">
+      Go to sign in
+    </button>
+  </div>
+</mat-card>

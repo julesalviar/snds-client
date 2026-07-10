@@ -24,6 +24,10 @@ export const API_ENDPOINT = {
     list: `${environment.API_URL}/users`,
     rolesSubordinates: `${environment.API_URL}/users/roles/subordinates`,
   },
+  changeRequests: {
+    base: `${environment.API_URL}/change-requests`,
+    mine: `${environment.API_URL}/change-requests/mine`,
+  },
   userInvites: `${environment.API_URL}/user-invites`,
   engagements: `${environment.API_URL}/engagements`,
   stakeholderProfiles: `${environment.API_URL}/stakeholder-profiles`,

@@ -6,11 +6,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PpaPlan } from '../../common/model/ppa-plan.model';
 import { AuthService } from '../../auth/auth.service';
-import { UserType } from '../../registration/user-type.enum';
 import { PpaPlanService } from '../../common/services/ppa-plan.service';
 import { PlanClassificationDisplayService } from '../../common/services/plan-classification-display.service';
 import { formatDateString } from '../../common/date-utils';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
+import {
+  canActOnPpaPlan,
+  formatUserRefDisplay,
+  resolveAssignedUserIdFromPlan,
+} from '../../common/utils/ppa-plan-user-display.util';
+import { canDuplicatePpaPlan } from '../../common/utils/ppa-plan-form.util';
 
 export interface PpaPlanContextDialogData {
   plan: PpaPlan;
@@ -43,19 +48,18 @@ export class PpaPlanContextDialogComponent {
     return this.data.plan;
   }
 
-  /** Whether the current user can edit/delete: must be OfficeAdmin or ProgramHolder, and be the assigned user */
+  /** Whether the current user can edit/delete (matches list canActOnPlan). */
   get canEdit(): boolean {
-    const currentUserId = this.authService.getUserId();
-    const activeRole = this.authService.getActiveRole();
+    return canActOnPpaPlan(
+      this.authService.getActiveRole(),
+      this.authService.getUserId(),
+      resolveAssignedUserIdFromPlan(this.plan.assignedUserId),
+    );
+  }
 
-    if (activeRole !== UserType.OfficeAdmin && activeRole !== UserType.ProgramHolder) {
-      return false;
-    }
-
-    const assigned = this.plan.assignedUserId;
-    if (!currentUserId || assigned == null) return false;
-    const assignedId = typeof assigned === 'string' ? assigned : (assigned as unknown as { _id?: string })?._id;
-    return !!assignedId && currentUserId === assignedId;
+  /** Duplicate is program holder only (matches list showDuplicateButton). */
+  get canDuplicate(): boolean {
+    return canDuplicatePpaPlan(this.authService.getActiveRole(), this.canEdit);
   }
 
   formatDate(value: string | undefined): string {
@@ -82,10 +86,7 @@ export class PpaPlanContextDialogComponent {
 
   /** Display user from id string or populated object */
   getUserDisplay(value: string | { _id?: string; name?: string; userName?: string; email?: string } | null | undefined): string {
-    if (value == null) return '—';
-    if (typeof value === 'string') return value || '—';
-    const u = value as { name?: string; userName?: string; email?: string; _id?: string };
-    return u?.name || u?.userName || u?.email || u?._id || '—';
+    return formatUserRefDisplay(value);
   }
 
   /** Label for report link (e.g. "Report 1" or "Download" when single). */

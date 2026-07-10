@@ -1,0 +1,22 @@
+.verify-email-change-card {
+  max-width: 480px;
+  margin: 48px auto;
+  padding: 16px;
+}
+
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0;
+}
+
+.message-block {
+  padding: 16px 0;
+}
+
+.error-text {
+  color: #c62828;
+  margin-bottom: 16px;
+}

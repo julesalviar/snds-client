@@ -4,6 +4,7 @@ export interface AccountProfile {
   roles: string[];
   activeRole: string;
   emailVerified?: boolean;
+  emailVerificationPurpose?: 'signup' | 'email_change';
   name?: string;
   address?: string;
   contactNumber?: string;

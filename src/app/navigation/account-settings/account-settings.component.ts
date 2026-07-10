@@ -3,6 +3,7 @@ import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
+import {MatDialog} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
@@ -12,8 +13,11 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {Router, RouterModule} from '@angular/router';
 import {Subject, catchError, of, switchMap, takeUntil, throwError} from 'rxjs';
 import {AuthService} from '../../auth/auth.service';
+import {EmailConfirmationService} from '../../auth/email-confirmation.service';
 import {AccountProfile, UpdateMyProfilePayload} from '../../common/model/account-profile.model';
+import {ChangeRequest, ChangeRequestStatus} from '../../common/model/change-request.model';
 import {API_ENDPOINT} from '../../common/api-endpoints';
+import {ChangeRequestService} from '../../common/services/change-request.service';
 import {HttpService} from '../../common/services/http.service';
 import {NavigationService} from '../../common/services/navigation.service';
 import {ReferenceDataService} from '../../common/services/reference-data.service';
@@ -24,6 +28,10 @@ import {
   SECTOR_REF_DATA_KEY,
 } from '../../common/utils/sector-reference-data.util';
 import {UserType} from '../../registration/user-type.enum';
+import {
+  RequestEmailChangeDialogComponent,
+  RequestEmailChangeDialogData,
+} from './request-email-change-dialog/request-email-change-dialog.component';
 
 @Component({
   selector: 'app-account-settings',
@@ -69,6 +77,13 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
   isDraggingAvatar = false;
   isUploadingAvatar = false;
 
+  pendingEmailChangeRequest: ChangeRequest | null = null;
+  isLoadingPendingRequest = false;
+  isCancellingRequest = false;
+  resendVerificationBusy = false;
+  resendVerificationSuccess = false;
+  resendVerificationError: string | null = null;
+
   get isSchoolAdminAccount(): boolean {
     return this.profile?.activeRole === UserType.SchoolAdmin;
   }
@@ -87,6 +102,22 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
     return this.profile?.activeRole === UserType.StakeHolder ? 'Logo' : 'Avatar';
   }
 
+  get isEmailChangeVerificationPending(): boolean {
+    return (
+      !!this.profile &&
+      !this.profile.emailVerified &&
+      this.profile.emailVerificationPurpose === 'email_change'
+    );
+  }
+
+  get isSignupEmailVerificationPending(): boolean {
+    return (
+      !!this.profile &&
+      !this.profile.emailVerified &&
+      this.profile.emailVerificationPurpose !== 'email_change'
+    );
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
@@ -96,6 +127,9 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
     private readonly navigationService: NavigationService,
     private readonly router: Router,
     private readonly snackBar: MatSnackBar,
+    private readonly dialog: MatDialog,
+    private readonly changeRequestService: ChangeRequestService,
+    private readonly emailConfirmationService: EmailConfirmationService,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -200,6 +234,74 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  onRequestEmailChange(): void {
+    if (!this.profile || this.pendingEmailChangeRequest) {
+      return;
+    }
+
+    const data: RequestEmailChangeDialogData = {
+      currentEmail: this.profile.email,
+      currentUserName: this.profile.userName,
+      usernameSameAsEmail: this.isUsernameSameAsEmail,
+    };
+
+    this.dialog
+      .open(RequestEmailChangeDialogComponent, { width: '480px', data })
+      .afterClosed()
+      .subscribe((submitted) => {
+        if (submitted) {
+          this.loadPendingEmailChangeRequest();
+        }
+      });
+  }
+
+  onCancelPendingRequest(): void {
+    if (!this.pendingEmailChangeRequest || this.isCancellingRequest) {
+      return;
+    }
+
+    this.isCancellingRequest = true;
+    this.changeRequestService
+      .cancelRequest(this.pendingEmailChangeRequest._id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.pendingEmailChangeRequest = null;
+          this.isCancellingRequest = false;
+          this.showSuccess('Email change request cancelled.');
+        },
+        error: (err) => {
+          this.isCancellingRequest = false;
+          this.showError(err?.error?.message ?? 'Failed to cancel request.');
+        },
+      });
+  }
+
+  onResendVerificationEmail(): void {
+    const email = this.profile?.email?.trim();
+    if (!email || this.resendVerificationBusy) {
+      return;
+    }
+
+    this.resendVerificationBusy = true;
+    this.resendVerificationSuccess = false;
+    this.resendVerificationError = null;
+
+    this.emailConfirmationService.resendConfirmationEmail(email).subscribe({
+      next: () => {
+        this.resendVerificationBusy = false;
+        this.resendVerificationSuccess = true;
+      },
+      error: (err) => {
+        this.resendVerificationBusy = false;
+        const body = err?.error?.message;
+        this.resendVerificationError =
+          (Array.isArray(body) ? body.join(' ') : typeof body === 'string' ? body : null) ||
+          'Failed to resend verification email.';
+      },
+    });
+  }
+
   onAvatarDragOver(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
@@ -280,12 +382,30 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
         }
 
         this.isLoading = false;
+        this.loadPendingEmailChangeRequest();
       },
       error: () => {
         this.isLoading = false;
         this.showError('Failed to load account settings.');
       },
     });
+  }
+
+  private loadPendingEmailChangeRequest(): void {
+    this.isLoadingPendingRequest = true;
+    this.changeRequestService
+      .getMyRequests({ status: ChangeRequestStatus.PENDING, limit: 1 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.pendingEmailChangeRequest = response.data?.[0] ?? null;
+          this.isLoadingPendingRequest = false;
+        },
+        error: () => {
+          this.pendingEmailChangeRequest = null;
+          this.isLoadingPendingRequest = false;
+        },
+      });
   }
 
   private uploadAvatarAndGetUrl() {
