@@ -35,6 +35,13 @@ import { PLAN_PARTICIPANT_OPTIONS } from '../../common/enums/plan-participant.en
 import { TIMELINESS } from '../../common/enums/timeliness.enum';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { UserListItem } from '../../registration/user.model';
+import {
+  getPpaPlansListRoute,
+  normalizeUserIdFromRef,
+  resolveAssignedUserIdForFormLoad,
+  resolveAssignedUserIdForSave,
+  resolveStakeholderUserIdForSave,
+} from '../../common/utils/ppa-plan-form.util';
 
 interface StakeholderSearchOption {
   _id: string;
@@ -440,10 +447,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   }
 
   private normalizeUserId(value: string | UserListItem | null | undefined): string {
-    if (value == null) return '';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'object' && value !== null && '_id' in value) return (value as UserListItem)._id ?? '';
-    return '';
+    return normalizeUserIdFromRef(value);
   }
 
   /** Used by mat-autocomplete displayWith; handles both id string and populated user object from API. */
@@ -608,7 +612,10 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       : (typeof implEnd === 'string' ? implEnd.trim().substring(0, 10) : '') || '';
     const hasReportFile = !!this.selectedReportFile;
 
-    const buildPayload = (reportUrls: string[]): PpaPlan => ({
+    const buildPayload = (reportUrls: string[]): PpaPlan => {
+      const stakeholderId = this.normalizeStakeholderUserId(raw.stakeholderUserId);
+      const assignedUserId = this.resolveAssignedUserIdForPayload(raw.assignedUserId);
+      return {
       kra: raw.kra,
       title: raw.title,
       activity: raw.activity,
@@ -623,8 +630,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       participants: Array.isArray(raw.participants) && raw.participants.length > 0 ? raw.participants : undefined,
       supportNeed: raw.supportNeed || undefined,
       supportReceivedValue: raw.supportReceivedValue ?? undefined,
-      stakeholderUserId: this.normalizeStakeholderUserId(raw.stakeholderUserId),
-      assignedUserId: this.resolveAssignedUserIdForPayload(raw.assignedUserId),
+      ...(resolveStakeholderUserIdForSave(stakeholderId, this.isEdit)),
+      ...(assignedUserId ? { assignedUserId } : {}),
       officeId: this.resolveOfficeIdForPayload(raw.officeId) || undefined,
       venue: raw.venue || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
@@ -634,7 +641,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       reportUrls: reportUrls.length > 0 ? reportUrls : undefined,
       isDedp: raw.isDedp ?? true,
       isPublic: raw.isPublic ?? true,
-    });
+    };
+    };
 
     this.isSaving = true;
 
@@ -660,7 +668,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
         if (this.isDialogMode && this.dialogRef) {
           this.dialogRef.close(true);
         } else {
-          this.router.navigate(['/division-admin', 'ppa-plan']);
+          this.router.navigate(this.getPpaPlansListRoute());
         }
       },
       error: (err) => {
@@ -776,8 +784,12 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     if (this.isDialogMode && this.dialogRef) {
       this.dialogRef.close();
     } else {
-      this.router.navigate(['/division-admin', 'ppa-plan']);
+      this.router.navigate(this.getPpaPlansListRoute());
     }
+  }
+
+  private getPpaPlansListRoute(): string[] {
+    return getPpaPlansListRoute(this.authService.getActiveRole());
   }
 
   /** Display name only for stakeholder (no email). */
@@ -805,22 +817,19 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   private resolveAssignedUserIdForForm(
     value: string | UserListItem | null | undefined,
   ): string {
-    const id = this.normalizeUserId(value);
-    if (!id) return this.authService.getUserId() ?? '';
-    const wasPopulated =
-      typeof value === 'object' && value !== null && '_id' in value;
-    if (wasPopulated) return id;
-    return this.authService.getUserId() ?? '';
+    return resolveAssignedUserIdForFormLoad(value, this.authService.getUserId());
   }
 
   /** Save: send form assignee id; on create fall back to current user when empty. */
   private resolveAssignedUserIdForPayload(
     raw: string | UserListItem | null | undefined,
   ): string | undefined {
-    const id = this.normalizeUserId(raw);
-    if (id) return id;
-    if (!this.isEdit) return this.authService.getUserId() || undefined;
-    return undefined;
+    return resolveAssignedUserIdForSave(
+      raw,
+      this.isEdit,
+      this.authService.getUserId(),
+      this.authService.getActiveRole(),
+    );
   }
 
   private showSuccess(message: string): void {

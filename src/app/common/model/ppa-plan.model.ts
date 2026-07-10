@@ -18,7 +18,7 @@ export interface PpaPlan {
   participants?: string[];
   supportNeed?: string;
   supportReceivedValue?: number;
-  stakeholderUserId: string;
+  stakeholderUserId?: string | null;
   assignedUserId?: string | User;
   officeId?: string | Office;
   amountUtilized?: number;

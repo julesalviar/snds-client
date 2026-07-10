@@ -34,6 +34,10 @@ import {
 } from '../../common/date-utils';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
 import { PpaPlanFormComponent } from './ppa-plan-form.component';
+import {
+  canActOnPpaPlan,
+  formatUserRefDisplay,
+} from '../../common/utils/ppa-plan-user-display.util';
 
 const COLUMN_STORAGE_KEY = 'ppa-plan-table-columns';
 
@@ -95,13 +99,11 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
 
   /** True if action buttons (Edit, Delete, Duplicate) should be enabled for this row. ProgramHolder: only when assigned to current user; OfficeAdmin: always. */
   canActOnPlan(row: PpaPlan): boolean {
-    if (this.userActiveRole === UserType.OfficeAdmin) return true;
-    if (this.userActiveRole === UserType.ProgramHolder) {
-      const assignedId = this.getAssignedUserId(row);
-      const currentId = this.authService.getUserId();
-      return !!(assignedId && currentId && assignedId === currentId);
-    }
-    return false;
+    return canActOnPpaPlan(
+      this.userActiveRole,
+      this.authService.getUserId(),
+      this.getAssignedUserId(row),
+    );
   }
 
   /** Resolve assignedUserId from row (string or populated User object). */
@@ -526,11 +528,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
 
   /** Display assignee name from assignedUserId (string or populated User object). */
   getAssigneeDisplay(row: PpaPlan): string {
-    const v = row.assignedUserId;
-    if (v == null) return '—';
-    if (typeof v === 'string') return v || '—';
-    const u = v as { name?: string; userName?: string; email?: string; _id?: string };
-    return u?.name || u?.userName || u?.email || u?._id || '—';
+    return formatUserRefDisplay(row.assignedUserId);
   }
 
   /** Display stakeholder name only (no email) from either id string or populated user object from API. */
@@ -542,10 +540,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   }
 
   getStakeholderDisplay(stakeholderUserId: string | { _id?: string; name?: string; userName?: string; email?: string } | null | undefined): string {
-    if (stakeholderUserId == null) return '—';
-    if (typeof stakeholderUserId === 'string') return stakeholderUserId || '—';
-    const u = stakeholderUserId as { name?: string; userName?: string; email?: string; _id?: string };
-    return u?.name || u?.userName || u?.email || u?._id || '—';
+    return formatUserRefDisplay(stakeholderUserId);
   }
 
   getVariance(row: PpaPlan) {
