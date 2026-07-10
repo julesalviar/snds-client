@@ -44,10 +44,7 @@ export class AccomplishmentSummaryComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    const officeIds = this.authService.getOfficeIds();
-    const params = officeIds.length ? { officeIds } : undefined;
-
-    this.ppaPlanService.getAccomplishmentSummary(params)
+    this.ppaPlanService.getAccomplishmentSummary()
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: ({ rows, totals }) => {
