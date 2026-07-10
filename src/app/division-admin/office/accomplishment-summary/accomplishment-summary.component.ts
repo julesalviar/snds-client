@@ -27,8 +27,12 @@ export class AccomplishmentSummaryComponent implements OnInit {
 
   private readonly divisionOrder: Record<string, number> = {
     'Curriculum Implementation Division': 1,
-    'School Governance & Operations Division': 2,
-    'Office of the Division Superintendent': 3,
+    'Office of the Division Superintendent': 2,
+    'School Governance & Operations Division': 3,
+  };
+
+  private readonly divisionAliases: Record<string, string> = {
+    'Office of the Schools Division Superintendent': 'Office of the Division Superintendent',
   };
 
   dataSource: DivisionAccomplishmentRow[] = [];
@@ -64,7 +68,9 @@ export class AccomplishmentSummaryComponent implements OnInit {
       .subscribe({
         next: ({ rows, totals }) => {
           for (const row of rows) {
-            row.displayName = this.divisionDisplayNames[row.division] || row.division;
+            const canonical = this.divisionAliases[row.division] ?? row.division;
+            row.division = canonical;
+            row.displayName = this.divisionDisplayNames[canonical] || canonical;
           }
 
           for (const [division, displayName] of Object.entries(this.divisionDisplayNames)) {
