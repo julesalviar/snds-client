@@ -20,6 +20,7 @@ import { VisitorCountService } from '../common/services/visitor-count.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DecimalPipe } from '@angular/common';
 import { AIP_STATUSES } from '../common/enums/aip-status.enum';
+import { ChangeRequestService } from '../common/services/change-request.service';
 
 function createHomeState(userRole: string | undefined): HomeState {
   const aipStatusStats = new Map();
@@ -37,6 +38,7 @@ function createHomeState(userRole: string | undefined): HomeState {
       upcomingPlans: false,
       partnershipActivities: false,
       resourcePartnerBreakdown: false,
+      pendingChangeRequests: false,
     },
     name: 'Test User',
     userRole,
@@ -52,6 +54,8 @@ function createHomeState(userRole: string | undefined): HomeState {
     totalAips: 0,
     upcomingPlans: [],
     partnershipActivities: [],
+    pendingChangeRequests: [],
+    pendingChangeRequestsTotal: 0,
     resourceGenerationBreakdown: [],
     partnersBreakdown: [],
     resourcePartnerSchoolYear: '2025-2026',
@@ -76,6 +80,9 @@ function createHomeState(userRole: string | undefined): HomeState {
       userRole === UserType.OfficeAdmin ||
       userRole === UserType.OfficeAdminAssistant ||
       userRole === UserType.ProgramHolder,
+    showPendingRequests:
+      userRole === UserType.DivisionAdmin ||
+      userRole === UserType.SystemAdmin,
     mountOnlineVisitorWidget: false,
     isSchoolAdminRole: userRole === UserType.SchoolAdmin,
     isDivisionAdminRole: userRole === UserType.DivisionAdmin,
@@ -161,6 +168,16 @@ describe('HomeComponent', () => {
           },
         },
         { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(undefined) }) } },
+        {
+          provide: ChangeRequestService,
+          useValue: {
+            getRequests: () =>
+              of({
+                data: [],
+                meta: { count: 0, totalItems: 0, currentPage: 1, totalPages: 0 },
+              }),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -204,6 +221,27 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-visitor-counter-widget')).toBeNull();
+  });
+
+  it('shows the pending requests widget for division admin', () => {
+    homeStateSubject.next(createHomeState(UserType.DivisionAdmin));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.pending-requests-widget')).not.toBeNull();
+  });
+
+  it('shows the pending requests widget for system admin', () => {
+    homeStateSubject.next(createHomeState(UserType.SystemAdmin));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.pending-requests-widget')).not.toBeNull();
+  });
+
+  it('hides the pending requests widget for school admin', () => {
+    homeStateSubject.next(createHomeState(UserType.SchoolAdmin));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.pending-requests-widget')).toBeNull();
   });
 
   it('maps contribution counts onto the tree without fetching all school needs', () => {

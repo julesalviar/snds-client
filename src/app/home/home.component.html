@@ -261,6 +261,80 @@
             </div>
           </aside>
         </div>
+
+        <aside *ngIf="state.showPendingRequests" class="pending-requests-widget">
+          <div class="home-widget-header-row">
+            <h3 class="pending-requests-title">
+              <mat-icon class="pending-requests-icon">pending_actions</mat-icon>
+              Pending Requests
+              <span *ngIf="state.pendingChangeRequestsTotal > 0" class="pending-requests-count">({{ state.pendingChangeRequestsTotal }})</span>
+            </h3>
+            <button
+              mat-icon-button
+              type="button"
+              class="home-widget-toggle-btn"
+              [matTooltip]="homeWidgetToggleTooltip('pendingRequests')"
+              matTooltipPosition="left"
+              [matTooltipShowDelay]="280"
+              (click)="toggleHomeWidget('pendingRequests', $event)"
+              [attr.aria-expanded]="isHomeWidgetExpanded('pendingRequests')"
+              aria-label="Show or hide pending requests">
+              <mat-icon>{{ isHomeWidgetExpanded('pendingRequests') ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+          <div
+            class="home-widget-collapsible-body"
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('pendingRequests')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('pendingRequests')">
+          @if (state.loading.pendingChangeRequests) {
+            <div class="pending-requests-skeleton" aria-hidden="true">
+              @for (_ of [1,2,3,4,5]; track $index) {
+                <div class="skeleton skeleton-pending-request-row"></div>
+              }
+            </div>
+          } @else if (state.pendingChangeRequests.length === 0) {
+            <p class="pending-requests-empty">No pending requests</p>
+          } @else {
+            <div class="pending-requests-table-wrap">
+              <table class="pending-requests-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Requestor</th>
+                    <th scope="col">Current email</th>
+                    <th scope="col">New email</th>
+                    <th scope="col">Requested</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (request of state.pendingChangeRequests; track trackByChangeRequest($index, request)) {
+                    <tr>
+                      <td class="col-type">
+                        <mat-icon
+                          [matTooltip]="getChangeRequestTypeLabel(request.type)"
+                          [attr.aria-label]="getChangeRequestTypeLabel(request.type)">
+                          {{ getChangeRequestTypeIcon(request.type) }}
+                        </mat-icon>
+                      </td>
+                      <td class="col-requestor">
+                        <span class="pending-request-requestor-name">{{ getChangeRequestRequestorName(request) }}</span>
+                        <span class="pending-request-requestor-email">{{ getChangeRequestRequestorEmail(request) }}</span>
+                      </td>
+                      <td class="col-from-email">{{ request.snapshot.before.email }}</td>
+                      <td class="col-to-email">{{ request.snapshot.after.email }}</td>
+                      <td class="col-requested">{{ formatChangeRequestDate(request.createdAt) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          <a *ngIf="getPendingRequestsListRoute(state)"
+             [routerLink]="getPendingRequestsListRoute(state)!"
+             class="pending-requests-view-all">View all requests</a>
+          </div>
+        </aside>
+
         <aside *ngIf="state.isDivisionAdminRole" class="resource-partner-breakdown-widget">
           <div class="home-widget-header-row">
             <h3 class="resource-partner-breakdown-title">

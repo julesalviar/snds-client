@@ -140,7 +140,8 @@ h4 {
 
 .home-widget-header-row .resource-partner-breakdown-title,
 .home-widget-header-row .partnership-activities-title,
-.home-widget-header-row .upcoming-events-title {
+.home-widget-header-row .upcoming-events-title,
+.home-widget-header-row .pending-requests-title {
   margin-bottom: 0;
   flex: 1;
   min-width: 0;
@@ -209,6 +210,7 @@ h4 {
 .home-compact .resource-partner-breakdown-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .partnership-activities-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .upcoming-events-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
+.home-compact .pending-requests-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .ppa-features-section:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .tree-section:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row {
   margin-bottom: 0;
@@ -1580,6 +1582,178 @@ span {
   }
 }
 
+/* ----- Pending requests (division admin, system admin) ----- */
+.pending-requests-widget {
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.pending-requests-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.pending-requests-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.pending-requests-count {
+  font-weight: 500;
+  color: #666;
+  font-size: 13px;
+}
+
+.pending-requests-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.skeleton-pending-request-row {
+  height: 36px;
+  border-radius: 4px;
+}
+
+.pending-requests-empty {
+  color: #666;
+  font-size: 13px;
+  padding: 12px 0;
+  margin: 0 0 4px 0;
+}
+
+.pending-requests-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pending-requests-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #333;
+}
+
+.pending-requests-table thead th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #555;
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.pending-requests-table tbody td {
+  padding: 10px 10px 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  vertical-align: top;
+  line-height: 1.35;
+}
+
+.pending-requests-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pending-requests-table .col-type {
+  width: 40px;
+  padding-right: 4px;
+}
+
+.pending-requests-table .col-type mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #28a745;
+  vertical-align: middle;
+}
+
+.pending-requests-table .col-requestor {
+  min-width: 120px;
+  max-width: 180px;
+}
+
+.pending-request-requestor-name {
+  display: block;
+  font-weight: 500;
+}
+
+.pending-request-requestor-email {
+  display: block;
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.pending-requests-table .col-from-email,
+.pending-requests-table .col-to-email {
+  min-width: 120px;
+  max-width: 200px;
+  word-break: break-word;
+}
+
+.pending-requests-table .col-to-email {
+  font-weight: 500;
+}
+
+.pending-requests-table .col-requested {
+  white-space: nowrap;
+}
+
+.pending-requests-view-all {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #28a745;
+  text-decoration: none;
+}
+
+.pending-requests-view-all:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .pending-requests-widget {
+    padding: 14px;
+  }
+
+  .pending-requests-title {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pending-requests-widget {
+    padding: 12px;
+  }
+
+  .pending-requests-title {
+    font-size: 13px;
+  }
+
+  .pending-requests-table {
+    font-size: 12px;
+    min-width: 480px;
+  }
+}
+
 /* ----- Compact home layout (denser widgets & spacing) ----- */
 .container.home-compact {
   gap: 12px;
@@ -1635,7 +1809,8 @@ span {
 .home-compact .home-widget-icon,
 .home-compact .resource-partner-breakdown-icon,
 .home-compact .upcoming-events-icon,
-.home-compact .partnership-activities-icon {
+.home-compact .partnership-activities-icon,
+.home-compact .pending-requests-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;
@@ -1753,19 +1928,22 @@ span {
 }
 
 .home-compact .upcoming-events-widget,
-.home-compact .partnership-activities-widget {
+.home-compact .partnership-activities-widget,
+.home-compact .pending-requests-widget {
   padding: 9px;
 }
 
 .home-compact .upcoming-events-title,
-.home-compact .partnership-activities-title {
+.home-compact .partnership-activities-title,
+.home-compact .pending-requests-title {
   font-size: 13px;
   margin: 0;
   line-height: 1.2;
 }
 
 .home-compact .upcoming-events-skeleton,
-.home-compact .partnership-activities-skeleton {
+.home-compact .partnership-activities-skeleton,
+.home-compact .pending-requests-skeleton {
   gap: 6px;
   margin-bottom: 8px;
 }
@@ -1775,7 +1953,8 @@ span {
 }
 
 .home-compact .upcoming-events-empty,
-.home-compact .partnership-activities-empty {
+.home-compact .partnership-activities-empty,
+.home-compact .pending-requests-empty {
   padding: 8px 0;
   font-size: 12px;
 }
@@ -1827,6 +2006,10 @@ span {
   margin-bottom: 8px;
 }
 
+.home-compact .pending-requests-table-wrap {
+  margin-bottom: 8px;
+}
+
 .home-compact .partnership-activities-table thead th {
   padding: 6px 8px 6px 0;
   font-size: 10px;
@@ -1837,8 +2020,19 @@ span {
   font-size: 12px;
 }
 
+.home-compact .pending-requests-table thead th {
+  padding: 6px 8px 6px 0;
+  font-size: 10px;
+}
+
+.home-compact .pending-requests-table tbody td {
+  padding: 7px 8px 7px 0;
+  font-size: 12px;
+}
+
 .home-compact .partnership-activities-view-all,
-.home-compact .upcoming-events-view-all {
+.home-compact .upcoming-events-view-all,
+.home-compact .pending-requests-view-all {
   font-size: 12px;
 }
 
@@ -1851,6 +2045,7 @@ span {
   .home-compact .home-widget,
   .home-compact .upcoming-events-widget,
   .home-compact .partnership-activities-widget,
+  .home-compact .pending-requests-widget,
   .home-compact .resource-partner-breakdown-widget {
     padding: 10px;
   }
@@ -1898,6 +2093,7 @@ span {
   .home-compact .home-widget,
   .home-compact .upcoming-events-widget,
   .home-compact .partnership-activities-widget,
+  .home-compact .pending-requests-widget,
   .home-compact .resource-partner-breakdown-widget {
     padding: 9px;
   }

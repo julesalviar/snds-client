@@ -50,7 +50,14 @@ import {
 } from '../common/services/widget.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
-import { formatDateString, formatTimeString } from '../common/date-utils';
+import { formatDateString, formatDateTimeString, formatTimeString } from '../common/date-utils';
+import { ChangeRequestService } from '../common/services/change-request.service';
+import {
+  ChangeRequest,
+  ChangeRequestStatus,
+  getChangeRequestTypeIcon,
+  getChangeRequestTypeLabel,
+} from '../common/model/change-request.model';
 import { UserListItem } from '../registration/user.model';
 import { pickRandomMaterialColors } from '../common/utils/material-chart-colors';
 import { SchoolYearWidgetFilterComponent } from '../common/components/school-year-widget-filter/school-year-widget-filter.component';
@@ -91,6 +98,7 @@ interface HomeLoadingState {
   partnershipActivities: boolean;
   /** Division-admin Resource & Partner breakdown pies (backend). */
   resourcePartnerBreakdown: boolean;
+  pendingChangeRequests: boolean;
 }
 
 /** Full home view state – single source for template; use with async pipe. */
@@ -126,6 +134,9 @@ export interface HomeState {
   showVisitorCounter: boolean;
   showPartnershipActivities: boolean;
   showUpcomingEvents: boolean;
+  showPendingRequests: boolean;
+  pendingChangeRequests: ChangeRequest[];
+  pendingChangeRequestsTotal: number;
   /** Deferred mount for online-users visitor panel. */
   mountOnlineVisitorWidget: boolean;
   isSchoolAdminRole: boolean;
@@ -138,7 +149,8 @@ type HomeLoaderId =
   | 'schoolNeeds'
   | 'aipStats'
   | 'upcomingPlans'
-  | 'partnershipActivities';
+  | 'partnershipActivities'
+  | 'pendingChangeRequests';
 
 type HomeWidgetId =
   | 'ppaFeatures'
@@ -147,7 +159,8 @@ type HomeWidgetId =
   | 'ppaImplementation'
   | 'resourcePartner'
   | 'partnershipActivities'
-  | 'upcomingEvents';
+  | 'upcomingEvents'
+  | 'pendingRequests';
 
 @Component({
   selector: 'app-home',
@@ -176,6 +189,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   protected readonly UserType = UserType;
   protected readonly AIP_STATUSES = AIP_STATUSES;
+  protected readonly getChangeRequestTypeIcon = getChangeRequestTypeIcon;
+  protected readonly getChangeRequestTypeLabel = getChangeRequestTypeLabel;
   /** School-year options for home widget filters (recomputed so rollover stays correct). */
   protected get schoolYearWidgetOptions(): readonly string[] {
     return getSchoolYearOptions();
@@ -190,6 +205,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     resourcePartner: true,
     partnershipActivities: true,
     upcomingEvents: true,
+    pendingRequests: true,
   };
 
   private resourceBreakdownChart?: EChartsType;
@@ -223,6 +239,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly announcementService: AnnouncementService,
     private readonly announcementDismissalService: AnnouncementDismissalService,
     private readonly dialog: MatDialog,
+    private readonly changeRequestService: ChangeRequestService,
     private readonly cdr: ChangeDetectorRef,
   ) {
     const initial = this.getInitialState();
@@ -327,6 +344,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         userRole === UserType.OfficeAdmin ||
         userRole === UserType.OfficeAdminAssistant ||
         userRole === UserType.ProgramHolder,
+      showPendingRequests:
+        userRole === UserType.DivisionAdmin ||
+        userRole === UserType.SystemAdmin,
       isSchoolAdminRole: userRole === UserType.SchoolAdmin,
       isDivisionAdminRole: userRole === UserType.DivisionAdmin,
       mountOnlineVisitorWidget: state.mountOnlineVisitorWidget ?? false,
@@ -393,6 +413,14 @@ export class HomeComponent implements OnInit, OnDestroy {
           ...current,
           loading,
           partnershipActivities: loaded.partnershipActivities,
+        };
+      case 'pendingChangeRequests':
+        loading.pendingChangeRequests = loaded.loading.pendingChangeRequests;
+        return {
+          ...current,
+          loading,
+          pendingChangeRequests: loaded.pendingChangeRequests,
+          pendingChangeRequestsTotal: loaded.pendingChangeRequestsTotal,
         };
       default:
         return current;
@@ -462,6 +490,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       aipStatusPercentageDisplays.set(s, '0');
     });
     const isDivisionAdmin = userRole === UserType.DivisionAdmin;
+    const isPendingRequestsRole =
+      userRole === UserType.DivisionAdmin || userRole === UserType.SystemAdmin;
     const base: HomeState = {
       loading: {
         internalRefData: true,
@@ -470,6 +500,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         upcomingPlans: true,
         partnershipActivities: true,
         resourcePartnerBreakdown: isDivisionAdmin,
+        pendingChangeRequests: isPendingRequestsRole,
       },
       name,
       userRole,
@@ -485,6 +516,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       totalAips: 0,
       upcomingPlans: [],
       partnershipActivities: [],
+      pendingChangeRequests: [],
+      pendingChangeRequestsTotal: 0,
       resourceGenerationBreakdown: [],
       partnersBreakdown: [],
       resourcePartnerSchoolYear: getCurrentSchoolYear(),
@@ -495,6 +528,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       showVisitorCounter: false,
       showPartnershipActivities: false,
       showUpcomingEvents: false,
+      showPendingRequests: false,
       mountOnlineVisitorWidget: false,
       isSchoolAdminRole: false,
       isDivisionAdminRole: false,
@@ -514,6 +548,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         { id: 'aipStats', obs: this.loadAipStatsIfNeeded$(initial) },
         { id: 'upcomingPlans', obs: this.loadUpcomingPlansIfNeeded$(initial) },
         { id: 'partnershipActivities', obs: this.loadPartnershipActivitiesIfNeeded$(initial) },
+        { id: 'pendingChangeRequests', obs: this.loadPendingChangeRequestsIfNeeded$(initial) },
       ];
 
       return merge(
@@ -1018,6 +1053,31 @@ export class HomeComponent implements OnInit, OnDestroy {
       );
   }
 
+  private loadPendingChangeRequestsIfNeeded$(state: HomeState): Observable<HomeState> {
+    if (!state.showPendingRequests) {
+      return of({ ...state, loading: { ...state.loading, pendingChangeRequests: false } });
+    }
+    return this.changeRequestService
+      .getRequests({ status: ChangeRequestStatus.PENDING, limit: 10 })
+      .pipe(
+        map((res) => ({
+          ...state,
+          loading: { ...state.loading, pendingChangeRequests: false },
+          pendingChangeRequests: res.data ?? [],
+          pendingChangeRequestsTotal: res.meta?.totalItems ?? 0,
+        })),
+        catchError((err) => {
+          console.error('Error loading pending change requests:', err);
+          return of({
+            ...state,
+            loading: { ...state.loading, pendingChangeRequests: false },
+            pendingChangeRequests: [],
+            pendingChangeRequestsTotal: 0,
+          });
+        }),
+      );
+  }
+
   canShowVisitorCounterWidget(state: HomeState): boolean {
     return canShowHomeVisitorCounterWidget(state.userRole);
   }
@@ -1141,6 +1201,32 @@ export class HomeComponent implements OnInit, OnDestroy {
     return plan._id ?? `${plan.title ?? ''}-${_index}`;
   }
 
+  trackByChangeRequest(_index: number, request: ChangeRequest): string {
+    return request._id ?? `${request.type}-${_index}`;
+  }
+
+  getPendingRequestsListRoute(state: HomeState): string | null {
+    if (state.userRole === UserType.DivisionAdmin) {
+      return '/division-admin/requests';
+    }
+    if (state.userRole === UserType.SystemAdmin) {
+      return '/system-admin/requests';
+    }
+    return null;
+  }
+
+  getChangeRequestRequestorName(row: ChangeRequest): string {
+    return row.requestor?.name?.trim() || row.requestor?.userName || '—';
+  }
+
+  getChangeRequestRequestorEmail(row: ChangeRequest): string {
+    return row.requestor?.email || row.snapshot.before.email || '—';
+  }
+
+  formatChangeRequestDate(value?: string): string {
+    return value ? formatDateTimeString(value) : '—';
+  }
+
   private readonly homeWidgetSectionLabels: Record<HomeWidgetId, string> = {
     ppaFeatures: 'Available Features',
     tree: 'school needs menu',
@@ -1149,6 +1235,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     resourcePartner: 'resource & partner breakdown',
     partnershipActivities: 'partnership activities',
     upcomingEvents: 'upcoming events',
+    pendingRequests: 'pending requests',
   };
 
   /** Hover tooltip for the expand/collapse control. */
