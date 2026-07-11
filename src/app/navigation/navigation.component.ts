@@ -18,6 +18,7 @@ import {OfficeService} from "../common/services/office.service";
 import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 import {Office} from "../common/model/office.model";
 import {OfficeDivisionSubmenuComponent} from "./office-division-submenu/office-division-submenu.component";
+import {getDisplayInitials} from '../common/string-utils';
 @Component({
   selector: 'app-navigation',
   templateUrl: './navigation.component.html',
@@ -195,21 +196,12 @@ export class NavigationComponent implements OnInit {
 
   getUserInitials(): string {
     const name = this.authService.getName();
+    if (name?.trim()) {
+      return getDisplayInitials(name, 'U');
+    }
+
     const username = this.authService.getUsername();
-
-    if (name && name.trim()) {
-      const parts = name.trim().split(' ');
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-      }
-      return name.substring(0, 2).toUpperCase();
-    }
-
-    if (username && username.trim()) {
-      return username.substring(0, 2).toUpperCase();
-    }
-
-    return 'U';
+    return getDisplayInitials(username, 'U');
   }
 
 

@@ -65,6 +65,20 @@ export interface SchoolNeedContributionCountsResponse {
   meta: ResourceGenerationsMetaDto;
 }
 
+/** Row from `GET /widgets/participating-partners`. */
+export interface ParticipatingPartnerItem {
+  stakeholderUserId: string;
+  name: string;
+  avatarUrl?: string;
+  totalEngagementAmount: number;
+}
+
+export interface ParticipatingPartnersResponse {
+  success: boolean;
+  data: ParticipatingPartnerItem[];
+  meta: ResourceGenerationsMetaDto & { schoolYear?: string };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -119,5 +133,16 @@ export class WidgetService {
       url += `${sep}schoolId=${encodeURIComponent(schoolId.trim())}`;
     }
     return this.httpService.get<SchoolNeedContributionCountsResponse>(url);
+  }
+
+  /** Top engaged stakeholders for the home participating partners widget. */
+  getParticipatingPartners(
+    schoolYear?: string,
+    limit = 100,
+  ): Observable<ParticipatingPartnersResponse> {
+    let url = this.appendSchoolYearQuery(API_ENDPOINT.widget.participatingPartners, schoolYear);
+    const sep = url.includes('?') ? '&' : '?';
+    url += `${sep}limit=${encodeURIComponent(String(limit))}`;
+    return this.httpService.get<ParticipatingPartnersResponse>(url);
   }
 }

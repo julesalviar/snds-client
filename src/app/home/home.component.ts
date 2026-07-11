@@ -40,6 +40,7 @@ import {PpaPlanService} from "../common/services/ppa-plan.service";
 import {PpaPlan} from "../common/model/ppa-plan.model";
 import {CalendarNavigationService} from "../common/services/calendar-navigation.service";
 import { FieldCheckerService } from '../common/services/utils/field-checker.service';
+import { getDisplayInitials } from '../common/string-utils';
 import { ActivityService } from '../common/services/activity.service';
 import {
   ResourceGenerationsResponse,
@@ -47,6 +48,7 @@ import {
   PartnersResponse,
   AipStatusStatsResponse,
   SchoolNeedContributionCountsResponse,
+  ParticipatingPartnerItem,
 } from '../common/services/widget.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
@@ -71,6 +73,10 @@ import {
   AnnouncementDialogComponent,
   AnnouncementDialogResult,
 } from './announcement-dialog/announcement-dialog.component';
+import { pickWeightedParticipatingPartners } from './pick-weighted-participating-partners.util';
+
+const PARTICIPATING_PARTNERS_ROTATE_MS = 12000;
+const PARTICIPATING_PARTNERS_FADE_MS = 1500;
 
 interface TreeNode {
   name: string;
@@ -99,6 +105,7 @@ interface HomeLoadingState {
   /** Division-admin Resource & Partner breakdown pies (backend). */
   resourcePartnerBreakdown: boolean;
   pendingChangeRequests: boolean;
+  participatingPartners: boolean;
 }
 
 /** Full home view state – single source for template; use with async pipe. */
@@ -128,6 +135,8 @@ export interface HomeState {
   aipStatsSchoolYear: string;
   /** School year for the home tree filter; passed to school-needs API for tree counts. */
   treeSchoolYear: string;
+  /** School year filter for participating partners widget (e.g. `2025-2026`). */
+  participatingPartnersSchoolYear: string;
   /** Precomputed template flags (OnPush-friendly). */
   showStats: boolean;
   hideTree: boolean;
@@ -137,6 +146,10 @@ export interface HomeState {
   showPendingRequests: boolean;
   pendingChangeRequests: ChangeRequest[];
   pendingChangeRequestsTotal: number;
+  showParticipatingPartners: boolean;
+  showPartnerEngagementAmounts: boolean;
+  participatingPartnersPool: ParticipatingPartnerItem[];
+  displayedParticipatingPartners: ParticipatingPartnerItem[];
   /** Deferred mount for online-users visitor panel. */
   mountOnlineVisitorWidget: boolean;
   isSchoolAdminRole: boolean;
@@ -150,7 +163,8 @@ type HomeLoaderId =
   | 'aipStats'
   | 'upcomingPlans'
   | 'partnershipActivities'
-  | 'pendingChangeRequests';
+  | 'pendingChangeRequests'
+  | 'participatingPartners';
 
 type HomeWidgetId =
   | 'ppaFeatures'
@@ -160,7 +174,8 @@ type HomeWidgetId =
   | 'resourcePartner'
   | 'partnershipActivities'
   | 'upcomingEvents'
-  | 'pendingRequests';
+  | 'pendingRequests'
+  | 'participatingPartners';
 
 @Component({
   selector: 'app-home',
@@ -206,7 +221,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     partnershipActivities: true,
     upcomingEvents: true,
     pendingRequests: true,
+    participatingPartners: true,
   };
+
+  protected participatingPartnersFading = false;
+
+  private readonly partnerAvatarErrors = new Set<string>();
+  private participatingPartnersRotateTimer?: ReturnType<typeof setInterval>;
+  private participatingPartnersFadeTimer?: ReturnType<typeof setTimeout>;
 
   private resourceBreakdownChart?: EChartsType;
   private partnersBreakdownChart?: EChartsType;
@@ -347,6 +369,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       showPendingRequests:
         userRole === UserType.DivisionAdmin ||
         userRole === UserType.SystemAdmin,
+      showParticipatingPartners:
+        !this.authService.isLoggedIn() ||
+        userRole === UserType.SchoolAdmin ||
+        userRole === UserType.StakeHolder ||
+        userRole === UserType.DivisionAdmin,
+      showPartnerEngagementAmounts: userRole === UserType.DivisionAdmin,
       isSchoolAdminRole: userRole === UserType.SchoolAdmin,
       isDivisionAdminRole: userRole === UserType.DivisionAdmin,
       mountOnlineVisitorWidget: state.mountOnlineVisitorWidget ?? false,
@@ -422,6 +450,14 @@ export class HomeComponent implements OnInit, OnDestroy {
           pendingChangeRequests: loaded.pendingChangeRequests,
           pendingChangeRequestsTotal: loaded.pendingChangeRequestsTotal,
         };
+      case 'participatingPartners':
+        loading.participatingPartners = loaded.loading.participatingPartners;
+        return {
+          ...current,
+          loading,
+          participatingPartnersPool: loaded.participatingPartnersPool,
+          displayedParticipatingPartners: loaded.displayedParticipatingPartners,
+        };
       default:
         return current;
     }
@@ -464,6 +500,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.divisionBreakdownChartsSub?.unsubscribe();
     this.divisionBreakdownChartsSub = undefined;
     this.disposeDivisionAdminBreakdownCharts();
+    this.stopParticipatingPartnersAutoRotate();
+    if (this.participatingPartnersFadeTimer != null) {
+      clearTimeout(this.participatingPartnersFadeTimer);
+      this.participatingPartnersFadeTimer = undefined;
+    }
   }
 
   /** Align widget filters to the current school year (handles rollover / stale SPA state). */
@@ -476,6 +517,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       treeSchoolYear: year,
       aipStatsSchoolYear: year,
       resourcePartnerSchoolYear: year,
+      participatingPartnersSchoolYear: year,
     };
   }
 
@@ -492,6 +534,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     const isDivisionAdmin = userRole === UserType.DivisionAdmin;
     const isPendingRequestsRole =
       userRole === UserType.DivisionAdmin || userRole === UserType.SystemAdmin;
+    const isParticipatingPartnersAudience =
+      !this.authService.isLoggedIn() ||
+      userRole === UserType.SchoolAdmin ||
+      userRole === UserType.StakeHolder ||
+      userRole === UserType.DivisionAdmin;
     const base: HomeState = {
       loading: {
         internalRefData: true,
@@ -501,6 +548,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         partnershipActivities: true,
         resourcePartnerBreakdown: isDivisionAdmin,
         pendingChangeRequests: isPendingRequestsRole,
+        participatingPartners: isParticipatingPartnersAudience,
       },
       name,
       userRole,
@@ -518,17 +566,22 @@ export class HomeComponent implements OnInit, OnDestroy {
       partnershipActivities: [],
       pendingChangeRequests: [],
       pendingChangeRequestsTotal: 0,
+      participatingPartnersPool: [],
+      displayedParticipatingPartners: [],
       resourceGenerationBreakdown: [],
       partnersBreakdown: [],
       resourcePartnerSchoolYear: getCurrentSchoolYear(),
       aipStatsSchoolYear: getCurrentSchoolYear(),
       treeSchoolYear: getCurrentSchoolYear(),
+      participatingPartnersSchoolYear: getCurrentSchoolYear(),
       showStats: false,
       hideTree: false,
       showVisitorCounter: false,
       showPartnershipActivities: false,
       showUpcomingEvents: false,
       showPendingRequests: false,
+      showParticipatingPartners: false,
+      showPartnerEngagementAmounts: false,
       mountOnlineVisitorWidget: false,
       isSchoolAdminRole: false,
       isDivisionAdminRole: false,
@@ -549,6 +602,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         { id: 'upcomingPlans', obs: this.loadUpcomingPlansIfNeeded$(initial) },
         { id: 'partnershipActivities', obs: this.loadPartnershipActivitiesIfNeeded$(initial) },
         { id: 'pendingChangeRequests', obs: this.loadPendingChangeRequestsIfNeeded$(initial) },
+        { id: 'participatingPartners', obs: this.loadParticipatingPartnersIfNeeded$(initial) },
       ];
 
       return merge(
@@ -560,6 +614,7 @@ export class HomeComponent implements OnInit, OnDestroy {
               );
               this.homeStateSubject.next(merged);
               this.maybeEnableDeferredUi(merged);
+              this.maybeSyncParticipatingPartnersAutoRotate(merged);
             }),
             catchError((err) => {
               console.error(`Home loader error (${id}):`, err);
@@ -693,6 +748,30 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadResourcePartnerBreakdown$(latest).subscribe({
       next: (result) => this.homeStateSubject.next(result),
       error: (err) => console.error('Resource partner breakdown load error:', err),
+    });
+  }
+
+  onParticipatingPartnersSchoolYearChange(state: HomeState, schoolYear: string): void {
+    if (
+      schoolYear === state.participatingPartnersSchoolYear ||
+      state.loading.participatingPartners
+    ) {
+      return;
+    }
+    this.stopParticipatingPartnersAutoRotate();
+    this.partnerAvatarErrors.clear();
+    this.homeStateSubject.next({
+      ...state,
+      participatingPartnersSchoolYear: schoolYear,
+      loading: { ...state.loading, participatingPartners: true },
+    });
+    const latest = this.homeStateSubject.getValue();
+    this.loadParticipatingPartnersIfNeeded$(latest).subscribe({
+      next: (result) => {
+        this.homeStateSubject.next(result);
+        this.maybeSyncParticipatingPartnersAutoRotate(result);
+      },
+      error: (err) => console.error('Participating partners reload error:', err),
     });
   }
 
@@ -1053,6 +1132,120 @@ export class HomeComponent implements OnInit, OnDestroy {
       );
   }
 
+  private loadParticipatingPartnersIfNeeded$(state: HomeState): Observable<HomeState> {
+    if (!state.showParticipatingPartners) {
+      return of({ ...state, loading: { ...state.loading, participatingPartners: false } });
+    }
+    return this.widgetService
+      .getParticipatingPartners(state.participatingPartnersSchoolYear, 100)
+      .pipe(
+      map((res) => {
+        const pool = res.data ?? [];
+        return {
+          ...state,
+          loading: { ...state.loading, participatingPartners: false },
+          participatingPartnersPool: pool,
+          displayedParticipatingPartners: pickWeightedParticipatingPartners(pool),
+        };
+      }),
+      catchError((err) => {
+        console.error('Error loading participating partners:', err);
+        return of({
+          ...state,
+          loading: { ...state.loading, participatingPartners: false },
+          participatingPartnersPool: [],
+          displayedParticipatingPartners: [],
+        });
+      }),
+    );
+  }
+
+  private prefersReducedMotion(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
+  private shouldAutoRotateParticipatingPartners(): boolean {
+    return (
+      !this.prefersReducedMotion() &&
+      this.isHomeWidgetExpanded('participatingPartners')
+    );
+  }
+
+  private maybeSyncParticipatingPartnersAutoRotate(state: HomeState): void {
+    if (!state.showParticipatingPartners) {
+      this.stopParticipatingPartnersAutoRotate();
+      return;
+    }
+    if (state.loading.participatingPartners || state.participatingPartnersPool.length === 0) {
+      this.stopParticipatingPartnersAutoRotate();
+      return;
+    }
+    if (this.shouldAutoRotateParticipatingPartners() && !this.participatingPartnersRotateTimer) {
+      this.startParticipatingPartnersAutoRotate();
+    }
+    if (!this.shouldAutoRotateParticipatingPartners()) {
+      this.stopParticipatingPartnersAutoRotate();
+    }
+  }
+
+  private startParticipatingPartnersAutoRotate(): void {
+    this.stopParticipatingPartnersAutoRotate();
+    if (!this.shouldAutoRotateParticipatingPartners()) {
+      return;
+    }
+    this.participatingPartnersRotateTimer = setInterval(
+      () => this.rotateDisplayedParticipatingPartners(),
+      PARTICIPATING_PARTNERS_ROTATE_MS,
+    );
+  }
+
+  private stopParticipatingPartnersAutoRotate(): void {
+    if (this.participatingPartnersRotateTimer != null) {
+      clearInterval(this.participatingPartnersRotateTimer);
+      this.participatingPartnersRotateTimer = undefined;
+    }
+  }
+
+  protected rotateDisplayedParticipatingPartners(): void {
+    const state = this.homeStateSubject.getValue();
+    if (!state.participatingPartnersPool.length || state.loading.participatingPartners) {
+      return;
+    }
+    if (this.participatingPartnersFading) {
+      return;
+    }
+
+    const fadeMs = this.prefersReducedMotion() ? 0 : PARTICIPATING_PARTNERS_FADE_MS;
+    this.participatingPartnersFading = true;
+    this.cdr.markForCheck();
+
+    if (this.participatingPartnersFadeTimer != null) {
+      clearTimeout(this.participatingPartnersFadeTimer);
+    }
+
+    this.participatingPartnersFadeTimer = setTimeout(() => {
+      const latest = this.homeStateSubject.getValue();
+      const next = pickWeightedParticipatingPartners(latest.participatingPartnersPool);
+      this.homeStateSubject.next({
+        ...latest,
+        displayedParticipatingPartners: next,
+      });
+      this.participatingPartnersFading = false;
+      this.participatingPartnersFadeTimer = undefined;
+      requestAnimationFrame(() => this.cdr.markForCheck());
+    }, fadeMs);
+  }
+
+  protected onParticipatingPartnersShuffleClick(event: Event): void {
+    event.stopPropagation();
+    this.rotateDisplayedParticipatingPartners();
+    this.stopParticipatingPartnersAutoRotate();
+    this.startParticipatingPartnersAutoRotate();
+  }
+
   private loadPendingChangeRequestsIfNeeded$(state: HomeState): Observable<HomeState> {
     if (!state.showPendingRequests) {
       return of({ ...state, loading: { ...state.loading, pendingChangeRequests: false } });
@@ -1186,6 +1379,13 @@ export class HomeComponent implements OnInit, OnDestroy {
         }),
       );
     }
+    if (id === 'participatingPartners') {
+      if (next) {
+        this.maybeSyncParticipatingPartnersAutoRotate(this.homeStateSubject.getValue());
+      } else {
+        this.stopParticipatingPartnersAutoRotate();
+      }
+    }
     this.cdr.markForCheck();
   }
 
@@ -1227,6 +1427,28 @@ export class HomeComponent implements OnInit, OnDestroy {
     return value ? formatDateTimeString(value) : '—';
   }
 
+  trackByParticipatingPartner(_index: number, partner: ParticipatingPartnerItem): string {
+    return partner.stakeholderUserId;
+  }
+
+  formatPartnerEngagementAmount(amount: number): string {
+    return `₱${new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount)}`;
+  }
+
+  protected readonly getDisplayInitials = getDisplayInitials;
+
+  hasPartnerAvatarError(partnerId: string): boolean {
+    return this.partnerAvatarErrors.has(partnerId);
+  }
+
+  onPartnerAvatarError(partnerId: string): void {
+    this.partnerAvatarErrors.add(partnerId);
+    this.cdr.markForCheck();
+  }
+
   private readonly homeWidgetSectionLabels: Record<HomeWidgetId, string> = {
     ppaFeatures: 'Available Features',
     tree: 'school needs menu',
@@ -1236,6 +1458,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     partnershipActivities: 'partnership activities',
     upcomingEvents: 'upcoming events',
     pendingRequests: 'pending requests',
+    participatingPartners: 'participating partners',
   };
 
   /** Hover tooltip for the expand/collapse control. */

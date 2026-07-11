@@ -22,7 +22,7 @@ import { DecimalPipe } from '@angular/common';
 import { AIP_STATUSES } from '../common/enums/aip-status.enum';
 import { ChangeRequestService } from '../common/services/change-request.service';
 
-function createHomeState(userRole: string | undefined): HomeState {
+function createHomeState(userRole: string | undefined, isLoggedIn = true): HomeState {
   const aipStatusStats = new Map();
   const aipStatusPercentageDisplays = new Map();
   for (const status of AIP_STATUSES) {
@@ -39,6 +39,7 @@ function createHomeState(userRole: string | undefined): HomeState {
       partnershipActivities: false,
       resourcePartnerBreakdown: false,
       pendingChangeRequests: false,
+      participatingPartners: false,
     },
     name: 'Test User',
     userRole,
@@ -56,11 +57,14 @@ function createHomeState(userRole: string | undefined): HomeState {
     partnershipActivities: [],
     pendingChangeRequests: [],
     pendingChangeRequestsTotal: 0,
+    participatingPartnersPool: [],
+    displayedParticipatingPartners: [],
     resourceGenerationBreakdown: [],
     partnersBreakdown: [],
     resourcePartnerSchoolYear: '2025-2026',
     aipStatsSchoolYear: '2025-2026',
     treeSchoolYear: '2025-2026',
+    participatingPartnersSchoolYear: '2025-2026',
     showStats:
       userRole === UserType.SchoolAdmin || userRole === UserType.DivisionAdmin,
     hideTree:
@@ -83,6 +87,12 @@ function createHomeState(userRole: string | undefined): HomeState {
     showPendingRequests:
       userRole === UserType.DivisionAdmin ||
       userRole === UserType.SystemAdmin,
+    showParticipatingPartners:
+      !isLoggedIn ||
+      userRole === UserType.SchoolAdmin ||
+      userRole === UserType.StakeHolder ||
+      userRole === UserType.DivisionAdmin,
+    showPartnerEngagementAmounts: userRole === UserType.DivisionAdmin,
     mountOnlineVisitorWidget: false,
     isSchoolAdminRole: userRole === UserType.SchoolAdmin,
     isDivisionAdminRole: userRole === UserType.DivisionAdmin,
@@ -100,8 +110,10 @@ describe('HomeComponent', () => {
       | 'getAipStatusStats'
       | 'getResourceGenerations'
       | 'getPartners'
+      | 'getParticipatingPartners'
     >
   >;
+  let authService: { getActiveRole: () => string; getName: () => string; getSchoolId: () => string; isLoggedIn: () => boolean };
 
   beforeEach(async () => {
     homeStateSubject = new BehaviorSubject<HomeState>(
@@ -113,6 +125,7 @@ describe('HomeComponent', () => {
       'getAipStatusStats',
       'getResourceGenerations',
       'getPartners',
+      'getParticipatingPartners',
     ]);
     widgetService.getSchoolNeedContributionCounts.and.returnValue(
       of({ success: true, data: [], meta: { count: 0, timestamp: '' } }),
@@ -130,6 +143,16 @@ describe('HomeComponent', () => {
     widgetService.getPartners.and.returnValue(
       of({ success: true, data: [], meta: { count: 0, timestamp: '' } }),
     );
+    widgetService.getParticipatingPartners.and.returnValue(
+      of({ success: true, data: [], meta: { count: 0, timestamp: '' } }),
+    );
+
+    authService = {
+      getActiveRole: () => UserType.SchoolAdmin,
+      getName: () => 'Test User',
+      getSchoolId: () => 'school-1',
+      isLoggedIn: () => true,
+    };
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent, RouterTestingModule],
@@ -144,11 +167,7 @@ describe('HomeComponent', () => {
         { provide: SchoolService, useValue: { getSchoolById: () => of(null) } },
         {
           provide: AuthService,
-          useValue: {
-            getActiveRole: () => UserType.SchoolAdmin,
-            getName: () => 'Test User',
-            getSchoolId: () => 'school-1',
-          },
+          useValue: authService,
         },
         { provide: PpaPlanService, useValue: { getList: () => of({ data: [] }) } },
         { provide: CalendarNavigationService, useValue: {} },
@@ -242,6 +261,96 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.pending-requests-widget')).toBeNull();
+  });
+
+  it('shows the participating partners widget for school admin', () => {
+    homeStateSubject.next({
+      ...createHomeState(UserType.SchoolAdmin),
+      showParticipatingPartners: true,
+      loading: { ...createHomeState(UserType.SchoolAdmin).loading, participatingPartners: false },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.participating-partners-widget')).not.toBeNull();
+  });
+
+  it('shows the participating partners widget for guest users', () => {
+    authService.isLoggedIn = () => false;
+    homeStateSubject.next({
+      ...createHomeState(undefined, false),
+      showParticipatingPartners: true,
+      loading: { ...createHomeState(undefined, false).loading, participatingPartners: false },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.participating-partners-widget')).not.toBeNull();
+  });
+
+  it('hides the participating partners widget for office admin', () => {
+    homeStateSubject.next(createHomeState(UserType.OfficeAdmin));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.participating-partners-widget')).toBeNull();
+  });
+
+  it('applies fade class while rotating participating partners', () => {
+    homeStateSubject.next({
+      ...createHomeState(UserType.SchoolAdmin),
+      showParticipatingPartners: true,
+      participatingPartnersPool: [
+        {
+          stakeholderUserId: 'p1',
+          name: 'Partner One',
+          totalEngagementAmount: 500,
+        },
+      ],
+      displayedParticipatingPartners: [
+        {
+          stakeholderUserId: 'p1',
+          name: 'Partner One',
+          totalEngagementAmount: 500,
+        },
+      ],
+      loading: { ...createHomeState(UserType.SchoolAdmin).loading, participatingPartners: false },
+    });
+    fixture.detectChanges();
+
+    component.rotateDisplayedParticipatingPartners();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.participating-partners-row--fading')).not.toBeNull();
+  });
+
+  it('reloads participating partners when school year filter changes', () => {
+    widgetService.getParticipatingPartners.calls.reset();
+    homeStateSubject.next({
+      ...createHomeState(UserType.DivisionAdmin),
+      showParticipatingPartners: true,
+      participatingPartnersSchoolYear: '2024-2025',
+      participatingPartnersPool: [
+        {
+          stakeholderUserId: 'p1',
+          name: 'Partner One',
+          totalEngagementAmount: 500,
+        },
+      ],
+      displayedParticipatingPartners: [
+        {
+          stakeholderUserId: 'p1',
+          name: 'Partner One',
+          totalEngagementAmount: 500,
+        },
+      ],
+      loading: { ...createHomeState(UserType.DivisionAdmin).loading, participatingPartners: false },
+    });
+    fixture.detectChanges();
+
+    component.onParticipatingPartnersSchoolYearChange(
+      homeStateSubject.getValue(),
+      '2023-2024',
+    );
+
+    expect(widgetService.getParticipatingPartners).toHaveBeenCalledWith('2023-2024', 100);
   });
 
   it('maps contribution counts onto the tree without fetching all school needs', () => {

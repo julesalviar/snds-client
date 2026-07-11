@@ -141,7 +141,8 @@ h4 {
 .home-widget-header-row .resource-partner-breakdown-title,
 .home-widget-header-row .partnership-activities-title,
 .home-widget-header-row .upcoming-events-title,
-.home-widget-header-row .pending-requests-title {
+.home-widget-header-row .pending-requests-title,
+.home-widget-header-row .participating-partners-title {
   margin-bottom: 0;
   flex: 1;
   min-width: 0;
@@ -211,6 +212,7 @@ h4 {
 .home-compact .partnership-activities-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .upcoming-events-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .pending-requests-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
+.home-compact .participating-partners-widget:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .ppa-features-section:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row,
 .home-compact .tree-section:has(.home-widget-collapsible-body--collapsed) .home-widget-header-row {
   margin-bottom: 0;
@@ -258,6 +260,10 @@ h4 {
 }
 
 .ppa-implementation-school-year-filter {
+  margin: 4px 0 10px;
+}
+
+.participating-partners-school-year-filter {
   margin: 4px 0 10px;
 }
 
@@ -1582,6 +1588,211 @@ span {
   }
 }
 
+/* ----- Participating partners (guest, school admin, stakeholder, division admin) ----- */
+.participating-partners-widget {
+  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.participating-partners-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.participating-partners-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.participating-partners-header-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+}
+
+.participating-partners-shuffle-btn {
+  margin-right: -4px;
+}
+
+.participating-partners-skeleton {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.participating-partners-empty {
+  color: #666;
+  font-size: 13px;
+  padding: 12px 0;
+  margin: 0;
+}
+
+.participating-partners-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  transition: opacity 1.5s ease;
+  opacity: 1;
+}
+
+.participating-partners-row--fading {
+  opacity: 0;
+}
+
+.participating-partner-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 6px;
+  border-radius: 8px;
+  background: rgba(40, 167, 69, 0.04);
+  border: 1px solid rgba(40, 167, 69, 0.1);
+}
+
+.participating-partner-card--skeleton {
+  background: transparent;
+  border-color: transparent;
+}
+
+.participating-partner-avatar {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border: 2px solid #28a745;
+}
+
+.participating-partner-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.participating-partner-avatar-initials {
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.participating-partner-name {
+  width: 100%;
+  text-align: center;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.participating-partner-amount {
+  color: #28a745;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.skeleton-partner-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.skeleton-partner-name {
+  width: 72%;
+  height: 12px;
+  border-radius: 4px;
+}
+
+@media (max-width: 1024px) {
+  .participating-partners-widget {
+    padding: 14px;
+  }
+
+  .participating-partners-title {
+    margin-bottom: 10px;
+  }
+
+  .participating-partners-row,
+  .participating-partners-skeleton {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .participating-partners-row,
+  .participating-partners-skeleton {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .participating-partner-card {
+    flex: 0 0 108px;
+    min-width: 108px;
+  }
+}
+
+@media (max-width: 480px) {
+  .participating-partners-widget {
+    padding: 12px;
+  }
+
+  .participating-partners-title {
+    font-size: 13px;
+  }
+
+  .participating-partner-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .skeleton-partner-avatar {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .participating-partners-row {
+    transition: none;
+  }
+}
+
 /* ----- Pending requests (division admin, system admin) ----- */
 .pending-requests-widget {
   flex-shrink: 0;
@@ -1810,7 +2021,8 @@ span {
 .home-compact .resource-partner-breakdown-icon,
 .home-compact .upcoming-events-icon,
 .home-compact .partnership-activities-icon,
-.home-compact .pending-requests-icon {
+.home-compact .pending-requests-icon,
+.home-compact .participating-partners-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;
@@ -1929,13 +2141,15 @@ span {
 
 .home-compact .upcoming-events-widget,
 .home-compact .partnership-activities-widget,
-.home-compact .pending-requests-widget {
+.home-compact .pending-requests-widget,
+.home-compact .participating-partners-widget {
   padding: 9px;
 }
 
 .home-compact .upcoming-events-title,
 .home-compact .partnership-activities-title,
-.home-compact .pending-requests-title {
+.home-compact .pending-requests-title,
+.home-compact .participating-partners-title {
   font-size: 13px;
   margin: 0;
   line-height: 1.2;
@@ -1954,9 +2168,35 @@ span {
 
 .home-compact .upcoming-events-empty,
 .home-compact .partnership-activities-empty,
-.home-compact .pending-requests-empty {
+.home-compact .pending-requests-empty,
+.home-compact .participating-partners-empty {
   padding: 8px 0;
   font-size: 12px;
+}
+
+.home-compact .participating-partners-row,
+.home-compact .participating-partners-skeleton {
+  gap: 8px;
+}
+
+.home-compact .participating-partner-card {
+  padding: 7px 5px;
+  gap: 5px;
+}
+
+.home-compact .participating-partner-avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.home-compact .participating-partner-name {
+  font-size: 11px;
+}
+
+.home-compact .participating-partner-amount {
+  font-size: 10px;
 }
 
 .home-compact .upcoming-events-list {
@@ -2046,6 +2286,7 @@ span {
   .home-compact .upcoming-events-widget,
   .home-compact .partnership-activities-widget,
   .home-compact .pending-requests-widget,
+  .home-compact .participating-partners-widget,
   .home-compact .resource-partner-breakdown-widget {
     padding: 10px;
   }
@@ -2094,6 +2335,7 @@ span {
   .home-compact .upcoming-events-widget,
   .home-compact .partnership-activities-widget,
   .home-compact .pending-requests-widget,
+  .home-compact .participating-partners-widget,
   .home-compact .resource-partner-breakdown-widget {
     padding: 9px;
   }
