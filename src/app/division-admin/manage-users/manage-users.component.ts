@@ -32,7 +32,15 @@ import { formatDateString, formatDateTimeString } from '../../common/date-utils'
 import { InviteUserDialogComponent } from './invite-user-dialog/invite-user-dialog.component';
 import { ManageRolesDialogComponent } from './manage-roles-dialog/manage-roles-dialog.component';
 import { UpdateUserEmailDialogComponent } from './update-user-email-dialog/update-user-email-dialog.component';
+import { ManageUserTagsDialogComponent } from './manage-user-tags-dialog/manage-user-tags-dialog.component';
 import { ConfirmDialogComponent } from '../../common/components/confirm-dialog/confirm-dialog.component';
+import {
+  getUserTagLabel,
+  getUserTagLabelMap,
+  parseUserTagsRefData,
+  USER_TAGS_REF_DATA_KEY,
+  UserTagRef,
+} from '../../common/utils/user-tags-reference-data.util';
 
 @Component({
   selector: 'app-manage-users',
@@ -70,6 +78,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     'email',
     'contactNumber',
     'roles',
+    'tags',
     'createdAt',
     'actions',
   ];
@@ -109,7 +118,11 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
 
   searchTerm = '';
   selectedRoles: string[] = [];
+  selectedTag = '';
   includeReferenceAccounts = false;
+
+  tagOptions: UserTagRef[] = [];
+  private tagLabelMap = new Map<string, string>();
 
   invitesDataSource = new MatTableDataSource<UserInvite>([]);
   invitesLoading = false;
@@ -151,6 +164,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     return (
       this.searchTerm.trim() !== '' ||
       this.selectedRoles.length > 0 ||
+      this.selectedTag !== '' ||
       this.includeReferenceAccounts
     );
   }
@@ -203,6 +217,9 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     this.loadUsers();
     this.loadInvites();
     this.internalReferenceDataService.initialize().then(() => {
+      const raw = this.internalReferenceDataService.get(USER_TAGS_REF_DATA_KEY);
+      this.tagOptions = parseUserTagsRefData(raw);
+      this.tagLabelMap = getUserTagLabelMap(raw);
       this.openRegistration = this.parseOpenRegistration(
         this.internalReferenceDataService.get<unknown>('openRegistration')
       );
@@ -307,6 +324,21 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
+  onTagChange(value: string): void {
+    this.selectedTag = value ?? '';
+    this.pageIndex = 0;
+    this.loadUsers();
+  }
+
+  getTagLabel(key: string): string {
+    return getUserTagLabel(key, this.tagLabelMap);
+  }
+
+  getTagLabels(tags: string[] | undefined): string[] {
+    if (!tags?.length) return [];
+    return tags.map((key) => this.getTagLabel(key));
+  }
+
   onInvitesEmailInput(): void {
     this.invitesEmailSubject.next(this.invitesEmailFilter);
   }
@@ -333,6 +365,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedRoles = [];
+    this.selectedTag = '';
     this.includeReferenceAccounts = false;
     this.pageIndex = 0;
     this.loadUsers();
@@ -361,6 +394,18 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     });
     dialogRef.afterClosed().subscribe((updated) => {
       if (updated) {
+        this.loadUsers();
+      }
+    });
+  }
+
+  onManageTags(row: UserListItem): void {
+    const dialogRef = this.dialog.open(ManageUserTagsDialogComponent, {
+      width: '400px',
+      data: { user: row },
+    });
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (saved) {
         this.loadUsers();
       }
     });
@@ -412,6 +457,7 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
         limit: this.pageSize,
         search: this.searchTerm.trim() || undefined,
         roles: this.selectedRoles.length ? this.selectedRoles : undefined,
+        tag: this.selectedTag || undefined,
         includeReferenceAccounts: this.includeReferenceAccounts || undefined,
       })
       .pipe(finalize(() => (this.isLoading = false)))

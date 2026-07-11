@@ -1,11 +1,11 @@
-export interface ParticipatingPartnerPickItem {
+export interface ActivePartnerPickItem {
   stakeholderUserId: string;
   name: string;
   avatarUrl?: string;
   totalEngagementAmount: number;
 }
 
-export function getParticipatingPartnersDisplayCount(poolLength: number): number {
+export function getActivePartnersDisplayCount(poolLength: number): number {
   if (poolLength === 0) {
     return 0;
   }
@@ -19,17 +19,17 @@ export function getParticipatingPartnersDisplayCount(poolLength: number): number
  * Weighted random sample without replacement.
  * Higher totalEngagementAmount increases selection probability per draw.
  */
-export function pickWeightedParticipatingPartners(
-  pool: readonly ParticipatingPartnerPickItem[],
+export function pickWeightedActivePartners(
+  pool: readonly ActivePartnerPickItem[],
   random: () => number = Math.random,
-): ParticipatingPartnerPickItem[] {
+): ActivePartnerPickItem[] {
   if (pool.length === 0) {
     return [];
   }
 
-  const displayCount = getParticipatingPartnersDisplayCount(pool.length);
+  const displayCount = getActivePartnersDisplayCount(pool.length);
   const remaining = [...pool];
-  const picked: ParticipatingPartnerPickItem[] = [];
+  const picked: ActivePartnerPickItem[] = [];
 
   for (let i = 0; i < displayCount && remaining.length > 0; i++) {
     const weights = remaining.map((p) => p.totalEngagementAmount);

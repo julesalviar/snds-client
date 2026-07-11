@@ -52,6 +52,7 @@ export class UserService {
     search?: string;
     roles?: string[];
     includeReferenceAccounts?: boolean;
+    tag?: string;
   }): Observable<{ data: any[]; totalItems: number }> {
     const queryParams: string[] = [];
     queryParams.push(`page=${params.page}`);
@@ -64,6 +65,9 @@ export class UserService {
     }
     if (params.includeReferenceAccounts === true) {
       queryParams.push('includeReferenceAccounts=true');
+    }
+    if (params.tag?.trim()) {
+      queryParams.push(`tag=${encodeURIComponent(params.tag.trim())}`);
     }
     const url = `${API_ENDPOINT.users.list}?${queryParams.join('&')}`;
     return this.httpService.get<any>(url).pipe(
@@ -87,6 +91,13 @@ export class UserService {
   updateManagedUserEmail(userId: string, email: string): Observable<{ success: boolean }> {
     return this.httpService
       .patch<{ success: boolean }>(`${API_ENDPOINT.users.list}/${userId}/email`, { email })
+      .pipe(catchError(this.httpService.handleError));
+  }
+
+  /** Division/system admin: assign tags to a user. PATCH /users/:id/tags */
+  updateManagedUserTags(userId: string, tags: string[]): Observable<{ success: boolean }> {
+    return this.httpService
+      .patch<{ success: boolean }>(`${API_ENDPOINT.users.list}/${userId}/tags`, { tags })
       .pipe(catchError(this.httpService.handleError));
   }
 

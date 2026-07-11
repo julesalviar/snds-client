@@ -34,6 +34,19 @@
         </mat-select>
       </mat-form-field>
 
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Tag</mat-label>
+        <mat-select
+          [(value)]="selectedTag"
+          (selectionChange)="onTagChange($event.value)"
+          placeholder="All tags">
+          <mat-option value="">All tags</mat-option>
+          <mat-option *ngFor="let opt of tagOptions" [value]="opt.key">
+            {{ opt.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
       <mat-checkbox
         class="filter-checkbox"
         [(ngModel)]="includeReferenceAccounts"
@@ -99,6 +112,20 @@
             <ng-template #noRoles>—</ng-template>
           </td>
         </ng-container>
+        <ng-container matColumnDef="tags">
+          <th mat-header-cell *matHeaderCellDef> Tags </th>
+          <td mat-cell *matCellDef="let row" class="tags-cell">
+            <div class="tags-cell-inner">
+              <ng-container *ngIf="getTagLabels(row.tags).length; else noTags">
+                <span
+                  *ngFor="let label of getTagLabels(row.tags)"
+                  class="tag-chip"
+                  [matTooltip]="label">{{ label }}</span>
+              </ng-container>
+              <ng-template #noTags>—</ng-template>
+            </div>
+          </td>
+        </ng-container>
         <ng-container matColumnDef="createdAt">
           <th mat-header-cell *matHeaderCellDef> Created </th>
           <td mat-cell *matCellDef="let row">{{ formatDate(row.createdAt) }}</td>
@@ -137,6 +164,11 @@
                       *ngIf="canAssignRole"
                       (click)="onUpdateEmail(row)">
                 <mat-icon>mail</mat-icon> Update email
+              </button>
+              <button mat-menu-item
+                      *ngIf="canAssignRole"
+                      (click)="onManageTags(row)">
+                <mat-icon>label</mat-icon> Manage tags
               </button>
             </mat-menu>
           </td>

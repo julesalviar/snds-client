@@ -134,22 +134,22 @@
       </div>
 
       <div class="column-second">
-        <aside *ngIf="state.showParticipatingPartners" class="participating-partners-widget">
+        <aside *ngIf="state.showActivePartners" class="active-partners-widget">
           <div class="home-widget-header-row">
-            <h3 class="participating-partners-title">
-              <mat-icon class="participating-partners-icon">handshake</mat-icon>
-              Participating partners
+            <h3 class="active-partners-title">
+              <mat-icon class="active-partners-icon">handshake</mat-icon>
+              Active Partners
             </h3>
-            <div class="participating-partners-header-actions">
+            <div class="active-partners-header-actions">
               <button
-                *ngIf="!state.loading.participatingPartners && state.participatingPartnersPool.length > 0"
+                *ngIf="!state.loading.activePartners && state.activePartnersPool.length > 0"
                 mat-icon-button
                 type="button"
-                class="home-widget-toggle-btn participating-partners-shuffle-btn"
+                class="home-widget-toggle-btn active-partners-shuffle-btn"
                 matTooltip="Show other partners"
                 matTooltipPosition="left"
                 [matTooltipShowDelay]="280"
-                (click)="onParticipatingPartnersShuffleClick($event)"
+                (click)="onActivePartnersShuffleClick($event)"
                 aria-label="Show other partners">
                 <mat-icon>shuffle</mat-icon>
               </button>
@@ -157,60 +157,60 @@
                 mat-icon-button
                 type="button"
                 class="home-widget-toggle-btn"
-                [matTooltip]="homeWidgetToggleTooltip('participatingPartners')"
+                [matTooltip]="homeWidgetToggleTooltip('activePartners')"
                 matTooltipPosition="left"
                 [matTooltipShowDelay]="280"
-                (click)="toggleHomeWidget('participatingPartners', $event)"
-                [attr.aria-expanded]="isHomeWidgetExpanded('participatingPartners')"
-                aria-label="Show or hide participating partners">
-                <mat-icon>{{ isHomeWidgetExpanded('participatingPartners') ? 'expand_less' : 'expand_more' }}</mat-icon>
+                (click)="toggleHomeWidget('activePartners', $event)"
+                [attr.aria-expanded]="isHomeWidgetExpanded('activePartners')"
+                aria-label="Show or hide active partners">
+                <mat-icon>{{ isHomeWidgetExpanded('activePartners') ? 'expand_less' : 'expand_more' }}</mat-icon>
               </button>
             </div>
           </div>
           <div
             class="home-widget-collapsible-body"
-            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('participatingPartners')"
-            [attr.aria-hidden]="!isHomeWidgetExpanded('participatingPartners')">
-          <div class="participating-partners-school-year-filter" (click)="$event.stopPropagation()">
+            [class.home-widget-collapsible-body--collapsed]="!isHomeWidgetExpanded('activePartners')"
+            [attr.aria-hidden]="!isHomeWidgetExpanded('activePartners')">
+          <div class="active-partners-school-year-filter" (click)="$event.stopPropagation()">
             <school-year-widget-filter
-              controlId="home-participating-partners-sy"
-              [schoolYear]="state.participatingPartnersSchoolYear"
+              controlId="home-active-partners-sy"
+              [schoolYear]="state.activePartnersSchoolYear"
               [options]="schoolYearWidgetOptions"
-              [disabled]="state.loading.participatingPartners"
-              (schoolYearChange)="onParticipatingPartnersSchoolYearChange(state, $event)" />
+              [disabled]="state.loading.activePartners"
+              (schoolYearChange)="onActivePartnersSchoolYearChange(state, $event)" />
           </div>
-          @if (state.loading.participatingPartners) {
-            <div class="participating-partners-skeleton" aria-hidden="true">
+          @if (state.loading.activePartners) {
+            <div class="active-partners-skeleton" aria-hidden="true">
               @for (_ of [1,2,3,4,5]; track $index) {
-                <div class="participating-partner-card participating-partner-card--skeleton">
+                <div class="active-partner-card active-partner-card--skeleton">
                   <div class="skeleton skeleton-partner-avatar"></div>
                   <div class="skeleton skeleton-partner-name"></div>
                 </div>
               }
             </div>
-          } @else if (state.displayedParticipatingPartners.length === 0) {
-            <p class="participating-partners-empty">No participating partners yet</p>
+          } @else if (state.displayedActivePartners.length === 0) {
+            <p class="active-partners-empty">No active partners yet</p>
           } @else {
             <div
-              class="participating-partners-row"
-              [class.participating-partners-row--fading]="participatingPartnersFading">
-              @for (partner of state.displayedParticipatingPartners; track trackByParticipatingPartner($index, partner)) {
-                <div class="participating-partner-card">
-                  <div class="participating-partner-avatar">
+              class="active-partners-row"
+              [class.active-partners-row--fading]="activePartnersFading">
+              @for (partner of state.displayedActivePartners; track trackByActivePartner($index, partner)) {
+                <div class="active-partner-card">
+                  <div class="active-partner-avatar">
                     <img
                       *ngIf="partner.avatarUrl && !hasPartnerAvatarError(partner.stakeholderUserId)"
                       [src]="partner.avatarUrl"
                       [alt]="partner.name"
-                      class="participating-partner-avatar-image"
+                      class="active-partner-avatar-image"
                       (error)="onPartnerAvatarError(partner.stakeholderUserId)" />
                     <span
                       *ngIf="!partner.avatarUrl || hasPartnerAvatarError(partner.stakeholderUserId)"
-                      class="participating-partner-avatar-initials"
+                      class="active-partner-avatar-initials"
                       aria-hidden="true">{{ getDisplayInitials(partner.name) }}</span>
                   </div>
-                  <span class="participating-partner-name" [title]="partner.name">{{ partner.name }}</span>
+                  <span class="active-partner-name" [title]="partner.name">{{ partner.name }}</span>
                   @if (state.showPartnerEngagementAmounts) {
-                    <span class="participating-partner-amount">{{ formatPartnerEngagementAmount(partner.totalEngagementAmount) }}</span>
+                    <span class="active-partner-amount">{{ formatPartnerEngagementAmount(partner.totalEngagementAmount) }}</span>
                   }
                 </div>
               }

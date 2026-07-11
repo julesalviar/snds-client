@@ -34,6 +34,7 @@ import { ManageFundSourceComponent } from './division-admin/manage-fund-source/m
 import { ManageUsersComponent } from './division-admin/manage-users/manage-users.component';
 import { ManageSchoolsComponent } from './division-admin/manage-schools/manage-schools.component';
 import { ManageSchoolYearLocksComponent } from './division-admin/manage-school-year-locks/manage-school-year-locks.component';
+import { ManageWidgetSettingsComponent } from './division-admin/manage-widget-settings/manage-widget-settings.component';
 import { ManageAnnouncementsComponent } from './division-admin/manage-announcements/manage-announcements.component';
 import { OpenRegistrationComponent } from './open-registration/open-registration.component';
 import { CloseRegistrationComponent } from './close-registration/close-registration.component';
@@ -144,6 +145,7 @@ export const routes: Routes = [
       {path: 'requests', component: ChangeRequestsComponent},
       {path: 'manage-schools', component: ManageSchoolsComponent},
       {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
+      {path: 'widget-settings', component: ManageWidgetSettingsComponent},
       {path: 'activities', component: ActivityListComponent},
       {path: 'activities/create', component: ActivityFormComponent},
       {path: 'activities/edit/:id', component: ActivityFormComponent},
@@ -165,6 +167,7 @@ export const routes: Routes = [
       {path: 'manage-users', component: ManageUsersComponent},
       {path: 'requests', component: ChangeRequestsComponent},
       {path: 'school-year-locks', component: ManageSchoolYearLocksComponent},
+      {path: 'widget-settings', component: ManageWidgetSettingsComponent},
       {path: 'manage-announcements', component: ManageAnnouncementsComponent},
     ]
   },

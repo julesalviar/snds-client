@@ -326,6 +326,7 @@ mat-card-title {
   border: none;
   border-bottom: 1px solid #e0e0e0;
   background: #fff !important;
+  vertical-align: middle;
 }
 
 .manage-users-table .mat-mdc-row,
@@ -346,6 +347,7 @@ mat-card-title {
   border: none;
   border-bottom: 1px solid #e0e0e0;
   background: #f5f5f5 !important;
+  vertical-align: middle;
 }
 
 .manage-users-table tr.mat-row:hover .mat-cell {
@@ -388,6 +390,28 @@ mat-card-title {
   font-size: 20px;
   width: 24px;
   height: 24px;
+}
+
+.tags-cell-inner {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 220px;
+}
+
+.tag-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .actions-cell {

@@ -9,6 +9,12 @@ import {
   normalizeDivisionLockSetting,
 } from '../utils/division-lock.util';
 import { aipSchoolYearsAsArray } from '../date-utils';
+import {
+  ACTIVE_PARTNERS_WIDGET_SETTING_KEY,
+  ActivePartnersWidgetSetting,
+  DEFAULT_ACTIVE_PARTNERS_WIDGET_SETTING,
+  normalizeActivePartnersWidgetSetting,
+} from '../utils/active-partners-widget-settings.util';
 
 export const DIVISION_LOCK_KEYS = {
   SCHOOL_NEED_LOCK: 'schoolNeedLock',
@@ -17,6 +23,8 @@ export const DIVISION_LOCK_KEYS = {
 
 export type DivisionLockKey =
   (typeof DIVISION_LOCK_KEYS)[keyof typeof DIVISION_LOCK_KEYS];
+
+export { ACTIVE_PARTNERS_WIDGET_SETTING_KEY };
 
 @Injectable({ providedIn: 'root' })
 export class DivisionSettingsService {
@@ -154,5 +162,28 @@ export class DivisionSettingsService {
     } catch {
       return { ...DEFAULT_DIVISION_LOCK_SETTING };
     }
+  }
+
+  async getActivePartnersWidgetSetting(): Promise<ActivePartnersWidgetSetting> {
+    try {
+      const url = `${API_ENDPOINT.divisionSettings}/${ACTIVE_PARTNERS_WIDGET_SETTING_KEY}`;
+      const raw = await firstValueFrom(this.http.get<unknown>(url));
+      if (raw == null) {
+        return { ...DEFAULT_ACTIVE_PARTNERS_WIDGET_SETTING };
+      }
+      return normalizeActivePartnersWidgetSetting(raw);
+    } catch {
+      return { ...DEFAULT_ACTIVE_PARTNERS_WIDGET_SETTING };
+    }
+  }
+
+  async updateActivePartnersWidgetSetting(
+    value: ActivePartnersWidgetSetting,
+  ): Promise<ActivePartnersWidgetSetting> {
+    const url = `${API_ENDPOINT.divisionSettings}/${ACTIVE_PARTNERS_WIDGET_SETTING_KEY}`;
+    const result = await firstValueFrom(
+      this.http.put<ActivePartnersWidgetSetting>(url, value),
+    );
+    return normalizeActivePartnersWidgetSetting(result);
   }
 }

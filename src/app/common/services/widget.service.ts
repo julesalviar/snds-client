@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { HttpService } from './http.service';
 import { API_ENDPOINT } from '../api-endpoints';
 import { getDefaultSchoolYear } from '../date-utils';
+import { ActivePartnersWidgetSettingResponse } from '../utils/active-partners-widget-settings.util';
 
 /** Row from `GET /widget/resource-generations`. */
 export interface ResourceGenerationRowDto {
@@ -65,17 +66,17 @@ export interface SchoolNeedContributionCountsResponse {
   meta: ResourceGenerationsMetaDto;
 }
 
-/** Row from `GET /widgets/participating-partners`. */
-export interface ParticipatingPartnerItem {
+/** Row from `GET /widgets/active-partners`. */
+export interface ActivePartnerItem {
   stakeholderUserId: string;
   name: string;
   avatarUrl?: string;
   totalEngagementAmount: number;
 }
 
-export interface ParticipatingPartnersResponse {
+export interface ActivePartnersResponse {
   success: boolean;
-  data: ParticipatingPartnerItem[];
+  data: ActivePartnerItem[];
   meta: ResourceGenerationsMetaDto & { schoolYear?: string };
 }
 
@@ -135,14 +136,21 @@ export class WidgetService {
     return this.httpService.get<SchoolNeedContributionCountsResponse>(url);
   }
 
-  /** Top engaged stakeholders for the home participating partners widget. */
-  getParticipatingPartners(
+  /** Top engaged stakeholders for the home active partners widget. */
+  getActivePartners(
     schoolYear?: string,
     limit = 100,
-  ): Observable<ParticipatingPartnersResponse> {
-    let url = this.appendSchoolYearQuery(API_ENDPOINT.widget.participatingPartners, schoolYear);
+  ): Observable<ActivePartnersResponse> {
+    let url = this.appendSchoolYearQuery(API_ENDPOINT.widget.activePartners, schoolYear);
     const sep = url.includes('?') ? '&' : '?';
     url += `${sep}limit=${encodeURIComponent(String(limit))}`;
-    return this.httpService.get<ParticipatingPartnersResponse>(url);
+    return this.httpService.get<ActivePartnersResponse>(url);
+  }
+
+  /** Public widget settings used by the home active partners widget. */
+  getActivePartnersWidgetSettings(): Observable<ActivePartnersWidgetSettingResponse> {
+    return this.httpService.get<ActivePartnersWidgetSettingResponse>(
+      API_ENDPOINT.widget.activePartnersSettings,
+    );
   }
 }

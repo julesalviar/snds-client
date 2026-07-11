@@ -1,0 +1,25 @@
+.user-label {
+  margin: 0 0 16px;
+  font-weight: 500;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.loading-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 16px;
+}
+
+.submitting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-spinner {
+  display: inline-block;
+}

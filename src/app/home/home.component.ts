@@ -20,6 +20,7 @@ import {
   Observable,
   of,
   shareReplay,
+  switchMap,
   Subscription,
   tap,
 } from 'rxjs';
@@ -48,7 +49,7 @@ import {
   PartnersResponse,
   AipStatusStatsResponse,
   SchoolNeedContributionCountsResponse,
-  ParticipatingPartnerItem,
+  ActivePartnerItem,
 } from '../common/services/widget.service';
 import { Activity } from '../common/model/activity.model';
 import { ActivityType } from '../common/enums/activity-type.enum';
@@ -73,10 +74,10 @@ import {
   AnnouncementDialogComponent,
   AnnouncementDialogResult,
 } from './announcement-dialog/announcement-dialog.component';
-import { pickWeightedParticipatingPartners } from './pick-weighted-participating-partners.util';
+import { pickWeightedActivePartners } from './pick-weighted-active-partners.util';
+import { resolveActivePartnersSchoolYear, DEFAULT_ACTIVE_PARTNERS_ROTATE_INTERVAL_SECONDS } from '../common/utils/active-partners-widget-settings.util';
 
-const PARTICIPATING_PARTNERS_ROTATE_MS = 12000;
-const PARTICIPATING_PARTNERS_FADE_MS = 1500;
+const ACTIVE_PARTNERS_FADE_MS = 1500;
 
 interface TreeNode {
   name: string;
@@ -105,7 +106,7 @@ interface HomeLoadingState {
   /** Division-admin Resource & Partner breakdown pies (backend). */
   resourcePartnerBreakdown: boolean;
   pendingChangeRequests: boolean;
-  participatingPartners: boolean;
+  activePartners: boolean;
 }
 
 /** Full home view state – single source for template; use with async pipe. */
@@ -135,8 +136,10 @@ export interface HomeState {
   aipStatsSchoolYear: string;
   /** School year for the home tree filter; passed to school-needs API for tree counts. */
   treeSchoolYear: string;
-  /** School year filter for participating partners widget (e.g. `2025-2026`). */
-  participatingPartnersSchoolYear: string;
+  /** School year filter for active partners widget (e.g. `2025-2026`). */
+  activePartnersSchoolYear: string;
+  /** Seconds between automatic partner transitions on the active partners widget. */
+  activePartnersRotateIntervalSeconds: number;
   /** Precomputed template flags (OnPush-friendly). */
   showStats: boolean;
   hideTree: boolean;
@@ -146,10 +149,10 @@ export interface HomeState {
   showPendingRequests: boolean;
   pendingChangeRequests: ChangeRequest[];
   pendingChangeRequestsTotal: number;
-  showParticipatingPartners: boolean;
+  showActivePartners: boolean;
   showPartnerEngagementAmounts: boolean;
-  participatingPartnersPool: ParticipatingPartnerItem[];
-  displayedParticipatingPartners: ParticipatingPartnerItem[];
+  activePartnersPool: ActivePartnerItem[];
+  displayedActivePartners: ActivePartnerItem[];
   /** Deferred mount for online-users visitor panel. */
   mountOnlineVisitorWidget: boolean;
   isSchoolAdminRole: boolean;
@@ -164,7 +167,7 @@ type HomeLoaderId =
   | 'upcomingPlans'
   | 'partnershipActivities'
   | 'pendingChangeRequests'
-  | 'participatingPartners';
+  | 'activePartners';
 
 type HomeWidgetId =
   | 'ppaFeatures'
@@ -175,7 +178,7 @@ type HomeWidgetId =
   | 'partnershipActivities'
   | 'upcomingEvents'
   | 'pendingRequests'
-  | 'participatingPartners';
+  | 'activePartners';
 
 @Component({
   selector: 'app-home',
@@ -221,14 +224,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     partnershipActivities: true,
     upcomingEvents: true,
     pendingRequests: true,
-    participatingPartners: true,
+    activePartners: true,
   };
 
-  protected participatingPartnersFading = false;
+  protected activePartnersFading = false;
 
   private readonly partnerAvatarErrors = new Set<string>();
-  private participatingPartnersRotateTimer?: ReturnType<typeof setInterval>;
-  private participatingPartnersFadeTimer?: ReturnType<typeof setTimeout>;
+  private activePartnersRotateTimer?: ReturnType<typeof setInterval>;
+  private activePartnersFadeTimer?: ReturnType<typeof setTimeout>;
 
   private resourceBreakdownChart?: EChartsType;
   private partnersBreakdownChart?: EChartsType;
@@ -369,7 +372,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       showPendingRequests:
         userRole === UserType.DivisionAdmin ||
         userRole === UserType.SystemAdmin,
-      showParticipatingPartners:
+      showActivePartners:
         !this.authService.isLoggedIn() ||
         userRole === UserType.SchoolAdmin ||
         userRole === UserType.StakeHolder ||
@@ -450,13 +453,14 @@ export class HomeComponent implements OnInit, OnDestroy {
           pendingChangeRequests: loaded.pendingChangeRequests,
           pendingChangeRequestsTotal: loaded.pendingChangeRequestsTotal,
         };
-      case 'participatingPartners':
-        loading.participatingPartners = loaded.loading.participatingPartners;
+      case 'activePartners':
+        loading.activePartners = loaded.loading.activePartners;
         return {
           ...current,
           loading,
-          participatingPartnersPool: loaded.participatingPartnersPool,
-          displayedParticipatingPartners: loaded.displayedParticipatingPartners,
+          activePartnersSchoolYear: loaded.activePartnersSchoolYear,
+          activePartnersPool: loaded.activePartnersPool,
+          displayedActivePartners: loaded.displayedActivePartners,
         };
       default:
         return current;
@@ -500,10 +504,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.divisionBreakdownChartsSub?.unsubscribe();
     this.divisionBreakdownChartsSub = undefined;
     this.disposeDivisionAdminBreakdownCharts();
-    this.stopParticipatingPartnersAutoRotate();
-    if (this.participatingPartnersFadeTimer != null) {
-      clearTimeout(this.participatingPartnersFadeTimer);
-      this.participatingPartnersFadeTimer = undefined;
+    this.stopActivePartnersAutoRotate();
+    if (this.activePartnersFadeTimer != null) {
+      clearTimeout(this.activePartnersFadeTimer);
+      this.activePartnersFadeTimer = undefined;
     }
   }
 
@@ -517,7 +521,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       treeSchoolYear: year,
       aipStatsSchoolYear: year,
       resourcePartnerSchoolYear: year,
-      participatingPartnersSchoolYear: year,
     };
   }
 
@@ -534,7 +537,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const isDivisionAdmin = userRole === UserType.DivisionAdmin;
     const isPendingRequestsRole =
       userRole === UserType.DivisionAdmin || userRole === UserType.SystemAdmin;
-    const isParticipatingPartnersAudience =
+    const isActivePartnersAudience =
       !this.authService.isLoggedIn() ||
       userRole === UserType.SchoolAdmin ||
       userRole === UserType.StakeHolder ||
@@ -548,7 +551,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         partnershipActivities: true,
         resourcePartnerBreakdown: isDivisionAdmin,
         pendingChangeRequests: isPendingRequestsRole,
-        participatingPartners: isParticipatingPartnersAudience,
+        activePartners: isActivePartnersAudience,
       },
       name,
       userRole,
@@ -566,21 +569,23 @@ export class HomeComponent implements OnInit, OnDestroy {
       partnershipActivities: [],
       pendingChangeRequests: [],
       pendingChangeRequestsTotal: 0,
-      participatingPartnersPool: [],
-      displayedParticipatingPartners: [],
+      activePartnersPool: [],
+      displayedActivePartners: [],
       resourceGenerationBreakdown: [],
       partnersBreakdown: [],
       resourcePartnerSchoolYear: getCurrentSchoolYear(),
       aipStatsSchoolYear: getCurrentSchoolYear(),
       treeSchoolYear: getCurrentSchoolYear(),
-      participatingPartnersSchoolYear: getCurrentSchoolYear(),
+      activePartnersSchoolYear: '',
+      activePartnersRotateIntervalSeconds:
+        DEFAULT_ACTIVE_PARTNERS_ROTATE_INTERVAL_SECONDS,
       showStats: false,
       hideTree: false,
       showVisitorCounter: false,
       showPartnershipActivities: false,
       showUpcomingEvents: false,
       showPendingRequests: false,
-      showParticipatingPartners: false,
+      showActivePartners: false,
       showPartnerEngagementAmounts: false,
       mountOnlineVisitorWidget: false,
       isSchoolAdminRole: false,
@@ -592,38 +597,76 @@ export class HomeComponent implements OnInit, OnDestroy {
   private buildLoadPipeline(): Observable<HomeState> {
     return defer(() => {
       const initial = this.withWidgetSchoolYearsSetToCurrent(this.getInitialState());
-      this.homeStateSubject.next(initial);
 
-      const loaders: { id: HomeLoaderId; obs: Observable<HomeState> }[] = [
-        { id: 'internalRef', obs: this.loadInternalRefData$(initial) },
-        { id: 'resourcePartner', obs: this.loadResourcePartnerBreakdown$(initial) },
-        { id: 'schoolNeeds', obs: this.loadSchoolNeeds$(initial) },
-        { id: 'aipStats', obs: this.loadAipStatsIfNeeded$(initial) },
-        { id: 'upcomingPlans', obs: this.loadUpcomingPlansIfNeeded$(initial) },
-        { id: 'partnershipActivities', obs: this.loadPartnershipActivitiesIfNeeded$(initial) },
-        { id: 'pendingChangeRequests', obs: this.loadPendingChangeRequestsIfNeeded$(initial) },
-        { id: 'participatingPartners', obs: this.loadParticipatingPartnersIfNeeded$(initial) },
-      ];
+      return this.applyActivePartnersDefaultSchoolYear$(initial).pipe(
+        switchMap((ready) => {
+          this.homeStateSubject.next(ready);
 
-      return merge(
-        ...loaders.map(({ id, obs }) =>
-          obs.pipe(
-            tap((loaded) => {
-              const merged = this.withComputedFlags(
-                this.mergeLoaderResult(this.homeStateSubject.getValue(), loaded, id),
-              );
-              this.homeStateSubject.next(merged);
-              this.maybeEnableDeferredUi(merged);
-              this.maybeSyncParticipatingPartnersAutoRotate(merged);
-            }),
-            catchError((err) => {
-              console.error(`Home loader error (${id}):`, err);
-              return EMPTY;
-            }),
-          ),
-        ),
-      ).pipe(map(() => this.homeStateSubject.getValue()));
+          const loaders: { id: HomeLoaderId; obs: Observable<HomeState> }[] = [
+            { id: 'internalRef', obs: this.loadInternalRefData$(ready) },
+            { id: 'resourcePartner', obs: this.loadResourcePartnerBreakdown$(ready) },
+            { id: 'schoolNeeds', obs: this.loadSchoolNeeds$(ready) },
+            { id: 'aipStats', obs: this.loadAipStatsIfNeeded$(ready) },
+            { id: 'upcomingPlans', obs: this.loadUpcomingPlansIfNeeded$(ready) },
+            { id: 'partnershipActivities', obs: this.loadPartnershipActivitiesIfNeeded$(ready) },
+            { id: 'pendingChangeRequests', obs: this.loadPendingChangeRequestsIfNeeded$(ready) },
+            { id: 'activePartners', obs: this.loadActivePartnersIfNeeded$(ready) },
+          ];
+
+          return merge(
+            ...loaders.map(({ id, obs }) =>
+              obs.pipe(
+                tap((loaded) => {
+                  const merged = this.withComputedFlags(
+                    this.mergeLoaderResult(this.homeStateSubject.getValue(), loaded, id),
+                  );
+                  this.homeStateSubject.next(merged);
+                  this.maybeEnableDeferredUi(merged);
+                  this.maybeSyncActivePartnersAutoRotate(merged);
+                }),
+                catchError((err) => {
+                  console.error(`Home loader error (${id}):`, err);
+                  return EMPTY;
+                }),
+              ),
+            ),
+          ).pipe(map(() => this.homeStateSubject.getValue()));
+        }),
+      );
     });
+  }
+
+  private applyActivePartnersDefaultSchoolYear$(state: HomeState): Observable<HomeState> {
+    if (!state.showActivePartners || state.activePartnersSchoolYear?.trim()) {
+      return of(state);
+    }
+
+    const schoolYearOptions = this.schoolYearWidgetOptions;
+    const currentSchoolYear = getCurrentSchoolYear();
+
+    return this.widgetService.getActivePartnersWidgetSettings().pipe(
+      map((settingsRes) => ({
+        ...state,
+        activePartnersSchoolYear: resolveActivePartnersSchoolYear(
+          settingsRes.data,
+          schoolYearOptions,
+          currentSchoolYear,
+        ),
+        activePartnersRotateIntervalSeconds:
+          settingsRes.data.rotateIntervalSeconds,
+      })),
+      catchError((err) => {
+        console.error('Error loading active partners widget settings:', err);
+        return of({
+          ...state,
+          activePartnersSchoolYear: schoolYearOptions.includes(currentSchoolYear)
+            ? currentSchoolYear
+            : schoolYearOptions[schoolYearOptions.length - 1] ?? currentSchoolYear,
+          activePartnersRotateIntervalSeconds:
+            DEFAULT_ACTIVE_PARTNERS_ROTATE_INTERVAL_SECONDS,
+        });
+      }),
+    );
   }
 
   private loadInternalRefData$(state: HomeState): Observable<HomeState> {
@@ -751,27 +794,27 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  onParticipatingPartnersSchoolYearChange(state: HomeState, schoolYear: string): void {
+  onActivePartnersSchoolYearChange(state: HomeState, schoolYear: string): void {
     if (
-      schoolYear === state.participatingPartnersSchoolYear ||
-      state.loading.participatingPartners
+      schoolYear === state.activePartnersSchoolYear ||
+      state.loading.activePartners
     ) {
       return;
     }
-    this.stopParticipatingPartnersAutoRotate();
+    this.stopActivePartnersAutoRotate();
     this.partnerAvatarErrors.clear();
     this.homeStateSubject.next({
       ...state,
-      participatingPartnersSchoolYear: schoolYear,
-      loading: { ...state.loading, participatingPartners: true },
+      activePartnersSchoolYear: schoolYear,
+      loading: { ...state.loading, activePartners: true },
     });
     const latest = this.homeStateSubject.getValue();
-    this.loadParticipatingPartnersIfNeeded$(latest).subscribe({
+    this.loadActivePartnersIfNeeded$(latest).subscribe({
       next: (result) => {
         this.homeStateSubject.next(result);
-        this.maybeSyncParticipatingPartnersAutoRotate(result);
+        this.maybeSyncActivePartnersAutoRotate(result);
       },
-      error: (err) => console.error('Participating partners reload error:', err),
+      error: (err) => console.error('Active partners reload error:', err),
     });
   }
 
@@ -1132,29 +1175,54 @@ export class HomeComponent implements OnInit, OnDestroy {
       );
   }
 
-  private loadParticipatingPartnersIfNeeded$(state: HomeState): Observable<HomeState> {
-    if (!state.showParticipatingPartners) {
-      return of({ ...state, loading: { ...state.loading, participatingPartners: false } });
+  private loadActivePartnersIfNeeded$(state: HomeState): Observable<HomeState> {
+    if (!state.showActivePartners) {
+      return of({ ...state, loading: { ...state.loading, activePartners: false } });
     }
-    return this.widgetService
-      .getParticipatingPartners(state.participatingPartnersSchoolYear, 100)
-      .pipe(
-      map((res) => {
-        const pool = res.data ?? [];
-        return {
-          ...state,
-          loading: { ...state.loading, participatingPartners: false },
-          participatingPartnersPool: pool,
-          displayedParticipatingPartners: pickWeightedParticipatingPartners(pool),
-        };
-      }),
+
+    const schoolYearOptions = this.schoolYearWidgetOptions;
+    const currentSchoolYear = getCurrentSchoolYear();
+    const schoolYear$ = state.activePartnersSchoolYear?.trim()
+      ? of(state.activePartnersSchoolYear.trim())
+      : this.widgetService.getActivePartnersWidgetSettings().pipe(
+          map((settingsRes) =>
+            resolveActivePartnersSchoolYear(
+              settingsRes.data,
+              schoolYearOptions,
+              currentSchoolYear,
+            ),
+          ),
+          catchError(() =>
+            of(
+              schoolYearOptions.includes(currentSchoolYear)
+                ? currentSchoolYear
+                : schoolYearOptions[schoolYearOptions.length - 1] ?? currentSchoolYear,
+            ),
+          ),
+        );
+
+    return schoolYear$.pipe(
+      switchMap((schoolYear) =>
+        this.widgetService.getActivePartners(schoolYear, 100).pipe(
+          map((res) => {
+            const pool = res.data ?? [];
+            return {
+              ...state,
+              activePartnersSchoolYear: schoolYear,
+              loading: { ...state.loading, activePartners: false },
+              activePartnersPool: pool,
+              displayedActivePartners: pickWeightedActivePartners(pool),
+            };
+          }),
+        ),
+      ),
       catchError((err) => {
-        console.error('Error loading participating partners:', err);
+        console.error('Error loading active partners:', err);
         return of({
           ...state,
-          loading: { ...state.loading, participatingPartners: false },
-          participatingPartnersPool: [],
-          displayedParticipatingPartners: [],
+          loading: { ...state.loading, activePartners: false },
+          activePartnersPool: [],
+          displayedActivePartners: [],
         });
       }),
     );
@@ -1167,83 +1235,88 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
-  private shouldAutoRotateParticipatingPartners(): boolean {
+  private shouldAutoRotateActivePartners(): boolean {
     return (
       !this.prefersReducedMotion() &&
-      this.isHomeWidgetExpanded('participatingPartners')
+      this.isHomeWidgetExpanded('activePartners')
     );
   }
 
-  private maybeSyncParticipatingPartnersAutoRotate(state: HomeState): void {
-    if (!state.showParticipatingPartners) {
-      this.stopParticipatingPartnersAutoRotate();
+  private maybeSyncActivePartnersAutoRotate(state: HomeState): void {
+    if (!state.showActivePartners) {
+      this.stopActivePartnersAutoRotate();
       return;
     }
-    if (state.loading.participatingPartners || state.participatingPartnersPool.length === 0) {
-      this.stopParticipatingPartnersAutoRotate();
+    if (state.loading.activePartners || state.activePartnersPool.length === 0) {
+      this.stopActivePartnersAutoRotate();
       return;
     }
-    if (this.shouldAutoRotateParticipatingPartners() && !this.participatingPartnersRotateTimer) {
-      this.startParticipatingPartnersAutoRotate();
+    if (this.shouldAutoRotateActivePartners() && !this.activePartnersRotateTimer) {
+      this.startActivePartnersAutoRotate();
     }
-    if (!this.shouldAutoRotateParticipatingPartners()) {
-      this.stopParticipatingPartnersAutoRotate();
+    if (!this.shouldAutoRotateActivePartners()) {
+      this.stopActivePartnersAutoRotate();
     }
   }
 
-  private startParticipatingPartnersAutoRotate(): void {
-    this.stopParticipatingPartnersAutoRotate();
-    if (!this.shouldAutoRotateParticipatingPartners()) {
+  private startActivePartnersAutoRotate(): void {
+    this.stopActivePartnersAutoRotate();
+    if (!this.shouldAutoRotateActivePartners()) {
       return;
     }
-    this.participatingPartnersRotateTimer = setInterval(
-      () => this.rotateDisplayedParticipatingPartners(),
-      PARTICIPATING_PARTNERS_ROTATE_MS,
-    );
-  }
-
-  private stopParticipatingPartnersAutoRotate(): void {
-    if (this.participatingPartnersRotateTimer != null) {
-      clearInterval(this.participatingPartnersRotateTimer);
-      this.participatingPartnersRotateTimer = undefined;
-    }
-  }
-
-  protected rotateDisplayedParticipatingPartners(): void {
     const state = this.homeStateSubject.getValue();
-    if (!state.participatingPartnersPool.length || state.loading.participatingPartners) {
+    const rotateMs = Math.max(
+      1000,
+      state.activePartnersRotateIntervalSeconds * 1000,
+    );
+    this.activePartnersRotateTimer = setInterval(
+      () => this.rotateDisplayedActivePartners(),
+      rotateMs,
+    );
+  }
+
+  private stopActivePartnersAutoRotate(): void {
+    if (this.activePartnersRotateTimer != null) {
+      clearInterval(this.activePartnersRotateTimer);
+      this.activePartnersRotateTimer = undefined;
+    }
+  }
+
+  protected rotateDisplayedActivePartners(): void {
+    const state = this.homeStateSubject.getValue();
+    if (!state.activePartnersPool.length || state.loading.activePartners) {
       return;
     }
-    if (this.participatingPartnersFading) {
+    if (this.activePartnersFading) {
       return;
     }
 
-    const fadeMs = this.prefersReducedMotion() ? 0 : PARTICIPATING_PARTNERS_FADE_MS;
-    this.participatingPartnersFading = true;
+    const fadeMs = this.prefersReducedMotion() ? 0 : ACTIVE_PARTNERS_FADE_MS;
+    this.activePartnersFading = true;
     this.cdr.markForCheck();
 
-    if (this.participatingPartnersFadeTimer != null) {
-      clearTimeout(this.participatingPartnersFadeTimer);
+    if (this.activePartnersFadeTimer != null) {
+      clearTimeout(this.activePartnersFadeTimer);
     }
 
-    this.participatingPartnersFadeTimer = setTimeout(() => {
+    this.activePartnersFadeTimer = setTimeout(() => {
       const latest = this.homeStateSubject.getValue();
-      const next = pickWeightedParticipatingPartners(latest.participatingPartnersPool);
+      const next = pickWeightedActivePartners(latest.activePartnersPool);
       this.homeStateSubject.next({
         ...latest,
-        displayedParticipatingPartners: next,
+        displayedActivePartners: next,
       });
-      this.participatingPartnersFading = false;
-      this.participatingPartnersFadeTimer = undefined;
+      this.activePartnersFading = false;
+      this.activePartnersFadeTimer = undefined;
       requestAnimationFrame(() => this.cdr.markForCheck());
     }, fadeMs);
   }
 
-  protected onParticipatingPartnersShuffleClick(event: Event): void {
+  protected onActivePartnersShuffleClick(event: Event): void {
     event.stopPropagation();
-    this.rotateDisplayedParticipatingPartners();
-    this.stopParticipatingPartnersAutoRotate();
-    this.startParticipatingPartnersAutoRotate();
+    this.rotateDisplayedActivePartners();
+    this.stopActivePartnersAutoRotate();
+    this.startActivePartnersAutoRotate();
   }
 
   private loadPendingChangeRequestsIfNeeded$(state: HomeState): Observable<HomeState> {
@@ -1379,11 +1452,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         }),
       );
     }
-    if (id === 'participatingPartners') {
+    if (id === 'activePartners') {
       if (next) {
-        this.maybeSyncParticipatingPartnersAutoRotate(this.homeStateSubject.getValue());
+        this.maybeSyncActivePartnersAutoRotate(this.homeStateSubject.getValue());
       } else {
-        this.stopParticipatingPartnersAutoRotate();
+        this.stopActivePartnersAutoRotate();
       }
     }
     this.cdr.markForCheck();
@@ -1427,7 +1500,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     return value ? formatDateTimeString(value) : '—';
   }
 
-  trackByParticipatingPartner(_index: number, partner: ParticipatingPartnerItem): string {
+  trackByActivePartner(_index: number, partner: ActivePartnerItem): string {
     return partner.stakeholderUserId;
   }
 
@@ -1458,7 +1531,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     partnershipActivities: 'partnership activities',
     upcomingEvents: 'upcoming events',
     pendingRequests: 'pending requests',
-    participatingPartners: 'participating partners',
+    activePartners: 'active partners',
   };
 
   /** Hover tooltip for the expand/collapse control. */

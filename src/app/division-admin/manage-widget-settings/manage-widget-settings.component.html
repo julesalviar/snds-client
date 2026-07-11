@@ -1,0 +1,179 @@
+<div class="widget-settings-page">
+  <h1 class="page-title">Widget settings</h1>
+  <p class="page-description">
+    Configure home page widgets for your division.
+  </p>
+
+  <mat-card *ngIf="isLoading" class="widget-settings-card widget-settings-skeleton-card" aria-hidden="true">
+    <div class="widget-settings-skeleton">
+      <div class="skeleton skeleton-card-title"></div>
+      <div class="skeleton skeleton-card-subtitle"></div>
+      <div class="skeleton skeleton-field"></div>
+      <div class="skeleton skeleton-field"></div>
+      <div class="skeleton skeleton-field"></div>
+      <div class="skeleton skeleton-field"></div>
+      <div class="skeleton skeleton-field"></div>
+      <div class="skeleton skeleton-toggle"></div>
+      <div class="skeleton skeleton-info-box"></div>
+      <div class="skeleton skeleton-actions"></div>
+    </div>
+  </mat-card>
+
+  <ng-container *ngIf="!isLoading">
+    <mat-card class="widget-settings-card">
+      <mat-card-header>
+        <mat-card-title>Active Partners</mat-card-title>
+        <mat-card-subtitle>
+          Controls which stakeholders appear on the home page Active Partners widget.
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width-field">
+          <mat-label>Minimum engagement amount</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="activePartnersSetting.minEngagementAmount"
+            (ngModelChange)="clearFieldError('minEngagementAmount')"
+            [disabled]="isSaving" />
+          <mat-error *ngIf="fieldErrors.minEngagementAmount">
+            {{ fieldErrors.minEngagementAmount }}
+          </mat-error>
+          <mat-hint>
+            Partners with total engagement at or below this amount are hidden. Default is {{ defaultMinAmount }}.
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width-field">
+          <mat-label>Default school year filter</mat-label>
+          <mat-select
+            [(ngModel)]="defaultSchoolYearSelection"
+            (ngModelChange)="clearFieldError('defaultSchoolYear')"
+            [disabled]="isSaving">
+            <mat-option value="">Current school year ({{ currentSchoolYear }})</mat-option>
+            <mat-option *ngFor="let year of schoolYearOptions" [value]="year">
+              {{ year }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="fieldErrors.defaultSchoolYear">
+            {{ fieldErrors.defaultSchoolYear }}
+          </mat-error>
+          <mat-hint>
+            School year selected when the home page first loads.
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width-field">
+          <mat-label>Rotation interval (seconds)</mat-label>
+          <input
+            matInput
+            type="number"
+            min="3"
+            max="300"
+            step="1"
+            [(ngModel)]="activePartnersSetting.rotateIntervalSeconds"
+            (ngModelChange)="clearFieldError('rotateIntervalSeconds')"
+            [disabled]="isSaving" />
+          <mat-error *ngIf="fieldErrors.rotateIntervalSeconds">
+            {{ fieldErrors.rotateIntervalSeconds }}
+          </mat-error>
+          <mat-hint>
+            Seconds between partner transitions on the home widget. Default is {{ defaultRotateIntervalSeconds }}.
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width-field">
+          <mat-label>Exclude stakeholders with tags</mat-label>
+          <mat-select
+            [(ngModel)]="activePartnersSetting.excludedTagKeys"
+            multiple
+            [disabled]="isSaving">
+            <mat-option *ngFor="let tag of tagOptions" [value]="tag.key">
+              {{ tag.label }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="tagOptions.length === 0">
+            No tags configured in reference data.
+          </mat-hint>
+          <mat-hint *ngIf="tagOptions.length > 0">
+            Stakeholders assigned any selected tag are hidden from the widget.
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width-field">
+          <mat-label>Exclude sectors</mat-label>
+          <mat-select
+            [(ngModel)]="activePartnersSetting.excludedSectors"
+            multiple
+            [disabled]="isSaving">
+            <mat-option *ngFor="let sector of sectorOptions" [value]="sector">
+              {{ sector }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="sectorOptions.length === 0">
+            No sectors configured in reference data.
+          </mat-hint>
+          <mat-hint *ngIf="sectorOptions.length > 0">
+            Stakeholders in any selected sector are hidden from the widget.
+          </mat-hint>
+        </mat-form-field>
+
+        <div class="toggle-row">
+          <mat-slide-toggle
+            [(ngModel)]="activePartnersSetting.excludePreInstalledStakeholders"
+            [disabled]="isSaving">
+            Exclude pre-installed stakeholders
+          </mat-slide-toggle>
+        </div>
+
+        <aside
+          class="widget-settings-info-box"
+          aria-label="How active partners are selected">
+          <div class="widget-settings-info-box__header">
+            <mat-icon class="widget-settings-info-box__icon" aria-hidden="true">info</mat-icon>
+            <span class="widget-settings-info-box__title">Weighted random selection</span>
+          </div>
+          <p class="widget-settings-info-box__text">
+            Up to {{ activePartnersMaxDisplay }} partners are displayed on the home widget at a time.
+            Each refresh picks partners at random <strong>without repeating</strong> within the same
+            view. Partners with higher total engagement for the selected school year are more likely
+            to appear.
+          </p>
+          <p class="widget-settings-info-box__formula">
+            <span class="widget-settings-info-box__formula-label">Weighted chance per draw</span>
+            <span
+              class="widget-settings-info-box__formula-math"
+              aria-label="Probability equals partner engagement divided by sum of remaining partners engagement">
+              P(partner) = <var>E</var><sub>partner</sub> ÷ Σ<var>E</var><sub>remaining</sub>
+            </span>
+          </p>
+          <p class="widget-settings-info-box__footnote">
+            <var>E</var> is total engagement amount. The shuffle button and automatic rotation both
+            use this weighted random selection.
+          </p>
+        </aside>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="resetActivePartnersToDefaults()"
+          [disabled]="isSaving">
+          Reset to defaults
+        </button>
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="saveActivePartners()"
+          [disabled]="isSaving">
+          Save Active Partners settings
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-container>
+</div>
