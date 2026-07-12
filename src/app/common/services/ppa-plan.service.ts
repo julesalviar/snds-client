@@ -27,6 +27,7 @@ export interface PpaPlanListParams {
   startDateTo?: string;
   endDateFrom?: string;
   endDateTo?: string;
+  division?: string;
 }
 
 @Injectable({
@@ -70,6 +71,9 @@ export class PpaPlanService {
     }
     if (params.endDateTo) {
       queryParams.push(`endDateTo=${encodeURIComponent(params.endDateTo)}`);
+    }
+    if (params.division?.trim()) {
+      queryParams.push(`division=${encodeURIComponent(params.division.trim())}`);
     }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.ppaPlan}?${queryParams.join('&')}` : API_ENDPOINT.ppaPlan;

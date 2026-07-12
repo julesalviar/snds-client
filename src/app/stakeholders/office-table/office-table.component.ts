@@ -108,9 +108,12 @@ export class OfficeTableComponent implements OnInit {
 
     fetchOfficeTableData(officeId?: string): void {
         this.isLoading = true;
-        const params: { limit: number; officeId?: string } = { limit: 1000 };
+        const params: { limit: number; officeId?: string; division?: string } = { limit: 1000 };
         if (officeId?.trim()) {
             params.officeId = officeId.trim();
+        }
+        if (this.divisionTitle?.trim()) {
+            params.division = this.divisionTitle.trim();
         }
         this.ppaPlanService.getList(params).subscribe({
             next: (res) => {
