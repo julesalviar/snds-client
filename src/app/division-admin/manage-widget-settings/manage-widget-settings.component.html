@@ -28,7 +28,7 @@
         </mat-card-subtitle>
       </mat-card-header>
 
-      <mat-card-content>
+      <mat-card-content class="widget-settings-card-content">
         <mat-form-field appearance="outline" class="full-width-field">
           <mat-label>Minimum engagement amount</mat-label>
           <input
@@ -130,11 +130,22 @@
         </div>
 
         <aside
+          *ngIf="showSelectionInfoBox"
           class="widget-settings-info-box"
           aria-label="How active partners are selected">
           <div class="widget-settings-info-box__header">
-            <mat-icon class="widget-settings-info-box__icon" aria-hidden="true">info</mat-icon>
-            <span class="widget-settings-info-box__title">Tier-weighted random selection</span>
+            <div class="widget-settings-info-box__title-row">
+              <mat-icon class="widget-settings-info-box__icon" aria-hidden="true">info</mat-icon>
+              <span class="widget-settings-info-box__title">Tier-weighted random selection</span>
+            </div>
+            <button
+              mat-icon-button
+              type="button"
+              class="widget-settings-info-box__dismiss"
+              aria-label="Dismiss selection info"
+              (click)="dismissSelectionInfoBox()">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
           <p class="widget-settings-info-box__text">
             Up to {{ activePartnersMaxDisplay }} partners are displayed on the home widget at a time.

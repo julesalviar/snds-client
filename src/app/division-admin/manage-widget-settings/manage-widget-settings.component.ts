@@ -33,6 +33,9 @@ import {
   SECTOR_REF_DATA_KEY,
 } from '../../common/utils/sector-reference-data.util';
 
+const ACTIVE_PARTNERS_SELECTION_INFO_DISMISSED_KEY =
+  'snds.activePartnersSelectionInfoDismissed';
+
 @Component({
   selector: 'app-manage-widget-settings',
   imports: [
@@ -61,6 +64,7 @@ export class ManageWidgetSettingsComponent implements OnInit {
 
   isLoading = true;
   isSaving = false;
+  showSelectionInfoBox = true;
   tagOptions: UserTagRef[] = [];
   sectorOptions: string[] = [];
   fieldErrors: ActivePartnersWidgetSettingFieldErrors = {};
@@ -77,7 +81,13 @@ export class ManageWidgetSettingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.showSelectionInfoBox = !this.isSelectionInfoDismissed();
     void this.load();
+  }
+
+  dismissSelectionInfoBox(): void {
+    this.setSelectionInfoDismissed();
+    this.showSelectionInfoBox = false;
   }
 
   get defaultSchoolYearSelection(): string {
@@ -176,5 +186,22 @@ export class ManageWidgetSettingsComponent implements OnInit {
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', { duration: 6000 });
+  }
+
+  private isSelectionInfoDismissed(): boolean {
+    if (typeof sessionStorage === 'undefined') {
+      return false;
+    }
+    return (
+      sessionStorage.getItem(ACTIVE_PARTNERS_SELECTION_INFO_DISMISSED_KEY) ===
+      'true'
+    );
+  }
+
+  private setSelectionInfoDismissed(): void {
+    if (typeof sessionStorage === 'undefined') {
+      return;
+    }
+    sessionStorage.setItem(ACTIVE_PARTNERS_SELECTION_INFO_DISMISSED_KEY, 'true');
   }
 }

@@ -19,6 +19,8 @@ describe('ManageWidgetSettingsComponent', () => {
   let showSuccessSpy: jasmine.Spy;
 
   beforeEach(async () => {
+    sessionStorage.removeItem('snds.activePartnersSelectionInfoDismissed');
+
     divisionSettingsService = jasmine.createSpyObj('DivisionSettingsService', [
       'getActivePartnersWidgetSetting',
       'updateActivePartnersWidgetSetting',
@@ -55,10 +57,45 @@ describe('ManageWidgetSettingsComponent', () => {
     ).and.callThrough();
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows the selection info box by default', () => {
+    expect(component.showSelectionInfoBox).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('.widget-settings-info-box'),
+    ).toBeTruthy();
+  });
+
+  it('hides the selection info box when dismissed for the session', () => {
+    component.dismissSelectionInfoBox();
+    fixture.detectChanges();
+
+    expect(component.showSelectionInfoBox).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('.widget-settings-info-box'),
+    ).toBeNull();
+    expect(
+      sessionStorage.getItem('snds.activePartnersSelectionInfoDismissed'),
+    ).toBe('true');
+  });
+
+  it('keeps the selection info box hidden when session storage is set', async () => {
+    sessionStorage.setItem('snds.activePartnersSelectionInfoDismissed', 'true');
+    fixture = TestBed.createComponent(ManageWidgetSettingsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.showSelectionInfoBox).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('.widget-settings-info-box'),
+    ).toBeNull();
   });
 
   it('shows field validation errors and skips save for invalid input', async () => {

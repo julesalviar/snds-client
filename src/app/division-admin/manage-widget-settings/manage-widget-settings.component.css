@@ -30,50 +30,88 @@ mat-card-actions {
   gap: 8px;
 }
 
+.widget-settings-card mat-card-actions {
+  margin-top: 12px;
+}
+
+.widget-settings-card-content {
+  display: block;
+}
+
 .toggle-row {
   margin-top: 16px;
+  margin-bottom: 0;
 }
 
 .widget-settings-info-box {
   margin-top: 20px;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid rgba(40, 167, 69, 0.2);
   background: rgba(40, 167, 69, 0.06);
   color: #475569;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 
 .widget-settings-info-box__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: #166534;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
-.widget-settings-info-box__icon {
+.widget-settings-info-box__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.widget-settings-info-box__dismiss {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin: -4px -8px -4px 0;
+  padding: 0;
+  color: #64748b;
+}
+
+.widget-settings-info-box__dismiss mat-icon {
   width: 18px;
   height: 18px;
   font-size: 18px;
 }
 
+.widget-settings-info-box__dismiss:hover {
+  color: #475569;
+  background: rgba(100, 116, 139, 0.12);
+}
+
+.widget-settings-info-box__icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
 .widget-settings-info-box__text,
 .widget-settings-info-box__footnote {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
 
 .widget-settings-info-box__footnote {
   margin-bottom: 0;
-  font-size: 0.8125rem;
+  font-size: 0.6875rem;
   color: #64748b;
 }
 
 .widget-settings-info-box__formula {
-  margin: 0 0 10px;
-  padding: 10px 12px;
+  margin: 0 0 8px;
+  padding: 8px 10px;
   border-radius: 6px;
   background: #fff;
   border: 1px solid rgba(40, 167, 69, 0.14);
@@ -81,8 +119,8 @@ mat-card-actions {
 
 .widget-settings-info-box__formula-label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 0.75rem;
+  margin-bottom: 4px;
+  font-size: 0.6875rem;
   font-weight: 600;
   color: #166534;
   text-transform: uppercase;
@@ -92,7 +130,7 @@ mat-card-actions {
 .widget-settings-info-box__formula-math {
   display: block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.9375rem;
+  font-size: 0.75rem;
   color: #0f172a;
 }
 
@@ -157,7 +195,7 @@ mat-card-actions {
 }
 
 .skeleton-info-box {
-  height: 148px;
+  height: 132px;
   width: 100%;
   margin-top: 12px;
 }
