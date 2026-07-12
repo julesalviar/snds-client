@@ -134,25 +134,36 @@
           aria-label="How active partners are selected">
           <div class="widget-settings-info-box__header">
             <mat-icon class="widget-settings-info-box__icon" aria-hidden="true">info</mat-icon>
-            <span class="widget-settings-info-box__title">Weighted random selection</span>
+            <span class="widget-settings-info-box__title">Tier-weighted random selection</span>
           </div>
           <p class="widget-settings-info-box__text">
             Up to {{ activePartnersMaxDisplay }} partners are displayed on the home widget at a time.
             Each refresh picks partners at random <strong>without repeating</strong> within the same
-            view. Partners with higher total engagement for the selected school year are more likely
-            to appear.
+            view. The pool is sorted by engagement rank and grouped into three tiers:
+            <strong>Tier A</strong> (top 20%), <strong>Tier B</strong> (next 30%, ranks 20%–50%),
+            and <strong>Tier C</strong> (bottom 50%). Each draw first rolls which tier to pick from,
+            then selects a partner within that tier weighted by engagement. Top contributors stay
+            more likely to appear, while lower-ranked partners still get a real chance each refresh.
           </p>
           <p class="widget-settings-info-box__formula">
-            <span class="widget-settings-info-box__formula-label">Weighted chance per draw</span>
+            <span class="widget-settings-info-box__formula-label">Tier chance per draw</span>
             <span
               class="widget-settings-info-box__formula-math"
-              aria-label="Probability equals partner engagement divided by sum of remaining partners engagement">
-              P(partner) = <var>E</var><sub>partner</sub> ÷ Σ<var>E</var><sub>remaining</sub>
+              aria-label="Tier A probability four ninths, tier B three ninths, tier C two ninths, renormalized if a tier is exhausted">
+              P(A) = 4/9 · P(B) = 3/9 · P(C) = 2/9
+            </span>
+          </p>
+          <p class="widget-settings-info-box__formula">
+            <span class="widget-settings-info-box__formula-label">Within chosen tier</span>
+            <span
+              class="widget-settings-info-box__formula-math"
+              aria-label="Partner probability equals partner engagement divided by sum of engagement in the chosen tier">
+              P(partner) = <var>E</var><sub>partner</sub> ÷ Σ<var>E</var><sub>tier</sub>
             </span>
           </p>
           <p class="widget-settings-info-box__footnote">
             <var>E</var> is total engagement amount. The shuffle button and automatic rotation both
-            use this weighted random selection.
+            use this tier-weighted selection.
           </p>
         </aside>
       </mat-card-content>
