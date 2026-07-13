@@ -1,6 +1,6 @@
 <mat-card>
   <mat-card-header>
-    <mat-card-title>PPA Accomplishment Summary Table</mat-card-title>
+    <mat-card-title><mat-icon>bar_chart</mat-icon> PPA Accomplishment Summary Table</mat-card-title>
   </mat-card-header>
   <mat-card-content>
     @if (isLoading) {
@@ -16,6 +16,7 @@
     }
 
     @if (!isLoading && dataSource.length > 0) {
+      <div class="table-hint">Note: Click on the numbers to see the list of PPAs.</div>
       <div class="table-wrapper">
         <table>
           <thead>
@@ -38,8 +39,8 @@
               <tr>
                 <td class="cell-division">{{ row.displayName }}</td>
                 @for (col of classificationColumns; track col.key) {
-                  <td class="cell-numeric">{{ row.classifications[col.key].ppaCount}}</td>
-                  <td class="cell-numeric">{{ row.classifications[col.key].completedCount }}</td>
+                  <td class="cell-numeric cell-clickable" (click)="onCellClick(row, col.key, 'total')">{{ row.classifications[col.key].ppaCount}}</td>
+                  <td class="cell-numeric cell-clickable" (click)="onCellClick(row, col.key, 'completed')">{{ row.classifications[col.key].completedCount }}</td>
                   <td class="cell-numeric cell-pct">{{ row.classifications[col.key].percentage }}%</td>
                 }
               </tr>
@@ -57,6 +58,64 @@
           </tfoot>
         </table>
       </div>
+      @if (expandedCell) {
+        <div class="expanded-section">
+          <div class="detail-header">
+            <button mat-icon-button class="detail-close-btn" (click)="expandedCell = null; detailPpas = []">
+              <mat-icon>close</mat-icon>
+            </button>
+            <span class="detail-title-text">{{ expandedCell.type === 'total' ? 'All PPAs' : 'Completed PPAs' }} — {{ getExpandedRowDisplayName() }} / {{ classificationDisplay.getDisplayText(expandedCell.classification) }}</span>
+          </div>
+          @if (isLoadingDetail) {
+            <mat-progress-bar mode="indeterminate" />
+          } @else if (detailPpas.length === 0) {
+            <span>No PPA records found.</span>
+          } @else {
+            <div class="detail-scroll">
+              <table class="detail-table">
+                <thead>
+                  <tr>
+                    <th>KRA</th>
+                    <th>Title</th>
+                    <th>Activity</th>
+                    <th>Objective</th>
+                    <th>Classification</th>
+                    <th>Schedule</th>
+                    <th>Expected Output</th>
+                    <th>Venue</th>
+                    <th>Budget</th>
+                    <th>Fund Source</th>
+                    <th>Participants</th>
+                    <th>Support Need</th>
+                    <th>Support Received</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ppa of detailPpas; track ppa._id) {
+                    <tr>
+                      <td>{{ ppa.kra }}</td>
+                      <td>{{ ppa.title }}</td>
+                      <td>{{ ppa.activity }}</td>
+                      <td>{{ ppa.objective }}</td>
+                      <td>{{ ppa.classification }}</td>
+                      <td>{{ ppa.implementationStartDate }} ~ {{ ppa.implementationEndDate }}</td>
+                      <td>{{ ppa.expectedOutput }}</td>
+                      <td>{{ ppa.venue }}</td>
+                      <td>{{ ppa.budgetaryRequirement | number:'1.2-2' }}</td>
+                      <td>{{ ppa.fundSource }}</td>
+                      <td>{{ ppa.participants }}</td>
+                      <td>{{ ppa.supportNeed }}</td>
+                      <td>{{ ppa.supportReceivedValue }}</td>
+                      <td>{{ ppa.implementationStatus }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
     }
   </mat-card-content>
 </mat-card>
