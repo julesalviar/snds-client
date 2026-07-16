@@ -22,6 +22,7 @@ export interface PpaPlanListParams {
   implementationStatus?: string;
   assignedUserId?: string;
   officeId?: string;
+  division?: string;
   stakeholderUserId?: string;
   startDateFrom?: string;
   startDateTo?: string;
@@ -56,6 +57,9 @@ export class PpaPlanService {
     }
     if (params.officeId?.trim()) {
       queryParams.push(`officeId=${encodeURIComponent(params.officeId.trim())}`);
+    }
+    if (params.division?.trim()) {
+      queryParams.push(`division=${encodeURIComponent(params.division.trim())}`);
     }
     if (params.stakeholderUserId?.trim()) {
       queryParams.push(`stakeholderUserId=${encodeURIComponent(params.stakeholderUserId.trim())}`);
