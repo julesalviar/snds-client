@@ -51,6 +51,7 @@ import { VerifyEmailChangeComponent } from './verify-email-change/verify-email-c
 import { EmailChangeVerifiedComponent } from './email-change-verified/email-change-verified.component';
 import { ChangeRequestsComponent } from './division-admin/change-requests/change-requests.component';
 import { AccomplishmentSummaryComponent } from './division-admin/office/accomplishment-summary/accomplishment-summary.component';
+import { FeedbackRatingsComponent } from './division-admin/feedback-ratings/feedback-ratings.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
@@ -154,6 +155,7 @@ export const routes: Routes = [
       {path: 'close-registration', component: DivisionAdminComponent},
       {path: 'create-partnership-link', component: DivisionAdminComponent},
       {path: 'generated-resources', component: GeneratedResourcesComponent},
+      {path: 'feedback-ratings', component: FeedbackRatingsComponent},
       {path: 'stakeholders-profile', component: StakeholdersProfileComponent},
       {path: 'manage-announcements', component: ManageAnnouncementsComponent},
       {path: 'office/accomplishment-summary', component: AccomplishmentSummaryComponent },
