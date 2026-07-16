@@ -132,4 +132,10 @@ export class EngagementService {
       catchError(this.httpService.handleError)
     );
   }
+
+  submitRating(engagementId: string, rating: number | null): Observable<any> {
+    return this.httpService
+      .patch(`${API_ENDPOINT.engagements}/${engagementId}/rating`, { rating })
+      .pipe(catchError(this.httpService.handleError));
+  }
 }

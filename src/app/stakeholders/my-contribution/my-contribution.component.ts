@@ -13,17 +13,23 @@ import {
 import {MatButtonModule} from '@angular/material/button';
 import {MatCard, MatCardTitle} from '@angular/material/card';
 import {MatIcon, MatIconModule} from '@angular/material/icon';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {MyContribution} from '../../common/model/my-contribution.model';
 import {EngagementService} from "../../common/services/engagement.service";
 import {getSchoolYear, getSchoolYearOptions} from "../../common/date-utils";
 import {ThumbnailUtils} from "../../common/utils/thumbnail.utils";
 import {SchoolNeedImage} from "../../common/model/school-need.model";
 import {Router} from "@angular/router";
+import {
+  getRatingCssColor,
+  getRatingIcon,
+  getRatingLabel,
+  RATING_OPTIONS,
+  RatingValue,
+} from "../../common/utils/rating.util";
 
 @Component({
   selector: 'app-my-contribution',
@@ -42,10 +48,10 @@ import {Router} from "@angular/router";
     MatCardTitle,
     MatIcon,
     MatIconModule,
-    MatProgressBarModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatTooltipModule],
+    MatTooltipModule,
+    MatSnackBarModule],
 })
 export class MyContributionComponent implements OnInit {
   displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements', 'mov', 'feedback', 'actions'];
@@ -55,6 +61,8 @@ export class MyContributionComponent implements OnInit {
   loading = false;
   error: string | null = null;
   expandedRowId: string | null = null;
+  submittingRatingId: string | null = null;
+  readonly ratingOptions = RATING_OPTIONS;
 
   constructor(
     private readonly engagementService: EngagementService,
@@ -96,33 +104,57 @@ export class MyContributionComponent implements OnInit {
     ThumbnailUtils.onImageError(event);
   }
 
-  onFeedbackClick(contribution: Contribution, feedbackValue: string): void {
-    (contribution as any).feedback = feedbackValue;
+  onRatingClick(contribution: MyContribution, rating: RatingValue | null): void {
+    if (!contribution._id || this.submittingRatingId === contribution._id) {
+      return;
+    }
 
+    const previousRating = contribution.rating;
+    contribution.rating = rating ?? undefined;
     this.expandedRowId = null;
+    this.submittingRatingId = contribution._id;
 
-    this.snackBar.open('Feedback feature is work in progress', 'Close', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'top',
-      panelClass: ['info-snackbar']
+    this.engagementService.submitRating(contribution._id, rating).subscribe({
+      next: () => {
+        this.submittingRatingId = null;
+        this.snackBar.open(
+          rating === null ? 'Feedback cleared' : 'Feedback saved',
+          'Close',
+          {
+            duration: 2500,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['info-snackbar']
+          }
+        );
+      },
+      error: (error) => {
+        contribution.rating = previousRating;
+        this.submittingRatingId = null;
+        console.error('Error submitting rating:', error);
+        this.snackBar.open('Failed to save feedback. Please try again.', 'Close', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
     });
-
-    // TODO: Send feedback to backend API
-    console.log('Feedback submitted:', {
-      contribution: contribution,
-      feedback: feedbackValue
-    });
-
-    // this.engagementService.submitFeedback(contribution.engagement, feedbackValue).subscribe(...);
   }
 
-  getRowId(contribution: Contribution): string {
-    const rowId = `${contribution.need}-${contribution.schoolName}-${contribution.engagement}`.replace(/\s+/g, '-');
-    return rowId;
+  clearRating(contribution: MyContribution): void {
+    this.onRatingClick(contribution, null);
   }
 
-  toggleFeedbackExpansion(contribution: Contribution): void {
+  getRowId(contribution: MyContribution): string {
+    return contribution._id;
+  }
+
+  toggleFeedbackExpansion(contribution: MyContribution): void {
+    if (this.submittingRatingId === contribution._id) {
+      return;
+    }
+
     const rowId = this.getRowId(contribution);
 
     if (this.expandedRowId === rowId) {
@@ -132,38 +164,9 @@ export class MyContributionComponent implements OnInit {
     }
   }
 
-  getFeedbackIcon(feedback: string): string {
-    const iconMap: { [key: string]: string } = {
-      'very-dissatisfied': 'sentiment_very_dissatisfied',
-      'dissatisfied': 'sentiment_dissatisfied',
-      'neutral': 'sentiment_neutral',
-      'satisfied': 'sentiment_satisfied',
-      'very-satisfied': 'sentiment_very_satisfied'
-    };
-    return iconMap[feedback] || 'rate_review';
-  }
-
-  getFeedbackColor(feedback: string): string {
-    if (feedback === 'very-dissatisfied' || feedback === 'dissatisfied') {
-      return 'warn';
-    } else if (feedback === 'neutral') {
-      return 'accent';
-    } else if (feedback === 'satisfied' || feedback === 'very-satisfied') {
-      return 'primary';
-    }
-    return '';
-  }
-
-  getFeedbackLabel(feedback: string): string {
-    const labelMap: { [key: string]: string } = {
-      'very-dissatisfied': 'Very Dissatisfied',
-      'dissatisfied': 'Dissatisfied',
-      'neutral': 'Neutral',
-      'satisfied': 'Satisfied',
-      'very-satisfied': 'Very Satisfied'
-    };
-    return labelMap[feedback] || '';
-  }
+  getRatingIcon = getRatingIcon;
+  getRatingCssColor = getRatingCssColor;
+  getRatingLabel = getRatingLabel;
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent): void {
@@ -194,14 +197,4 @@ export class MyContributionComponent implements OnInit {
     this.router.navigate(['/stakeholder/school-need-view/', contribution.schoolNeedId?.code]);
   }
 
-}
-
-interface Contribution {
-  need: string;
-  schoolName: string;
-  schoolYear: string;
-  quantity: number;
-  amount: number;
-  engagement: string;
-  images: SchoolNeedImage[];
 }

@@ -1,6 +1,7 @@
 import { SchoolInfo } from './school.model';
 
 export interface MyContribution {
+  _id: string;
   amount: number;
   quantity: number;
   signingDate: string;
@@ -14,7 +15,8 @@ export interface MyContribution {
     code: number;
     specificContribution: string;
     images: Image[];
-  }
+  };
+  rating?: number;
 }
 
 export interface Image {

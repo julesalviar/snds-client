@@ -39,6 +39,7 @@ export interface Engagement {
   projectName?: string;
   agreementStatus?: string;
   initiatedBy?: string;
+  rating?: number;
   createdAt?: string;
   updatedAt?: string;
 }
