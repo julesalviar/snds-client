@@ -112,6 +112,10 @@ export class AccomplishmentSummaryComponent implements OnInit {
   ): void {
     this.ppaPlanService.getList({ ...baseParams, page, limit: 1000 }).subscribe({
       next: ({ data, totalItems }) => {
+        const cell = this.expandedCell;
+        const expectedStatus = cell?.type === 'completed' ? 'Fully Implemented' : undefined;
+        if (!cell || cell.division !== baseParams.division || cell.classification !== baseParams.classification || (baseParams.implementationStatus ?? undefined) !== expectedStatus) return;
+
         this.detailPpas.push(...data);
         if (page * 1000 < totalItems) {
           this.loadDetailPages(baseParams, page + 1);
@@ -119,7 +123,12 @@ export class AccomplishmentSummaryComponent implements OnInit {
           this.isLoadingDetail = false;
         }
       },
-      error: () => { this.isLoadingDetail = false; },
+      error: () => {
+        const cell = this.expandedCell;
+        const expectedStatus = cell?.type === 'completed' ? 'Fully Implemented' : undefined;
+        if (!cell || cell.division !== baseParams.division || cell.classification !== baseParams.classification || (baseParams.implementationStatus ?? undefined) !== expectedStatus) return;
+        this.isLoadingDetail = false;
+      },
     });
   }
 }
