@@ -37,13 +37,13 @@ describe('PpaPlanService', () => {
     });
   });
 
-  it('getList with division includes encoded division query param', (done) => {
+  it('getList with division includes encoded division query param once', (done) => {
     const division = 'School Governance & Operations Division';
     service.getList({ division }).subscribe(() => {
       const url = httpService.get.calls.mostRecent().args[0] as string;
-      expect(url).toContain(
-        `division=${encodeURIComponent(division)}`,
-      );
+      const encoded = `division=${encodeURIComponent(division)}`;
+      expect(url).toContain(encoded);
+      expect(url.split(encoded).length - 1).toBe(1);
       done();
     });
   });

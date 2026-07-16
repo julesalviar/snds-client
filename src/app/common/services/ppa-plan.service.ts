@@ -75,9 +75,6 @@ export class PpaPlanService {
     if (params.endDateTo) {
       queryParams.push(`endDateTo=${encodeURIComponent(params.endDateTo)}`);
     }
-    if (params.division?.trim()) {
-      queryParams.push(`division=${encodeURIComponent(params.division.trim())}`);
-    }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.ppaPlan}?${queryParams.join('&')}` : API_ENDPOINT.ppaPlan;
     return this.httpService.get<PpaPlan[] | PpaPlanListResponse | { data?: unknown; meta?: { totalItems?: number } }>(url).pipe(
