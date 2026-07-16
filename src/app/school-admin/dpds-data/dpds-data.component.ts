@@ -15,7 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser, PopulatedSchoolNeed } from '../../common/model/engagement.model';
-import { getSchoolYear } from '../../common/date-utils';
+import { getSchoolYear, getSchoolYearOptions } from '../../common/date-utils';
 import { SchoolInfo } from '../../common/model/school-need.model';
 import { AuthService } from '../../auth/auth.service';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
@@ -73,7 +73,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   /*FILTER STATE*/
   filterType: 'schoolYear' | 'dateRange' | null = null;
-  schoolYears: string[] = [];
+  schoolYears: string[] = getSchoolYearOptions();
   selectedSchoolYear: string | null = null;
   dateRangeType: 'period' | 'custom' | null = null;
   selectedPeriod: string | null = null;
@@ -145,7 +145,6 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     private readonly authService: AuthService,
     private readonly referenceDataService: ReferenceDataService,
   ) {
-    this.schoolYears = this.generateSchoolYears();
     this.selectedSchoolYear = getSchoolYear();
   }
 
@@ -212,18 +211,6 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.consolidatedData.paginator = this.paginator;
-  }
-
-  private generateSchoolYears(): string[] {
-    const currentSchoolYear = getSchoolYear();
-    const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
-    const years: string[] = [];
-
-    for (let year = currentStartYear; year >= 2024; year--) {
-      years.push(`${year}-${year + 1}`);
-    }
-
-    return years;
   }
 
   loadEngagements(): void {

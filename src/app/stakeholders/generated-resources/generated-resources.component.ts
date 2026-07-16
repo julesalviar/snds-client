@@ -15,7 +15,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { FormsModule } from '@angular/forms';
 import { EngagementService } from '../../common/services/engagement.service';
 import { Engagement, PopulatedStakeholderUser } from '../../common/model/engagement.model';
-import { getSchoolYear } from '../../common/date-utils';
+import { getSchoolYear, getSchoolYearOptions } from '../../common/date-utils';
 import {UserType} from "../../registration/user-type.enum";
 import {AuthService} from "../../auth/auth.service";
 import { ReferenceDataService } from '../../common/services/reference-data.service';
@@ -77,7 +77,7 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
   backendTotalAmount: number = 0; // Total amount from backend (overall total)
 
   // Filter properties
-  schoolYears: string[] = [];
+  schoolYears: string[] = getSchoolYearOptions();
   selectedSchoolYear: string | null = null;
   filterType: 'schoolYear' | 'dateRange' = 'schoolYear'; // Always requires a filter
   dateRangeType: 'period' | 'custom' = 'period';
@@ -107,7 +107,6 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
     private readonly authService: AuthService,
     private readonly referenceDataService: ReferenceDataService,
   ) {
-    this.schoolYears = this.generateSchoolYears();
     // Set default filter to current school year
     this.selectedSchoolYear = getSchoolYear();
   }
@@ -123,19 +122,6 @@ export class GeneratedResourcesComponent implements OnInit, AfterViewInit {
       this.referenceDataService.get(SECTOR_REF_DATA_KEY),
     );
     this.sectorOptions = names.map((name) => ({ value: name, label: name }));
-  }
-
-  private generateSchoolYears(): string[] {
-    const currentSchoolYear = getSchoolYear();
-    const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
-    const years: string[] = [];
-
-    // Generate from 2025-2026 to the current school year
-    for (let year = currentStartYear; year >= 2025; year--) {
-      years.push(`${year}-${year + 1}`);
-    }
-
-    return years;
   }
 
   ngAfterViewInit() {

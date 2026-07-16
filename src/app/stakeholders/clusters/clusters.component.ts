@@ -4,18 +4,18 @@ import { CommonModule } from '@angular/common';
 import { MatCard, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatIconButton } from '@angular/material/button';
+import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { SchoolService } from '../../common/services/school.service';
 import {InternalReferenceDataService} from "../../common/services/internal-reference-data.service";
 import {AuthService} from "../../auth/auth.service";
 import { ZeroReplacePipe } from '../../common/pipes/zero-replace.pipe';
+import { getSchoolYear, getSchoolYearOptions } from '../../common/date-utils';
 
 @Component({
   selector: 'app-clusters',
@@ -28,12 +28,12 @@ import { ZeroReplacePipe } from '../../common/pipes/zero-replace.pipe';
     MatIcon,
     MatTooltipModule,
     MatIconButton,
+    MatButtonModule,
     MatPaginator,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
     FormsModule,
-    MatProgressBarModule,
     ZeroReplacePipe,
   ],
   templateUrl: './clusters.component.html',
@@ -51,6 +51,9 @@ export class ClustersComponent implements OnInit {
   selectedCluster: string = '';
   clusterOptions: any[] = [];
   isLoading: boolean = true;
+
+  schoolYears: string[] = getSchoolYearOptions();
+  selectedSchoolYear: string = getSchoolYear();
 
   constructor(
     private readonly schoolService: SchoolService,
@@ -79,7 +82,6 @@ export class ClustersComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error loading cluster options:', error);
-      // Fallback to empty options
       this.clusterOptions = [
         { value: '', label: 'All Districts/Clusters' }
       ];
@@ -87,8 +89,25 @@ export class ClustersComponent implements OnInit {
   }
 
   onClusterChange(): void {
-    this.pageIndex = 0; // Reset to first page when filtering
-    this.loadSchoolsWithPagination(); // Reload schools with new district filter
+    this.pageIndex = 0;
+    this.loadSchoolsWithPagination();
+  }
+
+  onSchoolYearChange(schoolYear: string | null): void {
+    this.selectedSchoolYear = schoolYear || getSchoolYear();
+    this.pageIndex = 0;
+    this.loadSchoolsWithPagination();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!this.selectedCluster || this.selectedSchoolYear !== getSchoolYear();
+  }
+
+  clearFilters(): void {
+    this.selectedCluster = '';
+    this.selectedSchoolYear = getSchoolYear();
+    this.pageIndex = 0;
+    this.loadSchoolsWithPagination();
   }
 
   updateDataSource(): void {
@@ -102,16 +121,18 @@ export class ClustersComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
-    // Load data from service with pagination
     this.loadSchoolsWithPagination();
   }
 
   loadSchoolsWithPagination(): void {
     this.isLoading = true;
-    this.schoolService.getSchools(this.pageIndex + 1, this.pageSize, this.selectedCluster).subscribe({
+    this.schoolService.getSchools(
+      this.pageIndex + 1,
+      this.pageSize,
+      this.selectedCluster,
+      this.selectedSchoolYear,
+    ).subscribe({
       next: (response) => {
-        // Assuming the API returns data in a specific format
-        // Adjust this based on your actual API response structure
         this.schoolList = response.data ?? response ?? [];
         this.totalItems = response.meta?.totalItems ?? this.schoolList.length;
         this.filteredSchoolList = [...this.schoolList];
@@ -121,9 +142,9 @@ export class ClustersComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading schools with pagination:', error);
-        // Fallback to empty array if API fails
         this.schoolList = [];
         this.filteredSchoolList = [];
+        this.totalItems = 0;
         this.updateDataSource();
         this.calculateSummaryStats();
         this.isLoading = false;

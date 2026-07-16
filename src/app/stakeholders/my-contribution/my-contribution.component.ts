@@ -20,7 +20,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MyContribution} from '../../common/model/my-contribution.model';
 import {EngagementService} from "../../common/services/engagement.service";
-import {getSchoolYear} from "../../common/date-utils";
+import {getSchoolYear, getSchoolYearOptions} from "../../common/date-utils";
 import {ThumbnailUtils} from "../../common/utils/thumbnail.utils";
 import {SchoolNeedImage} from "../../common/model/school-need.model";
 import {Router} from "@angular/router";
@@ -50,7 +50,7 @@ import {Router} from "@angular/router";
 export class MyContributionComponent implements OnInit {
   displayedColumns: string[] = ['need', 'schoolName', 'schoolYear', 'quantity', 'amount', 'engagements', 'mov', 'feedback', 'actions'];
   dataSource = new MatTableDataSource<MyContribution>([]);
-  schoolYears: string[] = [];
+  schoolYears: string[] = getSchoolYearOptions();
   selectedSchoolYear: string = getSchoolYear();
   loading = false;
   error: string | null = null;
@@ -60,9 +60,7 @@ export class MyContributionComponent implements OnInit {
     private readonly engagementService: EngagementService,
     private readonly router: Router,
     private readonly snackBar: MatSnackBar
-  ) {
-    this.schoolYears = this.generateSchoolYears();
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadMyContributions(this.selectedSchoolYear);
@@ -83,19 +81,6 @@ export class MyContributionComponent implements OnInit {
         console.error('Error loading contributions:', error);
       }
     });
-  }
-
-  private generateSchoolYears(): string[] {
-    const currentSchoolYear = getSchoolYear();
-    const currentStartYear = parseInt(currentSchoolYear.split('-')[0]);
-    const years: string[] = [];
-
-    // Generate from 2015-2016 to current school year
-    for (let year = currentStartYear; year >= 2015; year--) {
-      years.push(`${year}-${year + 1}`);
-    }
-
-    return years;
   }
 
   onSchoolYearChange(schoolYear: string): void {

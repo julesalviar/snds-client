@@ -49,7 +49,7 @@ export class SchoolService {
     );
   }
 
-  getSchools(page: number, limit: number, district?: string): Observable<any> {
+  getSchools(page: number, limit: number, district?: string, schoolYear?: string): Observable<any> {
     let url = API_ENDPOINT.schools;
     const params: string[] = ['withNeed=true', 'withAip=true', 'withGeneratedResources=true'];
 
@@ -63,6 +63,10 @@ export class SchoolService {
 
     if (district) {
       params.push(`district=${encodeQueryValue(district.toLowerCase().trim())}`);
+    }
+
+    if (schoolYear) {
+      params.push(`schoolYear=${encodeURIComponent(schoolYear)}`);
     }
 
     url += `?${params.join('&')}`;
