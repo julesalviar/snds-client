@@ -28,7 +28,7 @@
     <mat-form-field appearance="outline" class="filter-field">
       <mat-label>Feedback Status</mat-label>
       <mat-select
-        [(value)]="feedbackStatus"
+        [value]="feedbackStatus"
         (selectionChange)="onFeedbackStatusChange($event.value)">
         <mat-option value="all">All</mat-option>
         <mat-option value="rated">Rated</mat-option>
@@ -86,7 +86,14 @@
   </div>
 
   <!-- Summary cards -->
-  <div *ngIf="!isLoading" class="summary-strip" aria-label="Feedback summary">
+  <div *ngIf="isSummaryLoading" class="summary-strip summary-strip--skeleton" aria-hidden="true">
+    <div class="summary-card summary-card--skeleton" *ngFor="let _ of [1,2,3,4]">
+      <div class="skeleton skeleton-summary-label"></div>
+      <div class="skeleton skeleton-summary-value"></div>
+    </div>
+  </div>
+
+  <div *ngIf="!isSummaryLoading" class="summary-strip" aria-label="Feedback summary">
     <div class="summary-card">
       <span class="summary-label">Average rating</span>
       <span class="summary-value">{{ formatAverage() }}</span>
@@ -114,7 +121,7 @@
   </div>
 
   <div class="table-wrapper">
-    <div *ngIf="isLoading" class="skeleton-table-wrapper" aria-hidden="true">
+    <div *ngIf="isListLoading" class="skeleton-table-wrapper" aria-hidden="true">
       <div class="skeleton-table">
         <div class="skeleton-table-header">
           <div class="skeleton skeleton-table-cell" style="width: 11%"></div>
@@ -141,7 +148,7 @@
       </div>
     </div>
 
-    <div *ngIf="!isLoading && totalItems === 0" class="empty-state">
+    <div *ngIf="!isListLoading && totalItems === 0" class="empty-state">
       <p class="empty-state-title">No engagements found</p>
       <p class="empty-state-message">
         There are no engagements for the selected filters.
@@ -149,7 +156,7 @@
       </p>
     </div>
 
-    <div *ngIf="!isLoading && totalItems > 0" class="table-scroll">
+    <div *ngIf="!isListLoading && totalItems > 0" class="table-scroll">
       <table mat-table [dataSource]="dataSource" class="feedback-ratings-table mat-elevation-z2">
 
         <ng-container matColumnDef="dateEngage">
@@ -228,7 +235,7 @@
     </div>
 
     <mat-paginator
-      *ngIf="!isLoading && totalItems > 0"
+      *ngIf="!isListLoading && totalItems > 0"
       [length]="totalItems"
       [pageSize]="pageSize"
       [pageIndex]="pageIndex"

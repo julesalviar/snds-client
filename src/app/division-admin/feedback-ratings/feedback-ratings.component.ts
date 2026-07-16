@@ -11,12 +11,16 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, finalize, takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../auth/auth.service';
 import { UserType } from '../../registration/user-type.enum';
 import { EngagementService } from '../../common/services/engagement.service';
-import { Engagement, PopulatedStakeholderUser } from '../../common/model/engagement.model';
+import {
+  Engagement,
+  EngagementRatingSummary,
+  PopulatedStakeholderUser,
+} from '../../common/model/engagement.model';
 import { getSchoolYear, getSchoolYearOptions } from '../../common/date-utils';
 import { ReferenceDataService } from '../../common/services/reference-data.service';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
@@ -90,11 +94,11 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
   readonly schoolSearchLimit = 40;
 
   dataSource = new MatTableDataSource<Engagement>([]);
-  allEngagements: Engagement[] = [];
-  filteredEngagements: Engagement[] = [];
-  isLoading = false;
+  isSummaryLoading = false;
+  isListLoading = false;
   pageIndex = 0;
   pageSize = 25;
+  /** Total matching engagements from the backend (all pages). */
   totalItems = 0;
 
   schoolYears: string[] = getSchoolYearOptions();
@@ -143,7 +147,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
     }
 
     void this.loadSectorOptions();
-    this.loadEngagements();
+    this.loadData({ refreshSummary: true });
   }
 
   ngOnDestroy(): void {
@@ -195,8 +199,89 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadEngagements(): void {
-    this.isLoading = true;
+  /**
+   * @param refreshSummary When true (filter change), also fetch rating-summary.
+   * Page / Feedback Status changes should pass false so summary cards stay stable.
+   */
+  loadData(options: { refreshSummary: boolean }): void {
+    const filters = this.buildListFilters();
+    const page = this.pageIndex + 1;
+    const limit = this.pageSize;
+
+    this.isListLoading = true;
+    this.engagementService
+      .getAllEngagement(
+        page,
+        limit,
+        undefined,
+        filters.schoolYear,
+        undefined,
+        filters.schoolId,
+        undefined,
+        undefined,
+        filters.sector,
+        this.feedbackStatus,
+      )
+      .pipe(finalize(() => (this.isListLoading = false)))
+      .subscribe({
+        next: (list) => {
+          const engagements = list.data ?? [];
+          this.totalItems = list.meta?.totalItems ?? engagements.length;
+          this.dataSource.data = engagements;
+
+          if (!options.refreshSummary) {
+            this.summary = {
+              ...this.summary,
+              distribution: this.computeDistribution(engagements),
+            };
+          } else if (!this.isSummaryLoading) {
+            this.summary = {
+              ...this.summary,
+              distribution: this.computeDistribution(engagements),
+            };
+          }
+        },
+        error: (error) => {
+          console.error('Error loading engagements for feedback ratings:', error);
+          this.dataSource.data = [];
+          this.totalItems = 0;
+        },
+      });
+
+    if (!options.refreshSummary) {
+      return;
+    }
+
+    this.isSummaryLoading = true;
+    this.engagementService
+      .getRatingSummary(filters)
+      .pipe(
+        catchError((error) => {
+          console.error('Error loading rating summary:', error);
+          return of(null);
+        }),
+        finalize(() => (this.isSummaryLoading = false)),
+      )
+      .subscribe({
+        next: (summary) => {
+          const pageEngagements = this.dataSource.data;
+          if (summary?.data) {
+            this.applyRatingSummary(summary.data, pageEngagements);
+          } else {
+            this.applyRatingSummary(
+              { totalRated: 0, totalUnrated: 0, averageRating: null },
+              pageEngagements,
+            );
+          }
+        },
+      });
+  }
+
+  private buildListFilters(): {
+    schoolYear: string;
+    schoolId?: string;
+    sector?: string;
+  } {
     const sector =
       this.selectedSector.length > 0
         ? this.selectedSector.join(',')
@@ -205,62 +290,28 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
       ? this.authService.getSchoolId() || undefined
       : this.selectedSchoolId || undefined;
 
-    this.engagementService
-      .getAllEngagement(
-        1,
-        1000,
-        undefined,
-        this.selectedSchoolYear,
-        undefined,
-        schoolId,
-        undefined,
-        undefined,
-        sector,
-      )
-      .subscribe({
-        next: (response) => {
-          this.allEngagements = response.data ?? [];
-          this.applyFilters();
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error loading engagements for feedback ratings:', error);
-          this.allEngagements = [];
-          this.filteredEngagements = [];
-          this.dataSource.data = [];
-          this.totalItems = 0;
-          this.recomputeSummary([]);
-          this.isLoading = false;
-        },
-      });
+    return {
+      schoolYear: this.selectedSchoolYear,
+      schoolId,
+      sector,
+    };
   }
 
-  applyFilters(): void {
-    // Summary always reflects the loaded set (school year / sector / school),
-    // and does not change when Feedback Status filters the table.
-    this.recomputeSummary(this.allEngagements);
-
-    let filtered = [...this.allEngagements];
-
-    if (this.feedbackStatus === 'rated') {
-      filtered = filtered.filter(
-        (e) => e.rating != null && e.rating >= 1 && e.rating <= 5,
-      );
-    } else if (this.feedbackStatus === 'unrated') {
-      filtered = filtered.filter(
-        (e) => e.rating == null || e.rating < 1 || e.rating > 5,
-      );
-    }
-
-    this.filteredEngagements = filtered;
-    this.totalItems = filtered.length;
-
-    const startIndex = this.pageIndex * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.dataSource.data = filtered.slice(startIndex, endIndex);
+  private applyRatingSummary(
+    data: EngagementRatingSummary,
+    pageEngagements: Engagement[],
+  ): void {
+    this.summary = {
+      average: data.averageRating ?? null,
+      ratedCount: data.totalRated ?? 0,
+      unratedCount: data.totalUnrated ?? 0,
+      distribution: this.computeDistribution(pageEngagements),
+    };
   }
 
-  private recomputeSummary(engagements: Engagement[]): void {
+  private computeDistribution(
+    engagements: Engagement[],
+  ): Record<RatingValue, number> {
     const distribution: Record<RatingValue, number> = {
       1: 0,
       2: 0,
@@ -268,43 +319,34 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
       4: 0,
       5: 0,
     };
-    let ratedSum = 0;
-    let ratedCount = 0;
-
     for (const engagement of engagements) {
       const rating = engagement.rating;
       if (rating != null && rating >= 1 && rating <= 5) {
-        const value = rating as RatingValue;
-        distribution[value] += 1;
-        ratedSum += value;
-        ratedCount += 1;
+        distribution[rating as RatingValue] += 1;
       }
     }
-
-    this.summary = {
-      average: ratedCount > 0 ? ratedSum / ratedCount : null,
-      ratedCount,
-      unratedCount: engagements.length - ratedCount,
-      distribution,
-    };
+    return distribution;
   }
 
   onSchoolYearChange(schoolYear: string): void {
     this.selectedSchoolYear = schoolYear || getSchoolYear();
     this.pageIndex = 0;
-    this.loadEngagements();
+    this.loadData({ refreshSummary: true });
   }
 
   onSectorChange(sectors: string[]): void {
     this.selectedSector = sectors.filter((s) => s !== '__SELECT_ALL__');
     this.pageIndex = 0;
-    this.loadEngagements();
+    this.loadData({ refreshSummary: true });
   }
 
   onFeedbackStatusChange(status: FeedbackStatusFilter): void {
+    if (this.feedbackStatus === status) {
+      return;
+    }
     this.feedbackStatus = status;
     this.pageIndex = 0;
-    this.applyFilters();
+    this.loadData({ refreshSummary: false });
   }
 
   onClusterChange(cluster: string): void {
@@ -319,7 +361,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
     this.performSchoolSearch('');
     if (hadSchool) {
       this.pageIndex = 0;
-      this.loadEngagements();
+      this.loadData({ refreshSummary: true });
     }
   }
 
@@ -343,7 +385,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
       if (label && value !== label) {
         this.selectedSchoolId = null;
         this.pageIndex = 0;
-        this.loadEngagements();
+        this.loadData({ refreshSummary: true });
       }
     }
     this.schoolSearchSubject.next(value.trim());
@@ -374,7 +416,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
     }
     this.selectedSchoolId = schoolId;
     this.pageIndex = 0;
-    this.loadEngagements();
+    this.loadData({ refreshSummary: true });
   }
 
   clearSchoolFilter(): void {
@@ -385,7 +427,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
     this.schoolSearchControl.setValue('', { emitEvent: false });
     this.filteredSchools = [];
     this.pageIndex = 0;
-    this.loadEngagements();
+    this.loadData({ refreshSummary: true });
   }
 
   private cacheSchool(school: School): void {
@@ -421,7 +463,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
       this.selectedSchoolId = this.authService.getSchoolId() || null;
     }
 
-    this.loadEngagements();
+    this.loadData({ refreshSummary: true });
   }
 
   hasActiveFilters(): boolean {
@@ -444,7 +486,7 @@ export class FeedbackRatingsComponent implements OnInit, OnDestroy {
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.applyFilters();
+    this.loadData({ refreshSummary: false });
   }
 
   getSector(engagement: Engagement): string {

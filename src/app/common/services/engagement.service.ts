@@ -3,6 +3,7 @@ import {catchError, Observable} from "rxjs";
 import {MyContributionsResponse} from "../model/my-contribution.model";
 import {
   Engagement,
+  EngagementRatingSummaryResponse,
   EngagementsResponse,
   EngagementStatisticsQuery,
   EngagementStatisticsResponse,
@@ -10,6 +11,8 @@ import {
 import {API_ENDPOINT} from "../api-endpoints";
 import {AuthService} from "../../auth/auth.service";
 import {HttpService} from "./http.service";
+
+export type EngagementRatingStatus = 'all' | 'rated' | 'unrated';
 
 @Injectable({
   providedIn: 'root',
@@ -47,7 +50,8 @@ export class EngagementService {
     schoolId?: string,
     startDate?: string,
     endDate?: string,
-    sector?: string
+    sector?: string,
+    ratingStatus?: EngagementRatingStatus,
   ): Observable<EngagementsResponse> {
     let url = API_ENDPOINT.engagements;
     const params: string[] = [];
@@ -88,9 +92,57 @@ export class EngagementService {
       params.push(`sector=${encodeURIComponent(sector)}`);
     }
 
+    if (ratingStatus && ratingStatus !== 'all') {
+      params.push(`ratingStatus=${encodeURIComponent(ratingStatus)}`);
+    }
+
     url += `?${params.join('&')}`;
 
     return this.httpService.get<EngagementsResponse>(url).pipe(
+      catchError(this.httpService.handleError)
+    );
+  }
+
+  getRatingSummary(filters?: {
+    stakeholderUserId?: string;
+    schoolYear?: string;
+    specificContribution?: string;
+    schoolId?: string;
+    startDate?: string;
+    endDate?: string;
+    sector?: string;
+  }): Observable<EngagementRatingSummaryResponse> {
+    let url = `${API_ENDPOINT.engagements}/rating-summary`;
+    const params: string[] = [];
+    const q = filters ?? {};
+
+    if (q.stakeholderUserId) {
+      params.push(`stakeholderUserId=${encodeURIComponent(q.stakeholderUserId)}`);
+    }
+    if (q.schoolYear) {
+      params.push(`schoolYear=${encodeURIComponent(q.schoolYear)}`);
+    }
+    if (q.specificContribution) {
+      params.push(`specificContribution=${encodeURIComponent(q.specificContribution)}`);
+    }
+    if (q.schoolId) {
+      params.push(`schoolId=${encodeURIComponent(q.schoolId)}`);
+    }
+    if (q.startDate) {
+      params.push(`startDate=${encodeURIComponent(q.startDate)}`);
+    }
+    if (q.endDate) {
+      params.push(`endDate=${encodeURIComponent(q.endDate)}`);
+    }
+    if (q.sector) {
+      params.push(`sector=${encodeURIComponent(q.sector)}`);
+    }
+
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
+    }
+
+    return this.httpService.get<EngagementRatingSummaryResponse>(url).pipe(
       catchError(this.httpService.handleError)
     );
   }

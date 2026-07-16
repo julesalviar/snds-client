@@ -85,6 +85,25 @@ mat-card-title {
   grid-column: span 1;
 }
 
+.summary-strip--skeleton {
+  pointer-events: none;
+}
+
+.summary-card--skeleton {
+  min-height: 72px;
+  justify-content: center;
+}
+
+.skeleton-summary-label {
+  width: 55%;
+  height: 12px;
+}
+
+.skeleton-summary-value {
+  width: 40%;
+  height: 24px;
+}
+
 .distribution-row {
   display: flex;
   align-items: center;

@@ -50,7 +50,21 @@ export interface EngagementMeta {
   currentPage: number;
   totalPages: number;
   timestamp: string;
-  totalAmount?: number; // Total amount from backend
+  totalAmount?: number;
+}
+
+export interface EngagementRatingSummary {
+  totalRated: number;
+  totalUnrated: number;
+  averageRating: number | null;
+}
+
+export interface EngagementRatingSummaryResponse {
+  success: boolean;
+  data: EngagementRatingSummary;
+  meta?: {
+    timestamp?: string | Date;
+  };
 }
 
 export interface EngagementsResponse {
