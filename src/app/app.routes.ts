@@ -120,6 +120,7 @@ export const routes: Routes = [
       {path: 'school-need/:code', component: SchoolNeedComponent},
       {path: 'school-need-view/:code', component: SchoolNeedViewComponent},
       {path: 'quick-count', component: GeneratedResourcesComponent},
+      {path: 'feedback-ratings', component: FeedbackRatingsComponent},
       {path: 'reports', component: ReportsComponent},
       {path: 'stakeholders-profile', component: StakeholdersProfileComponent},
       {path: 'activities', component: ActivityListComponent},

@@ -36,6 +36,45 @@
       </mat-select>
     </mat-form-field>
 
+    <mat-form-field *ngIf="!isSchoolAdmin()" appearance="outline" class="filter-field">
+      <mat-label>District/Cluster</mat-label>
+      <mat-select
+        [(value)]="selectedCluster"
+        (selectionChange)="onClusterChange($event.value)">
+        <mat-option *ngFor="let option of clusterOptions" [value]="option.value">
+          {{ option.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="!isSchoolAdmin()" appearance="outline" class="filter-field filter-field--school">
+      <mat-label>School</mat-label>
+      <input
+        matInput
+        [formControl]="schoolSearchControl"
+        [matAutocomplete]="schoolAuto"
+        (focus)="onSchoolInputFocus($event)"
+        (input)="onSchoolSearchInput($event)"
+        placeholder="Type to search school" />
+      <button
+        *ngIf="selectedSchoolId || schoolSearchControl.value"
+        matSuffix
+        mat-icon-button
+        type="button"
+        aria-label="Clear school filter"
+        (click)="clearSchoolFilter()"
+        matTooltip="Clear school">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-autocomplete
+        #schoolAuto="matAutocomplete"
+        (optionSelected)="onSchoolOptionSelected($event.option.value)">
+        <mat-option *ngFor="let school of filteredSchools" [value]="getSchoolId(school)">
+          {{ getSchoolDisplayName(school) }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
     <button
       *ngIf="hasActiveFilters()"
       mat-button
