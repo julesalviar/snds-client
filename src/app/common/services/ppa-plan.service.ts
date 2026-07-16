@@ -28,7 +28,6 @@ export interface PpaPlanListParams {
   startDateTo?: string;
   endDateFrom?: string;
   endDateTo?: string;
-  division?: string;
 }
 
 @Injectable({
