@@ -39,8 +39,8 @@
               <tr>
                 <td class="cell-division">{{ row.displayName }}</td>
                 @for (col of classificationColumns; track col.key) {
-                  <td class="cell-numeric cell-clickable" (click)="onCellClick(row, col.key, 'total')">{{ row.classifications[col.key].ppaCount}}</td>
-                  <td class="cell-numeric cell-clickable" (click)="onCellClick(row, col.key, 'completed')">{{ row.classifications[col.key].completedCount }}</td>
+                  <td class="cell-numeric cell-clickable" role="button" tabindex="0" (click)="onCellClick(row, col.key, 'total')" (keydown.enter)="onCellClick(row, col.key, 'total')" (keydown.space)="onCellClick(row, col.key, 'total')">{{ row.classifications[col.key].ppaCount}}</td>
+                  <td class="cell-numeric cell-clickable" role="button" tabindex="0" (click)="onCellClick(row, col.key, 'completed')" (keydown.enter)="onCellClick(row, col.key, 'completed')" (keydown.space)="onCellClick(row, col.key, 'completed')">{{ row.classifications[col.key].completedCount }}</td>
                   <td class="cell-numeric cell-pct">{{ row.classifications[col.key].percentage }}%</td>
                 }
               </tr>
