@@ -35,6 +35,10 @@ import {UserType} from "../registration/user-type.enum";
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from "@angular/material/card";
 import {MatTooltipModule} from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {SchoolInfo} from "../common/model/school.model";
 import {InternalReferenceDataService} from "../common/services/internal-reference-data.service";
 import {PpaPlanService} from "../common/services/ppa-plan.service";
@@ -76,15 +80,17 @@ import {
 } from './announcement-dialog/announcement-dialog.component';
 import { pickWeightedActivePartners } from './pick-weighted-active-partners.util';
 import { resolveActivePartnersSchoolYear, DEFAULT_ACTIVE_PARTNERS_ROTATE_INTERVAL_SECONDS } from '../common/utils/active-partners-widget-settings.util';
+import {
+  ContributionSearchOption,
+  ContributionTreeNode,
+  filterContributionSearchOptions,
+  flattenContributionTree,
+  mapCountsToContributionTree,
+} from '../common/utils/contribution-tree.util';
 
 const ACTIVE_PARTNERS_FADE_MS = 1500;
 
-interface TreeNode {
-  name: string;
-  children?: TreeNode[];
-  expanded?: boolean;
-  count?: number;
-}
+type TreeNode = ContributionTreeNode;
 
 /**
  * One pie segment for Resource / Partner breakdown.
@@ -190,6 +196,10 @@ type HomeWidgetId =
     MatProgressBarModule,
     MatCardModule,
     MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    MatProgressSpinnerModule,
     RouterLink,
     SchoolYearWidgetFilterComponent,
     VisitorCounterWidgetComponent,
@@ -228,6 +238,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   };
 
   protected activePartnersFading = false;
+
+  /** Flat contribution options for home search autocomplete. */
+  protected contributionSearchOptions: ContributionSearchOption[] = [];
+  /** Filtered subset shown in the autocomplete panel. */
+  protected filteredContributionOptions: ContributionSearchOption[] = [];
+  /** Current search input text (UI-only; not part of HomeState). */
+  protected contributionSearchQuery = '';
+  /** True while navigating after quick-search / tree selection (slow network feedback). */
+  protected contributionNavBusy = false;
+  /** Status line shown under the search field while busy. */
+  protected contributionNavMessage = '';
 
   private readonly partnerAvatarErrors = new Set<string>();
   private activePartnersRotateTimer?: ReturnType<typeof setInterval>;
@@ -834,9 +855,87 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
-  async onChildClick(child: TreeNode, state: HomeState): Promise<void> {
-    const parentName = state.treeData.find((node) => node.children?.includes(child))?.name;
-    this.userService.setContribution({ name: parentName, specificContribution: child.name });
+  onContributionSearchChange(query: string): void {
+    if (this.contributionNavBusy) return;
+    this.contributionSearchQuery = query ?? '';
+    this.filteredContributionOptions = filterContributionSearchOptions(
+      this.contributionSearchOptions,
+      this.contributionSearchQuery,
+    );
+    this.cdr.markForCheck();
+  }
+
+  displayContributionOption(opt: ContributionSearchOption | string | null): string {
+    if (opt == null) return '';
+    if (typeof opt === 'string') return opt;
+    return `${opt.type} → ${opt.specific}`;
+  }
+
+  async onContributionSearchSelect(
+    event: MatAutocompleteSelectedEvent,
+    state: HomeState,
+  ): Promise<void> {
+    if (this.contributionNavBusy) return;
+    const opt = event.option.value as ContributionSearchOption;
+    if (!opt?.specific || !opt?.type) return;
+    this.contributionSearchQuery = this.displayContributionOption(opt);
+    await this.runContributionNavigation(opt.type, opt.specific, state, 'search');
+  }
+
+  async onChildClick(
+    child: TreeNode,
+    state: HomeState,
+    parentName?: string,
+  ): Promise<void> {
+    if (this.contributionNavBusy) return;
+    const type =
+      parentName ??
+      state.treeData.find((node) =>
+        node.children?.some((c) => c.name === child.name),
+      )?.name;
+    if (!type) return;
+    await this.runContributionNavigation(type, child.name, state, 'tree');
+  }
+
+  private async runContributionNavigation(
+    contributionType: string,
+    specificContribution: string,
+    state: HomeState,
+    source: 'search' | 'tree',
+  ): Promise<void> {
+    this.contributionNavBusy = true;
+    this.contributionNavMessage =
+      state.userRole === UserType.SchoolAdmin
+        ? `Opening create form for ${specificContribution}…`
+        : `Opening school needs for ${specificContribution}…`;
+    this.cdr.markForCheck();
+
+    try {
+      await this.navigateForContribution(
+        contributionType,
+        specificContribution,
+        state,
+      );
+    } finally {
+      this.contributionNavBusy = false;
+      this.contributionNavMessage = '';
+      if (source === 'search') {
+        this.contributionSearchQuery = '';
+        this.filteredContributionOptions = [...this.contributionSearchOptions];
+      }
+      this.cdr.markForCheck();
+    }
+  }
+
+  private async navigateForContribution(
+    contributionType: string,
+    specificContribution: string,
+    state: HomeState,
+  ): Promise<void> {
+    this.userService.setContribution({
+      name: contributionType,
+      specificContribution,
+    });
     this.userService.setSchoolYear(state.treeSchoolYear);
     let path: string;
     const queryParams: Record<string, string> = {};
@@ -847,32 +946,27 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (!isComplete) return;
         path = '/school-admin/list-of-school-needs';
         queryParams['openCreate'] = '1';
-        console.log('Navigating to:', path, queryParams);
         break;
       }
       case UserType.DivisionAdmin:
         path = '/division-admin/school-needs';
-        queryParams['selectedContribution'] = child.name;
+        queryParams['selectedContribution'] = specificContribution;
         queryParams['schoolYear'] = state.treeSchoolYear;
-        console.log('Navigating to:', path, queryParams);
         break;
       case UserType.StakeHolder:
         path = '/stakeholder/school-needs';
-        queryParams['selectedContribution'] = child.name;
+        queryParams['selectedContribution'] = specificContribution;
         queryParams['schoolYear'] = state.treeSchoolYear;
-        console.log('Navigating to:', path, queryParams);
         break;
       default:
         path = '/guest/school-needs';
-        queryParams['selectedContribution'] = child.name;
+        queryParams['selectedContribution'] = specificContribution;
         queryParams['schoolYear'] = state.treeSchoolYear;
-        console.log('Navigating to:', path, queryParams);
         if (role) console.warn(`Unknown or undefined role: ${role}`);
         break;
     }
-    console.log('to:', path, queryParams);
-    this.router.navigate([path], { queryParams });
-}
+    await this.router.navigate([path], { queryParams });
+  }
 
   private loadSchoolNeeds$(state: HomeState): Observable<HomeState> {
     if (state.hideTree) {
@@ -910,6 +1004,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         const countRows =
           counts.success && Array.isArray(counts.data) ? counts.data : [];
         const treeWithCounts = this.mapCountsToTreeData(tree, countRows);
+        this.syncContributionSearchOptions(treeWithCounts);
         const schoolInfo = (school as SchoolInfo | null) ?? null;
         return {
           ...state,
@@ -928,23 +1023,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
+  private syncContributionSearchOptions(tree: TreeNode[]): void {
+    this.contributionSearchOptions = flattenContributionTree(tree);
+    this.filteredContributionOptions = filterContributionSearchOptions(
+      this.contributionSearchOptions,
+      this.contributionSearchQuery,
+    );
+  }
+
   private mapCountsToTreeData(
     tree: TreeNode[],
     counts: { specificContribution: string; count: number }[],
   ): TreeNode[] {
-    const countByContribution = new Map(
-      counts.map((row) => [row.specificContribution, row.count]),
-    );
-    return tree.map((node) => ({
-      ...node,
-      children: node.children?.map((child) => {
-        const count = countByContribution.get(child.name);
-        return {
-          ...child,
-          count: count != null && count > 0 ? count : undefined,
-        };
-      }),
-    }));
+    return mapCountsToContributionTree(tree, counts);
   }
 
   private loadAipStatsIfNeeded$(state: HomeState): Observable<HomeState> {
@@ -1464,6 +1555,13 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   trackByTreeNode(_index: number, node: TreeNode): string {
     return node.name;
+  }
+
+  trackByContributionSearchOption(
+    _index: number,
+    opt: ContributionSearchOption,
+  ): string {
+    return `${opt.type}::${opt.specific}`;
   }
 
   trackByActivity(_index: number, activity: Activity): string {

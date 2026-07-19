@@ -28,6 +28,7 @@ import {HttpService} from "../common/services/http.service";
 import {API_ENDPOINT} from "../common/api-endpoints";
 import {ReferenceDataService} from "../common/services/reference-data.service";
 import {PillarConfigService} from "../common/services/pillar-config.service";
+import { filterContributionOptions } from '../common/utils/contribution-tree.util';
 import {PillarItem} from "../common/model/pillar-config.model";
 import {InvalidContributionTypeDialogComponent} from "./invalid-contribution-type-dialog.component";
 import {InvalidSpecificContributionDialogComponent} from "./invalid-specific-contribution-dialog.component";
@@ -494,14 +495,13 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
   }
 
   protected filterContributionTypes(value: string): void {
-    const filterValue = value.toLowerCase();
-    this.filteredContributionTypes = this.contributionTypes.filter(option =>
-      option.toLowerCase().includes(filterValue)
+    this.filteredContributionTypes = filterContributionOptions(
+      this.contributionTypes,
+      value,
     );
   }
 
   protected filterSpecificContributions(value: string): void {
-    const filterValue = value.toLowerCase();
     const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
 
     let availableSpecificContributions = this.specificContributions;
@@ -509,8 +509,9 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
       availableSpecificContributions = this.getSpecificContributionsForType(selectedContributionType);
     }
 
-    this.filteredSpecificContributions = availableSpecificContributions.filter(option =>
-      option.toLowerCase().includes(filterValue)
+    this.filteredSpecificContributions = filterContributionOptions(
+      availableSpecificContributions,
+      value,
     );
   }
 

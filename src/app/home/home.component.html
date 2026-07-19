@@ -90,6 +90,64 @@
             <a routerLink="/school-admin/list-of-school-needs" class="feature-link">List of school needs</a>
             <span class="home-school-needs-list-hint"> — create and manage entries from the table view.</span>
           </p>
+
+          <mat-form-field
+            *ngIf="!state.loading.schoolNeeds"
+            appearance="outline"
+            class="home-contribution-search"
+            [class.home-contribution-search--busy]="contributionNavBusy"
+            subscriptSizing="dynamic">
+            <mat-label>Quick search contribution</mat-label>
+            <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+            <input
+              matInput
+              type="search"
+              autocomplete="off"
+              [value]="contributionSearchQuery"
+              [matAutocomplete]="contributionSearchAuto"
+              [disabled]="contributionNavBusy"
+              [attr.aria-busy]="contributionNavBusy"
+              aria-label="Quick search contribution type or item"
+              (input)="onContributionSearchChange($any($event.target).value)" />
+            <mat-spinner
+              *ngIf="contributionNavBusy"
+              matSuffix
+              diameter="22"
+              class="home-contribution-search-spinner"
+              aria-hidden="true"></mat-spinner>
+            <mat-autocomplete
+              #contributionSearchAuto="matAutocomplete"
+              class="home-contribution-search-panel"
+              panelClass="home-contribution-search-panel"
+              [displayWith]="displayContributionOption"
+              (optionSelected)="onContributionSearchSelect($event, state)">
+              <mat-option
+                *ngFor="let opt of filteredContributionOptions; trackBy: trackByContributionSearchOption"
+                [value]="opt"
+                [disabled]="contributionNavBusy"
+                class="home-contribution-search-option">
+                <span class="home-contribution-search-option__row">
+                  <span class="home-contribution-search-option__main">
+                    <span class="home-contribution-search-option__specific">{{ opt.specific }}</span>
+                    <span class="home-contribution-search-option__type">{{ opt.type }}</span>
+                  </span>
+                  <span
+                    *ngIf="(opt.count ?? 0) > 0"
+                    class="home-contribution-count"
+                    [attr.aria-label]="opt.count + ' unmet needs'">
+                    {{ opt.count }}
+                  </span>
+                </span>
+              </mat-option>
+            </mat-autocomplete>
+            <mat-hint *ngIf="contributionNavBusy">{{ contributionNavMessage }}</mat-hint>
+          </mat-form-field>
+          <mat-progress-bar
+            *ngIf="contributionNavBusy"
+            mode="indeterminate"
+            class="home-contribution-nav-progress"
+            aria-label="Loading selected contribution"></mat-progress-bar>
+
           <ul *ngIf="state.loading.schoolNeeds" class="skeleton-tree" aria-hidden="true">
             <li class="skeleton skeleton-tree-line" style="width: 75%;"></li>
             <li class="skeleton skeleton-tree-line" style="width: 60%;"></li>
@@ -107,19 +165,19 @@
                 <span
                   class="node-name"
                   [ngClass]="{ 'expanded-node': node.expanded }"
-                  matBadgeColor="primary"
-                  matBadgeOverlap="false"
                 >
                   {{ node.name }}
                 </span>
-                <span *ngIf="(node?.count ?? 0) > 0">&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 <span *ngIf="node.children && node.children.length > 0">
                   [{{ node.expanded ? '−' : '+' }}]
                 </span>
               </div>
               <ul *ngIf="node.expanded">
                 <li *ngFor="let child of node.children; trackBy: trackByTreeNode" style="list-style-type: none;">
-                  <span (click)="onChildClick(child, state)" style="cursor: pointer;">
+                  <span
+                    (click)="!contributionNavBusy && onChildClick(child, state, node.name)"
+                    [class.home-contribution-child--busy]="contributionNavBusy"
+                    style="cursor: pointer;">
                     {{ child.name }}
                     <span *ngIf="child.count">
                       <span matBadge="{{ child.count }}" matBadgeColor="primary" matBadgeOverlap="false"></span>

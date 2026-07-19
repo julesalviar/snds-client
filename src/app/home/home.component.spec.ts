@@ -432,10 +432,17 @@ describe('HomeComponent', () => {
       mapCountsToTreeData: (
         nodes: typeof tree,
         rows: typeof counts,
-      ) => { children?: { name: string; count?: number }[] }[];
+      ) => {
+        name: string;
+        count?: number;
+        expanded?: boolean;
+        children?: { name: string; count?: number }[];
+      }[];
     }).mapCountsToTreeData(tree, counts);
 
     expect(result[0].children?.[0].count).toBe(3);
     expect(result[0].children?.[1].count).toBeUndefined();
+    expect(result[0].count).toBeUndefined();
+    expect(result[0].expanded).toBeFalsy();
   });
 });

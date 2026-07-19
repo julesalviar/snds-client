@@ -298,3 +298,18 @@ p {
   max-width: 100%;
   overflow-x: hidden;
 }
+
+/* Home contribution search autocomplete: keep count pill on the right of each option. */
+.home-contribution-search-panel .mat-mdc-option .mdc-list-item__primary-text {
+  display: flex;
+  width: 100%;
+}
+
+.home-contribution-search-panel .home-contribution-search-option__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}

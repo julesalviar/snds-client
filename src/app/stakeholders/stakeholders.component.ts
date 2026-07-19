@@ -17,9 +17,11 @@ import { extractApiErrorMessage } from '../common/utils/division-lock.util';
 import { AuthService } from '../auth/auth.service';
 import { UserType } from '../registration/user-type.enum';
 import { LoginRequiredDialogComponent } from '../common/components/login-required-dialog/login-required-dialog.component';
+import { CensoredAmountPlaceholderComponent } from '../common/components/censored-amount-placeholder/censored-amount-placeholder.component';
 import { SchoolNeed } from '../common/model/school-need.model';
 import { SchoolNeedService } from '../common/services/school-need.service';
 import { UserService } from '../common/services/user.service';
+import { redactSchoolNeedsMonetaryFields } from '../common/utils/monetary-redaction.util';
 import {
   getCurrentSchoolYear,
   getDefaultSchoolYear,
@@ -45,6 +47,7 @@ const SCHOOL_YEAR_QUERY = /^\d{4}-\d{4}$/;
     MatFormFieldModule,
     MatSelectModule,
     MatSnackBarModule,
+    CensoredAmountPlaceholderComponent,
   ],
   templateUrl: './stakeholders.component.html',
   styleUrl: './stakeholders.component.css',
@@ -72,6 +75,11 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
 
   get isSchoolAdmin(): boolean {
     return this.authService.getActiveRole() === UserType.SchoolAdmin;
+  }
+
+  /** Guests (anonymous) must not see real monetary amounts. */
+  get canViewMonetaryAmounts(): boolean {
+    return this.authService.isLoggedIn();
   }
 
   schoolNeeds: SchoolNeed[] = [];
@@ -282,7 +290,10 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
           this.profileDocUrl = response.school?.profileDocUrl || null;
           this.schoolLogoUrl = response.school?.logoUrl || null;
           this.logoError = false;
-          this.dataSource.data = response.data;
+          const rows = response.data ?? [];
+          this.dataSource.data = this.canViewMonetaryAmounts
+            ? rows
+            : redactSchoolNeedsMonetaryFields(rows);
           this.totalItems = response.meta.totalItems;
           this.totalQuantity = response.meta.totalQuantity ?? 0;
           this.totalCompleted = response.meta.totalCompleted ?? 0;
@@ -326,9 +337,7 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
 
   viewSchoolNeed(schoolNeed: SchoolNeed): void {
     if (!this.authService.isLoggedIn()) {
-      this.dialog.open(LoginRequiredDialogComponent, {
-        width: '400px',
-      });
+      this.openLoginRequiredDialog();
       return;
     }
 
@@ -337,6 +346,16 @@ export class StakeholdersComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(this.getSchoolNeedViewRoute(schoolNeed.code));
+  }
+
+  onCensoredAmountClick(): void {
+    this.openLoginRequiredDialog();
+  }
+
+  private openLoginRequiredDialog(): void {
+    this.dialog.open(LoginRequiredDialogComponent, {
+      width: '400px',
+    });
   }
 
   private getSchoolNeedViewRoute(code: string): string[] {

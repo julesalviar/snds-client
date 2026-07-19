@@ -167,7 +167,12 @@
 
         <ng-container matColumnDef="amount">
           <th mat-header-cell *matHeaderCellDef>Amount</th>
-          <td mat-cell *matCellDef="let need">{{ need.estimatedCost | currency: 'PHP' }}</td>
+          <td mat-cell *matCellDef="let need">
+            <span *ngIf="canViewMonetaryAmounts">{{ need.estimatedCost | currency: 'PHP' }}</span>
+            <app-censored-amount-placeholder
+              *ngIf="!canViewMonetaryAmounts"
+              (placeholderClick)="onCensoredAmountClick()" />
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="beneficiaryStudents">

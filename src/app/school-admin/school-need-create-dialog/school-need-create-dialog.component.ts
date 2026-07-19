@@ -33,6 +33,10 @@ import {
 import { UserService } from '../../common/services/user.service';
 import { SchoolNeedService } from '../../common/services/school-need.service';
 import {
+  filterContributionOptions,
+  normalizeContributionKey,
+} from '../../common/utils/contribution-tree.util';
+import {
   aipSchoolYearsAsArray,
   getSchoolYear,
   getSchoolYearOptions,
@@ -500,22 +504,19 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   }
 
   protected filterContributionTypes(value: string): void {
-    const filterValue = value.toLowerCase();
-    this.filteredContributionTypes = this.contributionTypes.filter((option) =>
-      option.toLowerCase().includes(filterValue),
+    this.filteredContributionTypes = filterContributionOptions(
+      this.contributionTypes,
+      value,
     );
   }
 
   protected filterSpecificContributions(value: string): void {
-    const filterValue = value.toLowerCase();
     const selectedContributionType = this.schoolNeedsForm.get('contributionType')?.value;
     let available = this.specificContributions;
     if (selectedContributionType) {
       available = this.getSpecificContributionsForType(selectedContributionType);
     }
-    this.filteredSpecificContributions = available.filter((option) =>
-      option.toLowerCase().includes(filterValue),
-    );
+    this.filteredSpecificContributions = filterContributionOptions(available, value);
   }
 
   protected onContributionTypeChange(selectedType: string): void {
@@ -541,14 +542,10 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     }
   }
 
-  private normalizeContributionKey(value: string): string {
-    return (value ?? '').trim().toLowerCase();
-  }
-
   private findContributionTreeNode(contributionType: string): { name: string; children?: { name: string }[] } | undefined {
-    const key = this.normalizeContributionKey(contributionType);
+    const key = normalizeContributionKey(contributionType);
     return this.contributionTreeData.find(
-      (node) => this.normalizeContributionKey(node.name) === key,
+      (node) => normalizeContributionKey(node.name) === key,
     );
   }
 
@@ -584,9 +581,9 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
   }
 
   private validateContributionType(value: string): boolean {
-    const key = this.normalizeContributionKey(value);
+    const key = normalizeContributionKey(value);
     if (this.contributionTypes.some(
-      (option) => this.normalizeContributionKey(option) === key,
+      (option) => normalizeContributionKey(option) === key,
     )) {
       return true;
     }
@@ -598,9 +595,9 @@ export class SchoolNeedCreateDialogComponent implements OnInit, AfterViewInit, O
     if (!selectedContributionType) {
       return false;
     }
-    const key = this.normalizeContributionKey(value);
+    const key = normalizeContributionKey(value);
     const allowed = this.getSpecificContributionsForType(selectedContributionType);
-    if (allowed.some((option) => this.normalizeContributionKey(option) === key)) {
+    if (allowed.some((option) => normalizeContributionKey(option) === key)) {
       return true;
     }
     // Allow values saved on an existing need when the reference tree changed or labels differ slightly.
