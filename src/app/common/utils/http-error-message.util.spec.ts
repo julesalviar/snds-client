@@ -51,4 +51,38 @@ describe('getHttpErrorMessage', () => {
   it('returns fallback when no message is available', () => {
     expect(getHttpErrorMessage({}, 'fallback')).toBe('fallback');
   });
+
+  it('ignores Angular HttpClient failure wrapper messages', () => {
+    expect(
+      getHttpErrorMessage(
+        {
+          status: 403,
+          message:
+            'Http failure response for http://localhost:3000/aips: 403 Forbidden',
+          error: {
+            statusCode: 403,
+            message:
+              'School year 2025-2026 is locked. AIPs cannot be created, updated, or deleted.',
+            error: 'Forbidden',
+          },
+        },
+        'fallback',
+      ),
+    ).toBe(
+      'School year 2025-2026 is locked. AIPs cannot be created, updated, or deleted.',
+    );
+  });
+
+  it('returns a permission message for 403 without a body', () => {
+    expect(
+      getHttpErrorMessage(
+        {
+          status: 403,
+          message:
+            'Http failure response for http://localhost:3000/school-needs: 403 Forbidden',
+        },
+        'fallback',
+      ),
+    ).toBe('You do not have permission to perform this action.');
+  });
 });

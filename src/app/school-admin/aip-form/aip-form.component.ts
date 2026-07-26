@@ -279,7 +279,7 @@ export class AipFormComponent implements OnInit {
       this.divisionSettingsService.isAipLockedForYears(years)
     ) {
       this.showError(
-        'This AIP cannot be saved because all of its school years are locked. Contact your division office if you need changes.',
+        'This AIP cannot be saved because one or more of its school years are locked. Contact your division office if you need changes.',
       );
       return;
     }

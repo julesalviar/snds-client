@@ -1,16 +1,35 @@
+import { isPhilippinesLockDateReached } from '../date-utils';
+import { getHttpErrorMessage } from './http-error-message.util';
+
 export interface DivisionLockSettingValue {
-  schoolYears: string[];
-  locked: boolean;
-  scheduledLockAt?: string | null;
-  scheduleSuppressed?: boolean;
+  schoolYears: Record<string, string>;
 }
 
 export const DEFAULT_DIVISION_LOCK_SETTING: DivisionLockSettingValue = {
-  schoolYears: [],
-  locked: false,
-  scheduledLockAt: null,
-  scheduleSuppressed: false,
+  schoolYears: {},
 };
+
+const SCHOOL_YEAR_PATTERN = /^\d{4}-\d{4}$/;
+
+function normalizeSchoolYearMap(raw: unknown): Record<string, string> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return {};
+  }
+
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!SCHOOL_YEAR_PATTERN.test(key)) {
+      continue;
+    }
+    if (typeof value === 'string' && value.trim()) {
+      result[key] = value.trim();
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(result).sort(([a], [b]) => a.localeCompare(b)),
+  );
+}
 
 export function normalizeDivisionLockSetting(
   raw: unknown,
@@ -18,21 +37,32 @@ export function normalizeDivisionLockSetting(
   if (!raw || typeof raw !== 'object') {
     return { ...DEFAULT_DIVISION_LOCK_SETTING };
   }
-  const value = raw as Partial<DivisionLockSettingValue>;
-  return {
-    schoolYears: Array.isArray(value.schoolYears)
-      ? value.schoolYears.filter(
-          (y): y is string =>
-            typeof y === 'string' && /^\d{4}-\d{4}$/.test(y.trim()),
-        )
-      : [],
-    locked: value.locked === true,
-    scheduledLockAt:
-      value.scheduledLockAt === null || value.scheduledLockAt === undefined
-        ? null
-        : String(value.scheduledLockAt),
-    scheduleSuppressed: value.scheduleSuppressed === true,
-  };
+
+  const value = raw as { schoolYears?: unknown };
+  if (
+    value.schoolYears &&
+    typeof value.schoolYears === 'object' &&
+    !Array.isArray(value.schoolYears)
+  ) {
+    return { schoolYears: normalizeSchoolYearMap(value.schoolYears) };
+  }
+
+  return { ...DEFAULT_DIVISION_LOCK_SETTING };
+}
+
+export function listSchoolYears(setting: DivisionLockSettingValue): string[] {
+  return Object.keys(normalizeDivisionLockSetting(setting).schoolYears).sort();
+}
+
+export function getSchoolYearLockAt(
+  setting: DivisionLockSettingValue,
+  schoolYear: string,
+): string | null {
+  const year = schoolYear?.trim();
+  if (!year) {
+    return null;
+  }
+  return normalizeDivisionLockSetting(setting).schoolYears[year] ?? null;
 }
 
 export function isSchoolYearLocked(
@@ -40,47 +70,71 @@ export function isSchoolYearLocked(
   schoolYear: string,
   now: Date = new Date(),
 ): boolean {
-  const year = schoolYear?.trim();
-  if (!year || !setting.schoolYears.includes(year)) {
+  const lockAt = getSchoolYearLockAt(setting, schoolYear);
+  if (!lockAt) {
     return false;
   }
-  if (setting.locked) {
-    return true;
-  }
-  if (setting.scheduleSuppressed) {
+  return isPhilippinesLockDateReached(lockAt, now);
+}
+
+export function isSchoolYearScheduled(
+  setting: DivisionLockSettingValue,
+  schoolYear: string,
+  now: Date = new Date(),
+): boolean {
+  const lockAt = getSchoolYearLockAt(setting, schoolYear);
+  if (!lockAt) {
     return false;
   }
-  if (!setting.scheduledLockAt) {
-    return false;
-  }
-  const scheduled = Date.parse(setting.scheduledLockAt);
-  if (Number.isNaN(scheduled)) {
-    return false;
-  }
-  return now.getTime() >= scheduled;
+  return !isPhilippinesLockDateReached(lockAt, now);
+}
+
+export function getScheduledSchoolYears(
+  setting: DivisionLockSettingValue,
+  now: Date = new Date(),
+): string[] {
+  return listSchoolYears(setting).filter((year) =>
+    isSchoolYearScheduled(setting, year, now),
+  );
 }
 
 export function getLockStatusLabel(
   setting: DivisionLockSettingValue,
   now: Date = new Date(),
 ): 'unlocked' | 'locked' | 'scheduled' {
-  const anyLocked = setting.schoolYears.some((y) =>
-    isSchoolYearLocked(setting, y, now),
+  const normalized = normalizeDivisionLockSetting(setting);
+  const anyLocked = listSchoolYears(normalized).some((year) =>
+    isSchoolYearLocked(normalized, year, now),
   );
   if (anyLocked) {
     return 'locked';
   }
-  if (
-    setting.scheduledLockAt &&
-    !setting.scheduleSuppressed &&
-    !setting.locked
-  ) {
-    const scheduled = Date.parse(setting.scheduledLockAt);
-    if (!Number.isNaN(scheduled) && now.getTime() < scheduled) {
-      return 'scheduled';
-    }
+  const scheduledYears = getScheduledSchoolYears(normalized, now);
+  if (scheduledYears.length > 0) {
+    return 'scheduled';
   }
   return 'unlocked';
+}
+
+export function buildDivisionLockSetting(input: {
+  schoolYears: Record<string, string>;
+}): DivisionLockSettingValue {
+  return normalizeDivisionLockSetting({ schoolYears: input.schoolYears });
+}
+
+export function removeYearFromLockSetting(
+  setting: DivisionLockSettingValue,
+  schoolYear: string,
+): DivisionLockSettingValue {
+  const year = schoolYear?.trim();
+  if (!year) {
+    return normalizeDivisionLockSetting(setting);
+  }
+
+  const current = normalizeDivisionLockSetting(setting);
+  const schoolYears = { ...current.schoolYears };
+  delete schoolYears[year];
+  return buildDivisionLockSetting({ schoolYears });
 }
 
 export const SCHOOL_MUTATION_ROLES = ['schoolAdmin', 'schoolStaff'] as const;
@@ -90,24 +144,5 @@ export function isSchoolMutationRole(role: string | null | undefined): boolean {
 }
 
 export function extractApiErrorMessage(err: unknown, fallback: string): string {
-  const e = err as {
-    error?: { message?: string | string[] } | string;
-    message?: string;
-    status?: number;
-  };
-  if (e?.error && typeof e.error === 'object' && e.error.message) {
-    if (Array.isArray(e.error.message)) {
-      return e.error.message.join(' ');
-    }
-    if (typeof e.error.message === 'string') {
-      return e.error.message;
-    }
-  }
-  if (typeof e?.error === 'string') {
-    return e.error;
-  }
-  if (e?.message) {
-    return e.message;
-  }
-  return fallback;
+  return getHttpErrorMessage(err, fallback);
 }

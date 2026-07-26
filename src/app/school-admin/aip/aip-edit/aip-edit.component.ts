@@ -21,6 +21,7 @@ import {
   aipSchoolYearsAsArray,
   getSchoolYearOptions,
 } from '../../../common/date-utils';
+import { extractApiErrorMessage } from '../../../common/utils/division-lock.util';
 
 @Component({
   selector: 'app-aip-edit',
@@ -138,27 +139,12 @@ export class AipEditComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error updating AIP project:', err);
-
-          let errorMessage = 'Failed to update AIP project. Please try again.';
-
-          if (err?.error?.message) {
-            if (Array.isArray(err.error.message)) {
-              errorMessage = err.error.message.join('\n• ');
-              if (err.error.message.length > 1) {
-                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-              }
-            } else if (typeof err.error.message === 'string') {
-              errorMessage = err.error.message;
-            }
-          } else if (err?.error && typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else if (err?.message) {
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          }
-
-          this.showErrorNotification(errorMessage);
+          this.showErrorNotification(
+            extractApiErrorMessage(
+              err,
+              'Failed to update AIP project. Please try again.',
+            ),
+          );
         }
       });
     } else {

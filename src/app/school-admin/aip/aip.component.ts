@@ -343,27 +343,12 @@ export class AipComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error fetching AIP projects:', err);
           this.isLoading = false;
-
-          let errorMessage = 'Failed to load AIP projects. Please try again.';
-
-          if (err?.error?.message) {
-            if (Array.isArray(err.error.message)) {
-              errorMessage = err.error.message.join('\n• ');
-              if (err.error.message.length > 1) {
-                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-              }
-            } else if (typeof err.error.message === 'string') {
-              errorMessage = err.error.message;
-            }
-          } else if (err?.error && typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else if (err?.message) {
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          }
-
-          this.showErrorNotification(errorMessage);
+          this.showErrorNotification(
+            extractApiErrorMessage(
+              err,
+              'Failed to load AIP projects. Please try again.',
+            ),
+          );
         },
       });
   }

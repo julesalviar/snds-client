@@ -52,6 +52,7 @@ $sndsapp-theme: mat.define-theme((
   @include mat.checkbox-theme($sndsapp-theme);
   @include mat.tabs-theme($sndsapp-theme);
   @include mat.slide-toggle-theme($sndsapp-theme);
+  @include mat.button-toggle-theme($sndsapp-theme);
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.

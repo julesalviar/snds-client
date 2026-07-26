@@ -15,22 +15,55 @@ function formatErrorMessageEntry(entry: unknown): string[] {
   return [];
 }
 
-export function getHttpErrorMessage(err: unknown, fallback: string): string {
-  const errorBody =
-    err && typeof err === 'object' && 'error' in err
-      ? (err as { error?: unknown }).error
-      : err;
+function readMessageField(value: unknown): string | null {
+  if (typeof value === 'string' && value.trim()) {
+    return value.trim();
+  }
+  if (Array.isArray(value)) {
+    const lines = value.flatMap(formatErrorMessageEntry);
+    return lines.length > 0 ? lines.join(' ') : null;
+  }
+  return null;
+}
 
-  if (errorBody && typeof errorBody === 'object' && 'message' in errorBody) {
-    const message = (errorBody as { message?: unknown }).message;
-    if (Array.isArray(message)) {
-      const lines = message.flatMap(formatErrorMessageEntry);
-      if (lines.length > 0) {
-        return lines.join(' ');
+function isAngularHttpFailureMessage(message: string): boolean {
+  return /^Http failure response for /i.test(message);
+}
+
+function readErrorBody(err: unknown): unknown {
+  if (err && typeof err === 'object' && 'error' in err) {
+    return (err as { error?: unknown }).error;
+  }
+  return err;
+}
+
+export function getHttpErrorMessage(err: unknown, fallback: string): string {
+  const errorBody = readErrorBody(err);
+
+  if (errorBody && typeof errorBody === 'object') {
+    const body = errorBody as Record<string, unknown>;
+    const fromMessage = readMessageField(body['message']);
+    if (fromMessage) {
+      return fromMessage;
+    }
+
+    if (body['data'] && typeof body['data'] === 'object') {
+      const nested = readMessageField(
+        (body['data'] as Record<string, unknown>)['message'],
+      );
+      if (nested) {
+        return nested;
       }
     }
-    if (typeof message === 'string' && message.trim()) {
-      return message.trim();
+
+    const fromError = readMessageField(body['error']);
+    if (
+      fromError &&
+      fromError !== 'Forbidden' &&
+      fromError !== 'Bad Request' &&
+      fromError !== 'Internal Server Error'
+    ) {
+      return fromError;
     }
   }
 
@@ -40,8 +73,22 @@ export function getHttpErrorMessage(err: unknown, fallback: string): string {
 
   if (err && typeof err === 'object' && 'message' in err) {
     const message = (err as { message?: unknown }).message;
-    if (typeof message === 'string' && message.trim()) {
+    if (
+      typeof message === 'string' &&
+      message.trim() &&
+      !isAngularHttpFailureMessage(message)
+    ) {
       return message.trim();
+    }
+  }
+
+  if (err && typeof err === 'object' && 'status' in err) {
+    const status = (err as { status?: number }).status;
+    if (status === 403) {
+      return 'You do not have permission to perform this action.';
+    }
+    if (status === 0) {
+      return 'Unable to connect to the server. Please check your internet connection.';
     }
   }
 

@@ -1,97 +1,165 @@
 <div class="locks-page">
-  <h1 class="page-title">School year locks</h1>
-  <p class="page-description">
-    Control when school admins and staff can create, update, or delete school needs and AIPs per school year.
-  </p>
+  <header class="page-header">
+    <h1 class="page-title">School year locks</h1>
+    <p class="page-description">
+      Control when school admins and staff can edit school needs and AIPs.
+      Each school year has its own lock date — today or earlier means locked now.
+    </p>
+  </header>
 
-  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="page-loader"></mat-progress-bar>
 
   <ng-container *ngIf="!isLoading">
-    <mat-card class="lock-card" *ngFor="let section of sections">
-      <mat-card-header>
-        <mat-card-title>{{ section.title }}</mat-card-title>
-        <mat-card-subtitle>{{ section.description }}</mat-card-subtitle>
+    <mat-card
+      class="lock-card"
+      appearance="outlined"
+      *ngFor="let section of sections"
+      [class.is-saving]="section.isSaving">
+      <mat-card-header class="lock-card-header">
+        <div class="lock-card-heading">
+          <mat-icon class="section-icon" aria-hidden="true">{{ sectionIcon(section) }}</mat-icon>
+          <div>
+            <mat-card-title>{{ section.title }}</mat-card-title>
+            <mat-card-subtitle>{{ section.description }}</mat-card-subtitle>
+          </div>
+        </div>
       </mat-card-header>
 
       <mat-card-content>
-        <p class="status-line">
-          Status: <strong>{{ statusLabel(section) }}</strong>
-        </p>
+        <div class="lock-layout">
+          <section class="add-section" [attr.aria-labelledby]="'add-lock-' + section.key">
+            <h2 class="panel-title" [id]="'add-lock-' + section.key">Add lock</h2>
 
-        <div class="year-add-row">
-          <mat-form-field appearance="outline" class="year-select">
-            <mat-label>Add school year</mat-label>
-            <mat-select [(ngModel)]="section.selectedYearToAdd">
-              <mat-option
-                *ngFor="let y of schoolYearOptions"
-                [value]="y"
-                [disabled]="section.setting.schoolYears.includes(y)">
-                {{ y }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <button
-            mat-stroked-button
-            type="button"
-            (click)="addSchoolYear(section)"
-            [disabled]="!section.selectedYearToAdd || isSaving">
-            Add year
-          </button>
-        </div>
+            <div class="add-form">
+              <mat-form-field appearance="outline" class="field-year">
+                <mat-label>School year</mat-label>
+                <mat-select
+                  [(ngModel)]="section.selectedYearToAdd"
+                  [disabled]="section.isSaving">
+                  <mat-option *ngIf="availableYears(section).length === 0" disabled>
+                    All years are already listed
+                  </mat-option>
+                  <mat-option *ngFor="let y of availableYears(section)" [value]="y">
+                    {{ y }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
 
-        <mat-chip-set *ngIf="section.setting.schoolYears.length" class="year-chips">
-          <mat-chip
-            *ngFor="let y of section.setting.schoolYears"
-            (removed)="removeSchoolYear(section, y)">
-            {{ y }}
-            <button matChipRemove type="button" aria-label="Remove year">
-              <mat-icon>cancel</mat-icon>
-            </button>
-          </mat-chip>
-        </mat-chip-set>
-        <p *ngIf="!section.setting.schoolYears.length" class="hint">
-          No school years selected. Locks apply only to years listed here.
-        </p>
+              <div class="timing-row">
+                <span class="timing-label">Lock starts</span>
+                <mat-button-toggle-group
+                  [(ngModel)]="section.addMode"
+                  class="timing-toggle"
+                  [disabled]="section.isSaving"
+                  hideSingleSelectionIndicator
+                  aria-label="When the lock starts">
+                  <mat-button-toggle value="now" class="timing-option">
+                    <mat-icon aria-hidden="true">lock</mat-icon>
+                    <span>Now</span>
+                  </mat-button-toggle>
+                  <mat-button-toggle value="schedule" class="timing-option">
+                    <mat-icon aria-hidden="true">event</mat-icon>
+                    <span>Schedule</span>
+                  </mat-button-toggle>
+                </mat-button-toggle-group>
+              </div>
 
-        <div class="controls">
-          <mat-slide-toggle
-            [checked]="section.setting.locked"
-            (change)="onLockNowChange(section, $event.checked)"
-            [disabled]="isSaving">
-            Lock now
-          </mat-slide-toggle>
+              <mat-form-field
+                appearance="outline"
+                class="field-date"
+                *ngIf="section.addMode === 'schedule'">
+                <mat-label>Lock date</mat-label>
+                <input
+                  matInput
+                  type="date"
+                  [(ngModel)]="section.scheduledDate"
+                  [disabled]="section.isSaving" />
+                <mat-hint>12:00 AM Philippines time</mat-hint>
+              </mat-form-field>
 
-          <mat-form-field appearance="outline" class="schedule-field">
-            <mat-label>Scheduled lock</mat-label>
-            <input
-              matInput
-              type="datetime-local"
-              [ngModel]="section.scheduledLocal"
-              (ngModelChange)="onScheduledChange(section, $event)"
-              [disabled]="isSaving" />
-          </mat-form-field>
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                class="add-btn"
+                (click)="addSchoolYear(section)"
+                [disabled]="!canAddYear(section) || section.isSaving">
+                <mat-icon>add</mat-icon>
+                {{ addButtonLabel(section) }}
+              </button>
+            </div>
+          </section>
 
-          <button
-            mat-button
-            type="button"
-            color="warn"
-            (click)="unlockOnDemand(section)"
-            [disabled]="isSaving">
-            Unlock on demand
-          </button>
+          <section class="list-section" [attr.aria-labelledby]="'locks-list-' + section.key">
+            <div class="list-header">
+              <div>
+                <h2 class="panel-title" [id]="'locks-list-' + section.key">Locked years</h2>
+                <p class="list-subtitle" *ngIf="hasLocks(section)">
+                  {{ lockCount(section) }} school {{ lockCount(section) === 1 ? 'year' : 'years' }}
+                </p>
+              </div>
+              <button
+                mat-stroked-button
+                type="button"
+                color="warn"
+                class="clear-all-btn"
+                (click)="clearAllLocks(section)"
+                [disabled]="section.isSaving || !hasLocks(section)">
+                <mat-icon>lock_open</mat-icon>
+                Unlock all
+              </button>
+            </div>
+
+            <div *ngIf="!hasLocks(section)" class="empty-state">
+              <mat-icon class="empty-icon" aria-hidden="true">lock_open</mat-icon>
+              <p class="empty-title">No locks yet</p>
+              <p class="empty-message">
+                {{ section.shortTitle }} are editable for every school year.
+              </p>
+            </div>
+
+            <div *ngIf="hasLocks(section)" class="locks-list">
+              <div class="locks-list-head">
+                <span>School year</span>
+                <span>Status</span>
+                <span class="col-action">Action</span>
+              </div>
+
+              <div
+                class="locks-list-row"
+                *ngFor="let row of yearRows(section); trackBy: trackByYear">
+                <span class="year-cell">{{ row.year }}</span>
+                <div class="status-item" [ngClass]="statusClass(section, row.year)">
+                  <mat-icon aria-hidden="true">{{ statusIcon(section, row.year) }}</mat-icon>
+                  <span class="status-copy">
+                    <span class="status-primary">{{ statusPrimary(section, row.year) }}</span>
+                    <span class="status-date" *ngIf="statusDate(section, row.year)">
+                      {{ statusDate(section, row.year) }}
+                    </span>
+                  </span>
+                </div>
+                <span class="col-action">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="row-action-btn"
+                    (click)="unlockYear(section, row)"
+                    [disabled]="section.isSaving"
+                    [attr.aria-label]="isUpcomingSchedule(section, row.year) ? 'Cancel schedule for ' + row.year : 'Unlock ' + row.year">
+                    <mat-icon>{{ isUpcomingSchedule(section, row.year) ? 'event_busy' : 'lock_open' }}</mat-icon>
+                    {{ isUpcomingSchedule(section, row.year) ? 'Cancel' : 'Unlock' }}
+                  </button>
+                </span>
+              </div>
+            </div>
+          </section>
         </div>
       </mat-card-content>
 
-      <mat-card-actions align="end">
-        <button
-          mat-raised-button
-          color="primary"
-          type="button"
-          (click)="saveSection(section)"
-          [disabled]="isSaving">
-          Save {{ section.title }}
-        </button>
-      </mat-card-actions>
+      <div class="saving-overlay" *ngIf="section.isSaving" aria-live="polite">
+        <mat-progress-spinner diameter="28" mode="indeterminate"></mat-progress-spinner>
+        <span>Saving…</span>
+      </div>
     </mat-card>
   </ng-container>
 </div>

@@ -36,7 +36,7 @@ import {ThumbnailUtils} from "../common/utils/thumbnail.utils";
 import {MatChipsModule} from '@angular/material/chips';
 import {UserType} from "../registration/user-type.enum";
 import { DivisionSettingsService } from '../common/services/division-settings.service';
-import { isSchoolMutationRole } from '../common/utils/division-lock.util';
+import { isSchoolMutationRole, extractApiErrorMessage } from '../common/utils/division-lock.util';
 
 @Component({
   selector: 'app-school-admin',
@@ -252,27 +252,12 @@ export class SchoolAdminComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error creating school need:', err);
           this.isSaving = false;
-
-          let errorMessage = 'Failed to save school need. Please try again.';
-
-          if (err?.error?.message) {
-            if (Array.isArray(err.error.message)) {
-              errorMessage = err.error.message.join('\n• ');
-              if (err.error.message.length > 1) {
-                errorMessage = `Please fix the following errors:\n• ${errorMessage}`;
-              }
-            } else if (typeof err.error.message === 'string') {
-              errorMessage = err.error.message;
-            }
-          } else if (err?.error && typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else if (err?.message) {
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            errorMessage = err;
-          }
-
-          this.showErrorNotification(errorMessage);
+          this.showErrorNotification(
+            extractApiErrorMessage(
+              err,
+              'Failed to save school need. Please try again.',
+            ),
+          );
         }
       });
     } catch (error: any) {

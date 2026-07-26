@@ -84,7 +84,7 @@ export class DivisionSettingsService {
     if (years.length === 0) {
       return false;
     }
-    return years.every((y) => this.isAipYearLocked(y));
+    return years.some((y) => this.isAipYearLocked(y));
   }
 
   isAipLockedForRawSchoolYear(raw: unknown): boolean {
@@ -117,8 +117,11 @@ export class DivisionSettingsService {
     preferred: string[],
     options: string[],
   ): string[] {
-    if (preferred.length > 0 && !this.isAipLockedForYears(preferred)) {
-      return preferred;
+    const unlockedPreferred = preferred.filter(
+      (year) => !this.isAipYearLocked(year),
+    );
+    if (unlockedPreferred.length > 0) {
+      return unlockedPreferred;
     }
     const fallback = this.filterUnlockedAipSchoolYears(options);
     return fallback.length > 0 ? [fallback[0]] : [];
@@ -133,8 +136,9 @@ export class DivisionSettingsService {
     value: DivisionLockSettingValue,
   ): Promise<DivisionLockSettingValue> {
     const url = `${API_ENDPOINT.divisionSettings}/${key}`;
+    const payload = normalizeDivisionLockSetting(value);
     const result = await firstValueFrom(
-      this.http.put<DivisionLockSettingValue>(url, value),
+      this.http.put<DivisionLockSettingValue>(url, payload),
     );
     const normalized = normalizeDivisionLockSetting(result);
     if (key === DIVISION_LOCK_KEYS.SCHOOL_NEED_LOCK) {

@@ -45,6 +45,72 @@ export function formatPhilippinesDateTimeStart(date: Date): string {
   return `${y}-${mo}-${da}T00:00:00${PHILIPPINES_UTC_OFFSET}`;
 }
 
+/** `YYYY-MM-DD` date input → ISO instant at midnight Philippines time (UTC+8). */
+export function philippinesMidnightIsoFromDateInput(
+  dateInput: string,
+): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateInput?.trim());
+  if (!match) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const cal = new Date(year, month - 1, day);
+  if (isNaN(cal.getTime())) {
+    return null;
+  }
+  return new Date(formatPhilippinesDateTimeStart(cal)).toISOString();
+}
+
+/** ISO instant → `YYYY-MM-DD` for date inputs (Philippines calendar date). */
+export function philippinesDateInputFromIso(
+  iso: string | null | undefined,
+): string {
+  const cal = parsePhilippinesCalendarDate(iso ?? '');
+  if (!cal) {
+    return '';
+  }
+  return formatDateForAPI(cal);
+}
+
+/** ISO instant → readable date in Philippines time (no time of day). */
+export function formatPhilippinesDateLabel(
+  iso: string | null | undefined,
+): string {
+  const cal = parsePhilippinesCalendarDate(iso ?? '');
+  if (!cal) {
+    return '—';
+  }
+  return cal.toLocaleDateString(undefined, { dateStyle: 'medium' });
+}
+
+/** ISO instant at midnight Philippines time for today's calendar date. */
+export function philippinesTodayMidnightIso(now: Date = new Date()): string {
+  const today = philippinesDateInputFromIso(now.toISOString());
+  const iso = philippinesMidnightIsoFromDateInput(today);
+  if (!iso) {
+    throw new Error('Unable to resolve today in Philippines time.');
+  }
+  return iso;
+}
+
+/** True when the Philippines calendar date of `iso` is today or earlier. */
+export function isPhilippinesLockDateReached(
+  iso: string | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  const lockDay = philippinesDateInputFromIso(iso);
+  if (!lockDay) {
+    return false;
+  }
+  const today = philippinesDateInputFromIso(now.toISOString());
+  if (!today) {
+    return false;
+  }
+  return lockDay <= today;
+}
+
 /** End of a picked calendar day in Philippines time (UTC+8). */
 export function formatPhilippinesDateTimeEnd(date: Date): string {
   const y = date.getFullYear();
