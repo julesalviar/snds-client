@@ -241,6 +241,15 @@ app-stakeholders-profile .cell-content {
   word-break: break-word;
 }
 
+app-stakeholders-profile .email-link {
+  color: var(--mat-sys-primary, #1976d2);
+  text-decoration: none;
+}
+
+app-stakeholders-profile .email-link:hover {
+  text-decoration: underline;
+}
+
 app-stakeholders-profile .engagement-badge {
   display: inline-block;
   padding: 4px 10px;

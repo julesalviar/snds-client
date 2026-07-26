@@ -106,15 +106,20 @@
           <td mat-cell *matCellDef="let row">{{ formatCell(row.sector) }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="contactNumber">
-          <th mat-header-cell *matHeaderCellDef>Contact Number</th>
-          <td mat-cell *matCellDef="let row">{{ formatCell(row.contactNumber) }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="address">
-          <th mat-header-cell *matHeaderCellDef>Address</th>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email Address</th>
           <td mat-cell *matCellDef="let row">
-            <div class="cell-content" [matTooltip]="formatCell(row.address)">{{ formatCell(row.address) }}</div>
+            <a
+              *ngIf="hasDisplayableUserEmail(row); else emailFallback"
+              class="email-link"
+              href="https://mail.google.com/mail/u/0/#inbox?compose=new"
+              target="_blank"
+              rel="noopener noreferrer"
+              matTooltip="Open Gmail compose (email will be copied)"
+              (click)="openGmailForEmail(row.email, $event)">
+              {{ formatUserEmailForDisplay(row) }}
+            </a>
+            <ng-template #emailFallback>{{ formatUserEmailForDisplay(row) }}</ng-template>
           </td>
         </ng-container>
 

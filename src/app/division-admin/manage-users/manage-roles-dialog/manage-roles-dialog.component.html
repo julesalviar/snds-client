@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Manage Roles</h2>
 <mat-dialog-content>
   <p class="user-info">{{ displayName }}</p>
-  <p class="user-email" *ngIf="data.user?.email">{{ data.user.email }}</p>
+  <p class="user-email" *ngIf="hasDisplayableUserEmail(data.user)">{{ formatUserEmailForDisplay(data.user) }}</p>
 
   <p class="section-label">Select roles for this user:</p>
   <div class="roles-list">

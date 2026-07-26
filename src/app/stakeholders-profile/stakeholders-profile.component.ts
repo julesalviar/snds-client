@@ -39,6 +39,10 @@ import {
   getSectorNames,
   SECTOR_REF_DATA_KEY,
 } from '../common/utils/sector-reference-data.util';
+import {
+  formatUserEmailForDisplay,
+  hasDisplayableUserEmail,
+} from '../common/utils/user-display.util';
 
 @Component({
   selector: 'app-stakeholders-profile',
@@ -90,8 +94,7 @@ export class StakeholdersProfileComponent implements OnInit, OnDestroy {
     'reference',
     'name',
     'sector',
-    'contactNumber',
-    'address',
+    'email',
     'engagementStatus',
     'actions',
   ];
@@ -145,6 +148,78 @@ export class StakeholdersProfileComponent implements OnInit, OnDestroy {
   formatCell(value: string | undefined | null): string {
     const trimmed = value?.trim();
     return trimmed ? trimmed : '—';
+  }
+
+  formatUserEmailForDisplay = formatUserEmailForDisplay;
+  hasDisplayableUserEmail = hasDisplayableUserEmail;
+
+  openGmailForEmail(email: string | undefined | null, event: MouseEvent): void {
+    event.preventDefault();
+
+    const trimmed = email?.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    void this.copyEmailAndOpenGmail(trimmed);
+  }
+
+  private async copyEmailAndOpenGmail(email: string): Promise<void> {
+    const copied = await this.copyToClipboard(email);
+
+    window.open(
+      'https://mail.google.com/mail/u/0/#inbox?compose=new',
+      '_blank',
+      'noopener,noreferrer',
+    );
+
+    this.snackBar.open(
+      copied
+        ? 'Opened Gmail. Email address copied — paste it into the To field.'
+        : `Opened Gmail. Send to: ${email}`,
+      'Close',
+      { duration: 5000 },
+    );
+  }
+
+  private async copyToClipboard(text: string): Promise<boolean> {
+    if (this.fallbackCopyToClipboard(text)) {
+      return true;
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  private fallbackCopyToClipboard(text: string): boolean {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      textarea.style.width = '1px';
+      textarea.style.height = '1px';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, text.length);
+      const copied = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return copied;
+    } catch {
+      return false;
+    }
   }
 
   openContributionDialog(row: StakeholderProfile): void {

@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserListItem } from '../../../registration/user.model';
 import { UserService } from '../../../common/services/user.service';
+import { shouldHideUserEmail } from '../../../common/utils/user-display.util';
 
 export interface UpdateUserEmailDialogData {
   user: UserListItem;
@@ -40,7 +41,9 @@ export class UpdateUserEmailDialogComponent {
     private readonly userService: UserService,
     private readonly snackBar: MatSnackBar
   ) {
-    this.oldEmail = (data.user?.email ?? '').trim();
+    this.oldEmail = shouldHideUserEmail(data.user)
+      ? ''
+      : (data.user?.email ?? '').trim();
     this.newEmail = this.oldEmail;
   }
 

@@ -41,6 +41,9 @@ import {
   USER_TAGS_REF_DATA_KEY,
   UserTagRef,
 } from '../../common/utils/user-tags-reference-data.util';
+import {
+  formatUserEmailForDisplay,
+} from '../../common/utils/user-display.util';
 
 @Component({
   selector: 'app-manage-users',
@@ -107,6 +110,8 @@ export class ManageUsersComponent implements OnInit, OnDestroy {
     const visible = this.getVisibleRoles(roles);
     return [...visible].sort((a, b) => getRoleLabel(a).localeCompare(getRoleLabel(b)));
   }
+
+  formatUserEmailForDisplay = formatUserEmailForDisplay;
 
   dataSource = new MatTableDataSource<UserListItem>([]);
   isLoading = true;

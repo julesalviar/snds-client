@@ -25,6 +25,10 @@ import { School } from '../../../common/model/school.model';
 import { Office } from '../../../common/model/office.model';
 import { OfficeService } from '../../../common/services/office.service';
 import { InternalReferenceDataService } from '../../../common/services/internal-reference-data.service';
+import {
+  formatUserEmailForDisplay,
+  hasDisplayableUserEmail,
+} from '../../../common/utils/user-display.util';
 
 export interface ManageRolesDialogData {
   user: UserListItem;
@@ -390,6 +394,9 @@ export class ManageRolesDialogComponent implements OnInit, OnDestroy {
     const u = this.data.user;
     return u?.name || u?.userName || u?.email || 'User';
   }
+
+  formatUserEmailForDisplay = formatUserEmailForDisplay;
+  hasDisplayableUserEmail = hasDisplayableUserEmail;
 
   isRoleSelected(role: string): boolean {
     return this.selectedRoles.has(role);

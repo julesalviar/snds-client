@@ -14,6 +14,7 @@ export interface ContributionItem {
 export interface StakeholderProfile {
   _id: string;
   name: string;
+  email: string;
   contactNumber: string;
   address: string;
   sector: string;
