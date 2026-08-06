@@ -26,6 +26,8 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatRadioChange, MatRadioModule} from '@angular/material/radio';
 import {HttpService} from '../../common/services/http.service';
 import {API_ENDPOINT} from '../../common/api-endpoints';
+import { formatDateForAPI } from '../../common/date-utils';
+import { extractApiErrorMessage } from '../../common/utils/division-lock.util';
 
 @Component({
   selector: 'app-school-needs-engage',
@@ -349,8 +351,54 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
     const implementationInvalid = !!this.implementationForm?.invalid;
     const applicableInvalid = this.isApplicable && !this.validateForm();
     const movInvalid = this.isMovInvalid();
+    const amountInvalid = !this.isAmountValid();
+    const quantityInvalid = !this.isQuantityValid();
 
-    return stakeholderInvalid || engagementInvalid || implementationInvalid || applicableInvalid || movInvalid;
+    return (
+      stakeholderInvalid ||
+      engagementInvalid ||
+      implementationInvalid ||
+      applicableInvalid ||
+      movInvalid ||
+      amountInvalid ||
+      quantityInvalid
+    );
+  }
+
+  private isAmountValid(): boolean {
+    return typeof this.amount === 'number' && this.amount > 0;
+  }
+
+  private isQuantityValid(): boolean {
+    return typeof this.quantity === 'number' && this.quantity >= 1;
+  }
+
+  private formatEngagementDate(value: Date | null): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+    return formatDateForAPI(value);
+  }
+
+  private buildEngagementPayload(): Record<string, unknown> {
+    return {
+      stakeholderUserId: this.stakeholder._id,
+      stakeholderRepCount: this.stakeholderRepCount,
+      agreementType: this.agreementType,
+      signatoryName: this.signatoryName,
+      signatoryDesignation: this.signatoryDesignation,
+      projectCategory: this.projectCategory,
+      projectName: this.projectName,
+      agreementStatus: this.agreementStatus,
+      initiatedBy: this.initiatedBy,
+      signingDate: this.formatEngagementDate(this.moaDate),
+      unit: this.unit,
+      amount: this.amount,
+      startDate: this.formatEngagementDate(this.startDate),
+      endDate: this.formatEngagementDate(this.endDate),
+      quantity: this.quantity,
+      ...(this.isEditMode ? {} : { schoolNeedCode: +this.needCode! }),
+    };
   }
 
   private showValidationFeedback(): void {
@@ -366,6 +414,16 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
           ? 'Please update your MOV/image before engaging.'
           : 'Please upload at least one MOV (Means of Verification) before engaging.';
       this.showErrorNotification(message);
+      return;
+    }
+
+    if (!this.isQuantityValid()) {
+      this.showErrorNotification('Quantity donated must be at least 1.');
+      return;
+    }
+
+    if (!this.isAmountValid()) {
+      this.showErrorNotification('Amount must be greater than 0.');
       return;
     }
 
@@ -483,24 +541,7 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
         } as SchoolNeed),
       );
 
-      const engagementData = {
-        stakeholderUserId: this.stakeholder._id,
-        stakeholderRepCount: this.stakeholderRepCount,
-        agreementType: this.agreementType,
-        signatoryName: this.signatoryName,
-        signatoryDesignation: this.signatoryDesignation,
-        projectCategory: this.projectCategory,
-        projectName: this.projectName,
-        agreementStatus: this.agreementStatus,
-        initiatedBy: this.initiatedBy,
-        signingDate: this.moaDate,
-        unit: this.unit,
-        amount: this.amount,
-        startDate: this.startDate,
-        endDate: this.endDate,
-        quantity: this.quantity,
-        ...(this.isEditMode ? {} : { schoolNeedCode: +this.needCode }),
-      };
+      const engagementData = this.buildEngagementPayload();
 
       if (this.isEditMode && this.engagementId) {
         await lastValueFrom(
@@ -529,7 +570,9 @@ export class SchoolNeedsEngageComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error saving engagement:', error);
-      this.showErrorNotification('Failed to save engagement. Please try again.');
+      this.showErrorNotification(
+        extractApiErrorMessage(error, 'Failed to save engagement. Please try again.'),
+      );
     } finally {
       this.isSaving = false;
     }
