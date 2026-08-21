@@ -295,10 +295,10 @@
                     <span class="indicator-subtitle">Document is available for download</span>
                   </div>
                   <div class="indicator-actions">
-                    <button mat-icon-button (click)="onDownloadReportDoc()" class="download-btn" title="Download document">
+                    <button mat-icon-button type="button" (click)="onDownloadReportDoc()" class="download-btn" title="Download document">
                       <mat-icon>download</mat-icon>
                     </button>
-                    <button mat-icon-button (click)="onRemoveReportDoc()" class="remove-doc-btn" title="Remove document">
+                    <button mat-icon-button type="button" (click)="onRemoveReportDoc()" class="remove-doc-btn" title="Remove document">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
@@ -336,7 +336,7 @@
                     <span class="file-name">{{ selectedReportFile.name }}</span>
                     <span class="file-size">{{ (selectedReportFile.size / 1024 / 1024).toFixed(2) }} MB</span>
                   </div>
-                  <button mat-icon-button (click)="removeReportFile()" class="remove-file-btn">
+                  <button mat-icon-button type="button" (click)="removeReportFile()" class="remove-file-btn">
                     <mat-icon>close</mat-icon>
                   </button>
                 </div>

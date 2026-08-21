@@ -40,7 +40,9 @@ import {
   normalizeUserIdFromRef,
   resolveAssignedUserIdForFormLoad,
   resolveAssignedUserIdForSave,
+  resolveReportUrlsForSave,
   resolveStakeholderUserIdForSave,
+  resolveTimelinessForSave,
 } from '../../common/utils/ppa-plan-form.util';
 
 interface StakeholderSearchOption {
@@ -636,9 +638,9 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       venue: raw.venue || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
       implementationStatus: raw.implementationStatus,
-      timeliness: raw.timeliness || undefined,
+      ...resolveTimelinessForSave(raw.timeliness, this.isEdit),
       factors: raw.factors || undefined,
-      reportUrls: reportUrls.length > 0 ? reportUrls : undefined,
+      ...resolveReportUrlsForSave(reportUrls, this.isEdit),
       isDedp: raw.isDedp ?? true,
       isPublic: raw.isPublic ?? true,
     };

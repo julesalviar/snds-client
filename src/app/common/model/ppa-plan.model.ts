@@ -24,7 +24,7 @@ export interface PpaPlan {
   amountUtilized?: number;
   implementationStatus: string;
   venue?: string;
-  timeliness?: string;
+  timeliness?: string | null;
   factors?: string;
   reportUrls?: string[];
   allowedRoles?: string[];

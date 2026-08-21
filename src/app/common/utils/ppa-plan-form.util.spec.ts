@@ -4,7 +4,9 @@ import {
   normalizeUserIdFromRef,
   resolveAssignedUserIdForFormLoad,
   resolveAssignedUserIdForSave,
+  resolveReportUrlsForSave,
   resolveStakeholderUserIdForSave,
+  resolveTimelinessForSave,
 } from './ppa-plan-form.util';
 
 describe('ppa-plan-form.util', () => {
@@ -192,6 +194,43 @@ describe('ppa-plan-form.util', () => {
 
     it('denies duplicate when cannot edit', () => {
       expect(canDuplicatePpaPlan('programHolder', false)).toBe(false);
+    });
+  });
+
+  describe('resolveReportUrlsForSave', () => {
+    it('includes urls when present', () => {
+      expect(resolveReportUrlsForSave(['https://example.com/r.pdf'], false)).toEqual({
+        reportUrls: ['https://example.com/r.pdf'],
+      });
+    });
+
+    it('omits field on create when empty', () => {
+      expect(resolveReportUrlsForSave([], false)).toEqual({});
+    });
+
+    it('sends empty array on edit when cleared so the report does not come back', () => {
+      expect(resolveReportUrlsForSave([], true)).toEqual({ reportUrls: [] });
+    });
+  });
+
+  describe('resolveTimelinessForSave', () => {
+    it('includes selected value', () => {
+      expect(resolveTimelinessForSave('On-time', false)).toEqual({
+        timeliness: 'On-time',
+      });
+      expect(resolveTimelinessForSave('Delayed', true)).toEqual({
+        timeliness: 'Delayed',
+      });
+    });
+
+    it('omits field on create when empty', () => {
+      expect(resolveTimelinessForSave('', false)).toEqual({});
+      expect(resolveTimelinessForSave(null, false)).toEqual({});
+    });
+
+    it('sends null on edit when cleared so the previous value does not come back', () => {
+      expect(resolveTimelinessForSave('', true)).toEqual({ timeliness: null });
+      expect(resolveTimelinessForSave('   ', true)).toEqual({ timeliness: null });
     });
   });
 });

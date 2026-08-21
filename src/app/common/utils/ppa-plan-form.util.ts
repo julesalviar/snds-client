@@ -70,3 +70,24 @@ export function canDuplicatePpaPlan(
 ): boolean {
   return activeRole === 'programHolder' && canEdit;
 }
+
+/** Report URLs for create/update payload (omit on create when empty; [] clears on edit). */
+export function resolveReportUrlsForSave(
+  reportUrls: string[],
+  isEdit: boolean,
+): { reportUrls?: string[] } {
+  if (reportUrls.length > 0) return { reportUrls };
+  if (isEdit) return { reportUrls: [] };
+  return {};
+}
+
+/** Timeliness for create/update payload (omit on create when empty; null clears on edit). */
+export function resolveTimelinessForSave(
+  timeliness: string | null | undefined,
+  isEdit: boolean,
+): { timeliness?: string | null } {
+  const value = typeof timeliness === 'string' ? timeliness.trim() : '';
+  if (value) return { timeliness: value };
+  if (isEdit) return { timeliness: null };
+  return {};
+}

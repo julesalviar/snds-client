@@ -8,6 +8,7 @@
     "start:tacurong": "ng serve --port 4200 --host tacurong.local",
     "start:gensan": "ng serve --port 4200 --host gensan.local",
     "start:davaooccidental": "ng serve --port 4200 --host davaooccidental.local",
+    "start:kidapawan": "ng serve --port 4200 --host kidapawan.local",
     "start:dev": "ng serve --port 4200 --host dev.local",
     "build": "ng build",
     "build:prod": "ng build --configuration=production",
