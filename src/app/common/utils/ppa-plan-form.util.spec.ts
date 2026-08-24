@@ -7,6 +7,8 @@ import {
   resolveReportUrlsForSave,
   resolveStakeholderUserIdForSave,
   resolveTimelinessForSave,
+  toHideFromPublic,
+  toIsPublicFromHideToggle,
 } from './ppa-plan-form.util';
 
 describe('ppa-plan-form.util', () => {
@@ -231,6 +233,23 @@ describe('ppa-plan-form.util', () => {
     it('sends null on edit when cleared so the previous value does not come back', () => {
       expect(resolveTimelinessForSave('', true)).toEqual({ timeliness: null });
       expect(resolveTimelinessForSave('   ', true)).toEqual({ timeliness: null });
+    });
+  });
+
+  describe('toHideFromPublic', () => {
+    it('is on only when isPublic is explicitly false', () => {
+      expect(toHideFromPublic(false)).toBe(true);
+      expect(toHideFromPublic(true)).toBe(false);
+      expect(toHideFromPublic(undefined)).toBe(false);
+      expect(toHideFromPublic(null)).toBe(false);
+    });
+  });
+
+  describe('toIsPublicFromHideToggle', () => {
+    it('sends false when hide is on and true otherwise', () => {
+      expect(toIsPublicFromHideToggle(true)).toBe(false);
+      expect(toIsPublicFromHideToggle(false)).toBe(true);
+      expect(toIsPublicFromHideToggle(undefined)).toBe(true);
     });
   });
 });

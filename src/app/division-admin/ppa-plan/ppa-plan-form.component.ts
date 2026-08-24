@@ -43,6 +43,8 @@ import {
   resolveReportUrlsForSave,
   resolveStakeholderUserIdForSave,
   resolveTimelinessForSave,
+  toHideFromPublic,
+  toIsPublicFromHideToggle,
 } from '../../common/utils/ppa-plan-form.util';
 
 interface StakeholderSearchOption {
@@ -230,14 +232,6 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
     return fundSource;
   }
 
-  onHideFromPublicChange(checked: boolean): void {
-    this.form.get('isPublic')?.setValue(!checked);
-  }
-
-  isHiddenFromPublic(): boolean {
-    return this.form.get('isPublic')?.value === false;
-  }
-
   addFundSourceFromInput(event: { value: string }): void {
     const value = (event?.value ?? '').trim();
     if (!value) return;
@@ -311,7 +305,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       timeliness: [''],
       factors: [''],
       isDedp: [true],
-      isPublic: [true],
+      hideFromPublic: [false],
     });
     if (this.isDialogMode && dialogData?.initialDate && !this.isEdit) {
       this.form.patchValue({ implementationStartDate: dialogData.initialDate, implementationEndDate: dialogData.initialDate });
@@ -582,7 +576,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           timeliness: plan.timeliness ?? '',
           factors: plan.factors ?? '',
           isDedp: plan.isDedp ?? true,
-          isPublic: plan.isPublic ?? true,
+          hideFromPublic: toHideFromPublic(plan.isPublic),
         });
         if (!this.isDuplicate) {
           this.reportDocUrl = Array.isArray(plan.reportUrls) && plan.reportUrls.length > 0 ? plan.reportUrls[0] : null;
@@ -642,7 +636,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       factors: raw.factors || undefined,
       ...resolveReportUrlsForSave(reportUrls, this.isEdit),
       isDedp: raw.isDedp ?? true,
-      isPublic: raw.isPublic ?? true,
+      isPublic: toIsPublicFromHideToggle(raw.hideFromPublic),
     };
     };
 

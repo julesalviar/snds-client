@@ -161,11 +161,7 @@
               <mat-slide-toggle formControlName="isDedp">Count as DEDP PPA</mat-slide-toggle>
             </div>
             <div class="plan-settings-row">
-              <mat-slide-toggle
-                [checked]="isHiddenFromPublic()"
-                (change)="onHideFromPublicChange($event.checked)">
-                Hide from public view
-              </mat-slide-toggle>
+              <mat-slide-toggle formControlName="hideFromPublic">Hide from public view</mat-slide-toggle>
             </div>
           </section>
 

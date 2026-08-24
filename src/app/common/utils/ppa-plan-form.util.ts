@@ -91,3 +91,17 @@ export function resolveTimelinessForSave(
   if (isEdit) return { timeliness: null };
   return {};
 }
+
+/** Form toggle: hide from public when stored isPublic is explicitly false. */
+export function toHideFromPublic(
+  isPublic: boolean | null | undefined,
+): boolean {
+  return isPublic === false;
+}
+
+/** Payload isPublic from the hide-from-public toggle (off means public). */
+export function toIsPublicFromHideToggle(
+  hideFromPublic: boolean | null | undefined,
+): boolean {
+  return hideFromPublic !== true;
+}
