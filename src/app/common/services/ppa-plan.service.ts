@@ -28,6 +28,7 @@ export interface PpaPlanListParams {
   startDateTo?: string;
   endDateFrom?: string;
   endDateTo?: string;
+  isDedp?: boolean;
 }
 
 @Injectable({
@@ -74,6 +75,9 @@ export class PpaPlanService {
     }
     if (params.endDateTo) {
       queryParams.push(`endDateTo=${encodeURIComponent(params.endDateTo)}`);
+    }
+    if (params.isDedp !== undefined) {
+      queryParams.push(`isDedp=${encodeURIComponent(String(params.isDedp))}`);
     }
     const url =
       queryParams.length > 0 ? `${API_ENDPOINT.ppaPlan}?${queryParams.join('&')}` : API_ENDPOINT.ppaPlan;
@@ -127,13 +131,16 @@ export class PpaPlanService {
       .pipe(catchError(this.httpService.handleError));
   }
 
-  getAccomplishmentSummary(params?: { officeIds?: string[]; division?: string }): Observable<{ rows: DivisionAccomplishmentRow[]; totals: Record<string, ClassificationSummary> }> {
+  getAccomplishmentSummary(params?: { officeIds?: string[]; division?: string; isDedp?: boolean }): Observable<{ rows: DivisionAccomplishmentRow[]; totals: Record<string, ClassificationSummary> }> {
     const queryParams: string[] = [];
     if (params?.officeIds?.length) {
       queryParams.push(`officeIds=${encodeURIComponent(params.officeIds.join(','))}`);
     }
     if (params?.division?.trim()) {
       queryParams.push(`division=${encodeURIComponent(params.division.trim())}`);
+    }
+    if (params?.isDedp !== undefined) {
+      queryParams.push(`isDedp=${encodeURIComponent(String(params.isDedp))}`);
     }
     const url = queryParams.length > 0
       ? `${API_ENDPOINT.ppaPlanAccomplishmentSummary}?${queryParams.join('&')}`

@@ -49,7 +49,7 @@ export class AccomplishmentSummaryComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.ppaPlanService.getAccomplishmentSummary()
+    this.ppaPlanService.getAccomplishmentSummary({ isDedp: true })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: ({ rows, totals }) => {
@@ -85,6 +85,7 @@ export class AccomplishmentSummaryComponent implements OnInit {
     const baseParams: Omit<PpaPlanListParams, 'page' | 'limit'> = {
       classification,
       division: row.division,
+      isDedp: true,
       ...(type === 'completed' && { implementationStatus: 'Fully Implemented' }),
     };
 

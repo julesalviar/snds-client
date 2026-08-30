@@ -73,4 +73,12 @@ describe('PpaPlanService', () => {
         done();
       });
   });
+
+  it('getList with isDedp true includes isDedp query param', (done) => {
+    service.getList({ isDedp: true }).subscribe(() => {
+      const url = httpService.get.calls.mostRecent().args[0] as string;
+      expect(url).toContain('isDedp=true');
+      done();
+    });
+  });
 });
