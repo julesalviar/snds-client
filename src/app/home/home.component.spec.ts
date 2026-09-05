@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 import { AuthService } from '../auth/auth.service';
 import { UserType } from '../registration/user-type.enum';
@@ -444,5 +444,41 @@ describe('HomeComponent', () => {
     expect(result[0].children?.[1].count).toBeUndefined();
     expect(result[0].count).toBeUndefined();
     expect(result[0].expanded).toBeFalsy();
+  });
+
+  it('computes 6-month window from the start of the current month', () => {
+    const window = (component as unknown as {
+      getSixMonthWindowFromStartOfCurrentMonth: () => { from: string; to: string };
+    }).getSixMonthWindowFromStartOfCurrentMonth();
+
+    const now = new Date();
+    const expectedFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const expectedToDate = new Date(now.getFullYear(), now.getMonth() + 7, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const expectedTo = `${expectedToDate.getFullYear()}-${pad(expectedToDate.getMonth() + 1)}-${pad(expectedToDate.getDate())}`;
+
+    expect(window.from).toBe(expectedFrom);
+    expect(window.to).toBe(expectedTo);
+  });
+
+  it('requests upcoming plans using only startDateFrom from the start of the current month', (done) => {
+    const ppaPlanService = TestBed.inject(PpaPlanService);
+    const getListSpy = spyOn(ppaPlanService, 'getList').and.returnValue(of({ data: [], totalItems: 0 }));
+
+    const state = createHomeState(UserType.OfficeAdmin);
+    const window = (component as unknown as {
+      getSixMonthWindowFromStartOfCurrentMonth: () => { from: string; to: string };
+    }).getSixMonthWindowFromStartOfCurrentMonth();
+
+    (component as unknown as {
+      loadUpcomingPlansIfNeeded$: (s: HomeState) => Observable<HomeState>;
+    }).loadUpcomingPlansIfNeeded$(state).subscribe((res) => {
+      expect(getListSpy).toHaveBeenCalledTimes(1);
+      expect(getListSpy).toHaveBeenCalledWith({
+        startDateFrom: window.from,
+      });
+      expect(res.loading.upcomingPlans).toBeFalse();
+      done();
+    });
   });
 });

@@ -1104,26 +1104,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     ) {
       return of({ ...state, loading: { ...state.loading, upcomingPlans: false } });
     }
-    const today = new Date();
-    const dateFrom = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const sixMonthsLater = new Date(today);
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-    const dateTo = `${sixMonthsLater.getFullYear()}-${String(sixMonthsLater.getMonth() + 1).padStart(2, '0')}-${String(sixMonthsLater.getDate()).padStart(2, '0')}`;
-    return forkJoin({
-      byStart: this.ppaPlanService.getList({ startDateFrom: dateFrom, startDateTo: dateTo }),
-      byEnd: this.ppaPlanService.getList({ endDateFrom: dateFrom, endDateTo: dateTo }),
-    }).pipe(
-      map(({ byStart, byEnd }) => {
-        const startPlans = Array.isArray(byStart.data) ? byStart.data : [];
-        const endPlans = Array.isArray(byEnd.data) ? byEnd.data : [];
-        const seen = new Set<string>();
-        const merged = [...startPlans, ...endPlans].filter((p) => {
-          const id = p._id ?? '';
-          if (seen.has(id)) return false;
-          seen.add(id);
-          return true;
-        });
-        const sorted = merged.sort((a, b) => {
+    const { from: startDateFrom } = this.getSixMonthWindowFromStartOfCurrentMonth();
+    return this.ppaPlanService.getList({ startDateFrom }).pipe(
+      map((res) => {
+        const plans = Array.isArray(res.data) ? res.data : [];
+        const sorted = [...plans].sort((a, b) => {
           const aStart = a.implementationStartDate ?? (a as unknown as Record<string, string>)?.['implementation_start_date'] ?? '';
           const bStart = b.implementationStartDate ?? (b as unknown as Record<string, string>)?.['implementation_start_date'] ?? '';
           return aStart.localeCompare(bStart);
@@ -1210,7 +1195,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * Inclusive calendar-day window: first day of this month through last day of (this month + 6 months).
    * Values are date-only (YYYY-MM-DD) so the API can filter without time-of-day effects.
    */
-  private getPartnershipActivitiesListDateRange(): { startDatetimeFrom: string; startDatetimeTo: string } {
+  private getSixMonthWindowFromStartOfCurrentMonth(): { from: string; to: string } {
     const now = new Date();
     const fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
     const toDate = new Date(now.getFullYear(), now.getMonth() + 7, 0);
@@ -1218,8 +1203,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     const fmt = (d: Date) =>
       `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     return {
-      startDatetimeFrom: fmt(fromDate),
-      startDatetimeTo: fmt(toDate),
+      from: fmt(fromDate),
+      to: fmt(toDate),
+    };
+  }
+
+  private getPartnershipActivitiesListDateRange(): { startDatetimeFrom: string; startDatetimeTo: string } {
+    const { from, to } = this.getSixMonthWindowFromStartOfCurrentMonth();
+    return {
+      startDatetimeFrom: from,
+      startDatetimeTo: to,
     };
   }
 
