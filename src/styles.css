@@ -314,9 +314,11 @@ p {
   gap: 12px;
 }
 
-/* PPA Plan List - Column visibility menu overlay */
+/* Column visibility menu overlay (PPA Plan List & DPDS Data) */
 .ppa-plan-list-column-menu,
-.mat-mdc-menu-panel.column-menu {
+.dpds-data-column-menu,
+.mat-mdc-menu-panel.column-menu,
+.mat-mdc-menu-panel.dpds-data-column-menu {
   min-width: 280px !important;
   max-width: 360px !important;
   max-height: 450px !important;
@@ -324,7 +326,9 @@ p {
 }
 
 .ppa-plan-list-column-menu .mat-mdc-menu-content,
-.mat-mdc-menu-panel.column-menu .mat-mdc-menu-content {
+.dpds-data-column-menu .mat-mdc-menu-content,
+.mat-mdc-menu-panel.column-menu .mat-mdc-menu-content,
+.mat-mdc-menu-panel.dpds-data-column-menu .mat-mdc-menu-content {
   padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
@@ -332,7 +336,9 @@ p {
 }
 
 .ppa-plan-list-column-menu .column-menu-header,
-.mat-mdc-menu-panel.column-menu .column-menu-header {
+.dpds-data-column-menu .column-menu-header,
+.mat-mdc-menu-panel.column-menu .column-menu-header,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-menu-header {
   position: sticky !important;
   top: 0 !important;
   z-index: 10 !important;
@@ -346,14 +352,18 @@ p {
 }
 
 .ppa-plan-list-column-menu .column-menu-title,
-.mat-mdc-menu-panel.column-menu .column-menu-title {
+.dpds-data-column-menu .column-menu-title,
+.mat-mdc-menu-panel.column-menu .column-menu-title,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-menu-title {
   font-size: 14px !important;
   font-weight: 600 !important;
   color: rgba(0, 0, 0, 0.85) !important;
 }
 
 .ppa-plan-list-column-menu .column-ok-btn,
-.mat-mdc-menu-panel.column-menu .column-ok-btn {
+.dpds-data-column-menu .column-ok-btn,
+.mat-mdc-menu-panel.column-menu .column-ok-btn,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-ok-btn {
   font-weight: 600 !important;
   font-size: 13px !important;
   color: #2e7d32 !important;
@@ -370,12 +380,16 @@ p {
 }
 
 .ppa-plan-list-column-menu .column-ok-btn:hover,
-.mat-mdc-menu-panel.column-menu .column-ok-btn:hover {
+.dpds-data-column-menu .column-ok-btn:hover,
+.mat-mdc-menu-panel.column-menu .column-ok-btn:hover,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-ok-btn:hover {
   background-color: rgba(46, 125, 50, 0.08) !important;
 }
 
 .ppa-plan-list-column-menu .column-menu-body,
-.mat-mdc-menu-panel.column-menu .column-menu-body {
+.dpds-data-column-menu .column-menu-body,
+.mat-mdc-menu-panel.column-menu .column-menu-body,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-menu-body {
   max-height: 380px !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
@@ -389,7 +403,9 @@ p {
 }
 
 .ppa-plan-list-column-menu .column-item,
-.mat-mdc-menu-panel.column-menu .column-item {
+.dpds-data-column-menu .column-item,
+.mat-mdc-menu-panel.column-menu .column-item,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-item {
   display: flex !important;
   align-items: center !important;
   width: 100% !important;
@@ -410,19 +426,25 @@ p {
 }
 
 .ppa-plan-list-column-menu .column-item:hover,
-.mat-mdc-menu-panel.column-menu .column-item:hover {
+.dpds-data-column-menu .column-item:hover,
+.mat-mdc-menu-panel.column-menu .column-item:hover,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-item:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
 .ppa-plan-list-column-menu .column-item.selected,
-.mat-mdc-menu-panel.column-menu .column-item.selected {
+.dpds-data-column-menu .column-item.selected,
+.mat-mdc-menu-panel.column-menu .column-item.selected,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-item.selected {
   background-color: rgba(46, 125, 50, 0.06) !important;
   color: #1b5e20 !important;
   font-weight: 500 !important;
 }
 
 .ppa-plan-list-column-menu .column-check,
-.mat-mdc-menu-panel.column-menu .column-check {
+.dpds-data-column-menu .column-check,
+.mat-mdc-menu-panel.column-menu .column-check,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-check {
   margin-right: 12px !important;
   font-size: 20px !important;
   width: 20px !important;
@@ -432,7 +454,9 @@ p {
 }
 
 .ppa-plan-list-column-menu .column-check.checked,
-.mat-mdc-menu-panel.column-menu .column-check.checked {
+.dpds-data-column-menu .column-check.checked,
+.mat-mdc-menu-panel.column-menu .column-check.checked,
+.mat-mdc-menu-panel.dpds-data-column-menu .column-check.checked {
   color: #2e7d32 !important;
 }
 
