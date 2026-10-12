@@ -32,7 +32,10 @@ describe('PpaPlanListComponent', () => {
         { provide: AuthService, useValue: authService },
         {
           provide: PlanClassificationDisplayService,
-          useValue: { getDisplayText: (v: string) => v },
+          useValue: {
+            getDisplayText: (v: string) => v,
+            getDisplayTitle: () => 'DEPED PILLAR (Project Champ)',
+          },
         },
         { provide: MatSnackBar, useValue: { open: jasmine.createSpy('open') } },
         { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
@@ -79,5 +82,57 @@ describe('PpaPlanListComponent', () => {
     expect(component.getStakeholderDisplay({ _id: '1', name: 'BFP' })).toBe(
       'BFP',
     );
+  });
+
+  it('toggleColumnVisibility toggles column visibility and persists to localStorage', () => {
+    const col = component.columnCategories[0].columns[0];
+    const initialVisibility = col.visible;
+    component.toggleColumnVisibility(col);
+    expect(col.visible).toBe(!initialVisibility);
+
+    const stored = localStorage.getItem('ppa-plan-table-columns');
+    expect(stored).toBeTruthy();
+    const parsed = JSON.parse(stored!);
+    expect(parsed[col.id]).toBe(!initialVisibility);
+  });
+
+  it('toggleColumnVisibility does not hide column if it is the only visible one', () => {
+    // Hide all columns except one
+    component.columnCategories.forEach((cat) => {
+      cat.columns.forEach((c) => (c.visible = false));
+    });
+    const lastCol = component.columnCategories[0].columns[0];
+    lastCol.visible = true;
+
+    // Attempt to toggle the last remaining visible column off
+    component.toggleColumnVisibility(lastCol);
+    expect(lastCol.visible).toBe(true);
+  });
+
+  it('sortedColumns returns columns sorted alphabetically by display label and precomputes displayLabel', () => {
+    component.initSortedColumns();
+    const sorted = component.sortedColumns;
+    expect(sorted.length).toBeGreaterThan(0);
+    for (let i = 0; i < sorted.length; i++) {
+      expect(sorted[i].displayLabel).toBeTruthy();
+      if (i > 0) {
+        const prev = (sorted[i - 1].displayLabel ?? sorted[i - 1].label).toLowerCase();
+        const curr = (sorted[i].displayLabel ?? sorted[i].label).toLowerCase();
+        expect(prev.localeCompare(curr)).toBeLessThanOrEqual(0);
+      }
+    }
+  });
+
+  it('getColumnDisplayLabel returns classification title for classification column', () => {
+    const classificationCol = { id: 'classification', label: 'Classification', visible: true };
+    expect(component.getColumnDisplayLabel(classificationCol)).toBe('DEPED PILLAR (Project Champ)');
+
+    const standardCol = { id: 'activity', label: 'Activity', visible: true };
+    expect(component.getColumnDisplayLabel(standardCol)).toBe('Activity');
+  });
+
+  it('trackByColumnId returns column id', () => {
+    const col = { id: 'venue', label: 'Venue', visible: true };
+    expect(component.trackByColumnId(0, col)).toBe('venue');
   });
 });

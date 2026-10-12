@@ -69,21 +69,39 @@
         </button>
       </div>
 
-      <button mat-icon-button [matMenuTriggerFor]="columnMenu" matTooltip="Show/hide columns" aria-label="Column visibility" class="column-customize-btn">
+      <button mat-icon-button [matMenuTriggerFor]="columnMenu" #columnMenuTrigger="matMenuTrigger" matTooltip="Show/hide columns" aria-label="Column visibility" class="column-customize-btn">
         <mat-icon>view_column</mat-icon>
       </button>
     </div>
 
-    <mat-menu #columnMenu="matMenu" class="column-menu" panelClass="dpds-data-column-menu">
-        <div class="column-menu-header">
-            <span>Columns</span>
-        </div>
-        <ng-container *ngFor="let category of columnCategories">
-            <button mat-menu-item *ngFor="let col of category.columns" class="column-item" (click)="toggleColumnVisibility(col)">
-                <mat-icon class="column-check">{{ col.visible ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                <span>{{ col.label }}</span>
-            </button>
-        </ng-container>
+    <mat-menu #columnMenu="matMenu" class="dpds-data-column-menu column-menu" panelClass="dpds-data-column-menu column-menu">
+      <div class="column-menu-header" (click)="$event.stopPropagation()">
+        <span class="column-menu-title">Columns</span>
+        <button
+          type="button"
+          mat-button
+          color="primary"
+          class="column-ok-btn"
+          aria-label="Confirm column selection"
+          (click)="columnMenuTrigger.closeMenu()">
+          OK
+        </button>
+      </div>
+      <div class="column-menu-body" role="group" aria-label="Column options" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          *ngFor="let col of sortedColumns; trackBy: trackByColumnId"
+          class="column-item"
+          role="menuitemcheckbox"
+          [attr.aria-checked]="col.visible"
+          [class.selected]="col.visible"
+          (click)="$event.stopPropagation(); toggleColumnVisibility(col)">
+          <mat-icon class="column-check" [ngClass]="{ 'checked': col.visible }">
+            {{ col.visible ? 'check_box' : 'check_box_outline_blank' }}
+          </mat-icon>
+          <span>{{ col.displayLabel || col.label }}</span>
+        </button>
+      </div>
     </mat-menu>
     <div class="indicator-container">
     <div class="indicator blue"></div>

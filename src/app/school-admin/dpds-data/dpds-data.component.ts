@@ -30,6 +30,7 @@ export interface ColumnConfig {
   id: string;
   label: string;
   visible: boolean;
+  displayLabel?: string;
 }
 
 export interface ColumnCategory {
@@ -140,6 +141,22 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
     },
   ];
 
+  /** All configurable columns flattened and sorted alphabetically by label. */
+  sortedColumns: ColumnConfig[] = [];
+
+  initSortedColumns(): void {
+    const all = this.columnCategories.flatMap((cat) => cat.columns);
+    this.sortedColumns = all.slice().sort((a, b) => {
+      const labelA = a.displayLabel ?? a.label;
+      const labelB = b.displayLabel ?? b.label;
+      return labelA.localeCompare(labelB, undefined, { sensitivity: 'base' });
+    });
+  }
+
+  trackByColumnId(_index: number, col: ColumnConfig): string {
+    return col.id;
+  }
+
   constructor(
     private readonly engagementService: EngagementService,
     private readonly authService: AuthService,
@@ -149,6 +166,7 @@ export class DpdsDataComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.initSortedColumns();
     void this.loadSectorOptions();
     this.loadColumnPreferences();
     this.loadEngagements();

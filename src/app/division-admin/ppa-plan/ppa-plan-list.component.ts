@@ -45,6 +45,7 @@ export interface ColumnConfig {
   id: string;
   label: string;
   visible: boolean;
+  displayLabel?: string;
 }
 
 export interface ColumnCategory {
@@ -177,6 +178,35 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
     },
   ];
 
+  /** All configurable columns flattened and sorted alphabetically by display label. */
+  sortedColumns: ColumnConfig[] = [];
+
+  initSortedColumns(): void {
+    const all = this.columnCategories.flatMap((cat) => cat.columns);
+    all.forEach((col) => {
+      col.displayLabel = this.getColumnDisplayLabel(col);
+    });
+    this.sortedColumns = all.slice().sort((a, b) => {
+      const labelA = a.displayLabel ?? a.label;
+      const labelB = b.displayLabel ?? b.label;
+      return labelA.localeCompare(labelB, undefined, { sensitivity: 'base' });
+    });
+  }
+
+  trackByColumnId(_index: number, col: ColumnConfig): string {
+    return col.id;
+  }
+
+  /** Display label for a column in the column visibility selector. */
+  getColumnDisplayLabel(col: ColumnConfig): string {
+    if (col.id === 'classification') {
+      return this.classificationDisplay?.getDisplayTitle
+        ? this.classificationDisplay.getDisplayTitle()
+        : 'Classification';
+    }
+    return col.label;
+  }
+
   /** Visible columns for the table (computed from columnCategories + actions). Assignee column hidden when "Assigned to me" filter is checked. */
   get displayedColumns(): string[] {
     const visible = this.columnCategories.flatMap((cat) =>
@@ -251,6 +281,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.initSortedColumns();
     this.loadColumnPreferences();
     this.searchSubject
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
