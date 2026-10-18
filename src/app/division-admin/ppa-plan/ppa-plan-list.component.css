@@ -65,32 +65,7 @@ app-ppa-plan-list mat-card-title {
   margin-left: 8px;
 }
 
-/* Column visibility menu - renders in overlay; scoped via panelClass */
-.mat-mdc-menu-panel.ppa-plan-list-column-menu .column-menu-header {
-  padding: 12px 16px 8px;
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.6);
-}
 
-.mat-mdc-menu-panel.ppa-plan-list-column-menu .column-check {
-  margin-right: 12px;
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  color: rgba(0, 0, 0, 0.54) !important;
-}
-
-.mat-mdc-menu-panel.ppa-plan-list-column-menu .column-item {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(0, 0, 0, 0.7) !important;
-}
-
-.mat-mdc-menu-panel.ppa-plan-list-column-menu .mat-mdc-menu-item .column-check {
-  margin-left: 0;
-  color: rgba(0, 0, 0, 0.54) !important;
-}
 
 .table-wrapper {
   margin-top: 15px;
