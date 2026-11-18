@@ -36,10 +36,14 @@ import { TIMELINESS } from '../../common/enums/timeliness.enum';
 import { InternalReferenceDataService } from '../../common/services/internal-reference-data.service';
 import { UserListItem } from '../../registration/user.model';
 import {
+  FULLY_IMPLEMENTED_STATUS,
   getPpaPlansListRoute,
+  normalizePhysicalTarget,
   normalizeUserIdFromRef,
+  PHYSICAL_TARGET_PATTERN,
   resolveAssignedUserIdForFormLoad,
   resolveAssignedUserIdForSave,
+  resolvePhysicalTargetForSave,
   resolveReportUrlsForSave,
   resolveStakeholderUserIdForSave,
   resolveTimelinessForSave,
@@ -53,6 +57,13 @@ interface StakeholderSearchOption {
 }
 
 /** Validator: end date must not be before start date. */
+function physicalTargetFormatValidator(control: AbstractControl): ValidationErrors | null {
+  const normalized = normalizePhysicalTarget(control.value);
+  if (!normalized) return null;
+  if (!PHYSICAL_TARGET_PATTERN.test(normalized)) return { physicalTargetFormat: true };
+  return null;
+}
+
 function implementationDateRangeValidator(control: AbstractControl): ValidationErrors | null {
   const form = control.parent;
   if (!form) return null;
@@ -107,7 +118,14 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       this.classificationDisplay.getDisplayText(a).localeCompare(this.classificationDisplay.getDisplayText(b))
     );
   }
-  readonly implementationStatusOptions = PLAN_IMPLEMENTATION_STATUS;
+  get implementationStatusOptions(): readonly string[] {
+    if (this.isEdit) return PLAN_IMPLEMENTATION_STATUS;
+    return PLAN_IMPLEMENTATION_STATUS.filter((status) => status !== FULLY_IMPLEMENTED_STATUS);
+  }
+
+  get showPhysicalTarget(): boolean {
+    return this.isEdit && this.form.get('implementationStatus')?.value === FULLY_IMPLEMENTED_STATUS;
+  }
   readonly timelinessOptions = TIMELINESS;
   fundSourceOptions: string[] = [];
   readonly participantOptions = PLAN_PARTICIPANT_OPTIONS;
@@ -130,6 +148,8 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       { control: 'classification', label: 'Classification', error: 'required' },
       { control: 'expectedOutput', label: 'Expected Output', error: 'required' },
       { control: 'implementationStatus', label: 'Implementation Status', error: 'required' },
+      { control: 'physicalTarget', label: 'Physical Target', error: 'required' },
+      { control: 'physicalTarget', label: 'Physical Target', error: 'physicalTargetFormat' },
       { control: 'implementationEndDate', label: 'Implementation End Date', error: 'endBeforeStart' },
       { control: 'budgetaryRequirement', label: 'Budgetary Requirement', error: 'min' },
       { control: 'amountUtilized', label: 'Amount Utilized', error: 'min' },
@@ -302,6 +322,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       venue: [''],
       amountUtilized: [null as number | null, [Validators.min(0)]],
       implementationStatus: ['', Validators.required],
+      physicalTarget: [''],
       timeliness: [''],
       factors: [''],
       isDedp: [true],
@@ -317,6 +338,10 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       this.planId = this.route.snapshot.paramMap.get('id');
       this.isEdit = !!this.planId;
     }
+    this.form.get('implementationStatus')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.syncPhysicalTargetValidators());
+    this.syncPhysicalTargetValidators();
     this.setupStakeholderSearch();
     this.setupImplementationDateValidation();
     this.initializeAssignedUserId();
@@ -326,6 +351,17 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private syncPhysicalTargetValidators(): void {
+    const control = this.form.get('physicalTarget');
+    if (!control) return;
+    if (this.showPhysicalTarget) {
+      control.setValidators([Validators.required, physicalTargetFormatValidator]);
+    } else {
+      control.clearValidators();
+    }
+    control.updateValueAndValidity({ emitEvent: false });
   }
 
   private setupImplementationDateValidation(): void {
@@ -572,7 +608,10 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
           assignedUserId: this.resolveAssignedUserIdForForm(plan.assignedUserId),
           amountUtilized: plan.amountUtilized ?? null,
           venue: plan.venue ?? '',
-          implementationStatus: plan.implementationStatus ?? '',
+          implementationStatus: this.isDuplicate && plan.implementationStatus === FULLY_IMPLEMENTED_STATUS
+            ? ''
+            : (plan.implementationStatus ?? ''),
+          physicalTarget: this.isDuplicate ? '' : (plan.physicalTarget ?? ''),
           timeliness: plan.timeliness ?? '',
           factors: plan.factors ?? '',
           isDedp: plan.isDedp ?? true,
@@ -632,6 +671,7 @@ export class PpaPlanFormComponent implements OnInit, OnDestroy {
       venue: raw.venue || undefined,
       amountUtilized: raw.amountUtilized ?? undefined,
       implementationStatus: raw.implementationStatus,
+      ...resolvePhysicalTargetForSave(raw.physicalTarget, raw.implementationStatus, this.isEdit),
       ...resolveTimelinessForSave(raw.timeliness, this.isEdit),
       factors: raw.factors || undefined,
       ...resolveReportUrlsForSave(reportUrls, this.isEdit),

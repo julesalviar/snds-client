@@ -81,6 +81,31 @@ export function resolveReportUrlsForSave(
   return {};
 }
 
+export const FULLY_IMPLEMENTED_STATUS = 'Fully Implemented';
+
+/** Same shape the PPA update API accepts: a positive integer, then an identifier. */
+export const PHYSICAL_TARGET_PATTERN = /^[1-9]\d*\s+\S+(?:\s+\S+)*$/;
+
+export function normalizePhysicalTarget(value: string | null | undefined): string {
+  if (typeof value !== 'string') return '';
+  return value.trim().replace(/\s+/g, ' ');
+}
+
+/**
+ * Create never sends physicalTarget. Update sends it only for Fully Implemented,
+ * and omits it for every other status so the API can clear a stored value.
+ */
+export function resolvePhysicalTargetForSave(
+  physicalTarget: string | null | undefined,
+  implementationStatus: string | null | undefined,
+  isEdit: boolean,
+): { physicalTarget?: string } {
+  if (!isEdit || implementationStatus !== FULLY_IMPLEMENTED_STATUS) return {};
+  const normalized = normalizePhysicalTarget(physicalTarget);
+  if (!normalized) return {};
+  return { physicalTarget: normalized };
+}
+
 /** Timeliness for create/update payload (omit on create when empty; null clears on edit). */
 export function resolveTimelinessForSave(
   timeliness: string | null | undefined,

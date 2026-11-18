@@ -164,6 +164,7 @@ export class PpaPlanListComponent implements OnInit, OnDestroy {
       label: 'Status',
       columns: [
         { id: 'implementationStatus', label: 'Implementation Status', visible: true },
+        { id: 'physicalTarget', label: 'Physical Target', visible: true },
         { id: 'assignee', label: 'Assignee', visible: false },
         { id: 'timeliness', label: 'Timeliness', visible: false },
       ],

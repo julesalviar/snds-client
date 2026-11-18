@@ -4,6 +4,7 @@ import {
   normalizeUserIdFromRef,
   resolveAssignedUserIdForFormLoad,
   resolveAssignedUserIdForSave,
+  resolvePhysicalTargetForSave,
   resolveReportUrlsForSave,
   resolveStakeholderUserIdForSave,
   resolveTimelinessForSave,
@@ -182,6 +183,28 @@ describe('ppa-plan-form.util', () => {
         '/office-admin',
         'ppa-plans',
       ]);
+    });
+  });
+
+  describe('resolvePhysicalTargetForSave', () => {
+    it('omits physicalTarget on create even when Fully Implemented', () => {
+      expect(resolvePhysicalTargetForSave('50 schools', 'Fully Implemented', false)).toEqual({});
+    });
+
+    it('omits physicalTarget on edit when status is not Fully Implemented', () => {
+      expect(resolvePhysicalTargetForSave('50 schools', 'Partially Implemented', true)).toEqual({});
+      expect(resolvePhysicalTargetForSave('50 schools', 'For Implementation', true)).toEqual({});
+      expect(resolvePhysicalTargetForSave('50 schools', 'Not Implemented', true)).toEqual({});
+    });
+
+    it('sends a normalized physicalTarget when editing a Fully Implemented plan', () => {
+      expect(resolvePhysicalTargetForSave('  50   schools  ', 'Fully Implemented', true)).toEqual({
+        physicalTarget: '50 schools',
+      });
+    });
+
+    it('omits an empty physicalTarget', () => {
+      expect(resolvePhysicalTargetForSave('   ', 'Fully Implemented', true)).toEqual({});
     });
   });
 

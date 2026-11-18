@@ -260,6 +260,13 @@
                 </mat-select>
                 <mat-error *ngIf="form.get('implementationStatus')?.hasError('required')">Implementation status is required.</mat-error>
               </mat-form-field>
+              <mat-form-field *ngIf="showPhysicalTarget" appearance="outline" class="half-width">
+                <mat-label>Physical Target</mat-label>
+                <input matInput formControlName="physicalTarget" placeholder="50 schools">
+                <mat-hint>A positive number followed by what is being counted, for example 50 schools.</mat-hint>
+                <mat-error *ngIf="form.get('physicalTarget')?.hasError('required')">Physical target is required when the status is Fully Implemented.</mat-error>
+                <mat-error *ngIf="form.get('physicalTarget')?.hasError('physicalTargetFormat')">Use a positive number and an identifier, for example 50 schools.</mat-error>
+              </mat-form-field>
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Timeliness</mat-label>
                 <mat-select formControlName="timeliness">
