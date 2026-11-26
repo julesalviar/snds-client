@@ -135,4 +135,25 @@ describe('PpaPlanListComponent', () => {
     const col = { id: 'venue', label: 'Venue', visible: true };
     expect(component.trackByColumnId(0, col)).toBe('venue');
   });
+
+  it('uses "Responsible Person" label for the assignee column in column picker and table header', () => {
+    fixture.detectChanges();
+    const assigneeCol = component.sortedColumns.find((c) => c.id === 'assignee');
+    expect(assigneeCol).toBeDefined();
+    expect(assigneeCol?.label).toBe('Responsible Person');
+    expect(assigneeCol?.displayLabel).toBe('Responsible Person');
+
+    assigneeCol!.visible = true;
+    component.isLoading = false;
+    component.totalItems = 1;
+    component.dataSource.data = [{ _id: '1', title: 'Test Plan' } as PpaPlan];
+    fixture.detectChanges();
+
+    const headerCells = Array.from(
+      fixture.nativeElement.querySelectorAll('th[mat-header-cell]'),
+    ) as HTMLElement[];
+    const headerTexts = headerCells.map((th) => th.textContent?.trim());
+    expect(headerTexts).toContain('Responsible Person');
+    expect(headerTexts).not.toContain('Assignee');
+  });
 });
